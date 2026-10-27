@@ -1,0 +1,201 @@
+{
+  "$schema": "../schemas/workflow-definition.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "general-testing",
+  "version": "0.1.0",
+  "status": "draft",
+  "name": "通用测试工作流",
+  "description": "设计评审示例；尚无运行引擎。操作实现、角色绑定和审批契约需另行验证。",
+  "contentLocale": "source",
+  "limits": {
+    "deadlineSeconds": 14400,
+    "maxConcurrentNodes": 2,
+    "maxDerivedRuns": 1
+  },
+  "inputs": {
+    "spec": { "type": "SpecInput", "required": true },
+    "context": { "type": "ProjectContext", "required": true },
+    "target": { "type": "ExecutionProfile", "required": true },
+    "implementation": { "type": "ImplementationOptions", "required": true },
+    "action_policy": { "type": "ActionPolicy", "required": true }
+  },
+  "nodes": [
+    {
+      "id": "import_spec",
+      "kind": "import",
+      "operation": "documents.import",
+      "dependsOn": [],
+      "inputs": {
+        "spec": { "from": "$input.spec", "type": "SpecInput" }
+      },
+      "outputs": { "document": "DocumentRevision" },
+      "requiresCapabilities": ["utf8-text-import"],
+      "policy": { "timeoutSeconds": 60, "maxAttempts": 1, "retryOn": [] }
+    },
+    {
+      "id": "extract_requirements",
+      "kind": "agent",
+      "operation": "requirements.extract",
+      "role": "requirement-analyst",
+      "dependsOn": ["import_spec"],
+      "inputs": {
+        "document": { "from": "import_spec.document", "type": "DocumentRevision" },
+        "context": { "from": "$input.context", "type": "ProjectContext" }
+      },
+      "outputs": { "requirements": "RequirementBaselineDraft" },
+      "requiresCapabilities": ["structured-output", "read-only-tools"],
+      "policy": { "timeoutSeconds": 600, "maxAttempts": 2, "retryOn": ["invalid_artifact"] }
+    },
+    {
+      "id": "review_requirements",
+      "kind": "human",
+      "operation": "review.requirements",
+      "dependsOn": ["extract_requirements"],
+      "inputs": {
+        "requirements": { "from": "extract_requirements.requirements", "type": "RequirementBaselineDraft" },
+        "document": { "from": "import_spec.document", "type": "DocumentRevision" }
+      },
+      "outputs": { "requirements": "RequirementBaseline" },
+      "requiresCapabilities": ["digest-bound-approval"],
+      "policy": { "timeoutSeconds": 3600, "maxAttempts": 1, "retryOn": [] }
+    },
+    {
+      "id": "design_scenarios",
+      "kind": "agent",
+      "operation": "scenarios.design",
+      "role": "test-designer",
+      "dependsOn": ["review_requirements"],
+      "inputs": {
+        "requirements": { "from": "review_requirements.requirements", "type": "RequirementBaseline" },
+        "document": { "from": "import_spec.document", "type": "DocumentRevision" },
+        "context": { "from": "$input.context", "type": "ProjectContext" }
+      },
+      "outputs": { "design": "TestDesignDraft" },
+      "requiresCapabilities": ["structured-output", "read-only-tools"],
+      "policy": { "timeoutSeconds": 600, "maxAttempts": 2, "retryOn": ["invalid_artifact"] }
+    },
+    {
+      "id": "review_coverage",
+      "kind": "human",
+      "operation": "review.coverage",
+      "dependsOn": ["design_scenarios"],
+      "inputs": {
+        "design": { "from": "design_scenarios.design", "type": "TestDesignDraft" },
+        "requirements": { "from": "review_requirements.requirements", "type": "RequirementBaseline" }
+      },
+      "outputs": { "design": "TestDesign" },
+      "requiresCapabilities": ["traceability-validation", "digest-bound-approval"],
+      "policy": { "timeoutSeconds": 3600, "maxAttempts": 1, "retryOn": [] }
+    },
+    {
+      "id": "generate_cases",
+      "kind": "agent",
+      "operation": "cases.generate",
+      "role": "case-designer",
+      "dependsOn": ["review_coverage"],
+      "inputs": {
+        "design": { "from": "review_coverage.design", "type": "TestDesign" },
+        "context": { "from": "$input.context", "type": "ProjectContext" }
+      },
+      "outputs": { "cases": "TestCaseSetDraft" },
+      "requiresCapabilities": ["structured-output", "read-only-tools"],
+      "policy": { "timeoutSeconds": 600, "maxAttempts": 2, "retryOn": ["invalid_artifact"] }
+    },
+    {
+      "id": "review_cases",
+      "kind": "human",
+      "operation": "review.cases",
+      "dependsOn": ["generate_cases"],
+      "inputs": {
+        "cases": { "from": "generate_cases.cases", "type": "TestCaseSetDraft" },
+        "design": { "from": "review_coverage.design", "type": "TestDesign" }
+      },
+      "outputs": { "cases": "TestCaseSet" },
+      "requiresCapabilities": ["digest-bound-approval"],
+      "policy": { "timeoutSeconds": 3600, "maxAttempts": 1, "retryOn": [] }
+    },
+    {
+      "id": "implement_tests",
+      "kind": "agent",
+      "operation": "tests.implement",
+      "role": "case-developer",
+      "dependsOn": ["review_cases"],
+      "inputs": {
+        "cases": { "from": "review_cases.cases", "type": "TestCaseSet" },
+        "options": { "from": "$input.implementation", "type": "ImplementationOptions" },
+        "context": { "from": "$input.context", "type": "ProjectContext" }
+      },
+      "outputs": { "implementation": "ImplementationBundle" },
+      "requiresCapabilities": ["structured-output", "workspace-scoped-write"],
+      "policy": { "timeoutSeconds": 1200, "maxAttempts": 1, "retryOn": [] }
+    },
+    {
+      "id": "preflight",
+      "kind": "validation",
+      "operation": "targets.preflight",
+      "dependsOn": ["implement_tests"],
+      "inputs": {
+        "implementation": { "from": "implement_tests.implementation", "type": "ImplementationBundle" },
+        "cases": { "from": "review_cases.cases", "type": "TestCaseSet" },
+        "target": { "from": "$input.target", "type": "ExecutionProfile" }
+      },
+      "outputs": { "plan": "ExecutionPlan" },
+      "requiresCapabilities": ["target-preflight", "implementation-validation"],
+      "policy": { "timeoutSeconds": 120, "maxAttempts": 1, "retryOn": [] }
+    },
+    {
+      "id": "review_execution",
+      "kind": "human",
+      "operation": "review.execution",
+      "dependsOn": ["preflight"],
+      "inputs": {
+        "plan": { "from": "preflight.plan", "type": "ExecutionPlan" }
+      },
+      "outputs": { "authorization": "ExecutionAuthorization" },
+      "requiresCapabilities": ["digest-bound-approval"],
+      "policy": { "timeoutSeconds": 3600, "maxAttempts": 1, "retryOn": [] }
+    },
+    {
+      "id": "execute_tests",
+      "kind": "runner",
+      "operation": "targets.execute",
+      "dependsOn": ["review_execution"],
+      "inputs": {
+        "plan": { "from": "preflight.plan", "type": "ExecutionPlan" },
+        "authorization": { "from": "review_execution.authorization", "type": "ExecutionAuthorization" }
+      },
+      "outputs": { "evidence": "EvidenceBundle" },
+      "requiresCapabilities": ["managed-execution", "evidence-manifest", "confirmed-cancellation"],
+      "policy": { "timeoutSeconds": 1800, "maxAttempts": 1, "retryOn": [] }
+    },
+    {
+      "id": "analyze_verdict",
+      "kind": "evaluation",
+      "operation": "verdicts.evaluate",
+      "role": "verdict-analyst",
+      "dependsOn": ["execute_tests"],
+      "inputs": {
+        "evidence": { "from": "execute_tests.evidence", "type": "EvidenceBundle" },
+        "cases": { "from": "review_cases.cases", "type": "TestCaseSet" },
+        "design": { "from": "review_coverage.design", "type": "TestDesign" },
+        "requirements": { "from": "review_requirements.requirements", "type": "RequirementBaseline" }
+      },
+      "outputs": { "verdict": "VerdictBundle" },
+      "requiresCapabilities": ["deterministic-verdict", "evidence-validation", "read-only-tools"],
+      "policy": { "timeoutSeconds": 600, "maxAttempts": 1, "retryOn": [] }
+    },
+    {
+      "id": "dispatch_actions",
+      "kind": "policy",
+      "operation": "actions.dispatch",
+      "dependsOn": ["analyze_verdict"],
+      "inputs": {
+        "verdict": { "from": "analyze_verdict.verdict", "type": "VerdictBundle" },
+        "policy": { "from": "$input.action_policy", "type": "ActionPolicy" }
+      },
+      "outputs": { "report": "VerificationReport" },
+      "requiresCapabilities": ["bounded-actions", "audit-log"],
+      "policy": { "timeoutSeconds": 120, "maxAttempts": 1, "retryOn": [] }
+    }
+  ]
+}

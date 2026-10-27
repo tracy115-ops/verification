@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Verification Workflow Definition (Design Draft)",
+  "description": "Structure only. Graph, type, operation, capability and authorization validation require a compiler.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "version", "status", "name", "contentLocale", "limits", "inputs", "nodes"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": "1.0.0" },
+    "id": { "$ref": "#/$defs/id" },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "status": { "enum": ["draft", "published"] },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "contentLocale": { "enum": ["zh-CN", "en-US", "source"] },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["deadlineSeconds", "maxConcurrentNodes", "maxDerivedRuns"],
+      "properties": {
+        "deadlineSeconds": { "type": "integer", "minimum": 1, "maximum": 86400 },
+        "maxConcurrentNodes": { "type": "integer", "minimum": 1, "maximum": 16 },
+        "maxDerivedRuns": { "type": "integer", "minimum": 0, "maximum": 10 }
+      }
+    },
+    "inputs": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "$ref": "#/$defs/id" },
+      "additionalProperties": { "$ref": "#/$defs/inputDeclaration" }
+    },
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": { "$ref": "#/$defs/node" }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*$", "maxLength": 80 },
+    "artifactType": { "type": "string", "pattern": "^[A-Z][A-Za-z0-9]*$" },
+    "inputDeclaration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "required"],
+      "properties": {
+        "type": { "$ref": "#/$defs/artifactType" },
+        "required": { "type": "boolean" },
+        "description": { "type": "string" }
+      }
+    },
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "type"],
+      "properties": {
+        "from": { "type": "string", "pattern": "^(\\$input|[a-z][a-z0-9_-]*)\\.[a-z][a-z0-9_-]*$" },
+        "type": { "$ref": "#/$defs/artifactType" }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["timeoutSeconds", "maxAttempts", "retryOn"],
+      "properties": {
+        "timeoutSeconds": { "type": "integer", "minimum": 1, "maximum": 86400 },
+        "maxAttempts": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "retryOn": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["transport_error", "rate_limited", "invalid_artifact"] }
+        }
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "operation", "dependsOn", "inputs", "outputs", "requiresCapabilities", "policy"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "kind": { "enum": ["import", "agent", "human", "validation", "runner", "evaluation", "policy"] },
+        "operation": { "type": "string", "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$" },
+        "role": { "$ref": "#/$defs/id" },
+        "dependsOn": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+        "inputs": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/id" },
+          "additionalProperties": { "$ref": "#/$defs/binding" }
+        },
+        "outputs": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": { "$ref": "#/$defs/id" },
+          "additionalProperties": { "$ref": "#/$defs/artifactType" }
+        },
+        "requiresCapabilities": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+        "policy": { "$ref": "#/$defs/policy" }
+      },
+      "allOf": [
+        { "if": { "properties": { "kind": { "const": "agent" } } }, "then": { "required": ["role"] } }
+      ]
+    }
+  }
+}
