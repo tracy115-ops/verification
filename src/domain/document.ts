@@ -3,7 +3,7 @@ import preset from '../../docs/examples/general-testing.workflow.json';
 import { checkDocument, checkWorkflow, type WorkbenchDocument, type WorkflowNode } from './workflow';
 
 const stringMap = { type: 'object', additionalProperties: { type: 'string' } };
-const profileSchema = {
+export const profileSchema = {
   type: 'object',
   additionalProperties: false,
   required: ['id', 'name', 'driver', 'protocol', 'baseUrl', 'model', 'credentialRef'],

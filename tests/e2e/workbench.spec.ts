@@ -5,6 +5,7 @@ test('edits a node profile and restores its saved draft after reload', async ({ 
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
+  await page.getByRole('button', { name: '流程编排', exact: true }).click();
   await expect(page.locator('.workflow-node')).toHaveCount(13);
   await page.screenshot({ path: '.runtime/workflow-overview.png' });
   await page.getByRole('combobox', { name: 'Agent 配置', exact: true }).selectOption('claude-native');
@@ -12,6 +13,7 @@ test('edits a node profile and restores its saved draft after reload', async ({ 
   await page.getByRole('button', { name: '保存草稿', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('草稿已保存到当前设备');
   await page.reload();
+  await page.getByRole('button', { name: '流程编排', exact: true }).click();
   await expect(page.getByRole('combobox', { name: 'Agent 配置', exact: true })).toHaveValue('claude-native');
   await expect(page.getByRole('spinbutton', { name: '超时（秒）', exact: true })).toHaveValue('450');
   expect(errors).toEqual([]);
@@ -19,6 +21,7 @@ test('edits a node profile and restores its saved draft after reload', async ({ 
 
 test('adds a human review and validates it without invoking an Agent', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('button', { name: '流程编排', exact: true }).click();
   await page.getByRole('button', { name: '添加人工复核', exact: true }).click();
   await expect(page.locator('.workflow-node')).toHaveCount(14);
   await expect(page.locator('.workflow-inspector')).toContainText('无需 Agent CLI');
@@ -29,6 +32,7 @@ test('adds a human review and validates it without invoking an Agent', async ({ 
 
 test('keeps candidate coverage separate from execution results', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('button', { name: '验证资产', exact: true }).click();
   await page.getByRole('button', { name: '需求与场景', exact: true }).click();
   const strip = page.locator('.review-status-strip');
   await expect(strip).toContainText('场景缺失');
@@ -43,18 +47,23 @@ test('keeps candidate coverage separate from execution results', async ({ page }
 
 test('switches language and theme and explains the browser CLI boundary', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('button', { name: '设置', exact: true }).click();
   await page.getByLabel('界面语言').selectOption('en-US');
-  await expect(page.getByRole('button', { name: 'Save draft', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Theme', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'General', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Dark', exact: true }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await page.getByRole('button', { name: 'Agents & providers', exact: true }).first().click();
   await expect(page.getByRole('button', { name: 'Detect installed CLIs', exact: true })).toBeDisabled();
   await expect(page.locator('.settings-shell')).toContainText('Browser mode');
   await page.screenshot({ path: '.runtime/agents-dark.png' });
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en-US');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 });
 
 test('rejects a malformed import and keeps the current graph', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('button', { name: '流程编排', exact: true }).click();
   await page.locator('input[type=file]').setInputFiles({
     name: 'invalid.json',
     mimeType: 'application/json',
@@ -67,6 +76,7 @@ test('rejects a malformed import and keeps the current graph', async ({ page }) 
 
 test('exports and imports a renamed workflow with its configuration', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('button', { name: '流程编排', exact: true }).click();
   await page.locator('.workflow-metadata summary').click();
   await page.getByRole('textbox', { name: '流程名称', exact: true }).fill('接口冒烟验证');
   await page.getByRole('button', { name: '保存草稿', exact: true }).click();
@@ -91,13 +101,15 @@ test('exports and imports a renamed workflow with its configuration', async ({ p
 
 test('adds a provider profile and binds it to an Agent node', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('button', { name: '设置', exact: true }).click();
   await page.getByRole('button', { name: 'Agent 与 Provider', exact: true }).first().click();
   await page.getByRole('textbox', { name: '配置名称', exact: true }).fill('企业网关（测试）');
   await page.getByRole('textbox', { name: '模型 ID', exact: true }).fill('model-example');
   await page.getByRole('textbox', { name: 'Provider 地址', exact: true }).fill('https://example.invalid/v1');
   await page.getByRole('textbox', { name: '凭据引用', exact: true }).fill('env:TEST_PROVIDER_KEY');
   await page.getByRole('button', { name: '新建 Provider 配置', exact: true }).click();
-  await expect(page.getByRole('status')).toContainText('配置已保存到草稿');
+  await expect(page.getByRole('status')).toContainText('配置已保存到设置');
+  await page.reload();
   await page.getByRole('button', { name: '流程编排', exact: true }).click();
   await page
     .getByRole('combobox', { name: 'Agent 配置', exact: true })
@@ -109,8 +121,26 @@ test('adds a provider profile and binds it to an Agent node', async ({ page }) =
 test('keeps navigation accessible and avoids page overflow in a narrow window', async ({ page }) => {
   await page.setViewportSize({ width: 900, height: 780 });
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Agent 与 Provider', exact: true }).first()).toBeVisible();
+  await expect(page.getByRole('button', { name: '设置', exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.setViewportSize({ width: 640, height: 900 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test('opens conversations first and selects only saved workflow revisions', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'CLI 会话', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '发送消息', exact: true })).toBeDisabled();
+  await page.screenshot({ path: '.runtime/conversations-light.png' });
+  await page.getByRole('button', { name: '流程编排', exact: true }).click();
+  await page.getByRole('button', { name: '保存草稿', exact: true }).click();
+  await page.getByRole('button', { name: 'CLI 会话', exact: true }).click();
+  await page.getByLabel('已保存流程').selectOption('workflow');
+  await expect(page.locator('.session-scope')).toContainText('需求 → 场景 → 用例评审');
+  await expect(page.getByRole('button', { name: '调用设计流程', exact: true })).toBeDisabled();
+  await page.getByLabel('流程编排', { exact: true }).click();
+  await page.getByRole('spinbutton', { name: '超时（秒）', exact: true }).fill('450');
+  await page.getByRole('button', { name: 'CLI 会话', exact: true }).click();
+  await page.getByLabel('已保存流程').selectOption('workflow');
+  await expect(page.locator('.session-scope')).toContainText('上次保存版本');
 });

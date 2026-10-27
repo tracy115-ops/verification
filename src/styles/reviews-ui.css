@@ -147,3 +147,14 @@
     gap: 14px;
   }
 }
+.assets-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--wb-border);
+}
+.assets-run-content {
+  padding: 24px;
+  max-width: 1080px;
+  margin: auto;
+}

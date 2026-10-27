@@ -1,26 +1,13 @@
 import { useRef } from 'react';
-import { CheckCheck, FileInput, Languages, Moon, Save, Sun, Upload, Workflow } from 'lucide-react';
+import { CheckCheck, FileInput, Save, Upload, Workflow } from 'lucide-react';
 import { useI18n } from '../shared/i18n/context';
-import type { Locale } from '../shared/i18n/messages';
 import { Status } from '../shared/components/Status';
 import type { Page } from './navigation';
 import type { useWorkbench } from './useWorkbench';
 
 type WorkbenchState = ReturnType<typeof useWorkbench>;
 
-export function Titlebar({
-  page,
-  locale,
-  setLocale,
-  dark,
-  toggleTheme,
-}: {
-  page: Page;
-  locale: Locale;
-  setLocale: (locale: Locale) => void;
-  dark: boolean;
-  toggleTheme: () => void;
-}) {
+export function Titlebar({ page, busy }: { page: Page; busy: boolean }) {
   const { t } = useI18n();
   return (
     <header className="app-titlebar">
@@ -29,22 +16,7 @@ export function Titlebar({
         <span className="app-breadcrumb-slash">/</span>
         {t(page)}
       </span>
-      <div className="app-global-controls">
-        <label className="wb-language">
-          <Languages size={14} />
-          <select
-            aria-label={t('language')}
-            value={locale}
-            onChange={(event) => setLocale(event.target.value === 'en-US' ? 'en-US' : 'zh-CN')}
-          >
-            <option value="zh-CN">中文</option>
-            <option value="en-US">English</option>
-          </select>
-        </label>
-        <button className="workbench-btn wb-icon" aria-label={t('theme')} onClick={toggleTheme}>
-          {dark ? <Sun size={17} /> : <Moon size={17} />}
-        </button>
-      </div>
+      <Status tone={busy ? 'accent' : 'neutral'}>{t(busy ? 'generating' : 'local')}</Status>
     </header>
   );
 }
@@ -63,19 +35,21 @@ export function PageHeading({ page, workbench }: { page: Page; workbench: Workbe
           {page === 'workflow' && <Status tone="accent">v{definition.version}</Status>}
         </h1>
       </div>
-      <div className="app-page-actions">
-        <Status tone={workbench.dirty ? 'warning' : 'neutral'}>
-          {t(workbench.dirty ? 'dirty' : 'draft')}
-        </Status>
-        <button className="workbench-btn" onClick={() => workbench.validate()}>
-          <CheckCheck size={15} />
-          {t('validate')}
-        </button>
-        <button className="workbench-btn wb-primary" onClick={workbench.save}>
-          <Save size={15} />
-          {t('save')}
-        </button>
-      </div>
+      {page === 'workflow' && (
+        <div className="app-page-actions">
+          <Status tone={workbench.dirty ? 'warning' : 'neutral'}>
+            {t(workbench.dirty ? 'dirty' : 'draft')}
+          </Status>
+          <button className="workbench-btn" onClick={() => workbench.validate()}>
+            <CheckCheck size={15} />
+            {t('validate')}
+          </button>
+          <button className="workbench-btn wb-primary" onClick={workbench.save}>
+            <Save size={15} />
+            {t('save')}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

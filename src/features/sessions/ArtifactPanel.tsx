@@ -1,0 +1,82 @@
+import type { Artifact } from '../../domain/runtime/types';
+import { isCases, isDesign, isRequirements } from '../../domain/runtime/artifacts';
+import { useI18n } from '../../shared/i18n/context';
+
+export function ArtifactPanel({ artifact }: { artifact: Artifact }) {
+  const { t } = useI18n();
+  const value = artifact.value;
+  return (
+    <section className="session-artifact">
+      {isRequirements(value) && (
+        <>
+          <h3>{t('requirementItems')}</h3>
+          {value.requirements.map((item) => (
+            <article key={item.id}>
+              <code>{item.id}</code>
+              <h4>{item.text}</h4>
+              <blockquote>{item.quote}</blockquote>
+              <small>{t('acceptanceCriteria')}</small>
+              <ul>
+                {item.acceptanceCriteria.map((text, i) => (
+                  <li key={i}>{text}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </>
+      )}
+      {isDesign(value) && (
+        <>
+          <h3>{t('scenarioItems')}</h3>
+          <p>{value.strategy}</p>
+          {value.scenarios.map((item) => (
+            <article key={item.id}>
+              <code>{item.id}</code>
+              <h4>{item.title}</h4>
+              <p>
+                <small>{t('relatedRequirements')}: </small>
+                {item.requirementIds.join(', ')}
+              </p>
+              <p>
+                <small>{t('coverageDimension')}: </small>
+                {item.dimension}
+              </p>
+              <p>{item.expected}</p>
+            </article>
+          ))}
+        </>
+      )}
+      {isCases(value) && (
+        <>
+          <h3>{t('caseItems')}</h3>
+          {value.cases.map((item) => (
+            <article key={item.id}>
+              <code>{item.id}</code>
+              <h4>{item.title}</h4>
+              <p>
+                <small>{t('relatedScenarios')}: </small>
+                {item.scenarioIds.join(', ')}
+              </p>
+              <ol>
+                {item.steps.map((text, i) => (
+                  <li key={i}>{text}</li>
+                ))}
+              </ol>
+              <p>{item.expected}</p>
+              <small>{t('assertions')}</small>
+              <ul>
+                {item.assertions.map((text, i) => (
+                  <li key={i}>{text}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </>
+      )}
+      <details>
+        <summary>{t('artifactJson')}</summary>
+        <pre>{JSON.stringify(value, null, 2)}</pre>
+      </details>
+    </section>
+  );
+}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Bot, RefreshCw, Terminal } from 'lucide-react';
-import type { AgentProfile, WorkbenchDocument } from '../../domain/workflow';
+import type { AgentProfile } from '../../domain/workflow';
 import { hasDesktopBridge, probeAgents, type AgentProbe } from '../../services/agent-api';
 import { useI18n } from '../../shared/i18n/context';
 import type { MessageKey } from '../../shared/i18n/messages';
@@ -8,12 +8,12 @@ import { Status } from '../../shared/components/Status';
 import { ProfileForm } from './ProfileForm';
 
 export function AgentSettings({
-  document,
-  update,
+  profiles,
+  addProfile,
   notify,
 }: {
-  document: WorkbenchDocument;
-  update: (value: WorkbenchDocument) => void;
+  profiles: AgentProfile[];
+  addProfile: (profile: AgentProfile) => void;
   notify: (key: MessageKey) => void;
 }) {
   const { t } = useI18n();
@@ -29,10 +29,6 @@ export function AgentSettings({
     } finally {
       setBusy(false);
     }
-  }
-  function addProfile(profile: AgentProfile) {
-    update({ ...document, profiles: [...document.profiles, profile] });
-    notify('configured');
   }
   return (
     <div className="settings-shell">
@@ -74,7 +70,7 @@ export function AgentSettings({
       </div>
       <h2>{t('profiles')}</h2>
       <div className="settings-profiles">
-        {document.profiles.map((profile) => (
+        {profiles.map((profile) => (
           <div className="settings-profile-row" key={profile.id}>
             <span className="wb-icon-tile">
               <Bot size={18} />

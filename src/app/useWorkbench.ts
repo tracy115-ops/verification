@@ -2,19 +2,36 @@ import { useState } from 'react';
 import { createDocument, decodeDocument } from '../domain/document';
 import { checkDocument, type WorkbenchDocument, type WorkflowIssue } from '../domain/workflow';
 import { browserRepository } from '../services/repository';
+import { loadProfiles, saveProfiles } from '../services/profile-repository';
+import type { AgentProfile } from '../domain/workflow';
 import type { MessageKey } from '../shared/i18n/messages';
 
-function initialDraft(): { document: WorkbenchDocument; notice: MessageKey | null } {
+function initialDraft(): {
+  document: WorkbenchDocument;
+  saved: WorkbenchDocument | null;
+  notice: MessageKey | null;
+} {
   try {
-    return { document: browserRepository(localStorage).load() ?? createDocument(), notice: null };
+    const saved = browserRepository(localStorage).load();
+    const document = saved ?? createDocument();
+    try {
+      return {
+        document: { ...document, profiles: loadProfiles(localStorage, document.profiles) },
+        saved,
+        notice: null,
+      };
+    } catch {
+      return { document, saved, notice: 'loadFailed' };
+    }
   } catch {
-    return { document: createDocument(), notice: 'loadFailed' };
+    return { document: createDocument(), saved: null, notice: 'loadFailed' };
   }
 }
 
 export function useWorkbench() {
   const [initial] = useState(initialDraft);
   const [document, setDocument] = useState(initial.document);
+  const [savedDocument, setSavedDocument] = useState(initial.saved);
   const [dirty, setDirty] = useState(false);
   const [notice, setNotice] = useState<MessageKey | null>(initial.notice);
   const [issues, setIssues] = useState<WorkflowIssue[]>([]);
@@ -33,17 +50,35 @@ export function useWorkbench() {
   function save() {
     if (!validate()) return;
     try {
-      setDocument(browserRepository(localStorage).save(document));
+      const saved = browserRepository(localStorage).save(document);
+      setDocument(saved);
+      setSavedDocument(structuredClone(saved));
       setDirty(false);
       setNotice('savedMessage');
     } catch {
       setNotice('saveFailed');
     }
   }
+  function addProfile(profile: AgentProfile) {
+    try {
+      const profiles = [...document.profiles, profile];
+      saveProfiles(localStorage, profiles);
+      setDocument((current) => ({ ...current, profiles }));
+      setNotice('settingsSaved');
+    } catch {
+      setNotice('settingsSaveFailed');
+    }
+  }
   function importDraft(text: string) {
     try {
       const imported = decodeDocument(JSON.parse(text));
-      update(imported);
+      const profiles = [
+        ...document.profiles,
+        ...imported.profiles.filter(
+          (profile) => !document.profiles.some((existing) => existing.id === profile.id),
+        ),
+      ];
+      update({ ...imported, profiles });
       setNotice('imported');
     } catch {
       setNotice('importFailed');
@@ -61,5 +96,18 @@ export function useWorkbench() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     setNotice('exported');
   }
-  return { document, dirty, notice, issues, update, save, validate, importDraft, exportDraft, setNotice };
+  return {
+    document,
+    savedDocument,
+    dirty,
+    notice,
+    issues,
+    update,
+    save,
+    validate,
+    importDraft,
+    exportDraft,
+    setNotice,
+    addProfile,
+  };
 }

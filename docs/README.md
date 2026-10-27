@@ -1,13 +1,14 @@
 # 验证 Agent 设计档案
 
-更新：2026-10-27。状态：**设计档案与首轮工作台开发**。项目约束已经生效，编排界面、草稿存储、示例评审与 CLI 版本探针已实现。真实运行引擎、Provider 连接和测试执行尚未完成；各方案文档中的目标能力以实施记录为准。
+更新：2026-10-27。状态：**工作台与 CLI 会话开发版**。已实现设置、流程保存、真实 CLI 调用适配和“需求 → 场景 → 用例评审”运行状态机。已完成离线协议与进程夹具验证；尚未验证真实账号推理，自定义 Provider 推理、脚本开发和测试执行仍待接入。各方案的目标能力以最新实施记录为准。
 
 ## 文档导航
 
 | 文档 | 解决的问题 |
 | --- | --- |
 | [企业工程约束](governance/engineering-constraints.md) | 国际化、代码规模、扩展性、测试与配置边界 |
-| [界面与交互设计](design/interface-design.md) | 编排首页、Agent CLI 入口、评审工作区与实际截图 |
+| [界面与交互设计](design/interface-design.md) | 会话首页、设置、编排与评审工作区 |
+| [会话调用与设置方案](design/conversation-and-settings.md) | 保存流程如何从会话调用、真实 CLI 边界与恢复规则 |
 | [首轮开发计划](roadmap/development-plan.md) | 已实现的第一轮范围及后续开发边界 |
 | [产品定位与头脑风暴](product/vision-and-brainstorm.md) | 谁使用、完整旅程、差异点、优先级与待定项 |
 | [系统架构与选型](architecture/system-design.md) | 为什么选择本地工作台、如何分层、模块边界 |
@@ -20,6 +21,7 @@
 | [本机能力与官方资料](research/cli-capability-baseline.md) | 已核实事实与仍需实测的假设 |
 | [本轮归档验证记录](research/design-validation.md) | Schema、图、链接及检查范围的实际结果 |
 | [首轮开发验证记录](research/first-development-validation.md) | 实际构建、测试、CLI 探针结果与未完成边界 |
+| [会话开发验证记录](research/conversation-development-validation.md) | 本轮状态机、CLI 协议、进程取消和界面验证 |
 | [ADR-0001](adr/0001-local-first-modular-monolith.md) | 首个架构决策及替代方案 |
 | [工作流 JSON 示例](examples/general-testing.workflow.json) | 声明式定义的评审样本，不是已支持的运行格式 |
 | [可编辑架构图](diagrams/verification-platform.drawio) | 模块关系；用 draw.io 打开 |

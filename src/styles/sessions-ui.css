@@ -1,0 +1,316 @@
+.session-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  height: 100%;
+  min-height: 550px;
+  background: var(--wb-bg);
+}
+.session-workspace.has-run {
+  grid-template-columns: minmax(0, 1fr) 390px;
+}
+.session-conversation {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--wb-surface);
+}
+.session-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 24px;
+  border-bottom: 1px solid var(--wb-border);
+}
+.session-toolbar > label {
+  flex: 1;
+  max-width: 360px;
+}
+.session-toolbar > button:last-child {
+  margin-left: auto;
+}
+.session-browser-note {
+  margin: 16px 24px 0;
+}
+.session-run-picker {
+  margin: 12px 24px;
+}
+.session-messages {
+  flex: 1;
+  overflow: auto;
+  min-height: 150px;
+  padding: 12px max(24px, calc((100% - 840px) / 2));
+}
+.session-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 280px;
+  padding: 24px 0;
+}
+.session-welcome h2 {
+  font-size: 23px;
+  margin: 20px 0 9px;
+  letter-spacing: -0.5px;
+  font-weight: 500;
+}
+.session-welcome > p {
+  color: var(--wb-muted);
+  line-height: 1.8;
+  font-size: 13px;
+}
+.session-workflow-shortcut {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid var(--wb-border);
+  border-radius: 8px;
+  width: 100%;
+  margin-top: 14px;
+}
+.session-workflow-shortcut > svg {
+  color: var(--wb-accent);
+}
+.session-workflow-shortcut > div {
+  flex: 1;
+  min-width: 150px;
+}
+.session-workflow-shortcut strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+}
+.session-workflow-shortcut small {
+  display: block;
+  margin-top: 7px;
+  color: var(--wb-muted);
+  font-size: 11px;
+}
+.session-message {
+  padding: 18px 0;
+}
+.session-message-author {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--wb-muted);
+  font-size: 11px;
+  margin-bottom: 9px;
+}
+.session-message.role-user .session-message-text {
+  background: var(--wb-bg);
+  padding: 14px 16px;
+  border-radius: 8px;
+}
+.session-message-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.9;
+}
+.session-message pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  line-height: 1.8;
+}
+.session-message summary {
+  color: var(--wb-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+.session-error {
+  padding: 0 24px;
+  font-size: 12px;
+}
+.session-composer {
+  margin: 12px max(24px, calc((100% - 840px) / 2)) 20px;
+  padding: 16px;
+  border: 1px solid var(--wb-border);
+  border-radius: 10px;
+  background: var(--wb-surface);
+}
+.session-composer-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.session-composer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 8px;
+}
+.session-composer > p:last-child {
+  font-size: 10px;
+  margin: 9px 0 0;
+}
+.session-scope {
+  color: var(--wb-accent);
+  font-size: 11px;
+  line-height: 1.8;
+}
+.session-scope span {
+  color: var(--wb-muted);
+}
+.session-run-panel {
+  overflow: auto;
+  min-height: 0;
+  border-left: 1px solid var(--wb-border);
+  background: var(--wb-surface);
+  padding-bottom: 18px;
+}
+.session-run-panel > .wb-panel-heading {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 8px;
+}
+.session-run-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 18px;
+  border-bottom: 1px solid var(--wb-border);
+  font-size: 12px;
+}
+.session-run-meta span,
+.session-run-meta small {
+  color: var(--wb-muted);
+}
+.session-run-meta p {
+  margin: 0;
+  color: var(--wb-warning);
+  font-size: 11px;
+}
+.session-step-list {
+  list-style: none;
+  padding: 10px 18px;
+  margin: 0;
+}
+.session-step-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--wb-border);
+  font-size: 12px;
+}
+.session-step-list li > span:first-child {
+  flex: 1;
+}
+.session-review-card {
+  padding: 18px;
+  border-block: 1px solid var(--wb-border);
+  background: var(--wb-bg);
+}
+.session-review-card > h3 {
+  margin-bottom: 13px;
+  font-size: 14px;
+}
+.session-review-card .wb-banner {
+  margin-bottom: 15px;
+}
+.session-review-card .wb-banner p {
+  margin-bottom: 7px;
+}
+.session-run-panel > .workbench-btn {
+  margin: 12px 18px 0;
+  width: calc(100% - 36px);
+}
+.session-run-panel > .wb-error {
+  padding-inline: 18px;
+  font-size: 12px;
+}
+.session-run-artifacts {
+  padding: 18px;
+}
+.session-run-artifacts > h3 {
+  font-size: 13px;
+}
+.session-artifact {
+  margin-bottom: 16px;
+  font-size: 12px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.session-artifact > h3 {
+  font-size: 13px;
+}
+.session-artifact article {
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--wb-border);
+  padding-bottom: 12px;
+}
+.session-artifact h4 {
+  margin: 5px 0 8px;
+  font-weight: 500;
+  font-size: 13px;
+}
+.session-artifact code,
+.session-artifact small {
+  color: var(--wb-muted);
+  font-size: 11px;
+}
+.session-artifact blockquote {
+  margin: 10px 0;
+  padding: 9px 12px;
+  border-left: 2px solid var(--wb-accent);
+  background: var(--wb-accent-soft);
+}
+.session-artifact ul,
+.session-artifact ol {
+  padding-left: 18px;
+}
+.session-artifact details {
+  color: var(--wb-muted);
+}
+.session-artifact summary {
+  cursor: pointer;
+}
+.session-artifact pre {
+  font-size: 11px;
+  white-space: pre-wrap;
+}
+@media (max-width: 1100px) {
+  .session-workspace.has-run {
+    grid-template-columns: minmax(0, 1fr) 320px;
+  }
+  .session-toolbar {
+    padding-inline: 16px;
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 800px) {
+  .session-workspace,
+  .session-workspace.has-run {
+    height: auto;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .session-messages {
+    overflow: visible;
+    padding-inline: 14px;
+  }
+  .session-browser-note {
+    margin-inline: 14px;
+  }
+  .session-composer {
+    margin-inline: 14px;
+    padding: 12px;
+  }
+  .session-composer-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .session-run-panel {
+    border-left: 0;
+    border-top: 1px solid var(--wb-border);
+  }
+  .session-welcome h2 {
+    font-size: 21px;
+  }
+}

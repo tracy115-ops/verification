@@ -143,10 +143,15 @@ hr {
   font-weight: 500;
 }
 .app-sidebar-footer {
-  margin-top: auto;
+  margin-top: 0;
   padding: 22px 12px;
   font-size: 11px;
   color: var(--wb-muted);
+}
+.app-settings {
+  margin-top: auto;
+  padding-top: 20px;
+  padding-bottom: 6px;
 }
 .app-sidebar-footer p {
   margin: 10px 0 0;

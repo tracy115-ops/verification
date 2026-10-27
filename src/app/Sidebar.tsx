@@ -1,4 +1,4 @@
-import { Folder, ShieldCheck } from 'lucide-react';
+import { Folder, Settings, ShieldCheck } from 'lucide-react';
 import { useI18n } from '../shared/i18n/context';
 import { navigation, type Page } from './navigation';
 
@@ -27,7 +27,7 @@ export function Sidebar({ page, setPage }: { page: Page; setPage: (page: Page) =
           <button
             key={item}
             aria-label={t(key)}
-            className={`app-nav-item ${page === item ? 'is-active' : ''}`}
+            className={`app-nav-item ${page === item || (item === 'assets' && page === 'cases') ? 'is-active' : ''}`}
             onClick={() => setPage(item)}
             aria-current={page === item ? 'page' : undefined}
           >
@@ -37,6 +37,16 @@ export function Sidebar({ page, setPage }: { page: Page; setPage: (page: Page) =
           </button>
         ))}
       </nav>
+      <div className="app-settings">
+        <button
+          className={`app-nav-item ${page === 'settings' ? 'is-active' : ''}`}
+          aria-label={t('settings')}
+          onClick={() => setPage('settings')}
+        >
+          <Settings size={19} />
+          <span>{t('settings')}</span>
+        </button>
+      </div>
       <div className="app-sidebar-footer">
         <span className="app-environment-dot" />
         {t('phase')}

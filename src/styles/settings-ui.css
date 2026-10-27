@@ -95,3 +95,32 @@
     flex-direction: column;
   }
 }
+.settings-page {
+  min-height: 100%;
+}
+.settings-tabs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--wb-border);
+}
+.settings-general {
+  display: grid;
+  gap: 22px;
+  max-width: 660px;
+  padding: 28px;
+}
+.settings-general h2 {
+  font-size: 17px;
+  margin-bottom: 0;
+}
+.settings-general p {
+  margin: 0;
+}
+.settings-theme-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}

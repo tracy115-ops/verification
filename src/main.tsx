@@ -9,6 +9,7 @@ import './styles/workflows-ui.css';
 import './styles/settings-ui.css';
 import './styles/reviews-ui.css';
 import './styles/runs-ui.css';
+import './styles/sessions-ui.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Missing application root');

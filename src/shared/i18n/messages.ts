@@ -1,4 +1,7 @@
+import { conversationEn, conversationZh } from './conversation-messages';
+
 export const zh = {
+  ...conversationZh,
   nodeCountOne: '{count} 个节点',
   nodeCountOther: '{count} 个节点',
   agentCountOne: '{count} 个 Agent 节点',
@@ -62,7 +65,7 @@ export const zh = {
   exported: '已导出当前有效定义',
   savedMessage: '草稿已保存到当前设备',
   phase: '第一轮开发',
-  scope: '流程可编辑、保存与检查；运行引擎正在开发。',
+  scope: '会话调用保存流程；当前支持至用例评审。',
   registry: '节点目录',
   reviewNote: '复核节点会作为选中节点的依赖分支加入；可继续连接后续节点。',
   typeImport: '文档导入',
@@ -154,6 +157,7 @@ export const zh = {
 } as const;
 
 export const en: Record<keyof typeof zh, string> = {
+  ...conversationEn,
   nodeCountOne: '{count} node',
   nodeCountOther: '{count} nodes',
   agentCountOne: '{count} Agent node',
@@ -218,7 +222,7 @@ export const en: Record<keyof typeof zh, string> = {
   exported: 'Valid current definition exported',
   savedMessage: 'Draft saved on this device',
   phase: 'First development milestone',
-  scope: 'Edit, save and validate workflows. The execution engine is in development.',
+  scope: 'Invoke saved workflows in conversations. Current scope ends at case review.',
   registry: 'Node library',
   reviewNote: 'Adds a review branch after the selected node. Connect it to subsequent nodes as needed.',
   typeImport: 'Document import',

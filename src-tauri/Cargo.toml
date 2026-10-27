@@ -14,3 +14,4 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 agent-runtime = { path = "../crates/agent-runtime" }
 tauri = { version = "2", features = [] }
+tokio = { version = "1", features = ["sync", "fs"] }
