@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This enterprise verification Agent project is in its design phase. It currently has no application source tree, dependency manifest, or test suite. Start with `docs/README.md` for the architecture and implementation plan; proposed directories in design documents are not implemented features.
+This enterprise verification project has an initial React / TypeScript workbench and Tauri / Rust CLI discovery shell. Start with `docs/README.md` and `docs/roadmap/development-plan.md` for implemented scope; architecture proposals are not all implemented.
 
 - `.agents/skills/<skill-name>/SKILL.md`: skill entry points and workflow instructions.
 - `.agents/skills/*/references/`: supporting documentation, including CSS architecture and design tokens. Some references are placeholders; verify content before relying on them.
@@ -10,20 +10,25 @@ This enterprise verification Agent project is in its design phase. It currently 
 - `.claude/skills/`: architecture, code quality, theme switching, and coding guidance.
 - `.claude/settings.local.json`: local agent configuration.
 - `docs/`: engineering constraints, product proposals, architecture decisions, workflow designs, and examples.
+- `src/`: UI features, workflow domain checks, repository / IPC services, shared i18n, and layered styles.
+- `crates/agent-runtime/`: CLI resolution and version-only probes; `src-tauri/`: desktop IPC shell.
+- `tests/e2e/`: Playwright interactions; unit tests are colocated as `src/**/*.test.ts`.
 
-Paths such as `src/` and `src-tauri/` mentioned inside guidance describe the target application; those directories are absent here.
+Some legacy skill examples describe other applications. Verify paths and applicability before using them.
 
 ## Build, Test, and Development Commands
 
-No build, development server, package installation, or automated test commands are configured. Use these PowerShell commands from the workspace root to inspect contributions:
+Run from the root. Use `npm.cmd` on Windows PowerShell if the `.ps1` entry is blocked; do not change the global execution policy.
 
-- `rg --files --hidden`: list files, including hidden skill directories.
-- `Get-Content -Encoding UTF8 .agents/skills/<skill-name>/SKILL.md`: read a skill before changing it.
-- `Get-Content -Raw .claude/settings.local.json | ConvertFrom-Json | Out-Null`: validate local configuration JSON without printing its contents.
+- `npm ci`, `npm run dev`: install locked dependencies and start browser development.
+- `npm run check`: Prettier, source limits, Vitest, TypeScript, and production build.
+- `npm run test:e2e`: Playwright interactions; first install Chromium with `npx playwright install chromium`.
+- `npm run tauri dev`: desktop development; stop a separately running dev server first.
+- `cargo test -p agent-runtime --locked`: Rust tests; `cargo run -p agent-runtime --example probe --locked` only probes CLI versions.
 
 ## Coding Style & Naming Conventions
 
-Write UTF-8 Markdown with descriptive headings and fenced examples. Preserve lowercase, hyphenated skill directory names and the entry filename `SKILL.md`. Python uses four-space indentation and `snake_case`; proposed TypeScript uses two spaces, strict typing, and `camelCase` functions / `PascalCase` components. No formatter or linter is configured yet.
+Use UTF-8, Prettier, two-space TypeScript indentation, strict typing, `camelCase` functions and `PascalCase` components. Rust uses rustfmt and Clippy. Preserve lowercase, hyphenated skill names and `SKILL.md`. Apply the UI and CSS architecture skills for UI changes.
 
 ## Mandatory Enterprise Constraints
 
@@ -35,7 +40,7 @@ Write UTF-8 Markdown with descriptive headings and fenced examples. Preserve low
 
 ## Testing Guidelines
 
-No testing framework, coverage threshold, or test naming convention is established. For documentation changes, check relative links, paths, front matter, and command examples. For functional helper changes, document prerequisites and verify representative inputs and failure cases. Placeholder scripts do not demonstrate application correctness.
+Use Vitest for domain / persistence contracts, Playwright for critical interactions, and Rust tests for discovery. Cover invalid graphs, corrupt imports, profile compatibility and failure paths. No numeric coverage threshold is established. Keep paid model calls and remote execution outside ordinary tests; version discovery does not certify authentication or inference. Validate documentation links and commands when editing guides.
 
 ## Commit & Pull Request Guidelines
 

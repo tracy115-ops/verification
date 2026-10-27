@@ -23,8 +23,11 @@ Thumbs.db
 .verification/
 .worktrees/
 .runtime/
-artifacts/
-runs/
+/artifacts/
+/runs/
 *.db
 *.db-shm
 *.db-wal
+*.tsbuildinfo
+.vitest/
+src-tauri/gen/

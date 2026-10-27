@@ -1,0 +1,341 @@
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100%;
+}
+body {
+  font-family: Inter, 'Segoe UI', 'Microsoft YaHei', system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--wb-text);
+  background: var(--wb-bg);
+}
+button,
+input,
+select {
+  font-family: inherit;
+}
+button {
+  color: inherit;
+}
+button:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--wb-accent);
+  outline-offset: 3px;
+}
+code {
+  font-family: 'Cascadia Code', Consolas, monospace;
+}
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+h3 {
+  font-size: 14px;
+  font-weight: 600;
+}
+hr {
+  width: 100%;
+  border: 0;
+  border-top: 1px solid var(--wb-border);
+  margin: 4px 0;
+}
+.app-shell {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  height: 100dvh;
+  min-height: 650px;
+}
+.app-sidebar {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--wb-border);
+  background: var(--wb-sidebar);
+  padding: 0 14px;
+  min-height: 0;
+}
+.app-brand {
+  height: 82px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+}
+.app-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  border-radius: 10px;
+  color: var(--wb-on-accent);
+  background: var(--wb-accent);
+}
+.app-brand strong {
+  font-size: 15px;
+  letter-spacing: 0.2px;
+}
+.app-brand small {
+  display: block;
+  margin-top: 3px;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--wb-subtle);
+}
+.app-project {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 24px;
+  padding: 13px 11px;
+  border: 1px solid var(--wb-border);
+  border-radius: 8px;
+  background: var(--wb-surface);
+}
+.app-project > svg {
+  color: var(--wb-muted);
+}
+.app-project strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+.app-project small {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--wb-muted);
+}
+.app-sidebar nav {
+  display: grid;
+  gap: 6px;
+}
+.app-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--wb-muted);
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+}
+.app-nav-item small {
+  margin-left: auto;
+  color: var(--wb-accent);
+  font-size: 10px;
+}
+.app-nav-item:hover {
+  background: var(--wb-hover);
+}
+.app-nav-item.is-active {
+  color: var(--wb-accent);
+  background: var(--wb-accent-soft);
+  font-weight: 500;
+}
+.app-sidebar-footer {
+  margin-top: auto;
+  padding: 22px 12px;
+  font-size: 11px;
+  color: var(--wb-muted);
+}
+.app-sidebar-footer p {
+  margin: 10px 0 0;
+  font-size: 11px;
+  line-height: 1.8;
+}
+.app-environment-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--wb-success);
+}
+.app-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--wb-surface);
+}
+.app-titlebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  height: 38px;
+  flex-shrink: 0;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--wb-border);
+  font-size: 11px;
+  color: var(--wb-muted);
+}
+.app-breadcrumb-slash {
+  margin: 0 10px;
+  color: var(--wb-subtle);
+}
+.app-global-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wb-language {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.wb-language select {
+  border: 0;
+  background: transparent;
+  color: var(--wb-muted);
+  font-size: 11px;
+}
+.app-page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 24px 18px;
+}
+.app-eyebrow {
+  margin-bottom: 7px;
+  font-size: 11px;
+  color: var(--wb-muted);
+}
+.app-page-heading h1 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+  font-size: 21px;
+  letter-spacing: -0.5px;
+  font-weight: 600;
+}
+.app-page-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+.app-document-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px 10px;
+  border-bottom: 1px solid var(--wb-border);
+  color: var(--wb-muted);
+  font-size: 11px;
+}
+.app-document-bar > span,
+.app-document-bar > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.app-content {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+}
+.app-statusbar {
+  height: 28px;
+  flex: 0 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 20px;
+  border-top: 1px solid var(--wb-border);
+  color: var(--wb-muted);
+  font-size: 10px;
+}
+.app-notice {
+  padding: 9px 24px;
+  color: var(--wb-text);
+  background: var(--wb-accent-soft);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.app-validation-errors {
+  margin: 0;
+  padding: 10px 24px 10px 40px;
+  color: var(--wb-danger);
+  background: var(--wb-danger-soft);
+  font-size: 12px;
+}
+@media (max-width: 1150px) {
+  .app-shell {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+  .app-sidebar {
+    padding: 0 8px;
+  }
+  .app-brand {
+    justify-content: center;
+    padding: 0;
+  }
+  .app-brand > div,
+  .app-project,
+  .app-nav-item span,
+  .app-nav-item small,
+  .app-sidebar-footer {
+    display: none;
+  }
+  .app-nav-item {
+    justify-content: center;
+    padding: 12px;
+  }
+}
+@media (max-width: 800px) {
+  .app-shell {
+    height: auto;
+    min-height: 100dvh;
+  }
+  .app-sidebar {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+  }
+  .app-titlebar {
+    padding-inline: 12px;
+  }
+  .app-titlebar > span {
+    display: none;
+  }
+  .app-global-controls {
+    margin-left: auto;
+  }
+  .app-page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 18px 14px;
+  }
+  .app-page-heading h1 {
+    font-size: 19px;
+  }
+  .app-page-actions {
+    justify-content: flex-start;
+    gap: 6px;
+  }
+  .app-document-bar {
+    padding-inline: 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .app-content {
+    overflow: visible;
+  }
+}

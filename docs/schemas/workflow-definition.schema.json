@@ -38,7 +38,7 @@
     }
   },
   "$defs": {
-    "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*$", "maxLength": 80 },
+    "id": { "type": "string", "pattern": "^(?!constructor$|prototype$)[a-z][a-z0-9_-]*$", "maxLength": 80 },
     "artifactType": { "type": "string", "pattern": "^[A-Z][A-Za-z0-9]*$" },
     "inputDeclaration": {
       "type": "object",

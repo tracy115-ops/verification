@@ -4,7 +4,7 @@
   "id": "general-testing",
   "version": "0.1.0",
   "status": "draft",
-  "name": "通用测试工作流",
+  "name": "测试设计验证流程",
   "description": "设计评审示例；尚无运行引擎。操作实现、角色绑定和审批契约需另行验证。",
   "contentLocale": "source",
   "limits": {

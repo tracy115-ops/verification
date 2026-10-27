@@ -1,0 +1,27 @@
+.run-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  min-height: 480px;
+  padding: 32px;
+  text-align: center;
+}
+.run-empty h2 {
+  font-size: 20px;
+  margin: 8px 0;
+}
+.run-empty p {
+  margin: 0;
+  color: var(--wb-muted);
+  font-size: 13px;
+  max-width: 580px;
+  line-height: 1.8;
+}
+.run-empty strong {
+  margin-top: 13px;
+  color: var(--wb-accent);
+  font-size: 13px;
+  font-weight: 500;
+}

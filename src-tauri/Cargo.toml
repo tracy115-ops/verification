@@ -1,0 +1,16 @@
+[package]
+name = "verification-desktop"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "verification_desktop_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+agent-runtime = { path = "../crates/agent-runtime" }
+tauri = { version = "2", features = [] }

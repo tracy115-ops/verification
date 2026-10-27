@@ -1,0 +1,9 @@
+node_modules/
+dist/
+target/
+.runtime/
+.agents/
+.claude/
+docs/
+package-lock.json
+src-tauri/gen/
