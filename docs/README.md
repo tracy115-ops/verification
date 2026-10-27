@@ -1,6 +1,6 @@
 # 验证 Agent 设计档案
 
-更新：2026-10-27。状态：**工作台与 CLI 会话开发版**。已实现设置、流程保存、真实 CLI 调用适配和“需求 → 场景 → 用例评审”运行状态机。已完成离线协议与进程夹具验证；尚未验证真实账号推理，自定义 Provider 推理、脚本开发和测试执行仍待接入。各方案的目标能力以最新实施记录为准。
+更新：2026-10-27。状态：**会话与局域网协作开发版**。已实现共享因子 / 场景设计、分工、评审、HTTP / SQLite 服务，以及 CLI 配置与设计运行。真实 Codex 已根据游戏题目和给定框架生成 Python，并在本地样例捕获缺陷；正式编排执行范围仍到用例评审。任意框架、内部 CodeAgent 目标环境及远程执行仍待接入或验证。
 
 ## 文档导航
 
@@ -9,6 +9,10 @@
 | [企业工程约束](governance/engineering-constraints.md) | 国际化、代码规模、扩展性、测试与配置边界 |
 | [界面与交互设计](design/interface-design.md) | 会话首页、设置、编排与评审工作区 |
 | [会话调用与设置方案](design/conversation-and-settings.md) | 保存流程如何从会话调用、真实 CLI 边界与恢复规则 |
+| [黑盒与团队协作](design/blackbox-and-team-testing.md) | 题目 / 框架输入、Python 输出、共享因子场景与局域网部署 |
+| [黑盒与协作验证](research/blackbox-and-team-validation.md) | 真实 CLI 生成 36 项 Python 测试、缺陷证据和多人回归 |
+| [内部 CodeAgent 驱动](architecture/codeagent-driver.md) | 内置模型、扫描路径、参数探测与实际验证边界 |
+| [ADR-0002](adr/0002-lan-design-collaboration-service.md) | HTTP 协作服务与 SQLite 的职责和取舍 |
 | [首轮开发计划](roadmap/development-plan.md) | 已实现的第一轮范围及后续开发边界 |
 | [产品定位与头脑风暴](product/vision-and-brainstorm.md) | 谁使用、完整旅程、差异点、优先级与待定项 |
 | [系统架构与选型](architecture/system-design.md) | 为什么选择本地工作台、如何分层、模块边界 |

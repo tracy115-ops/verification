@@ -3,7 +3,7 @@ import definitionSchema from '../../docs/schemas/workflow-definition.schema.json
 import { operationKinds } from './node-registry';
 
 export type NodeKind = 'import' | 'agent' | 'human' | 'validation' | 'runner' | 'evaluation' | 'policy';
-export type DriverId = 'claude' | 'codex' | 'pi';
+export type DriverId = 'codeagent' | 'claude' | 'codex' | 'pi';
 export type Protocol = 'native' | 'openai-responses' | 'anthropic-messages' | 'openai-completions';
 export interface Binding {
   from: string;
@@ -134,6 +134,14 @@ export function checkWorkflow(value: unknown): WorkflowIssue[] {
 }
 
 export function profileIsCompatible(profile: AgentProfile): boolean {
+  if (profile.driver === 'codeagent')
+    return (
+      profile.protocol === 'native' &&
+      !profile.model &&
+      !profile.baseUrl &&
+      !profile.credentialRef &&
+      !!profile.name.trim()
+    );
   if (
     !profile.name.trim() ||
     !/^(|env:[A-Z_][A-Z0-9_]*|keychain:[a-zA-Z0-9_/-]+)$/.test(profile.credentialRef)
@@ -141,6 +149,7 @@ export function profileIsCompatible(profile: AgentProfile): boolean {
     return false;
   if (profile.protocol === 'native') return !profile.baseUrl && !profile.credentialRef;
   const protocols: Record<DriverId, Protocol[]> = {
+    codeagent: [],
     codex: ['openai-responses'],
     claude: ['anthropic-messages'],
     pi: ['openai-responses', 'anthropic-messages', 'openai-completions'],

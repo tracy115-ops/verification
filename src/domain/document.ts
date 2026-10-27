@@ -1,4 +1,5 @@
 import Ajv2020 from 'ajv/dist/2020.js';
+import { newId } from '../shared/id';
 import preset from '../../docs/examples/general-testing.workflow.json';
 import { checkDocument, checkWorkflow, type WorkbenchDocument, type WorkflowNode } from './workflow';
 
@@ -10,7 +11,7 @@ export const profileSchema = {
   properties: {
     id: { type: 'string', minLength: 1 },
     name: { type: 'string', minLength: 1 },
-    driver: { enum: ['claude', 'codex', 'pi'] },
+    driver: { enum: ['codeagent', 'claude', 'codex', 'pi'] },
     protocol: { enum: ['native', 'openai-responses', 'anthropic-messages', 'openai-completions'] },
     baseUrl: { type: 'string' },
     model: { type: 'string' },
@@ -54,7 +55,7 @@ export function createDocument(): WorkbenchDocument {
     formatVersion: 1,
     revision: 0,
     definition: structuredClone(preset),
-    profiles: ['codex', 'claude', 'pi'].map((driver) => ({
+    profiles: ['codex', 'claude', 'pi', 'codeagent'].map((driver) => ({
       id: `${driver}-native`,
       name: `${driver} / native`,
       driver,
@@ -81,7 +82,7 @@ export function addReview(document: WorkbenchDocument, parentId: string): Workbe
   const next = structuredClone(document);
   const parent = next.definition.nodes.find((node) => node.id === parentId);
   if (!parent) throw new Error('unknownDependency');
-  const id = `review_${crypto.randomUUID().replaceAll('-', '').slice(0, 12)}`;
+  const id = `review_${newId().replaceAll('-', '').slice(0, 12)}`;
   const node: WorkflowNode = {
     id,
     kind: 'human',

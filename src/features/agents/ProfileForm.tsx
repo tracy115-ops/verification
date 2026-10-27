@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { newId } from '../../shared/id';
 import { Plus } from 'lucide-react';
 import { profileIsCompatible, type AgentProfile, type DriverId, type Protocol } from '../../domain/workflow';
 import { useI18n } from '../../shared/i18n/context';
 
 const protocolOptions: Record<DriverId, Protocol[]> = {
+  codeagent: ['native'],
   codex: ['native', 'openai-responses'],
   claude: ['native', 'anthropic-messages'],
   pi: ['native', 'openai-responses', 'anthropic-messages', 'openai-completions'],
@@ -13,7 +15,7 @@ export function ProfileForm({ addProfile }: { addProfile: (profile: AgentProfile
   const { t } = useI18n();
   const [error, setError] = useState(false);
   const [profile, setProfile] = useState<AgentProfile>({
-    id: `agent-${crypto.randomUUID()}`,
+    id: `agent-${newId()}`,
     name: '',
     driver: 'codex',
     protocol: 'openai-responses',
@@ -22,8 +24,13 @@ export function ProfileForm({ addProfile }: { addProfile: (profile: AgentProfile
     credentialRef: '',
   });
   function changeDriver(value: string) {
-    if (value !== 'claude' && value !== 'codex' && value !== 'pi') return;
-    setProfile({ ...profile, driver: value, protocol: protocolOptions[value][1] });
+    if (value !== 'codeagent' && value !== 'claude' && value !== 'codex' && value !== 'pi') return;
+    setProfile({
+      ...profile,
+      driver: value,
+      protocol: protocolOptions[value][1] ?? 'native',
+      ...(value === 'codeagent' ? { model: '', baseUrl: '', credentialRef: '' } : {}),
+    });
   }
   function changeProtocol(value: string) {
     const protocol = protocolOptions[profile.driver].find((item) => item === value);
@@ -42,7 +49,7 @@ export function ProfileForm({ addProfile }: { addProfile: (profile: AgentProfile
     }
     addProfile(profile);
     setError(false);
-    setProfile({ ...profile, id: `agent-${crypto.randomUUID()}`, name: '' });
+    setProfile({ ...profile, id: `agent-${newId()}`, name: '' });
   }
   return (
     <form className="settings-profile-form" onSubmit={submit}>
@@ -67,6 +74,7 @@ export function ProfileForm({ addProfile }: { addProfile: (profile: AgentProfile
             value={profile.driver}
             onChange={(event) => changeDriver(event.target.value)}
           >
+            <option>codeagent</option>
             <option>codex</option>
             <option>claude</option>
             <option>pi</option>
@@ -88,12 +96,17 @@ export function ProfileForm({ addProfile }: { addProfile: (profile: AgentProfile
         </label>
         <label className="wb-field">
           {t('model')}
-          <input
-            className="workbench-input"
-            value={profile.model}
-            placeholder={profile.protocol === 'native' ? t('nativeModel') : ''}
-            onChange={(event) => setProfile({ ...profile, model: event.target.value })}
-          />
+          {profile.driver === 'codeagent' ? (
+            <span className="wb-muted">{t('codeagentManagedModel')}</span>
+          ) : (
+            <input
+              className="workbench-input"
+              required
+              value={profile.model}
+              placeholder={profile.protocol === 'native' ? t('nativeModel') : ''}
+              onChange={(event) => setProfile({ ...profile, model: event.target.value })}
+            />
+          )}
         </label>
         <label className="wb-field">
           {t('baseUrl')}

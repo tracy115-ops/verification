@@ -10,7 +10,8 @@ export interface AgentProbe {
 
 function isProbe(value: unknown): value is AgentProbe {
   if (typeof value !== 'object' || value === null) return false;
-  if (!('driver' in value) || !['claude', 'codex', 'pi'].includes(String(value.driver))) return false;
+  if (!('driver' in value) || !['codeagent', 'claude', 'codex', 'pi'].includes(String(value.driver)))
+    return false;
   if (!('status' in value) || !['found', 'missing', 'error', 'timeout'].includes(String(value.status)))
     return false;
   return (

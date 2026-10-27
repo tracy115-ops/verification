@@ -8,6 +8,12 @@ import { fileURLToPath } from 'node:url';
 const checker = fileURLToPath(new URL('./check-constraints.mjs', import.meta.url));
 const roots = [];
 
+it('checks Python function spans using the Python AST', () => {
+  const allowed = `def example():\n${'    # comment\n'.repeat(198)}    return 1\n`;
+  expect(runCheck(allowed, 'example.py')()).toBeDefined();
+  expect(runCheck(allowed.replace('    return 1', '    # extra\n    return 1'), 'example.py')).toThrow();
+});
+
 function runCheck(text, filename = 'example.ts') {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'verification-constraints-'));
   roots.push(directory);

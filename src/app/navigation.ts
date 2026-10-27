@@ -1,13 +1,14 @@
-import { GitBranch, MessageSquare, Play, Workflow } from 'lucide-react';
+import { GitBranch, MessageSquare, Play, Users, Workflow } from 'lucide-react';
 import type { ComponentType } from 'react';
 import type { MessageKey } from '../shared/i18n/messages';
 
-export type Page = 'sessions' | 'workflow' | 'assets' | 'cases' | 'runs' | 'settings';
+export type Page = 'sessions' | 'workflow' | 'assets' | 'cases' | 'runs' | 'settings' | 'team';
 export const navigation: { page: Page; icon: ComponentType<{ size?: number }>; key: MessageKey }[] = [
   { page: 'sessions', icon: MessageSquare, key: 'sessions' },
   { page: 'workflow', icon: Workflow, key: 'workflow' },
   { page: 'runs', icon: Play, key: 'runs' },
   { page: 'assets', icon: GitBranch, key: 'assetsTitle' },
+  { page: 'team', icon: Users, key: 'team' },
 ];
 
 export function workspacePage(nodeId: string): Page {

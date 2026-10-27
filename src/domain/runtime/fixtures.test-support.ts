@@ -30,6 +30,7 @@ export const cases = {
 };
 export function savedDocument() {
   const doc = createDocument();
+  for (const profile of doc.profiles) if (profile.driver !== 'codeagent') profile.model = 'fixture-model';
   doc.revision = 1;
   return doc;
 }

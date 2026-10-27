@@ -1,0 +1,264 @@
+{
+  "scope": "real_codex_generated_python_controlled_fixture",
+  "verified": true,
+  "model": "gpt-6.1-terra",
+  "generatedAt": "2026-10-27T12:34:33.835Z",
+  "verifiedAt": "2026-10-27T12:44:03.901Z",
+  "buggy": {
+    "total": 36,
+    "failures": [
+      {
+        "test": "test_game_platform.GamePlatformTests.test_finished_match_rejects_actions (action='attack')",
+        "trace": "Traceback (most recent call last):\n  File \"<generated>\\test_game_platform.py\", line 141, in test_finished_match_rejects_actions\n    self.assertEqual(response.status, 409)\nAssertionError: 200 != 409\n"
+      },
+      {
+        "test": "test_game_platform.GamePlatformTests.test_finished_match_rejects_actions (action='defend')",
+        "trace": "Traceback (most recent call last):\n  File \"<generated>\\test_game_platform.py\", line 141, in test_finished_match_rejects_actions\n    self.assertEqual(response.status, 409)\nAssertionError: 200 != 409\n"
+      },
+      {
+        "test": "test_game_platform.GamePlatformTests.test_finished_match_rejects_actions",
+        "trace": "Traceback (most recent call last):\n  File \"<generated>\\test_game_platform.py\", line 143, in test_finished_match_rejects_actions\n    self.assertEqual(response.status, 409)\nAssertionError: 200 != 409\n"
+      },
+      {
+        "test": "test_game_platform.GamePlatformTests.test_live_replayed_action_is_stale",
+        "trace": "Traceback (most recent call last):\n  File \"<generated>\\test_game_platform.py\", line 131, in test_live_replayed_action_is_stale\n    self.assertEqual(replay.status, 409)\nAssertionError: 200 != 409\n"
+      },
+      {
+        "test": "test_game_platform.GamePlatformTests.test_live_stale_turn_rejected",
+        "trace": "Traceback (most recent call last):\n  File \"<generated>\\test_game_platform.py\", line 123, in test_live_stale_turn_rejected\n    self.assertEqual(response.status, 409)\nAssertionError: 200 != 409\n"
+      },
+      {
+        "test": "test_game_platform.GamePlatformTests.test_private_room_nonmember_forbidden",
+        "trace": "Traceback (most recent call last):\n  File \"<generated>\\test_game_platform.py\", line 81, in test_private_room_nonmember_forbidden\n    self.assertEqual(response.status, 403)\nAssertionError: 200 != 403\n"
+      },
+      {
+        "test": "test_game_platform.GamePlatformTests.test_public_room_concurrent_capacity",
+        "trace": "Traceback (most recent call last):\n  File \"<generated>\\test_game_platform.py\", line 96, in test_public_room_concurrent_capacity\n    self.assertCountEqual([response.status for response in responses], [200, 409])\nAssertionError: Element counts were not equal:\nFirst has 2, Second has 1:  200\nFirst has 0, Second has 1:  409\n"
+      },
+      {
+        "test": "test_game_platform.GamePlatformTests.test_queue_matchmaker_unavailable",
+        "trace": "Traceback (most recent call last):\n  File \"<generated>\\test_game_platform.py\", line 215, in test_queue_matchmaker_unavailable\n    self.assertEqual(response.status, 503)\nAssertionError: 200 != 503\n"
+      },
+      {
+        "test": "test_game_platform.GamePlatformTests.test_ranked_duel_more_than_two_invalid",
+        "trace": "Traceback (most recent call last):\n  File \"<generated>\\test_game_platform.py\", line 56, in test_ranked_duel_more_than_two_invalid\n    self.assertEqual(response.status, 400)\nAssertionError: 201 != 400\n"
+      },
+      {
+        "test": "test_game_platform.GamePlatformTests.test_ranked_squad_more_than_two_invalid",
+        "trace": "Traceback (most recent call last):\n  File \"<generated>\\test_game_platform.py\", line 60, in test_ranked_squad_more_than_two_invalid\n    self.assertEqual(response.status, 400)\nAssertionError: 201 != 400\n"
+      },
+      {
+        "test": "test_game_platform.GamePlatformTests.test_ranked_squad_two_players_invalid",
+        "trace": "Traceback (most recent call last):\n  File \"<generated>\\test_game_platform.py\", line 52, in test_ranked_squad_two_players_invalid\n    self.assertEqual(response.status, 400)\nAssertionError: 201 != 400\n"
+      },
+      {
+        "test": "test_game_platform.GamePlatformTests.test_result_replay_does_not_score_twice",
+        "trace": "Traceback (most recent call last):\n  File \"<generated>\\test_game_platform.py\", line 163, in test_result_replay_does_not_score_twice\n    self.assertEqual(score.body['score'], 10)\nAssertionError: 20 != 10\n"
+      },
+      {
+        "test": "test_game_platform.GamePlatformTests.test_room_capacity_outside_boundaries (capacity=1)",
+        "trace": "Traceback (most recent call last):\n  File \"<generated>\\test_game_platform.py\", line 20, in test_room_capacity_outside_boundaries\n    self.assertEqual(response.status, 400)\nAssertionError: 201 != 400\n"
+      },
+      {
+        "test": "test_game_platform.GamePlatformTests.test_room_capacity_type_equivalence (capacity='2')",
+        "trace": "Traceback (most recent call last):\n  File \"<generated>\\test_game_platform.py\", line 26, in test_room_capacity_type_equivalence\n    self.assertEqual(response.status, 400)\nAssertionError: 201 != 400\n"
+      },
+      {
+        "test": "test_game_platform.GamePlatformTests.test_room_capacity_type_equivalence (capacity=True)",
+        "trace": "Traceback (most recent call last):\n  File \"<generated>\\test_game_platform.py\", line 26, in test_room_capacity_type_equivalence\n    self.assertEqual(response.status, 400)\nAssertionError: 201 != 400\n"
+      }
+    ],
+    "errors": [],
+    "skipped": 0
+  },
+  "reference": {
+    "total": 36,
+    "failures": [],
+    "errors": [],
+    "skipped": 0
+  },
+  "candidateGroups": [
+    {
+      "requirementId": "MATCH-FINISHED",
+      "method": "Finished-state action rejection across actions and participants",
+      "tests": [
+        "test_game_platform.GamePlatformTests.test_finished_match_rejects_actions (action='attack')",
+        "test_game_platform.GamePlatformTests.test_finished_match_rejects_actions (action='defend')",
+        "test_game_platform.GamePlatformTests.test_finished_match_rejects_actions"
+      ]
+    },
+    {
+      "requirementId": "MATCH-LIVE",
+      "method": "Valid action equivalence, state transition, stale replay, and authorization",
+      "tests": [
+        "test_game_platform.GamePlatformTests.test_live_replayed_action_is_stale",
+        "test_game_platform.GamePlatformTests.test_live_stale_turn_rejected"
+      ]
+    },
+    {
+      "requirementId": "ROOM-PRIVATE-ACCESS",
+      "method": "Authorization equivalence classes",
+      "tests": [
+        "test_game_platform.GamePlatformTests.test_private_room_nonmember_forbidden"
+      ]
+    },
+    {
+      "requirementId": "ROOM-JOIN-CAPACITY",
+      "method": "Single-user scenario and concurrent capacity race",
+      "tests": [
+        "test_game_platform.GamePlatformTests.test_public_room_concurrent_capacity"
+      ]
+    },
+    {
+      "requirementId": "QUEUE-DEPENDENCY",
+      "method": "Controlled external dependency failure",
+      "tests": [
+        "test_game_platform.GamePlatformTests.test_queue_matchmaker_unavailable"
+      ]
+    },
+    {
+      "requirementId": "ROOM-MODE-RANKED",
+      "method": "Invalid equivalence classes and ranked decision table",
+      "tests": [
+        "test_game_platform.GamePlatformTests.test_ranked_duel_more_than_two_invalid",
+        "test_game_platform.GamePlatformTests.test_ranked_squad_more_than_two_invalid",
+        "test_game_platform.GamePlatformTests.test_ranked_squad_two_players_invalid"
+      ]
+    },
+    {
+      "requirementId": "RESULT-SCORING",
+      "method": "Score state transition and idempotent replay",
+      "tests": [
+        "test_game_platform.GamePlatformTests.test_result_replay_does_not_score_twice"
+      ]
+    },
+    {
+      "requirementId": "ROOM-CAPACITY",
+      "method": "Boundary value analysis and valid/invalid type equivalence classes",
+      "tests": [
+        "test_game_platform.GamePlatformTests.test_room_capacity_outside_boundaries (capacity=1)",
+        "test_game_platform.GamePlatformTests.test_room_capacity_type_equivalence (capacity='2')",
+        "test_game_platform.GamePlatformTests.test_room_capacity_type_equivalence (capacity=True)"
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "requirementId": "ROOM-CAPACITY",
+      "method": "Boundary value analysis and valid/invalid type equivalence classes",
+      "testNames": [
+        "test_room_capacity_lower_boundary",
+        "test_room_capacity_upper_boundary",
+        "test_room_capacity_outside_boundaries",
+        "test_room_capacity_type_equivalence",
+        "test_room_integral_float_capacity"
+      ]
+    },
+    {
+      "requirementId": "ROOM-MODE-RANKED",
+      "method": "Invalid equivalence classes and ranked decision table",
+      "testNames": [
+        "test_room_mode_invalid",
+        "test_room_ranked_requires_boolean",
+        "test_ranked_duel_two_players_valid",
+        "test_ranked_squad_two_players_invalid",
+        "test_ranked_duel_more_than_two_invalid",
+        "test_ranked_squad_more_than_two_invalid",
+        "test_unranked_squad_two_players_valid",
+        "test_unranked_duel_more_than_two_valid"
+      ]
+    },
+    {
+      "requirementId": "ROOM-PRIVATE-ACCESS",
+      "method": "Authorization equivalence classes",
+      "testNames": [
+        "test_private_room_owner_can_read",
+        "test_private_room_nonmember_forbidden",
+        "test_private_room_requires_identity"
+      ]
+    },
+    {
+      "requirementId": "ROOM-JOIN-CAPACITY",
+      "method": "Single-user scenario and concurrent capacity race",
+      "testNames": [
+        "test_public_room_single_join",
+        "test_public_room_concurrent_capacity"
+      ]
+    },
+    {
+      "requirementId": "ROOM-AUTHENTICATION",
+      "method": "Unauthenticated endpoint checks",
+      "testNames": [
+        "test_room_endpoints_require_identity"
+      ]
+    },
+    {
+      "requirementId": "MATCH-LIVE",
+      "method": "Valid action equivalence, state transition, stale replay, and authorization",
+      "testNames": [
+        "test_live_attack_advances_turn",
+        "test_live_defend_advances_turn",
+        "test_live_stale_turn_rejected",
+        "test_live_replayed_action_is_stale",
+        "test_live_nonparticipant_forbidden"
+      ]
+    },
+    {
+      "requirementId": "MATCH-FINISHED",
+      "method": "Finished-state action rejection across actions and participants",
+      "testNames": [
+        "test_finished_match_rejects_actions"
+      ]
+    },
+    {
+      "requirementId": "RESULT-SCORING",
+      "method": "Score state transition and idempotent replay",
+      "testNames": [
+        "test_result_first_submission_scores_winner",
+        "test_result_replay_does_not_score_twice"
+      ]
+    },
+    {
+      "requirementId": "MATCH-SCORE-AUTHENTICATION",
+      "method": "Unauthenticated endpoint checks",
+      "testNames": [
+        "test_match_and_score_endpoints_require_identity"
+      ]
+    },
+    {
+      "requirementId": "QUEUE-INPUT",
+      "method": "Boundary value analysis and valid/invalid type and region equivalence classes",
+      "testNames": [
+        "test_queue_lower_boundary_cn",
+        "test_queue_upper_boundary_eu",
+        "test_queue_level_outside_boundaries",
+        "test_queue_level_type_equivalence",
+        "test_queue_integral_float_level",
+        "test_queue_invalid_region"
+      ]
+    },
+    {
+      "requirementId": "QUEUE-AUTHENTICATION",
+      "method": "Unauthenticated request",
+      "testNames": [
+        "test_queue_requires_identity"
+      ]
+    },
+    {
+      "requirementId": "QUEUE-DEPENDENCY",
+      "method": "Controlled external dependency failure",
+      "testNames": [
+        "test_queue_matchmaker_unavailable"
+      ]
+    }
+  ],
+  "questions": [
+    "What response and status code should an invalid winnerId produce, and how can its lack of scoring effects be observed?",
+    "What should happen when a different submissionId is used for an already submitted result?",
+    "What status code should an unauthenticated result submission return, given the result-specific exception to the general authentication rule?",
+    "What response schema is guaranteed for the score endpoint and for currentTurn after a valid action?",
+    "Is there a supported endpoint for observing finished-match state so that the prohibition on state changes can be verified directly?",
+    "What responses are specified for invalid action values, future turns, and actions by a participant who is not the current actor?"
+  ],
+  "scriptSha256": "30ecb3ba50bfb7a694781c6abea0d05a74bdda881b90f01d78666bfdb8af9e0f"
+}

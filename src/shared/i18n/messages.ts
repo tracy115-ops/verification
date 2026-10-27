@@ -1,6 +1,8 @@
 import { conversationEn, conversationZh } from './conversation-messages';
+import { teamEn, teamZh } from './team-messages';
 
 export const zh = {
+  ...teamZh,
   ...conversationZh,
   nodeCountOne: '{count} 个节点',
   nodeCountOther: '{count} 个节点',
@@ -109,7 +111,7 @@ export const zh = {
   credential: '凭据引用',
   credentialHint: '仅填写 env:VARIABLE 或 keychain:path，不填写实际密钥。当前仅保存配置，尚不连接 Provider。',
   configured: '配置已保存到草稿，尚未认证',
-  nativeModel: '使用 CLI 默认模型',
+  nativeModel: '填写可用的模型 ID',
   demo: '示例评审数据',
   demoHint: '此处演示原文映射与确认交互，未调用 Agent，不作为真实覆盖结论。',
   source: '原始需求',
@@ -157,6 +159,7 @@ export const zh = {
 } as const;
 
 export const en: Record<keyof typeof zh, string> = {
+  ...teamEn,
   ...conversationEn,
   nodeCountOne: '{count} node',
   nodeCountOther: '{count} nodes',
@@ -267,7 +270,7 @@ export const en: Record<keyof typeof zh, string> = {
   credentialHint:
     'Use env:VARIABLE or keychain:path. Never enter a secret. Profiles are saved only; provider connections are not implemented yet.',
   configured: 'Profile added to draft; not authenticated',
-  nativeModel: 'CLI default model',
+  nativeModel: 'Enter an available model ID',
   demo: 'Sample review data',
   demoHint: 'Demonstrates mapping and review. No Agent calls; this is not real coverage evidence.',
   source: 'Original requirement',

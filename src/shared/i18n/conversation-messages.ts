@@ -1,4 +1,12 @@
 export const conversationZh = {
+  nativeModels: 'CLI 模型配置',
+  nativeModelsHint: 'CodeAgent 使用内部模型配置；其他 CLI 在此指定模型 ID。保存配置不代表已验证推理。',
+  codeagentManagedModel: '模型由 CodeAgent 内部管理，无需单独配置。',
+  codeagentCompatibilityHint: '交互启动命令来自内部环境；自动流程会先检查非交互与事件输出能力。',
+  modelRequiredHint: '填写该 CLI 可用的模型 ID',
+  saveModel: '保存模型',
+  model_required: '此 CLI 需要配置模型，请到设置 → Agent 与 Provider 填写模型 ID。',
+  cli_capability_unverified: '该 CLI 尚未确认支持所需的非交互与结构化事件参数，请核对目标环境版本。',
   previous_turn_active: '上次 CLI 调用的结束状态未确认。请先停止旧调用，再发送新消息。',
   cancel_not_confirmed: '停止尚未确认，请稍后重试。',
   stopPreviousTurn: '停止上次调用',
@@ -110,6 +118,18 @@ export const conversationZh = {
 };
 
 export const conversationEn: Record<keyof typeof conversationZh, string> = {
+  nativeModels: 'CLI model configuration',
+  nativeModelsHint:
+    'CodeAgent uses its internal model configuration. Set model IDs for the other CLIs here. Saving does not certify inference.',
+  codeagentManagedModel:
+    'The model is managed inside CodeAgent. No separate model configuration is required.',
+  codeagentCompatibilityHint:
+    'Interactive launch command supplied for the internal environment. Automated runs first check noninteractive and event-output capabilities.',
+  modelRequiredHint: 'Enter a model ID available to this CLI',
+  saveModel: 'Save model',
+  model_required: 'Configure a model in Settings → Agents & providers before using this CLI.',
+  cli_capability_unverified:
+    'Required noninteractive and structured-event options are not verified for this CLI version.',
   previous_turn_active:
     'The previous CLI turn has not been reconciled. Stop it before sending another message.',
   cancel_not_confirmed: 'Process shutdown is not confirmed yet. Try again shortly.',

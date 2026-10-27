@@ -70,13 +70,34 @@ fn invalid_protocol_lines_fail_instead_of_becoming_agent_text() {
 }
 
 #[test]
+fn codex_reconnect_notice_can_recover_but_other_errors_remain_fatal() {
+    let mut state = ProtocolState::default();
+    state.consume(
+        DriverId::Codex,
+        br#"{"type":"error","message":"Reconnecting... 2/5 (stream disconnected)"}"#,
+    );
+    assert!(!state.failed && !state.terminal);
+    state.consume(
+        DriverId::Codex,
+        br#"{"type":"item.completed","item":{"type":"agent_message","text":"ok"}}"#,
+    );
+    state.consume(DriverId::Codex, br#"{"type":"turn.completed"}"#);
+    assert!(state.terminal && !state.failed);
+    state.consume(
+        DriverId::Codex,
+        br#"{"type":"error","message":"unrecoverable error"}"#,
+    );
+    assert!(state.failed);
+}
+
+#[test]
 fn requests_reject_path_traversal_ids_and_unbounded_deadlines() {
     let mut request = TurnRequest {
         turn_id: "12345678-1234-1234-1234-123456789abc".into(),
         session_id: "12345678-1234-1234-1234-123456789abc".into(),
         driver: DriverId::Codex,
         prompt: "hello".into(),
-        model: String::new(),
+        model: "fixture-model".into(),
         timeout_seconds: 60,
     };
     assert!(request.validate().is_ok());

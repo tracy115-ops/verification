@@ -35,6 +35,7 @@ impl ProtocolState {
         };
         let mut events = Vec::new();
         match driver {
+            DriverId::Codeagent => self.claude(&value, &mut events),
             DriverId::Codex => self.codex(&value, &mut events),
             DriverId::Claude => self.claude(&value, &mut events),
             DriverId::Pi => self.pi(&value, &mut events),
@@ -71,6 +72,16 @@ impl ProtocolState {
                 })
             }
             "turn.completed" => self.terminal = true,
+            "error"
+                if value["message"]
+                    .as_str()
+                    .is_some_and(|message| message.starts_with("Reconnecting... ")) =>
+            {
+                // Observed in CLI 0.164.0 before a successful HTTPS fallback.
+                events.push(AgentEvent::Activity {
+                    name: "reconnecting".into(),
+                });
+            }
             "turn.failed" | "error" => {
                 self.failed = true;
                 self.terminal = true;

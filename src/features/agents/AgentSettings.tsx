@@ -6,6 +6,7 @@ import { useI18n } from '../../shared/i18n/context';
 import type { MessageKey } from '../../shared/i18n/messages';
 import { Status } from '../../shared/components/Status';
 import { ProfileForm } from './ProfileForm';
+import { NativeModels } from './NativeModels';
 
 export function AgentSettings({
   profiles,
@@ -44,7 +45,7 @@ export function AgentSettings({
       </div>
       {!desktop && <p className="wb-banner">{t('browserOnly')}</p>}
       <div className="settings-cli-grid">
-        {(['codex', 'claude', 'pi'] as const).map((driver) => {
+        {(['codeagent', 'codex', 'claude', 'pi'] as const).map((driver) => {
           const probe = probes.find((item) => item.driver === driver);
           const found = probe?.status === 'found';
           return (
@@ -85,6 +86,7 @@ export function AgentSettings({
           </div>
         ))}
       </div>
+      <NativeModels profiles={profiles} saveProfile={addProfile} />
       <ProfileForm addProfile={addProfile} />
     </div>
   );

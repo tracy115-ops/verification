@@ -9,7 +9,7 @@ fn request() -> TurnRequest {
         session_id: "12345678-1234-1234-1234-123456789abc".into(),
         driver: DriverId::Codex,
         prompt: "hello 中文 $(never execute)".into(),
-        model: String::new(),
+        model: "fixture-model".into(),
         timeout_seconds: 5,
     }
 }

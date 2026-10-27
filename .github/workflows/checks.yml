@@ -14,9 +14,15 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
       - run: npm run check
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      - run: npm run test:team:e2e
+      - run: npm run verify:blackbox
+      - run: npm run verify:game-agent -- --reuse-script
   rust:
     runs-on: windows-latest
     steps:

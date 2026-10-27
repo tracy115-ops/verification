@@ -11,7 +11,7 @@
   },
   "app": {
     "windows": [{ "title": "Verification Workbench", "width": 1500, "height": 960, "minWidth": 900, "minHeight": 650 }],
-    "security": { "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src ipc: http://ipc.localhost http://127.0.0.1:5173 ws://127.0.0.1:5173" }
+    "security": { "csp": "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src ipc: http://ipc.localhost http://127.0.0.1:5173 ws://127.0.0.1:5173" }
   },
   "bundle": { "active": false, "icon": [] }
 }

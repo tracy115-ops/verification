@@ -17,6 +17,7 @@ const MAX_LINE: usize = 262_144;
 
 fn arguments(driver: DriverId) -> Vec<&'static str> {
     match driver {
+        DriverId::Codeagent => vec![],
         DriverId::Codex => vec![
             "exec",
             "--json",
@@ -202,8 +203,19 @@ pub async fn run_turn(
     let Some(launch) = spec.and_then(|spec| resolve_driver(spec, &paths)) else {
         return TurnOutcome::failed("cli_not_found");
     };
+    let args: Vec<String> = if matches!(request.driver, DriverId::Codeagent) {
+        let Some(args) = crate::codeagent::checked_arguments(&launch).await else {
+            return TurnOutcome::failed("cli_capability_unverified");
+        };
+        args
+    } else {
+        arguments(request.driver)
+            .into_iter()
+            .map(str::to_string)
+            .collect()
+    };
     let mut command = Command::new(&launch.program);
-    command.args(&launch.args).args(arguments(request.driver));
+    command.args(&launch.args).args(args);
     if !request.model.is_empty() {
         command.arg("--model").arg(&request.model);
     }

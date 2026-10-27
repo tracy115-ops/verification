@@ -127,6 +127,30 @@ test('keeps navigation accessible and avoids page overflow in a narrow window', 
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
+test('uses internal CodeAgent models and independently saves models for public CLIs', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: '设置', exact: true }).click();
+  await page.getByRole('button', { name: 'Agent 与 Provider', exact: true }).click();
+  await expect(page.locator('.settings-cli')).toHaveCount(4);
+  await expect(page.locator('.settings-native-models')).toContainText('模型由 CodeAgent 内部管理');
+  await page
+    .getByRole('textbox', { name: '模型 ID · codex / native', exact: true })
+    .fill('test-configured-model');
+  await page.getByRole('button', { name: '保存模型', exact: true }).first().click();
+  await expect(page.getByRole('status')).toContainText('配置已保存到设置');
+  await page.reload();
+  await page.getByRole('button', { name: '设置', exact: true }).click();
+  await page.getByRole('button', { name: 'Agent 与 Provider', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '模型 ID · codex / native', exact: true })).toHaveValue(
+    'test-configured-model',
+  );
+  await page.locator('.settings-profile-form').getByRole('combobox').first().selectOption('codeagent');
+  await expect(
+    page.locator('.settings-profile-form').getByRole('textbox', { name: '模型 ID', exact: true }),
+  ).toHaveCount(0);
+  await page.screenshot({ path: '.runtime/codeagent-settings.png', fullPage: true });
+});
+
 test('opens conversations first and selects only saved workflow revisions', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'CLI 会话', exact: true })).toBeVisible();

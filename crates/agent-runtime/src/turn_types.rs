@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum DriverId {
+    Codeagent,
     Codex,
     Claude,
     Pi,
@@ -11,6 +12,7 @@ pub enum DriverId {
 impl DriverId {
     pub fn as_str(self) -> &'static str {
         match self {
+            Self::Codeagent => "codeagent",
             Self::Codex => "codex",
             Self::Claude => "claude",
             Self::Pi => "pi",
@@ -31,6 +33,9 @@ pub struct TurnRequest {
 
 impl TurnRequest {
     pub fn validate(&self) -> Result<(), &'static str> {
+        if matches!(self.driver, DriverId::Codeagent) && !self.model.is_empty() {
+            return Err("invalid_request");
+        }
         fn valid_id(value: &str) -> bool {
             value.len() == 36
                 && value.bytes().enumerate().all(|(index, byte)| {
@@ -49,6 +54,9 @@ impl TurnRequest {
         }
         if !(1..=600).contains(&self.timeout_seconds) {
             return Err("invalid_request");
+        }
+        if !matches!(self.driver, DriverId::Codeagent) && self.model.trim().is_empty() {
+            return Err("model_required");
         }
         if self.model.len() > 200
             || self.model.starts_with('-')

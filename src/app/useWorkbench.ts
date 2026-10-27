@@ -16,7 +16,15 @@ function initialDraft(): {
     const document = saved ?? createDocument();
     try {
       return {
-        document: { ...document, profiles: loadProfiles(localStorage, document.profiles) },
+        document: {
+          ...document,
+          profiles: loadProfiles(localStorage, [
+            ...document.profiles,
+            ...createDocument().profiles.filter(
+              (profile) => !document.profiles.some((existing) => existing.id === profile.id),
+            ),
+          ]),
+        },
         saved,
         notice: null,
       };
@@ -61,7 +69,9 @@ export function useWorkbench() {
   }
   function addProfile(profile: AgentProfile) {
     try {
-      const profiles = [...document.profiles, profile];
+      const profiles = document.profiles.some((existing) => existing.id === profile.id)
+        ? document.profiles.map((existing) => (existing.id === profile.id ? profile : existing))
+        : [...document.profiles, profile];
       saveProfiles(localStorage, profiles);
       setDocument((current) => ({ ...current, profiles }));
       setNotice('settingsSaved');

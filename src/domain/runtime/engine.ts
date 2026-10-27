@@ -1,8 +1,10 @@
 import type { WorkflowNode } from '../workflow';
+import { newId } from '../../shared/id';
 import { parseArtifact } from './artifacts';
 import { resolveInputs } from './bindings';
 import { reviewIssues, taskFor, validateTaskArtifact } from './handlers';
 import { digest } from './plan';
+import { inferenceModel } from './profile';
 import type { AgentEvent, AgentPort, WorkflowRun } from './types';
 
 export async function reviewDigest(run: WorkflowRun, node: WorkflowNode): Promise<string> {
@@ -66,7 +68,7 @@ export async function advanceRun(
         const profileId = run.snapshot.bindings[node.id] ?? run.defaultProfileId;
         const profile = run.profiles.find((profile) => profile.id === profileId);
         if (!profile || profile.protocol !== 'native') throw new Error('unsupported_profile');
-        step.turnId = crypto.randomUUID();
+        step.turnId = newId();
         onUpdate(structuredClone(run));
         const result = await port.send(
           {
@@ -74,7 +76,7 @@ export async function advanceRun(
             sessionId: run.sessionId,
             driver: profile.driver,
             prompt: taskFor(run, node, inputs),
-            model: profile.model,
+            model: inferenceModel(profile),
             timeoutSeconds: Math.min(node.policy.timeoutSeconds, 600),
           },
           onEvent,

@@ -1,3 +1,4 @@
+mod codeagent;
 mod conversation;
 mod discovery;
 mod probe;

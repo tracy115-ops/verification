@@ -1,5 +1,7 @@
 import { checkDocument, type AgentProfile, type WorkbenchDocument } from '../workflow';
 import type { WorkflowRun } from './types';
+import { newId } from '../../shared/id';
+import { inferenceModel } from './profile';
 
 const supported = new Set([
   'documents.import',
@@ -44,9 +46,10 @@ export function createRun(
     const profile = profiles.find((profile) => profile.id === id);
     if (!profile) throw new Error('profile_missing');
     if (profile.protocol !== 'native') throw new Error('unsupported_profile');
+    inferenceModel(profile);
   }
   return structuredClone({
-    id: crypto.randomUUID(),
+    id: newId(),
     sessionId,
     createdAt: new Date().toISOString(),
     scope: 'design',

@@ -1,10 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-const roots = ['src', 'scripts', 'crates', 'src-tauri/src', 'tests'];
-const extensions = new Set(['.ts', '.tsx', '.js', '.mjs', '.rs', '.css']);
+const roots = ['src', 'server', 'scripts', 'crates', 'src-tauri/src', 'tests'];
+const extensions = new Set(['.ts', '.tsx', '.js', '.mjs', '.rs', '.css', '.py']);
 const failures = [];
+const pythonFiles = [];
 let count = 0;
 
 function checkTypeScript(file, text) {
@@ -55,6 +58,7 @@ function walk(directory) {
     if (lines > 2000) failures.push(`${file}: exceeds 2000 lines`);
     if (['.ts', '.tsx', '.js', '.mjs'].includes(extension)) checkTypeScript(file, text);
     if (extension === '.rs') checkRust(file, text);
+    if (extension === '.py') pythonFiles.push(file);
     if (
       extension === '.css' &&
       !file.endsWith('workbench-tokens.css') &&
@@ -65,10 +69,17 @@ function walk(directory) {
 }
 
 roots.forEach(walk);
+if (pythonFiles.length) {
+  const checker = fileURLToPath(new URL('./check-python-constraints.py', import.meta.url));
+  const result = spawnSync('python', [checker, ...pythonFiles], { encoding: 'utf8' });
+  if (result.error || result.status !== 0)
+    failures.push(result.stderr || result.error?.message || 'Python constraint checker failed');
+  else failures.push(...JSON.parse(result.stdout));
+}
 if (failures.length) {
   failures.forEach((failure) => console.error(failure));
   process.exit(1);
 }
 console.log(
-  `Constraints passed for ${count} source files (TS AST, Rust named-function spans, CSS token colors).`,
+  `Constraints passed for ${count} source files (TS/Python AST, Rust named-function spans, CSS token colors).`,
 );

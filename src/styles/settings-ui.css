@@ -106,6 +106,31 @@
   padding: 14px 28px;
   border-bottom: 1px solid var(--wb-border);
 }
+.settings-native-models {
+  margin-block: 24px;
+}
+.settings-model-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 16px;
+  padding-block: 16px;
+  border-bottom: 1px solid var(--wb-border);
+  font-size: 12px;
+}
+.settings-model-row > strong {
+  min-width: 150px;
+  padding-block: 10px;
+}
+.settings-model-row > label,
+.settings-model-row > div {
+  flex: 1;
+  min-width: 200px;
+}
+.settings-model-row small {
+  display: block;
+  margin-top: 8px;
+}
 .settings-general {
   display: grid;
   gap: 22px;

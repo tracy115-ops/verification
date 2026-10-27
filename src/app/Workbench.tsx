@@ -21,6 +21,9 @@ const AssetsWorkspace = lazy(() =>
 const RunRecords = lazy(() =>
   import('../features/runs/RunRecords').then((module) => ({ default: module.RunRecords })),
 );
+const TeamWorkspace = lazy(() =>
+  import('../features/team/TeamWorkspace').then((module) => ({ default: module.TeamWorkspace })),
+);
 
 export function Workbench({ appearance }: { appearance: Appearance }) {
   const workbench = useWorkbench();
@@ -53,6 +56,7 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
         <Notifications workbench={workbench} />
         <div className="app-content">
           <Suspense fallback={null}>
+            {page === 'team' && <TeamWorkspace />}
             {page === 'sessions' && (
               <SessionWorkspace
                 actions={conversations}

@@ -1,12 +1,14 @@
 import type { ConversationMessage, ConversationSession, TurnRequest } from './types';
+import { newId } from '../../shared/id';
 import type { AgentProfile } from '../workflow';
+import { inferenceModel } from './profile';
 
 export function createSession(profileId: string): ConversationSession {
-  return { id: crypto.randomUUID(), title: '', profileId, messages: [], runs: [] };
+  return { id: newId(), title: '', profileId, messages: [], runs: [] };
 }
 
 export function message(role: ConversationMessage['role'], text: string): ConversationMessage {
-  return { id: crypto.randomUUID(), role, text, createdAt: new Date().toISOString(), status: 'complete' };
+  return { id: newId(), role, text, createdAt: new Date().toISOString(), status: 'complete' };
 }
 
 export function chatRequest(session: ConversationSession, profile: AgentProfile): TurnRequest {
@@ -19,10 +21,10 @@ export function chatRequest(session: ConversationSession, profile: AgentProfile)
   });
   if (new TextEncoder().encode(prompt).length > 131072) throw new Error('prompt_too_large');
   return {
-    turnId: crypto.randomUUID(),
+    turnId: newId(),
     sessionId: session.id,
     driver: profile.driver,
-    model: profile.model,
+    model: inferenceModel(profile),
     prompt,
     timeoutSeconds: 300,
   };

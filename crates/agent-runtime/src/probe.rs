@@ -35,7 +35,13 @@ async fn probe(spec: &DriverSpec, paths: &[PathBuf]) -> AgentProbe {
     let Some(launch) = resolve_driver(spec, paths) else {
         return result;
     };
-    result.executable = Some(launch.program.to_string_lossy().into_owned());
+    result.executable = Some(
+        launch
+            .args
+            .first()
+            .map(|entry| entry.to_string_lossy().into_owned())
+            .unwrap_or_else(|| launch.program.to_string_lossy().into_owned()),
+    );
     let mut command = Command::new(&launch.program);
     command
         .args(&launch.args)
