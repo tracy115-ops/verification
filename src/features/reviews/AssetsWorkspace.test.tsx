@@ -34,6 +34,9 @@ it('switches between runs and searches only their own approved artifacts', () =>
   fireEvent.change(screen.getByRole('combobox'), { target: { value: first.id } });
   expect(screen.queryByText('other task')).toBeNull();
   expect(screen.getByText('已确认')).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: '测试因子' }));
+  expect(within(document.querySelector('.assets-list') as HTMLElement).getByText('F-1')).toBeTruthy();
+  expect(screen.getByText('因子水平')).toBeTruthy();
   fireEvent.click(screen.getByRole('button', { name: '测试用例' }));
   expect(within(document.querySelector('.assets-list') as HTMLElement).getByText('TC-1')).toBeTruthy();
   fireEvent.change(screen.getByRole('textbox'), { target: { value: 'no-match' } });

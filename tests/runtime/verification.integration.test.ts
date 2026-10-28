@@ -59,6 +59,9 @@ it.each([false, true])(
         'requirements.extract',
         'scenarios.design',
         'cases.generate',
+        'cases.generate',
+        'cases.generate',
+        'cases.generate',
         'tests.implement',
         'verdicts.evaluate',
       ]);

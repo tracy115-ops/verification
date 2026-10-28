@@ -11,11 +11,45 @@ export const requirementSchema = record({
   requirements: list(record({ id, text, quote: text, acceptanceCriteria: list(text) })),
   questions: list(text, 0),
 });
-export const designSchema = record({
+const scenarioBase = record({ id, title: text, requirementIds: list(id), dimension: text, expected: text });
+const scenarioSchema = {
+  ...scenarioBase,
+  properties: { ...scenarioBase.properties, factorLevels: list(record({ factorId: id, level: text }), 0) },
+};
+const designBaseSchema = record({
   strategy: text,
-  scenarios: list(record({ id, title: text, requirementIds: list(id), dimension: text, expected: text })),
+  scenarios: list(scenarioSchema),
   gaps: list(text, 0),
 });
+export const designSchema = {
+  ...designBaseSchema,
+  properties: {
+    ...designBaseSchema.properties,
+    factors: list(
+      record({ id, name: text, requirementIds: list(id), levels: list(text), sourceQuote: text }),
+      0,
+    ),
+  },
+};
+export const generatedDesignSchema = {
+  ...designSchema,
+  required: [...designSchema.required, 'factors'],
+  properties: {
+    ...designSchema.properties,
+    factors: { ...designSchema.properties.factors, minItems: 1 },
+    scenarios: {
+      ...designBaseSchema.properties.scenarios,
+      items: {
+        ...scenarioSchema,
+        required: [...scenarioSchema.required, 'factorLevels'],
+        properties: {
+          ...scenarioSchema.properties,
+          factorLevels: { ...scenarioSchema.properties.factorLevels, minItems: 1 },
+        },
+      },
+    },
+  },
+};
 export const caseSchema = record({
   cases: list(
     record({
@@ -33,6 +67,7 @@ export const caseSchema = record({
 const ajv = new Ajv2020({ strict: false, allErrors: true });
 export const isRequirements = ajv.compile<RequirementArtifact>(requirementSchema);
 export const isDesign = ajv.compile<DesignArtifact>(designSchema);
+export const isGeneratedDesign = ajv.compile<DesignArtifact>(generatedDesignSchema);
 export const isCases = ajv.compile<CaseArtifact>(caseSchema);
 
 function unique(ids: string[]): boolean {
@@ -59,6 +94,30 @@ export function decodeDesign(value: unknown, requirements: RequirementArtifact):
   const ids = new Set(requirements.requirements.map((item) => item.id));
   for (const scenario of value.scenarios)
     fail(unique(scenario.requirementIds) && scenario.requirementIds.every((id) => ids.has(id)));
+  if (value.factors) {
+    fail(unique(value.factors.map((item) => item.id)));
+    for (const factor of value.factors) {
+      fail(unique(factor.requirementIds) && factor.requirementIds.every((id) => ids.has(id)));
+      fail(unique(factor.levels));
+      fail(
+        factor.requirementIds.some((id) =>
+          requirements.requirements.find((item) => item.id === id)?.quote.includes(factor.sourceQuote),
+        ),
+      );
+    }
+  }
+  for (const scenario of value.scenarios) {
+    const combinations = scenario.factorLevels ?? [];
+    fail(unique(combinations.map((item) => JSON.stringify([item.factorId, item.level]))));
+    for (const item of combinations) {
+      const factor = value.factors?.find((factor) => factor.id === item.factorId);
+      fail(
+        !!factor &&
+          factor.levels.includes(item.level) &&
+          factor.requirementIds.some((id) => scenario.requirementIds.includes(id)),
+      );
+    }
+  }
   return value;
 }
 

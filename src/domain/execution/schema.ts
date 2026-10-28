@@ -80,7 +80,7 @@ export const verdictSchema = record({
   ),
   notes: list(text),
 });
-export const reportSchema = record({
+const reportBaseSchema = record({
   status: { enum: ['passed', 'candidates_found', 'inconclusive'] },
   counts: record(
     Object.fromEntries(
@@ -89,10 +89,26 @@ export const reportSchema = record({
   ),
   candidates: verdictSchema.properties.candidates,
   notes: list(text),
-  action: { enum: ['archive_results', 'review_candidates', 'repair_test_environment'] },
+  action: {
+    enum: ['archive_results', 'review_candidates', 'repair_test_environment', 'review_coverage_exclusions'],
+  },
   policy: { const: 'report_only' },
   evidenceDigest: hash,
 });
+export const reportSchema = {
+  ...reportBaseSchema,
+  properties: {
+    ...reportBaseSchema.properties,
+    reviewExclusions: list(
+      record({
+        nodeId: id,
+        issue: { ...text, minLength: 1 },
+        reason: { ...text, minLength: 1 },
+        recordedAt: { ...text, minLength: 1 },
+      }),
+    ),
+  },
+};
 const ajv = new Ajv2020({ strict: false, allErrors: true });
 export const isFramework = ajv.compile<FrameworkProfile>(frameworkSchema);
 export const isImplementation = ajv.compile<ImplementationBundle>(implementationSchema);

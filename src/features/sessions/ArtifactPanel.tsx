@@ -43,6 +43,12 @@ export function ArtifactPanel({ artifact }: { artifact: Artifact }) {
                 <small>{t('coverageDimension')}: </small>
                 {item.dimension}
               </p>
+              {!!item.factorLevels?.length && (
+                <p>
+                  <small>{t('factorItems')}: </small>
+                  {item.factorLevels.map((factor) => `${factor.factorId}: ${factor.level}`).join(' · ')}
+                </p>
+              )}
               <p>{item.expected}</p>
             </article>
           ))}

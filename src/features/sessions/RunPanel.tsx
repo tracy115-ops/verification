@@ -4,20 +4,12 @@ import type { WorkflowRun } from '../../domain/runtime/types';
 import { reviewIssues } from '../../domain/runtime/handlers';
 import { useI18n, isMessageKey } from '../../shared/i18n/context';
 import { Status } from '../../shared/components/Status';
-import { nodeLabel } from '../workflows/node-label';
+import { RunSteps } from './RunSteps';
 import { ArtifactPanel } from './ArtifactPanel';
 import { hasDesktopBridge } from '../../services/agent-api';
 import { isExecutionPlan, isEvidence, isReport } from '../../domain/execution/schema';
 import { ExecutionReview } from './ExecutionReview';
-
-const labels = {
-  pending: 'pendingStep',
-  running: 'runningStep',
-  awaiting_review: 'reviewStep',
-  succeeded: 'successStep',
-  failed: 'failedStep',
-  interrupted: 'interruptedStep',
-} as const;
+import { ClarificationReview, SavedClarifications, SavedExclusions } from './ClarificationReview';
 
 export function RunPanel({ run, actions }: { run: WorkflowRun; actions: Conversations }) {
   const { t } = useI18n();
@@ -120,10 +112,25 @@ export function RunPanel({ run, actions }: { run: WorkflowRun; actions: Conversa
                   <li key={i}>{issue}</li>
                 ))}
               </ul>
-              <p>{t('reviewResolutionHint')}</p>
+              {['review.requirements', 'review.coverage', 'review.cases'].includes(pending.operation) ? (
+                <ClarificationReview
+                  key={run.steps[pending.id].reviewDigest}
+                  issues={issues}
+                  exclusion={pending.operation !== 'review.requirements'}
+                  busy={actions.busy || !hasDesktopBridge()}
+                  save={(answers) =>
+                    void actions.clarify(run, pending.id, run.steps[pending.id].reviewDigest ?? '', answers)
+                  }
+                />
+              ) : (
+                <p>{t('reviewResolutionHint')}</p>
+              )}
             </div>
           )}
           {reviewArtifact && <ArtifactPanel artifact={reviewArtifact} />}
+          {pending.operation === 'review.requirements' && (
+            <SavedClarifications items={run.clarifications ?? []} />
+          )}
           {isExecutionPlan(executionPlan) ? (
             <ExecutionReview
               key={executionPlan.digest}
@@ -143,24 +150,7 @@ export function RunPanel({ run, actions }: { run: WorkflowRun; actions: Conversa
           )}
         </section>
       )}
-      <ol className="session-step-list">
-        {run.plan.map((node) => (
-          <li key={node.id}>
-            <span>{nodeLabel(node, run.snapshot, t)}</span>
-            <Status
-              tone={
-                run.steps[node.id].status === 'succeeded'
-                  ? 'success'
-                  : run.steps[node.id].status === 'failed'
-                    ? 'danger'
-                    : 'neutral'
-              }
-            >
-              {t(labels[run.steps[node.id].status])}
-            </Status>
-          </li>
-        ))}
-      </ol>
+      <RunSteps run={run} />
       {['failed', 'interrupted'].includes(run.status) && !failedExecution && (
         <button
           className="workbench-btn wb-full"
@@ -191,6 +181,10 @@ export function RunPanel({ run, actions }: { run: WorkflowRun; actions: Conversa
       )}
       <div className="session-run-artifacts">
         <h3>{t('artifactTitle')}</h3>
+        {pending?.operation !== 'review.requirements' && (
+          <SavedClarifications items={run.clarifications ?? []} />
+        )}
+        <SavedExclusions items={run.reviewExclusions ?? []} />
         {artifacts.map((artifact, index) => (
           <ArtifactPanel key={index} artifact={artifact} />
         ))}

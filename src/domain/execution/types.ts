@@ -46,9 +46,10 @@ export interface VerificationReport {
   counts: { passed: number; failed: number; error: number; skipped: number };
   candidates: VerdictAnalysis['candidates'];
   notes: string[];
-  action: 'archive_results' | 'review_candidates' | 'repair_test_environment';
+  action: 'archive_results' | 'review_candidates' | 'repair_test_environment' | 'review_coverage_exclusions';
   policy: 'report_only';
   evidenceDigest: string;
+  reviewExclusions?: { nodeId: string; issue: string; reason: string; recordedAt: string }[];
 }
 export interface ExecutionPort {
   preflight(payload: ExecutionPayload, signal: AbortSignal): Promise<ExecutionPlan>;

@@ -75,6 +75,19 @@ export function ExecutionArtifact({ artifact }: { artifact: Artifact }) {
             ))}
           </div>
           <h4>{t('candidateDefects')}</h4>
+          {!!value.reviewExclusions?.length && (
+            <details>
+              <summary>
+                {t('savedExclusions')} · {value.reviewExclusions.length}
+              </summary>
+              {value.reviewExclusions.map((item, index) => (
+                <article key={index}>
+                  <strong>{item.issue}</strong>
+                  <p>{item.reason}</p>
+                </article>
+              ))}
+            </details>
+          )}
           {value.candidates.map((item) => (
             <article key={item.id}>
               <h4>{item.title}</h4>

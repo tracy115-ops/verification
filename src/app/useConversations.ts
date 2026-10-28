@@ -8,6 +8,7 @@ import { DesktopAgentPort } from '../services/conversation-api';
 import { useConversationStore } from './useConversationStore';
 import type { ExecutionPort, FrameworkProfile } from '../domain/execution/types';
 import { DesktopExecutionPort } from '../services/execution-api';
+import { clarifyRequirements, excludeReviewIssues } from '../domain/runtime/clarifications';
 
 export function useConversations(
   profiles: AgentProfile[],
@@ -126,6 +127,18 @@ export function useConversations(
       await drive(await approveRun(run, nodeId, hash), controller);
     });
   }
+  async function clarify(run: WorkflowRun, nodeId: string, hash: string, answers: Record<string, string>) {
+    await perform(async () =>
+      updateRun(
+        run.sessionId,
+        await (
+          run.plan.find((item) => item.id === nodeId)?.operation === 'review.requirements'
+            ? clarifyRequirements
+            : excludeReviewIssues
+        )(run, nodeId, hash, answers),
+      ),
+    );
+  }
   async function retry(run: WorkflowRun) {
     await perform(async (controller) => {
       if (
@@ -173,6 +186,7 @@ export function useConversations(
     send,
     newSession,
     approve,
+    clarify,
     retry,
     cancel,
     stopRecovered,

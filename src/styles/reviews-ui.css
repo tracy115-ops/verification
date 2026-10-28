@@ -177,6 +177,8 @@
 .assets-list {
   padding: 20px;
   border-right: 1px solid var(--wb-border);
+  max-height: 68vh;
+  overflow-y: auto;
 }
 .assets-list-heading {
   display: flex;
@@ -211,6 +213,8 @@
   min-width: 0;
   padding: 20px;
   overflow-wrap: anywhere;
+  max-height: 68vh;
+  overflow-y: auto;
 }
 @media (max-width: 800px) {
   .assets-body {
@@ -219,5 +223,6 @@
   .assets-list {
     border-right: 0;
     border-bottom: 1px solid var(--wb-border);
+    max-height: 38vh;
   }
 }

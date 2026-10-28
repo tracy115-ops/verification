@@ -7,9 +7,32 @@ import type { AgentPort, TurnOutcome } from '../domain/runtime/types';
 import { CONVERSATIONS_KEY } from '../services/conversation-repository';
 import { verificationPorts } from '../domain/execution/fixtures.test-support';
 import { exampleFramework } from '../domain/execution/presets';
+import { requirements } from '../domain/runtime/fixtures.test-support';
 
 beforeEach(() => localStorage.clear());
 afterEach(cleanup);
+
+it('saves clarification within the same run and preserves it after reload', async () => {
+  const doc = savedDocument();
+  const { port } = fixturePort({ ...requirements, questions: ['Need a rule?'] });
+  const hook = renderHook(() => useConversations(doc.profiles, doc, port));
+  await act(async () => {
+    await hook.result.current.send(spec, true, 'codex-native');
+  });
+  const run = hook.result.current.session!.runs[0];
+  const node = run.plan.find((item) => item.operation === 'review.requirements')!;
+  await act(async () => {
+    await hook.result.current.clarify(run, node.id, run.steps[node.id].reviewDigest!, {
+      'Need a rule?': 'Only the explicit rule applies.',
+    });
+  });
+  expect(hook.result.current.session!.runs[0].clarifications?.[0].answer).toBe(
+    'Only the explicit rule applies.',
+  );
+  hook.unmount();
+  const restored = renderHook(() => useConversations(doc.profiles, doc, port));
+  expect(restored.result.current.session!.runs[0].clarifications?.[0].question).toBe('Need a rule?');
+});
 
 it('persists the full workflow and keeps Python behind the fourth approval', async () => {
   const saved = savedDocument();

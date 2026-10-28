@@ -4,6 +4,7 @@ import { checkWorkflow } from '../domain/workflow';
 import type { ConversationSession } from '../domain/runtime/types';
 import { frameworkSchema } from '../domain/execution/schema';
 import { decodeFramework } from '../domain/execution/validation';
+import { caseSchema } from '../domain/runtime/artifacts';
 
 export const CONVERSATIONS_KEY = 'verification-workbench.conversations.v1';
 const string = { type: 'string' };
@@ -18,6 +19,16 @@ const step = {
     turnId: string,
     executionId: string,
     reviewDigest: string,
+    caseBatches: {
+      type: 'array',
+      maxItems: 100,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['signature', 'index', 'cases'],
+        properties: { signature: string, index: { type: 'integer', minimum: 0 }, cases: caseSchema },
+      },
+    },
     ...optionalStrings,
   },
 };
@@ -50,6 +61,35 @@ const run = {
     profiles: { type: 'array', maxItems: 100 },
     defaultProfileId: string,
     spec: { type: 'string', maxLength: 40000 },
+    clarifications: {
+      type: 'array',
+      maxItems: 200,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['question', 'answer', 'recordedAt'],
+        properties: {
+          question: { type: 'string', minLength: 1, maxLength: 12000 },
+          answer: { type: 'string', minLength: 1, maxLength: 12000 },
+          recordedAt: string,
+        },
+      },
+    },
+    reviewExclusions: {
+      type: 'array',
+      maxItems: 200,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['nodeId', 'issue', 'reason', 'recordedAt'],
+        properties: {
+          nodeId: string,
+          issue: { type: 'string', minLength: 1, maxLength: 12000 },
+          reason: { type: 'string', minLength: 1, maxLength: 12000 },
+          recordedAt: string,
+        },
+      },
+    },
     status: {
       enum: ['ready', 'running', 'awaiting_review', 'completed', 'failed', 'cancelled', 'interrupted'],
     },

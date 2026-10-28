@@ -12,6 +12,42 @@ async function approve(run: WorkflowRun) {
   const node = run.plan.find((node) => run.steps[node.id].status === 'awaiting_review')!;
   return approveRun(run, node.id, run.steps[node.id].reviewDigest!);
 }
+it('retains excluded coverage as inconclusive even when every executed assertion passes', async () => {
+  const ports = verificationPorts('passed');
+  let run = verificationRun();
+  run.reviewExclusions = [
+    {
+      nodeId: 'review_coverage',
+      issue: 'Unspecified oracle',
+      reason: 'Outside this run',
+      recordedAt: new Date().toISOString(),
+    },
+  ];
+  for (let gate = 0; gate < 4; gate++) {
+    run = await advanceRun(
+      run,
+      ports.agent,
+      new AbortController().signal,
+      () => {},
+      () => {},
+      ports.execution,
+    );
+    run = await approve(run);
+  }
+  run = await advanceRun(
+    run,
+    ports.agent,
+    new AbortController().signal,
+    () => {},
+    () => {},
+    ports.execution,
+  );
+  const report = latestArtifact(run, 'VerificationReport');
+  if (!isReport(report)) throw new Error('report required');
+  expect(report.status).toBe('inconclusive');
+  expect(report.counts.passed).toBe(1);
+  expect(report.notes).toContain('review_exclusions: 1');
+});
 describe('complete verification workflow', () => {
   it('executes all 13 nodes behind four approvals and produces evidence-based follow-up', async () => {
     const ports = verificationPorts();

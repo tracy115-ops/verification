@@ -26,12 +26,20 @@ export function gameWorkflowFixture(targetUrl: string) {
   };
   const design = {
     strategy: 'Replay approved black-box design fixtures with real Python execution.',
+    factors: archive.coverage.map((item, i) => ({
+      id: `F-${i + 1}`,
+      name: item.requirementId,
+      requirementIds: [`REQ-${i + 1}`],
+      levels: [item.method],
+      sourceQuote: source,
+    })),
     scenarios: archive.coverage.map((item, i) => ({
       id: `SC-${i + 1}`,
       title: item.requirementId,
       requirementIds: [`REQ-${i + 1}`],
       dimension: item.method,
       expected: 'Assert only the corresponding documented interface behavior.',
+      factorLevels: [{ factorId: `F-${i + 1}`, level: item.method }],
     })),
     gaps: [],
   };
@@ -49,8 +57,14 @@ export function gameWorkflowFixture(targetUrl: string) {
   };
   const mappings = new Map<string, string[]>();
   archive.coverage.forEach((item, i) =>
-    item.testNames.forEach((name) => mappings.set(name, [...(mappings.get(name) ?? []), `TC-${i + 1}`])),
+    item.testNames.forEach((name) =>
+      mappings.set(name, [...(mappings.get(name) ?? []), `B${Math.floor(i / 3) + 1}-TC-${i + 1}`]),
+    ),
   );
+  const approvedCases = cases.cases.map((item, i) => ({
+    ...item,
+    id: `B${Math.floor(i / 3) + 1}-${item.id}`,
+  }));
   const implementation = {
     script,
     tests: [...mappings].map(([testName, caseIds]) => ({ testName, caseIds })),
@@ -69,7 +83,7 @@ export function gameWorkflowFixture(targetUrl: string) {
   const operations: string[] = [];
   const agent: AgentPort = {
     async send(request) {
-      const { operation } = JSON.parse(request.prompt);
+      const { operation, batch } = JSON.parse(request.prompt);
       operations.push(operation);
       let value: unknown = (
         {
@@ -79,6 +93,12 @@ export function gameWorkflowFixture(targetUrl: string) {
           'tests.implement': implementation,
         } as Record<string, unknown>
       )[operation];
+      if (operation === 'cases.generate')
+        value = {
+          cases: cases.cases.filter((item) =>
+            item.scenarioIds.some((id) => batch.allowedScenarioIds.includes(id)),
+          ),
+        };
       if (operation === 'verdicts.evaluate') {
         const plan = decodePlan(latestArtifact(current, 'ExecutionPlan'));
         const evidence = decodeEvidence(latestArtifact(current, 'EvidenceBundle'), plan);
@@ -86,7 +106,7 @@ export function gameWorkflowFixture(targetUrl: string) {
           evidence.results.filter((item) => item.status === 'failed').map((item) => item.testName),
         );
         value = {
-          candidates: cases.cases.flatMap((item) => {
+          candidates: approvedCases.flatMap((item) => {
             const tests = implementation.tests.filter(
               (mapping) => mapping.caseIds.includes(item.id) && failed.has(mapping.testName),
             );

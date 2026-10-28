@@ -11,6 +11,7 @@ import { executeSystemStep } from './execution';
 import { decodePlan } from '../execution/validation';
 import { latestArtifact } from './bindings';
 import { reviewDigest } from './approvals';
+import { generateCaseBatches } from './case-batches';
 export { reviewDigest } from './approvals';
 
 async function storeOutput(run: WorkflowRun, node: WorkflowNode, value: unknown) {
@@ -73,6 +74,16 @@ export async function advanceRun(
         const profileId = run.snapshot.bindings[node.id] ?? run.defaultProfileId;
         const profile = run.profiles.find((profile) => profile.id === profileId);
         if (!profile || profile.protocol !== 'native') throw new Error('unsupported_profile');
+        if (node.operation === 'cases.generate') {
+          await storeOutput(
+            run,
+            node,
+            await generateCaseBatches(run, node, inputs, profile, port, signal, onUpdate, onEvent),
+          );
+          step.status = 'succeeded';
+          onUpdate(structuredClone(run));
+          continue;
+        }
         step.turnId = newId();
         onUpdate(structuredClone(run));
         const result = await port.send(

@@ -9,8 +9,18 @@ export const requirements = {
 };
 export const design = {
   strategy: '边界验证',
+  factors: [
+    { id: 'F-1', name: '失败次数', requirementIds: ['REQ-1'], levels: ['5'], sourceQuote: '失败5次' },
+  ],
   scenarios: [
-    { id: 'SC-1', title: '第五次失败', requirementIds: ['REQ-1'], dimension: 'boundary', expected: '锁定' },
+    {
+      id: 'SC-1',
+      title: '第五次失败',
+      requirementIds: ['REQ-1'],
+      dimension: 'boundary',
+      expected: '锁定',
+      factorLevels: [{ factorId: 'F-1', level: '5' }],
+    },
   ],
   gaps: [] as string[],
 };

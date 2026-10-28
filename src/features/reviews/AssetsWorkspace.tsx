@@ -3,8 +3,9 @@ import type { ConversationSession, WorkflowRun } from '../../domain/runtime/type
 import { isCases, isDesign, isRequirements } from '../../domain/runtime/artifacts';
 import { useI18n } from '../../shared/i18n/context';
 import { ArtifactPanel } from '../sessions/ArtifactPanel';
+import { FactorList } from './FactorList';
 
-type View = 'requirements' | 'scenarios' | 'cases';
+type View = 'requirements' | 'factors' | 'scenarios' | 'cases';
 export function AssetsWorkspace({
   sessions,
   initialView = 'requirements',
@@ -55,7 +56,7 @@ export function AssetsWorkspace({
       ) : (
         <>
           <nav className="assets-tabs" aria-label={t('assetsTitle')}>
-            {(['requirements', 'scenarios', 'cases'] as const).map((item) => (
+            {(['requirements', 'factors', 'scenarios', 'cases'] as const).map((item) => (
               <button
                 key={item}
                 className="workbench-btn"
@@ -69,9 +70,11 @@ export function AssetsWorkspace({
                 {t(
                   item === 'requirements'
                     ? 'requirementItems'
-                    : item === 'scenarios'
-                      ? 'scenarioItems'
-                      : 'caseItems',
+                    : item === 'factors'
+                      ? 'factorItems'
+                      : item === 'scenarios'
+                        ? 'scenarioItems'
+                        : 'caseItems',
                 )}
               </button>
             ))}
@@ -110,11 +113,21 @@ function TaskAssets({
   const types =
     view === 'requirements'
       ? ['RequirementBaseline', 'RequirementBaselineDraft']
-      : view === 'scenarios'
+      : view === 'scenarios' || view === 'factors'
         ? ['TestDesign', 'TestDesignDraft']
         : ['TestCaseSet', 'TestCaseSetDraft'];
   const artifact = all.find((item) => item.type === types[0]) ?? all.find((item) => item.type === types[1]);
   const value = artifact?.value;
+  if (view === 'factors')
+    return (
+      <FactorList
+        value={value}
+        query={query}
+        setQuery={setQuery}
+        selected={selected}
+        setSelected={setSelected}
+      />
+    );
   const items = isRequirements(value)
     ? value.requirements.map((item) => ({ id: item.id, title: item.text, raw: item }))
     : isDesign(value)

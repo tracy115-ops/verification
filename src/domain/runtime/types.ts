@@ -38,6 +38,7 @@ export interface StepState {
   executionId?: string;
   nativeSessionId?: string;
   reviewDigest?: string;
+  caseBatches?: { signature: string; index: number; cases: CaseArtifact }[];
   errorCode?: string;
 }
 export interface WorkflowRun {
@@ -55,6 +56,8 @@ export interface WorkflowRun {
   steps: Record<string, StepState>;
   artifacts: Record<string, Artifact>;
   approvals: { nodeId: string; digest: string; approvedAt: string }[];
+  clarifications?: { question: string; answer: string; recordedAt: string }[];
+  reviewExclusions?: { nodeId: string; issue: string; reason: string; recordedAt: string }[];
   errorCode?: string;
 }
 export interface ConversationMessage {
@@ -81,7 +84,15 @@ export interface RequirementArtifact {
 }
 export interface DesignArtifact {
   strategy: string;
-  scenarios: { id: string; title: string; requirementIds: string[]; dimension: string; expected: string }[];
+  factors?: { id: string; name: string; requirementIds: string[]; levels: string[]; sourceQuote: string }[];
+  scenarios: {
+    id: string;
+    title: string;
+    requirementIds: string[];
+    dimension: string;
+    expected: string;
+    factorLevels?: { factorId: string; level: string }[];
+  }[];
   gaps: string[];
 }
 export interface CaseArtifact {

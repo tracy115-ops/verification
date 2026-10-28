@@ -17,6 +17,8 @@ export function executionTask(run: WorkflowRun, node: WorkflowNode, inputs: Reco
       operation: node.operation,
       inputs,
       sourceSpec: run.spec,
+      clarifications: run.clarifications ?? [],
+      reviewExclusions: run.reviewExclusions ?? [],
       frameworkSource: run.executionProfile?.frameworkSource,
       frameworkInstructions: run.executionProfile?.instructions,
       outputSchema: implementationSchema,
@@ -28,6 +30,8 @@ export function executionTask(run: WorkflowRun, node: WorkflowNode, inputs: Reco
       operation: node.operation,
       inputs,
       implementation: latestArtifact(run, 'ImplementationBundle'),
+      clarifications: run.clarifications ?? [],
+      reviewExclusions: run.reviewExclusions ?? [],
       outputSchema: verdictSchema,
     });
   throw new Error('unsupported_workflow');
@@ -101,7 +105,15 @@ export async function executeSystemStep(
       evidence,
       plan.payload.implementation,
     );
-    return buildReport(evidence, analysis);
+    const report = buildReport(evidence, analysis);
+    if (run.reviewExclusions?.length) {
+      report.status = 'inconclusive';
+      if (!report.counts.error && !report.counts.skipped && !report.counts.failed)
+        report.action = 'review_coverage_exclusions';
+      report.notes = [...report.notes.slice(0, 199), `review_exclusions: ${run.reviewExclusions.length}`];
+      report.reviewExclusions = structuredClone(run.reviewExclusions);
+    }
+    return report;
   }
   throw new Error('unsupported_workflow');
 }

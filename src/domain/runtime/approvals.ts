@@ -24,6 +24,8 @@ export async function reviewDigest(run: WorkflowRun, node: WorkflowNode): Promis
     executionProfile: run.executionProfile,
     nodeId: node.id,
     inputs: resolveInputs(run, node),
+    ...(run.clarifications?.length ? { clarifications: run.clarifications } : {}),
+    ...(run.reviewExclusions?.length ? { reviewExclusions: run.reviewExclusions } : {}),
     ...(run.scope === 'verification' ? { upstream } : {}),
   });
 }
