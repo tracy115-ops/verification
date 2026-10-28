@@ -7,6 +7,8 @@ import { Status } from '../../shared/components/Status';
 import { nodeLabel } from '../workflows/node-label';
 import { ArtifactPanel } from './ArtifactPanel';
 import { hasDesktopBridge } from '../../services/agent-api';
+import { isExecutionPlan, isEvidence } from '../../domain/execution/schema';
+import { ExecutionReview } from './ExecutionReview';
 
 const labels = {
   pending: 'pendingStep',
@@ -43,12 +45,23 @@ export function RunPanel({ run, actions }: { run: WorkflowRun; actions: Conversa
   const reviewArtifact = reviewInputs.find((item) =>
     ['RequirementBaselineDraft', 'TestDesignDraft', 'TestCaseSetDraft'].includes(item.type),
   );
+  const executionPlan =
+    pending?.operation === 'review.execution'
+      ? reviewInputs.find((item) => isExecutionPlan(item.value))?.value
+      : undefined;
+  const executed = Object.values(run.artifacts).some((item) => isEvidence(item.value));
+  const failedExecution = run.plan.some(
+    (node) =>
+      node.operation === 'targets.execute' && ['failed', 'interrupted'].includes(run.steps[node.id].status),
+  );
   return (
     <aside className="session-run-panel" aria-label={t('workflowProgress')}>
       <div className="wb-panel-heading">
         <h2>{t('workflowProgress')}</h2>
         <Status tone={run.status === 'completed' ? 'success' : 'accent'}>
-          {run.status === 'completed' ? t('designComplete') : t('designScope')}
+          {run.status === 'completed'
+            ? t(run.scope === 'verification' ? 'workflowComplete' : 'designComplete')
+            : t(run.scope === 'verification' ? 'verificationScope' : 'designScope')}
         </Status>
       </div>
       <div className="session-run-meta">
@@ -59,7 +72,7 @@ export function RunPanel({ run, actions }: { run: WorkflowRun; actions: Conversa
         <small>
           {t('scopeNodes')}: {run.plan.length} / {run.snapshot.definition.nodes.length}
         </small>
-        <p>{t('testsNotExecuted')}</p>
+        {!executed && <p>{t('testsNotExecuted')}</p>}
       </div>
       <ol className="session-step-list">
         {run.plan.map((node) => (
@@ -96,17 +109,26 @@ export function RunPanel({ run, actions }: { run: WorkflowRun; actions: Conversa
             </div>
           )}
           {reviewArtifact && <ArtifactPanel artifact={reviewArtifact} />}
-          <button
-            className="workbench-btn wb-primary wb-full"
-            disabled={!hasDesktopBridge() || actions.busy || !!issues.length}
-            onClick={() => void actions.approve(run, pending.id, run.steps[pending.id].reviewDigest ?? '')}
-          >
-            <Check size={15} />
-            {t('approveContinue')}
-          </button>
+          {isExecutionPlan(executionPlan) ? (
+            <ExecutionReview
+              key={executionPlan.digest}
+              plan={executionPlan}
+              busy={!hasDesktopBridge() || actions.busy || !!issues.length}
+              approve={() => void actions.approve(run, pending.id, run.steps[pending.id].reviewDigest ?? '')}
+            />
+          ) : (
+            <button
+              className="workbench-btn wb-primary wb-full"
+              disabled={!hasDesktopBridge() || actions.busy || !!issues.length}
+              onClick={() => void actions.approve(run, pending.id, run.steps[pending.id].reviewDigest ?? '')}
+            >
+              <Check size={15} />
+              {t('approveContinue')}
+            </button>
+          )}
         </section>
       )}
-      {['failed', 'interrupted'].includes(run.status) && (
+      {['failed', 'interrupted'].includes(run.status) && !failedExecution && (
         <button
           className="workbench-btn wb-full"
           disabled={!hasDesktopBridge() || actions.busy}
@@ -115,6 +137,18 @@ export function RunPanel({ run, actions }: { run: WorkflowRun; actions: Conversa
           <RefreshCw size={15} />
           {t('retryStep')}
         </button>
+      )}
+      {failedExecution && (
+        <div className="session-execution-recovery">
+          <p>{t('noExecutionRetry')}</p>
+          <button
+            className="workbench-btn"
+            disabled={!hasDesktopBridge() || actions.busy}
+            onClick={() => void actions.closeExecution(run)}
+          >
+            {t('stopOldExecution')}
+          </button>
+        </div>
       )}
       {run.status === 'awaiting_review' && (
         <button className="workbench-btn wb-full" disabled={actions.busy} onClick={() => actions.cancel(run)}>

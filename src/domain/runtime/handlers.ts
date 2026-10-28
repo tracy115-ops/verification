@@ -9,8 +9,13 @@ import {
 } from './artifacts';
 import { latestArtifact } from './bindings';
 import type { WorkflowRun } from './types';
+import { executionTask, validatedExecutionArtifact } from './execution';
+import { decodePlan } from '../execution/validation';
+import { canonicalJson } from '../execution/canonical';
 
 export function taskFor(run: WorkflowRun, node: WorkflowNode, inputs: Record<string, unknown>) {
+  if (['tests.implement', 'verdicts.evaluate'].includes(node.operation))
+    return executionTask(run, node, inputs);
   const schemas: Record<string, object> = {
     'requirements.extract': requirementSchema,
     'scenarios.design': designSchema,
@@ -31,6 +36,8 @@ export function taskFor(run: WorkflowRun, node: WorkflowNode, inputs: Record<str
 }
 
 export function validateTaskArtifact(run: WorkflowRun, node: WorkflowNode, value: unknown): unknown {
+  if (['tests.implement', 'verdicts.evaluate'].includes(node.operation))
+    return validatedExecutionArtifact(run, node, value);
   if (node.operation === 'requirements.extract') return decodeRequirements(value, run.spec);
   const requirements = decodeRequirements(latestArtifact(run, 'RequirementBaseline'), run.spec);
   if (node.operation === 'scenarios.design') return decodeDesign(value, requirements);
@@ -42,6 +49,16 @@ export function validateTaskArtifact(run: WorkflowRun, node: WorkflowNode, value
 }
 
 export function reviewIssues(run: WorkflowRun, node: WorkflowNode): string[] {
+  if (node.operation === 'review.execution') {
+    const plan = decodePlan(latestArtifact(run, 'ExecutionPlan'));
+    if (
+      canonicalJson(plan.payload.profile) !== canonicalJson(run.executionProfile) ||
+      plan.payload.runId !== run.id ||
+      plan.payload.sessionId !== run.sessionId
+    )
+      throw new Error('execution_invalid');
+    return plan.payload.implementation.questions;
+  }
   if (node.operation === 'review.requirements') {
     return decodeRequirements(latestArtifact(run, 'RequirementBaselineDraft'), run.spec).questions;
   }

@@ -6,11 +6,16 @@ async fn probe_agents() -> Vec<agent_runtime::AgentProbe> {
 pub fn run() -> tauri::Result<()> {
     tauri::Builder::default()
         .manage(conversations::ConversationRuntime::default())
+        .manage(executions::ExecutionRuntime::default())
         .invoke_handler(tauri::generate_handler![
             probe_agents,
             conversations::send_cli_turn,
-            conversations::cancel_cli_turn
+            conversations::cancel_cli_turn,
+            executions::preflight_python,
+            executions::execute_python,
+            executions::cancel_python
         ])
         .run(tauri::generate_context!())
 }
 mod conversations;
+mod executions;

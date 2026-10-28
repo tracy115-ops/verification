@@ -42,7 +42,9 @@ export function RunRecords({
               <Status tone={run.status === 'completed' ? 'success' : 'neutral'}>
                 {t(
                   run.status === 'completed'
-                    ? 'designComplete'
+                    ? run.scope === 'verification'
+                      ? 'workflowComplete'
+                      : 'designComplete'
                     : run.status === 'awaiting_review'
                       ? 'reviewStep'
                       : run.status === 'cancelled'

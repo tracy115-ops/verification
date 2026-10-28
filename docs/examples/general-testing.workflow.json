@@ -2,10 +2,10 @@
   "$schema": "../schemas/workflow-definition.schema.json",
   "schemaVersion": "1.0.0",
   "id": "general-testing",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "status": "draft",
   "name": "测试设计验证流程",
-  "description": "设计评审示例；尚无运行引擎。操作实现、角色绑定和审批契约需另行验证。",
+  "description": "黑盒测试设计与验证：支持设计评审或单文件 Python unittest 本地闭环；执行前需人工确认脚本、框架及目标。",
   "contentLocale": "source",
   "limits": {
     "deadlineSeconds": 14400,

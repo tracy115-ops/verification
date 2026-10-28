@@ -1,7 +1,9 @@
 import { conversationEn, conversationZh } from './conversation-messages';
 import { teamEn, teamZh } from './team-messages';
+import { executionEn, executionZh } from './execution-messages';
 
 export const zh = {
+  ...executionZh,
   ...teamZh,
   ...conversationZh,
   nodeCountOne: '{count} 个节点',
@@ -159,6 +161,7 @@ export const zh = {
 } as const;
 
 export const en: Record<keyof typeof zh, string> = {
+  ...executionEn,
   ...teamEn,
   ...conversationEn,
   nodeCountOne: '{count} node',

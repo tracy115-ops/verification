@@ -5,9 +5,37 @@ import { useConversations } from './useConversations';
 import { fixturePort, savedDocument, spec } from '../domain/runtime/fixtures.test-support';
 import type { AgentPort, TurnOutcome } from '../domain/runtime/types';
 import { CONVERSATIONS_KEY } from '../services/conversation-repository';
+import { verificationPorts } from '../domain/execution/fixtures.test-support';
+import { exampleFramework } from '../domain/execution/presets';
 
 beforeEach(() => localStorage.clear());
 afterEach(cleanup);
+
+it('persists the full workflow and keeps Python behind the fourth approval', async () => {
+  const saved = savedDocument();
+  const ports = verificationPorts();
+  const { result } = renderHook(() => useConversations(saved.profiles, saved, ports.agent, ports.execution));
+  await act(async () => {
+    await result.current.send(spec, true, 'codex-native', exampleFramework());
+  });
+  for (let gate = 0; gate < 4; gate++) {
+    expect(ports.calls).not.toContain('targets.execute');
+    const run = result.current.session!.runs[0];
+    const node = run.plan.find((item) => run.steps[item.id].status === 'awaiting_review')!;
+    await act(async () => {
+      await result.current.approve(run, node.id, run.steps[node.id].reviewDigest!);
+    });
+  }
+  expect(result.current.session!.runs[0].status).toBe('completed');
+  const persisted = JSON.parse(localStorage.getItem(CONVERSATIONS_KEY)!)[0].runs[0];
+  expect(persisted.scope).toBe('verification');
+  expect(persisted.approvals).toHaveLength(4);
+  expect(
+    Object.values(persisted.artifacts).some(
+      (item: unknown) => (item as { type: string }).type === 'EvidenceBundle',
+    ),
+  ).toBe(true);
+});
 
 it('invokes the saved workflow through the session and persists each human gate', async () => {
   const saved = savedDocument();

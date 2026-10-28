@@ -35,6 +35,55 @@
 .session-run-picker {
   margin: 12px 24px;
 }
+.session-execution-review dl {
+  display: grid;
+  grid-template-columns: 1fr;
+  font-size: 11px;
+  gap: 6px;
+}
+.session-execution-review dt {
+  color: var(--wb-muted);
+  margin-top: 6px;
+}
+.session-execution-review dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.session-execution-review pre {
+  max-height: 420px;
+  overflow: auto;
+  font-size: 11px;
+  white-space: pre-wrap;
+}
+.session-execution-review > details {
+  margin-block: 14px;
+}
+.session-execution-review > p {
+  font-size: 11px;
+  line-height: 1.8;
+}
+.session-execution-confirm {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.8;
+  margin-block: 14px;
+}
+.session-execution-confirm input {
+  margin-top: 4px;
+}
+.session-result-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-block: 12px;
+}
+.session-execution-recovery {
+  padding: 16px;
+  font-size: 12px;
+  line-height: 1.8;
+}
 .session-messages {
   flex: 1;
   overflow: auto;

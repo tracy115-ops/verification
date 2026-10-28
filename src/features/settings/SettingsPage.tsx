@@ -3,8 +3,10 @@ import type { AgentProfile } from '../../domain/workflow';
 import type { Locale, MessageKey } from '../../shared/i18n/messages';
 import { useI18n } from '../../shared/i18n/context';
 import { AgentSettings } from '../agents/AgentSettings';
+import { FrameworkSettings } from './FrameworkSettings';
+import type { Frameworks } from '../../app/useFrameworks';
 
-export type SettingsTab = 'general' | 'agents';
+export type SettingsTab = 'general' | 'agents' | 'frameworks';
 export interface Appearance {
   locale: Locale;
   setLocale: (locale: Locale) => void;
@@ -18,6 +20,7 @@ export function SettingsPage({
   tab,
   setTab,
   appearance,
+  frameworks,
 }: {
   profiles: AgentProfile[];
   addProfile: (profile: AgentProfile) => void;
@@ -25,6 +28,7 @@ export function SettingsPage({
   tab: SettingsTab;
   setTab: (tab: SettingsTab) => void;
   appearance: Appearance;
+  frameworks: Frameworks;
 }) {
   const { t } = useI18n();
   return (
@@ -38,8 +42,17 @@ export function SettingsPage({
           <Bot size={15} />
           {t('agents')}
         </button>
+        <button
+          className="workbench-btn"
+          aria-pressed={tab === 'frameworks'}
+          onClick={() => setTab('frameworks')}
+        >
+          {t('frameworkSettings')}
+        </button>
       </nav>
-      {tab === 'agents' ? (
+      {tab === 'frameworks' ? (
+        <FrameworkSettings settings={frameworks} />
+      ) : tab === 'agents' ? (
         <AgentSettings profiles={profiles} addProfile={addProfile} notify={notify} />
       ) : (
         <section className="settings-general">

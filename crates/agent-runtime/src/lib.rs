@@ -2,7 +2,6 @@ mod codeagent;
 mod conversation;
 mod discovery;
 mod probe;
-mod process_guard;
 mod protocol;
 mod turn_types;
 

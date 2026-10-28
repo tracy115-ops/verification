@@ -15,5 +15,5 @@
     "noFallthroughCasesInSwitch": true,
     "types": ["vite/client", "vitest/globals", "node"]
   },
-  "include": ["src", "server", "tests/e2e", "*.config.ts"]
+  "include": ["src", "server", "tests/e2e", "tests/runtime", "*.config.ts"]
 }

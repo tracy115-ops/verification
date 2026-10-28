@@ -6,15 +6,20 @@ import type { AgentEvent, AgentPort, ConversationSession, WorkflowRun } from '..
 import type { AgentProfile, WorkbenchDocument } from '../domain/workflow';
 import { DesktopAgentPort } from '../services/conversation-api';
 import { useConversationStore } from './useConversationStore';
+import type { ExecutionPort, FrameworkProfile } from '../domain/execution/types';
+import { DesktopExecutionPort } from '../services/execution-api';
 
 export function useConversations(
   profiles: AgentProfile[],
   saved: WorkbenchDocument | null,
   providedPort?: AgentPort,
+  providedExecutionPort?: ExecutionPort,
 ) {
   const store = useConversationStore();
   const [nativePort] = useState(() => new DesktopAgentPort());
   const port = providedPort ?? nativePort;
+  const [nativeExecution] = useState(() => new DesktopExecutionPort());
+  const executionPort = providedExecutionPort ?? nativeExecution;
   const [busy, setBusy] = useState(false);
   const [stream, setStream] = useState('');
   const [selectedRunId, setSelectedRunId] = useState('');
@@ -42,7 +47,14 @@ export function useConversations(
     if (event.type === 'text' && event.text) setStream((text) => text + event.text);
   }
   async function drive(run: WorkflowRun, controller: AbortController) {
-    await advanceRun(run, port, controller.signal, (value) => updateRun(run.sessionId, value), onEvent);
+    await advanceRun(
+      run,
+      port,
+      controller.signal,
+      (value) => updateRun(run.sessionId, value),
+      onEvent,
+      executionPort,
+    );
   }
   function selectSession(id: string) {
     if (!abort.current) {
@@ -58,7 +70,12 @@ export function useConversations(
     selectSession(value.id);
     setError(null);
   }
-  async function send(text: string, invoke: boolean, profileId: string): Promise<boolean> {
+  async function send(
+    text: string,
+    invoke: boolean,
+    profileId: string,
+    framework?: FrameworkProfile,
+  ): Promise<boolean> {
     if (abort.current || !text.trim()) return false;
     let accepted = false;
     await perform(async (controller) => {
@@ -77,7 +94,7 @@ export function useConversations(
         if (!saved) throw new Error('workflow_not_saved');
         if (current.runs.some((run) => ['ready', 'running', 'awaiting_review'].includes(run.status)))
           throw new Error('run_in_progress');
-        const run = createRun(saved, value.id, command.spec, profiles, profileId);
+        const run = createRun(saved, value.id, command.spec, profiles, profileId, framework);
         value.runs = [...value.runs, run];
         setSelectedRunId(run.id);
         changeSession(value);
@@ -121,6 +138,7 @@ export function useConversations(
         .map((node) => run.steps[node.id])
         .find((step) => ['failed', 'interrupted'].includes(step.status));
       if (previous?.turnId) await port.cancel(previous.turnId);
+      if (previous?.executionId) await executionPort.cancel(previous.executionId);
       await drive(retryRun(run), controller);
     });
   }
@@ -131,6 +149,13 @@ export function useConversations(
       const settled = { ...session };
       delete settled.activeTurnId;
       changeSession(settled);
+    });
+  }
+  async function closeExecution(run: WorkflowRun) {
+    await perform(async () => {
+      for (const step of Object.values(run.steps))
+        if (step.executionId) await executionPort.cancel(step.executionId);
+      updateRun(run.sessionId, { ...run, status: 'cancelled' });
     });
   }
   function cancel(run?: WorkflowRun) {
@@ -151,6 +176,7 @@ export function useConversations(
     retry,
     cancel,
     stopRecovered,
+    closeExecution,
     selectedRunId,
     setSelectedRunId,
   };

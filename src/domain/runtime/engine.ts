@@ -6,15 +6,12 @@ import { reviewIssues, taskFor, validateTaskArtifact } from './handlers';
 import { digest } from './plan';
 import { inferenceModel } from './profile';
 import type { AgentEvent, AgentPort, WorkflowRun } from './types';
-
-export async function reviewDigest(run: WorkflowRun, node: WorkflowNode): Promise<string> {
-  return digest({
-    snapshot: run.snapshot,
-    spec: run.spec,
-    nodeId: node.id,
-    inputs: resolveInputs(run, node),
-  });
-}
+import type { ExecutionPort } from '../execution/types';
+import { executeSystemStep } from './execution';
+import { decodePlan } from '../execution/validation';
+import { latestArtifact } from './bindings';
+import { reviewDigest } from './approvals';
+export { reviewDigest } from './approvals';
 
 async function storeOutput(run: WorkflowRun, node: WorkflowNode, value: unknown) {
   const outputs = Object.entries(node.outputs);
@@ -29,6 +26,7 @@ export async function advanceRun(
   signal: AbortSignal,
   onUpdate: (run: WorkflowRun) => void,
   onEvent: (event: AgentEvent) => void,
+  executionPort?: ExecutionPort,
 ): Promise<WorkflowRun> {
   const run = structuredClone(initial);
   run.status = 'running';
@@ -56,6 +54,7 @@ export async function advanceRun(
       if (node.kind === 'human') {
         step.status = 'awaiting_review';
         step.reviewDigest = await reviewDigest(run, node);
+        if (signal.aborted) throw new Error('execution_cancelled');
         run.status = 'awaiting_review';
         onUpdate(structuredClone(run));
         return run;
@@ -64,6 +63,12 @@ export async function advanceRun(
       step.attempts++;
       if (node.operation === 'documents.import') {
         await storeOutput(run, node, { text: run.spec, revision: 1 });
+      } else if (['targets.preflight', 'targets.execute', 'actions.dispatch'].includes(node.operation)) {
+        if (node.operation === 'targets.preflight') step.executionId = newId();
+        if (node.operation === 'targets.execute')
+          step.executionId = decodePlan(latestArtifact(run, 'ExecutionPlan')).payload.executionId;
+        onUpdate(structuredClone(run));
+        await storeOutput(run, node, await executeSystemStep(run, node, executionPort, signal));
       } else {
         const profileId = run.snapshot.bindings[node.id] ?? run.defaultProfileId;
         const profile = run.profiles.find((profile) => profile.id === profileId);
@@ -108,6 +113,8 @@ export async function approveRun(
 ): Promise<WorkflowRun> {
   const run = structuredClone(initial);
   const node = run.plan.find((node) => node.id === nodeId);
+  if (Date.now() > Date.parse(run.createdAt) + run.snapshot.definition.limits.deadlineSeconds * 1000)
+    throw new Error('run_deadline');
   if (run.status !== 'awaiting_review' || !node || run.steps[nodeId].status !== 'awaiting_review')
     throw new Error('approval_invalid');
   if (expectedDigest !== run.steps[nodeId].reviewDigest || expectedDigest !== (await reviewDigest(run, node)))
@@ -121,11 +128,16 @@ export async function approveRun(
   const inputKey = Object.keys(node.inputs).find(
     (key) => node.inputs[key].type === draftTypes[node.operation],
   );
-  if (node.operation !== 'review.custom' && !inputKey) throw new Error('approval_invalid');
+  if (!['review.custom', 'review.execution'].includes(node.operation) && !inputKey)
+    throw new Error('approval_invalid');
   await storeOutput(
     run,
     node,
-    node.operation === 'review.custom' ? { approved: true } : resolveInputs(run, node)[inputKey!],
+    node.operation === 'review.execution'
+      ? { planDigest: decodePlan(latestArtifact(run, 'ExecutionPlan')).digest, reviewDigest: expectedDigest }
+      : node.operation === 'review.custom'
+        ? { approved: true }
+        : resolveInputs(run, node)[inputKey!],
   );
   run.steps[nodeId].status = 'succeeded';
   run.approvals.push({ nodeId, digest: expectedDigest, approvedAt: new Date().toISOString() });

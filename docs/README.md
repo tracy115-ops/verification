@@ -1,6 +1,6 @@
 # 验证 Agent 设计档案
 
-更新：2026-10-27。状态：**会话与局域网协作开发版**。已实现共享因子 / 场景设计、分工、评审、HTTP / SQLite 服务，以及 CLI 配置与设计运行。真实 Codex 已根据游戏题目和给定框架生成 Python，并在本地样例捕获缺陷；正式编排执行范围仍到用例评审。任意框架、内部 CodeAgent 目标环境及远程执行仍待接入或验证。
+更新：2026-10-27。状态：**本地黑盒验证闭环与局域网协作开发版**。正式编排可选择设计评审，或运行完整 13 节点：题目 → 场景 / 用例 → Python → 人工执行确认 → 本地执行 → 证据分析与报告。当前执行适配单文件 Python unittest；共享因子 / 场景、分工与评审使用独立 HTTP / SQLite 服务。任意框架、内部 CodeAgent 目标环境及远程执行仍待接入或验证。
 
 ## 文档导航
 
@@ -11,12 +11,15 @@
 | [会话调用与设置方案](design/conversation-and-settings.md) | 保存流程如何从会话调用、真实 CLI 边界与恢复规则 |
 | [黑盒与团队协作](design/blackbox-and-team-testing.md) | 题目 / 框架输入、Python 输出、共享因子场景与局域网部署 |
 | [黑盒与协作验证](research/blackbox-and-team-validation.md) | 真实 CLI 生成 36 项 Python 测试、缺陷证据和多人回归 |
+| [本地 Python 工作流使用与契约](workflows/local-python-verification.md) | 框架设置、四次确认、方法映射、证据格式及恢复边界 |
+| [完整工作流验证记录](research/python-workflow-validation.md) | 正式状态机、真实 Python、12 个失败方法 / 8 组候选与修复版对照 |
 | [内部 CodeAgent 驱动](architecture/codeagent-driver.md) | 内置模型、扫描路径、参数探测与实际验证边界 |
 | [ADR-0002](adr/0002-lan-design-collaboration-service.md) | HTTP 协作服务与 SQLite 的职责和取舍 |
 | [首轮开发计划](roadmap/development-plan.md) | 已实现的第一轮范围及后续开发边界 |
 | [产品定位与头脑风暴](product/vision-and-brainstorm.md) | 谁使用、完整旅程、差异点、优先级与待定项 |
 | [系统架构与选型](architecture/system-design.md) | 为什么选择本地工作台、如何分层、模块边界 |
 | [CLI 与 Provider](architecture/cli-and-provider-design.md) | 使用已安装 Agent、快速配置和兼容性探测 |
+| [CLI 操作与工作流接入分析](architecture/cli-workflow-operation-analysis.md) | 设置、会话、各 CLI 已验证边界及 CodeAgent 目标环境验收 |
 | [工作流引擎](architecture/workflow-engine.md) | 自定义生成、保存、审核、版本化与恢复 |
 | [需求追溯与点灯](architecture/domain-and-traceability.md) | 原文定位、场景树、完整性评估、变更失效 |
 | [执行、判定与后续动作](architecture/execution-and-verdict.md) | 本地 / SSH / WSL、证据、判定优先级及闭环 |
@@ -27,7 +30,7 @@
 | [首轮开发验证记录](research/first-development-validation.md) | 实际构建、测试、CLI 探针结果与未完成边界 |
 | [会话开发验证记录](research/conversation-development-validation.md) | 本轮状态机、CLI 协议、进程取消和界面验证 |
 | [ADR-0001](adr/0001-local-first-modular-monolith.md) | 首个架构决策及替代方案 |
-| [工作流 JSON 示例](examples/general-testing.workflow.json) | 声明式定义的评审样本，不是已支持的运行格式 |
+| [工作流 JSON 示例](examples/general-testing.workflow.json) | 当前 13 节点模板；设置 Profile 后保存，再从会话调用 |
 | [可编辑架构图](diagrams/verification-platform.drawio) | 模块关系；用 draw.io 打开 |
 
 ## 推荐阅读顺序

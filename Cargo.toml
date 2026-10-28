@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/agent-runtime", "src-tauri"]
+members = ["crates/process-runtime", "crates/agent-runtime", "crates/execution-runtime", "src-tauri"]
 default-members = ["crates/agent-runtime"]
 resolver = "2"
 

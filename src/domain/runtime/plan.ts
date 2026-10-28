@@ -2,8 +2,10 @@ import { checkDocument, type AgentProfile, type WorkbenchDocument } from '../wor
 import type { WorkflowRun } from './types';
 import { newId } from '../../shared/id';
 import { inferenceModel } from './profile';
+import type { FrameworkProfile } from '../execution/types';
+import { decodeFramework } from '../execution/validation';
 
-const supported = new Set([
+const designOperations = [
   'documents.import',
   'requirements.extract',
   'review.requirements',
@@ -12,7 +14,15 @@ const supported = new Set([
   'cases.generate',
   'review.cases',
   'review.custom',
-]);
+];
+const executionOperations = [
+  'tests.implement',
+  'targets.preflight',
+  'review.execution',
+  'targets.execute',
+  'verdicts.evaluate',
+  'actions.dispatch',
+];
 
 export function createRun(
   snapshot: WorkbenchDocument,
@@ -20,10 +30,13 @@ export function createRun(
   spec: string,
   profiles: AgentProfile[],
   defaultProfileId: string,
+  executionProfile?: FrameworkProfile,
 ): WorkflowRun {
   if (snapshot.revision < 1 || checkDocument(snapshot).length || !spec.trim() || spec.length > 40000)
     throw new Error('invalid_run');
-  const terminal = snapshot.definition.nodes.find((node) => node.operation === 'review.cases');
+  const terminal = snapshot.definition.nodes.find(
+    (node) => node.operation === (executionProfile ? 'actions.dispatch' : 'review.cases'),
+  );
   if (!terminal) throw new Error('unsupported_workflow');
   const selected = new Set<string>();
   const lookup = new Map(snapshot.definition.nodes.map((node) => [node.id, node]));
@@ -35,7 +48,10 @@ export function createRun(
     for (const parent of node.dependsOn) select(parent);
   }
   select(terminal.id);
-  const plan = snapshot.definition.nodes.filter((node) => selected.has(node.id));
+  const plan = snapshot.definition.nodes.filter((node) => executionProfile || selected.has(node.id));
+  const supported = new Set(
+    executionProfile ? [...designOperations, ...executionOperations] : designOperations,
+  );
   if (plan.some((node) => !supported.has(node.operation))) throw new Error('unsupported_workflow');
   for (const operation of supported) {
     if (operation !== 'review.custom' && plan.filter((node) => node.operation === operation).length !== 1)
@@ -52,7 +68,8 @@ export function createRun(
     id: newId(),
     sessionId,
     createdAt: new Date().toISOString(),
-    scope: 'design',
+    scope: executionProfile ? 'verification' : 'design',
+    ...(executionProfile ? { executionProfile: decodeFramework(executionProfile) } : {}),
     snapshot,
     plan: structuredClone(plan),
     profiles,

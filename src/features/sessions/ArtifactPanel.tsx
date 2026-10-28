@@ -1,12 +1,14 @@
 import type { Artifact } from '../../domain/runtime/types';
 import { isCases, isDesign, isRequirements } from '../../domain/runtime/artifacts';
 import { useI18n } from '../../shared/i18n/context';
+import { ExecutionArtifact } from './ExecutionArtifact';
 
 export function ArtifactPanel({ artifact }: { artifact: Artifact }) {
   const { t } = useI18n();
   const value = artifact.value;
   return (
     <section className="session-artifact">
+      <ExecutionArtifact artifact={artifact} />
       {isRequirements(value) && (
         <>
           <h3>{t('requirementItems')}</h3>

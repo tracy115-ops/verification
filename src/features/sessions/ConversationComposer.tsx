@@ -4,6 +4,7 @@ import type { Conversations } from '../../app/useConversations';
 import type { AgentProfile, WorkbenchDocument } from '../../domain/workflow';
 import { hasDesktopBridge } from '../../services/agent-api';
 import { useI18n } from '../../shared/i18n/context';
+import type { FrameworkProfile } from '../../domain/execution/types';
 
 export function ConversationComposer({
   actions,
@@ -11,21 +12,29 @@ export function ConversationComposer({
   saved,
   dirty,
   openWorkflow,
+  frameworks,
 }: {
   actions: Conversations;
   profiles: AgentProfile[];
   saved: WorkbenchDocument | null;
   dirty: boolean;
   openWorkflow: () => void;
+  frameworks: FrameworkProfile[];
 }) {
   const { t } = useI18n();
   const [text, setText] = useState('');
   const [invoke, setInvoke] = useState(false);
   const [profileId, setProfileId] = useState(actions.session?.profileId ?? profiles[0]?.id ?? '');
   const [attachmentError, setAttachmentError] = useState(false);
+  const [frameworkId, setFrameworkId] = useState('');
   const file = useRef<HTMLInputElement>(null);
   async function send() {
-    if (await actions.send(text, invoke, profileId)) setText('');
+    const framework = invoke && frameworkId ? frameworks.find((item) => item.id === frameworkId) : undefined;
+    if (invoke && frameworkId && !framework) {
+      actions.setError('execution_invalid');
+      return;
+    }
+    if (await actions.send(text, invoke, profileId, framework)) setText('');
   }
   async function attach(input?: File) {
     if (!input) return;
@@ -79,8 +88,26 @@ export function ConversationComposer({
         </label>
       </div>
       {invoke && (
+        <label className="wb-field">
+          {t('executionScope')}
+          <select
+            className="workbench-select"
+            disabled={actions.busy}
+            value={frameworkId}
+            onChange={(event) => setFrameworkId(event.target.value)}
+          >
+            <option value="">{t('designScope')}</option>
+            {frameworks.map((profile) => (
+              <option key={profile.id} value={profile.id}>
+                {t('verificationScope')} · {profile.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      {invoke && (
         <p className="session-scope">
-          {t('designScope')}
+          {t(frameworkId ? 'verificationScope' : 'designScope')}
           {dirty && <span> · {t('unsavedWorkflowHint')}</span>}
         </p>
       )}

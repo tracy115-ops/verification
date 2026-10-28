@@ -2,6 +2,8 @@ import Ajv2020 from 'ajv/dist/2020.js';
 import { decodeDocument } from '../domain/document';
 import { checkWorkflow } from '../domain/workflow';
 import type { ConversationSession } from '../domain/runtime/types';
+import { frameworkSchema } from '../domain/execution/schema';
+import { decodeFramework } from '../domain/execution/validation';
 
 export const CONVERSATIONS_KEY = 'verification-workbench.conversations.v1';
 const string = { type: 'string' };
@@ -14,6 +16,7 @@ const step = {
     status: { enum: ['pending', 'running', 'awaiting_review', 'succeeded', 'failed', 'interrupted'] },
     attempts: { type: 'integer', minimum: 0 },
     turnId: string,
+    executionId: string,
     reviewDigest: string,
     ...optionalStrings,
   },
@@ -40,7 +43,8 @@ const run = {
     id: string,
     sessionId: string,
     createdAt: string,
-    scope: { const: 'design' },
+    scope: { enum: ['design', 'verification'] },
+    executionProfile: frameworkSchema,
     snapshot: { type: 'object' },
     plan: { type: 'array', maxItems: 100 },
     profiles: { type: 'array', maxItems: 100 },
@@ -112,6 +116,7 @@ export function decodeConversations(value: unknown): ConversationSession[] {
   const sessions = structuredClone(value);
   for (const session of sessions) {
     for (const run of session.runs) {
+      if (run.scope === 'verification') decodeFramework(run.executionProfile);
       if (!Number.isFinite(Date.parse(run.createdAt))) throw new Error('session_storage_invalid');
       decodeDocument(run.snapshot);
       decodeDocument({ ...run.snapshot, profiles: run.profiles });

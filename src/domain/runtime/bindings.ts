@@ -6,7 +6,14 @@ export function resolveInputs(run: WorkflowRun, node: WorkflowNode): Record<stri
   for (const [key, input] of Object.entries(node.inputs)) {
     if (input.from === '$input.spec') result[key] = { text: run.spec };
     else if (input.from === '$input.context')
-      result[key] = { contentLocale: run.snapshot.definition.contentLocale };
+      result[key] = {
+        contentLocale: run.snapshot.definition.contentLocale,
+        blackBox: true,
+        frameworkInstructions: run.executionProfile?.instructions ?? '',
+      };
+    else if (input.from === '$input.implementation') result[key] = run.executionProfile;
+    else if (input.from === '$input.target') result[key] = run.executionProfile;
+    else if (input.from === '$input.action_policy') result[key] = { mode: 'report_only' };
     else {
       const artifact = run.artifacts[input.from];
       if (!artifact || artifact.type !== input.type) throw new Error('artifact_reference_invalid');

@@ -1,4 +1,5 @@
 import type { AgentProfile, DriverId, WorkbenchDocument, WorkflowNode } from '../workflow';
+import type { FrameworkProfile } from '../execution/types';
 
 export interface AgentEvent {
   type: 'text' | 'activity' | 'session' | 'heartbeat';
@@ -34,6 +35,7 @@ export interface StepState {
   status: StepStatus;
   attempts: number;
   turnId?: string;
+  executionId?: string;
   nativeSessionId?: string;
   reviewDigest?: string;
   errorCode?: string;
@@ -42,7 +44,8 @@ export interface WorkflowRun {
   id: string;
   sessionId: string;
   createdAt: string;
-  scope: 'design';
+  scope: 'design' | 'verification';
+  executionProfile?: FrameworkProfile;
   snapshot: WorkbenchDocument;
   plan: WorkflowNode[];
   profiles: AgentProfile[];

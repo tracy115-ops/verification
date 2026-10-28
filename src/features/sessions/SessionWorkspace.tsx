@@ -5,6 +5,7 @@ import { hasDesktopBridge } from '../../services/agent-api';
 import { isMessageKey, useI18n } from '../../shared/i18n/context';
 import { ConversationComposer } from './ConversationComposer';
 import { RunPanel } from './RunPanel';
+import type { FrameworkProfile } from '../../domain/execution/types';
 
 export function SessionWorkspace({
   actions,
@@ -13,6 +14,7 @@ export function SessionWorkspace({
   dirty,
   openWorkflow,
   openSettings,
+  frameworks,
 }: {
   actions: Conversations;
   profiles: AgentProfile[];
@@ -20,6 +22,7 @@ export function SessionWorkspace({
   dirty: boolean;
   openWorkflow: () => void;
   openSettings: () => void;
+  frameworks: FrameworkProfile[];
 }) {
   const { t } = useI18n();
   const activeRun =
@@ -146,6 +149,7 @@ export function SessionWorkspace({
           saved={saved}
           dirty={dirty}
           openWorkflow={openWorkflow}
+          frameworks={frameworks}
         />
       </section>
       {activeRun && <RunPanel run={activeRun} actions={actions} />}

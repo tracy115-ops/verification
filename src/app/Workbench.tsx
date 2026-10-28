@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { useWorkbench } from './useWorkbench';
 import { useConversations } from './useConversations';
+import { useFrameworks } from './useFrameworks';
 import { Sidebar } from './Sidebar';
 import { Titlebar, PageHeading, DocumentBar, Notifications, Statusbar } from './WorkbenchChrome';
 import { workspacePage, type Page } from './navigation';
@@ -27,6 +28,7 @@ const TeamWorkspace = lazy(() =>
 
 export function Workbench({ appearance }: { appearance: Appearance }) {
   const workbench = useWorkbench();
+  const frameworks = useFrameworks();
   const conversations = useConversations(workbench.document.profiles, workbench.savedDocument);
   const [page, setPage] = useState<Page>('sessions');
   const [settingsTab, setSettingsTab] = useState<SettingsTab>('general');
@@ -63,6 +65,7 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
                 profiles={workbench.document.profiles}
                 saved={workbench.savedDocument}
                 dirty={workbench.dirty}
+                frameworks={frameworks.profiles}
                 openWorkflow={() => setPage('workflow')}
                 openSettings={openAgents}
               />
@@ -86,6 +89,7 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
                 tab={settingsTab}
                 setTab={setSettingsTab}
                 appearance={appearance}
+                frameworks={frameworks}
               />
             )}
             {(page === 'assets' || page === 'cases') && (
