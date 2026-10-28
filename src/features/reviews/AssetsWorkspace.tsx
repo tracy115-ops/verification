@@ -4,18 +4,23 @@ import { isCases, isDesign, isRequirements } from '../../domain/runtime/artifact
 import { useI18n } from '../../shared/i18n/context';
 import { ArtifactPanel } from '../sessions/ArtifactPanel';
 import { FactorList } from './FactorList';
+import { TraceLinks } from './TraceLinks';
 
 type View = 'requirements' | 'factors' | 'scenarios' | 'cases';
 export function AssetsWorkspace({
   sessions,
   initialView = 'requirements',
+  initialRunId,
 }: {
   sessions: ConversationSession[];
   initialView?: View;
+  initialRunId?: string;
 }) {
   const { t, locale } = useI18n();
   const records = sessions.flatMap((session) => session.runs.map((run) => ({ session, run })));
-  const [runId, setRunId] = useState(records.at(-1)?.run.id ?? '');
+  const [runId, setRunId] = useState(
+    records.some((item) => item.run.id === initialRunId) ? initialRunId! : (records.at(-1)?.run.id ?? ''),
+  );
   const [view, setView] = useState<View>(initialView);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState('');
@@ -86,6 +91,11 @@ export function AssetsWorkspace({
             setQuery={setQuery}
             selected={selected}
             setSelected={setSelected}
+            navigate={(next, id) => {
+              setView(next);
+              setSelected(id);
+              setQuery('');
+            }}
           />
         </>
       )}
@@ -100,6 +110,7 @@ function TaskAssets({
   setQuery,
   selected,
   setSelected,
+  navigate,
 }: {
   run: WorkflowRun;
   view: View;
@@ -107,6 +118,7 @@ function TaskAssets({
   setQuery: (value: string) => void;
   selected: string;
   setSelected: (value: string) => void;
+  navigate: (kind: 'requirements' | 'scenarios' | 'cases', id: string) => void;
 }) {
   const { t } = useI18n();
   const all = Object.values(run.artifacts);
@@ -126,6 +138,7 @@ function TaskAssets({
         setQuery={setQuery}
         selected={selected}
         setSelected={setSelected}
+        navigate={navigate}
       />
     );
   const items = isRequirements(value)
@@ -187,7 +200,14 @@ function TaskAssets({
         ))}
       </div>
       <div className="assets-detail">
-        {detail ? <ArtifactPanel artifact={detail} /> : <p className="wb-muted">{t('assetSelectItem')}</p>}
+        {detail ? (
+          <>
+            <ArtifactPanel artifact={detail} onNavigate={navigate} />
+            <TraceLinks run={run} view={view} id={current!.id} navigate={navigate} />
+          </>
+        ) : (
+          <p className="wb-muted">{t('assetSelectItem')}</p>
+        )}
       </div>
     </div>
   );

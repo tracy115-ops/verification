@@ -39,6 +39,7 @@ export interface StepState {
   nativeSessionId?: string;
   reviewDigest?: string;
   caseBatches?: { signature: string; index: number; cases: CaseArtifact }[];
+  caseBatchAttempts?: number;
   errorCode?: string;
 }
 export interface WorkflowRun {

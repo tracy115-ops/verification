@@ -37,8 +37,24 @@ it('switches between runs and searches only their own approved artifacts', () =>
   fireEvent.click(screen.getByRole('button', { name: '测试因子' }));
   expect(within(document.querySelector('.assets-list') as HTMLElement).getByText('F-1')).toBeTruthy();
   expect(screen.getByText('因子水平')).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: /^REQ-1$/ }));
+  fireEvent.click(screen.getByRole('button', { name: 'SC-1 · 第五次失败' }));
+  expect(within(document.querySelector('.assets-list') as HTMLElement).getByText('SC-1')).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: 'TC-1 · 失败锁定' }));
+  expect(within(document.querySelector('.assets-list') as HTMLElement).getByText('TC-1')).toBeTruthy();
   fireEvent.click(screen.getByRole('button', { name: '测试用例' }));
   expect(within(document.querySelector('.assets-list') as HTMLElement).getByText('TC-1')).toBeTruthy();
   fireEvent.change(screen.getByRole('textbox'), { target: { value: 'no-match' } });
   expect(screen.getByText('没有匹配条目')).toBeTruthy();
+});
+
+it('opens the selected run from the review panel instead of the newest unrelated run', () => {
+  const first = fixtureRun();
+  const second = fixtureRun();
+  const sessions: ConversationSession[] = [
+    { id: first.sessionId, title: 'one', profileId: 'codex-native', messages: [], runs: [first] },
+    { id: second.sessionId, title: 'two', profileId: 'codex-native', messages: [], runs: [second] },
+  ];
+  render(<AssetsWorkspace sessions={sessions} initialRunId={first.id} />);
+  expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe(first.id);
 });

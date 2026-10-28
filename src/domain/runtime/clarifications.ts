@@ -52,7 +52,7 @@ export async function excludeReviewIssues(
   if (
     run.status !== 'awaiting_review' ||
     !node ||
-    !['review.coverage', 'review.cases'].includes(node.operation) ||
+    !['review.requirements', 'review.coverage', 'review.cases'].includes(node.operation) ||
     run.steps[nodeId]?.status !== 'awaiting_review'
   )
     throw new Error('approval_invalid');

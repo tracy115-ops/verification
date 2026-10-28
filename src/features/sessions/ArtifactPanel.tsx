@@ -3,7 +3,13 @@ import { isCases, isDesign, isRequirements } from '../../domain/runtime/artifact
 import { useI18n } from '../../shared/i18n/context';
 import { ExecutionArtifact } from './ExecutionArtifact';
 
-export function ArtifactPanel({ artifact }: { artifact: Artifact }) {
+export function ArtifactPanel({
+  artifact,
+  onNavigate,
+}: {
+  artifact: Artifact;
+  onNavigate?: (kind: 'requirements' | 'scenarios', id: string) => void;
+}) {
   const { t } = useI18n();
   const value = artifact.value;
   return (
@@ -16,7 +22,13 @@ export function ArtifactPanel({ artifact }: { artifact: Artifact }) {
             <article key={item.id}>
               <code>{item.id}</code>
               <h4>{item.text}</h4>
-              <blockquote>{item.quote}</blockquote>
+              <blockquote>{item.quote.length > 400 ? `${item.quote.slice(0, 400)}…` : item.quote}</blockquote>
+              {item.quote.length > 400 && (
+                <details>
+                  <summary>{t('viewFullQuote')}</summary>
+                  <blockquote>{item.quote}</blockquote>
+                </details>
+              )}
               <small>{t('acceptanceCriteria')}</small>
               <ul>
                 {item.acceptanceCriteria.map((text, i) => (
@@ -37,7 +49,17 @@ export function ArtifactPanel({ artifact }: { artifact: Artifact }) {
               <h4>{item.title}</h4>
               <p>
                 <small>{t('relatedRequirements')}: </small>
-                {item.requirementIds.join(', ')}
+                {onNavigate
+                  ? item.requirementIds.map((id) => (
+                      <button
+                        key={id}
+                        className="workbench-btn wb-text"
+                        onClick={() => onNavigate('requirements', id)}
+                      >
+                        {id}
+                      </button>
+                    ))
+                  : item.requirementIds.join(', ')}
               </p>
               <p>
                 <small>{t('coverageDimension')}: </small>
@@ -63,11 +85,31 @@ export function ArtifactPanel({ artifact }: { artifact: Artifact }) {
               <h4>{item.title}</h4>
               <p>
                 <small>{t('relatedScenarios')}: </small>
-                {item.scenarioIds.join(', ')}
+                {onNavigate
+                  ? item.scenarioIds.map((id) => (
+                      <button
+                        key={id}
+                        className="workbench-btn wb-text"
+                        onClick={() => onNavigate('scenarios', id)}
+                      >
+                        {id}
+                      </button>
+                    ))
+                  : item.scenarioIds.join(', ')}
               </p>
               <p>
                 <small>{t('relatedRequirements')}: </small>
-                {item.requirementIds.join(', ')}
+                {onNavigate
+                  ? item.requirementIds.map((id) => (
+                      <button
+                        key={id}
+                        className="workbench-btn wb-text"
+                        onClick={() => onNavigate('requirements', id)}
+                      >
+                        {id}
+                      </button>
+                    ))
+                  : item.requirementIds.join(', ')}
               </p>
               {!!item.preconditions.length && (
                 <>

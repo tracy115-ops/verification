@@ -16,6 +16,7 @@ const step = {
   properties: {
     status: { enum: ['pending', 'running', 'awaiting_review', 'succeeded', 'failed', 'interrupted'] },
     attempts: { type: 'integer', minimum: 0 },
+    caseBatchAttempts: { type: 'integer', minimum: 0 },
     turnId: string,
     executionId: string,
     reviewDigest: string,

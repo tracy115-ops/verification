@@ -7,12 +7,14 @@ export function FactorList({
   setQuery,
   selected,
   setSelected,
+  navigate,
 }: {
   value: unknown;
   query: string;
   setQuery: (value: string) => void;
   selected: string;
   setSelected: (value: string) => void;
+  navigate: (kind: 'requirements' | 'scenarios', id: string) => void;
 }) {
   const { t } = useI18n();
   const factors = isDesign(value) ? (value.factors ?? []) : [];
@@ -53,7 +55,16 @@ export function FactorList({
             <code>{current.id}</code>
             <h3>{current.name}</h3>
             <p>
-              {t('relatedRequirements')}: {current.requirementIds.join(', ')}
+              {t('relatedRequirements')}:{' '}
+              {current.requirementIds.map((id) => (
+                <button
+                  key={id}
+                  className="workbench-btn wb-text"
+                  onClick={() => navigate('requirements', id)}
+                >
+                  {id}
+                </button>
+              ))}
             </p>
             <p>{t('factorLevels')}</p>
             <ul>
@@ -63,6 +74,18 @@ export function FactorList({
             </ul>
             <p>{t('requirementItems')}</p>
             <blockquote>{current.sourceQuote}</blockquote>
+            {isDesign(value) &&
+              value.scenarios
+                .filter((item) => item.factorLevels?.some((link) => link.factorId === current.id))
+                .map((item) => (
+                  <button
+                    key={item.id}
+                    className="workbench-btn wb-text"
+                    onClick={() => navigate('scenarios', item.id)}
+                  >
+                    {item.id} · {item.title}
+                  </button>
+                ))}
           </section>
         ) : (
           <p className="wb-muted">{t('assetSelectItem')}</p>

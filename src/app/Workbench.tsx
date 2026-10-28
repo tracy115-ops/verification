@@ -68,6 +68,7 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
                 frameworks={frameworks.profiles}
                 openWorkflow={() => setPage('workflow')}
                 openSettings={openAgents}
+                openAssets={(cases) => setPage(cases ? 'cases' : 'assets')}
               />
             )}
             {page === 'workflow' && (
@@ -97,6 +98,7 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
                 key={page}
                 sessions={conversations.sessions}
                 initialView={page === 'cases' ? 'cases' : 'requirements'}
+                initialRunId={conversations.selectedRunId || conversations.session?.runs.at(-1)?.id}
               />
             )}
             {page === 'runs' && (

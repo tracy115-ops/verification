@@ -134,10 +134,7 @@ export function decodeCases(
     fail(unique(item.scenarioIds) && unique(item.requirementIds));
     fail(item.scenarioIds.every((id) => scenarios.has(id)) && item.requirementIds.every((id) => ids.has(id)));
     const mapped = new Set(item.scenarioIds.flatMap((id) => scenarios.get(id)?.requirementIds ?? []));
-    fail(
-      item.requirementIds.every((id) => mapped.has(id)) &&
-        [...mapped].every((id) => item.requirementIds.includes(id)),
-    );
+    fail(item.requirementIds.every((id) => mapped.has(id)));
   }
   return value;
 }

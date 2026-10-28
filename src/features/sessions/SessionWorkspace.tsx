@@ -15,6 +15,7 @@ export function SessionWorkspace({
   openWorkflow,
   openSettings,
   frameworks,
+  openAssets,
 }: {
   actions: Conversations;
   profiles: AgentProfile[];
@@ -23,6 +24,7 @@ export function SessionWorkspace({
   openWorkflow: () => void;
   openSettings: () => void;
   frameworks: FrameworkProfile[];
+  openAssets: (cases: boolean) => void;
 }) {
   const { t } = useI18n();
   const activeRun =
@@ -152,7 +154,7 @@ export function SessionWorkspace({
           frameworks={frameworks}
         />
       </section>
-      {activeRun && <RunPanel run={activeRun} actions={actions} />}
+      {activeRun && <RunPanel run={activeRun} actions={actions} openAssets={openAssets} />}
     </div>
   );
 }

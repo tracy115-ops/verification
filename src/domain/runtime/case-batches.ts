@@ -7,8 +7,9 @@ import { inferenceModel } from './profile';
 import { taskFor, validateTaskArtifact } from './handlers';
 import { latestArtifact } from './bindings';
 import { decodeRequirements } from './artifacts';
+import { remainingNodeSeconds } from './deadline';
 
-const BATCH_SIZE = 3;
+export const CASE_BATCH_SIZE = 3;
 export async function generateCaseBatches(
   run: WorkflowRun,
   node: WorkflowNode,
@@ -34,8 +35,8 @@ export async function generateCaseBatches(
   const step = run.steps[node.id];
   if (step.caseBatches?.some((item) => item.signature !== signature)) throw new Error('approval_stale');
   const batches = step.caseBatches ?? [];
-  const groups = Array.from({ length: Math.ceil(design.scenarios.length / BATCH_SIZE) }, (_, index) =>
-    design.scenarios.slice(index * BATCH_SIZE, (index + 1) * BATCH_SIZE),
+  const groups = Array.from({ length: Math.ceil(design.scenarios.length / CASE_BATCH_SIZE) }, (_, index) =>
+    design.scenarios.slice(index * CASE_BATCH_SIZE, (index + 1) * CASE_BATCH_SIZE),
   );
   if (
     new Set(batches.map((item) => item.index)).size !== batches.length ||
@@ -55,6 +56,7 @@ export async function generateCaseBatches(
     const scenarios = groups[index];
     const batchInputs = { ...inputs, [inputKey!]: { ...design, scenarios } };
     step.turnId = newId();
+    step.caseBatchAttempts = (step.caseBatchAttempts ?? 0) + 1;
     onUpdate(structuredClone(run));
     const task = JSON.parse(taskFor(run, node, batchInputs));
     task.batch = {
@@ -70,7 +72,7 @@ export async function generateCaseBatches(
       driver: profile.driver,
       prompt: JSON.stringify(task),
       model: inferenceModel(profile),
-      timeoutSeconds: Math.min(node.policy.timeoutSeconds, 600),
+      timeoutSeconds: remainingNodeSeconds(run, node),
     };
     const result = await port.send(request, onEvent, signal);
     step.nativeSessionId = result.nativeSessionId ?? undefined;
@@ -89,6 +91,7 @@ export async function generateCaseBatches(
     if (normalized.cases.some((item) => item.id.length > 80)) throw new Error('artifact_invalid');
     batches.push({ signature, index, cases: normalized });
     step.caseBatches = batches;
+    step.caseBatchAttempts = 0;
     onUpdate(structuredClone(run));
   }
   const combined = {

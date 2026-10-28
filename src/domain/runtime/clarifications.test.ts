@@ -25,6 +25,23 @@ it('records answers separately from source, invalidates the old approval and pas
   const next = run.plan.find((item) => item.operation === 'scenarios.design')!;
   expect(JSON.parse(taskFor(run, next, {})).clarifications[0].answer).toBe('The limit is 5.');
 });
+it('records an unknown requirement as an exclusion rather than an invented answer', async () => {
+  const port = fixturePort({ ...requirements, questions: ['Unknown rule?'] }).port;
+  let run = await advanceRun(
+    fixtureRun(),
+    port,
+    new AbortController().signal,
+    () => {},
+    () => {},
+  );
+  const node = run.plan.find((item) => item.operation === 'review.requirements')!;
+  run = await excludeReviewIssues(run, node.id, run.steps[node.id].reviewDigest!, {
+    'Unknown rule?': 'Outside this run.',
+  });
+  expect(run.clarifications).toBeUndefined();
+  expect(run.reviewExclusions?.[0].reason).toBe('Outside this run.');
+  expect(reviewIssues(run, node)).toEqual([]);
+});
 
 it('keeps an explicit coverage exclusion with its reason and binds it to approval', async () => {
   const port = fixturePort().port;
@@ -63,4 +80,24 @@ it('keeps an explicit coverage exclusion with its reason and binds it to approva
   await expect(approveRun(run, node.id, run.steps[node.id].reviewDigest!)).resolves.toMatchObject({
     status: 'ready',
   });
+});
+it('reports a requirement that is not covered even when its shared scenario has a case', async () => {
+  const { design, cases } = await import('./fixtures.test-support');
+  const run = fixtureRun();
+  run.artifacts.requirements = {
+    type: 'RequirementBaseline',
+    digest: 'x',
+    value: {
+      ...requirements,
+      requirements: [...requirements.requirements, { ...requirements.requirements[0], id: 'REQ-2' }],
+    },
+  };
+  run.artifacts.design = {
+    type: 'TestDesign',
+    digest: 'x',
+    value: { ...design, scenarios: [{ ...design.scenarios[0], requirementIds: ['REQ-1', 'REQ-2'] }] },
+  };
+  run.artifacts.cases = { type: 'TestCaseSetDraft', digest: 'x', value: cases };
+  const node = run.plan.find((item) => item.operation === 'review.cases')!;
+  expect(reviewIssues(run, node)).toEqual(['REQ-2']);
 });

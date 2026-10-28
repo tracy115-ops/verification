@@ -44,7 +44,7 @@ export function ClarificationReview({
 }: {
   issues: string[];
   busy: boolean;
-  save: (answers: Record<string, string>) => void;
+  save: (answers: Record<string, string>, exclude?: boolean) => void;
   exclusion?: boolean;
 }) {
   const { t } = useI18n();
@@ -67,10 +67,19 @@ export function ClarificationReview({
       <button
         className="workbench-btn"
         disabled={busy || !Object.values(answers).some((answer) => answer.trim())}
-        onClick={() => save(answers)}
+        onClick={() => save(answers, exclusion)}
       >
         {t(exclusion ? 'saveExclusions' : 'saveClarifications')}
       </button>
+      {!exclusion && (
+        <button
+          className="workbench-btn"
+          disabled={busy || !Object.values(answers).some((answer) => answer.trim())}
+          onClick={() => save(answers, true)}
+        >
+          {t('excludeQuestions')}
+        </button>
+      )}
     </section>
   );
 }

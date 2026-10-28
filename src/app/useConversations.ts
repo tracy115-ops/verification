@@ -127,12 +127,18 @@ export function useConversations(
       await drive(await approveRun(run, nodeId, hash), controller);
     });
   }
-  async function clarify(run: WorkflowRun, nodeId: string, hash: string, answers: Record<string, string>) {
+  async function clarify(
+    run: WorkflowRun,
+    nodeId: string,
+    hash: string,
+    answers: Record<string, string>,
+    exclude = false,
+  ) {
     await perform(async () =>
       updateRun(
         run.sessionId,
         await (
-          run.plan.find((item) => item.id === nodeId)?.operation === 'review.requirements'
+          !exclude && run.plan.find((item) => item.id === nodeId)?.operation === 'review.requirements'
             ? clarifyRequirements
             : excludeReviewIssues
         )(run, nodeId, hash, answers),

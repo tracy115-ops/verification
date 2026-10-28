@@ -90,3 +90,18 @@ it('recognizes only explicit saved-workflow commands', () => {
   });
   expect(() => workflowCommand('/run another Spec', 'general-testing')).toThrow('workflow_not_found');
 });
+it('allows a case to cover a subset of a multi-requirement scenario, but rejects unrelated requirements', () => {
+  const two = {
+    ...requirements,
+    requirements: [
+      ...requirements.requirements,
+      { ...requirements.requirements[0], id: 'REQ-2' },
+      { ...requirements.requirements[0], id: 'REQ-3' },
+    ],
+  };
+  const scenario = { ...design, scenarios: [{ ...design.scenarios[0], requirementIds: ['REQ-1', 'REQ-2'] }] };
+  expect(decodeCases(cases, two, scenario)).toEqual(cases);
+  expect(() =>
+    decodeCases({ cases: [{ ...cases.cases[0], requirementIds: ['REQ-3'] }] }, two, scenario),
+  ).toThrow('artifact_invalid');
+});

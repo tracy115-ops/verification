@@ -3,6 +3,7 @@ import { approveRun, advanceRun, retryRun } from './engine';
 import { createRun } from './plan';
 import { fixturePort, fixtureRun, savedDocument, spec, requirements, design } from './fixtures.test-support';
 import type { WorkflowRun } from './types';
+import { remainingNodeSeconds } from './deadline';
 
 const advance = (run: WorkflowRun, port = fixturePort().port, signal = new AbortController().signal) =>
   advanceRun(
@@ -18,6 +19,17 @@ async function approve(run: WorkflowRun) {
 }
 
 describe('saved workflow execution', () => {
+  it('caps a CLI attempt to the remaining workflow deadline', () => {
+    const run = fixtureRun();
+    run.createdAt = new Date(
+      Date.now() - (run.snapshot.definition.limits.deadlineSeconds - 2) * 1000,
+    ).toISOString();
+    expect(remainingNodeSeconds(run, run.plan[1])).toBeLessThanOrEqual(2);
+    run.createdAt = new Date(
+      Date.now() - (run.snapshot.definition.limits.deadlineSeconds + 1) * 1000,
+    ).toISOString();
+    expect(() => remainingNodeSeconds(run, run.plan[1])).toThrow('run_deadline');
+  });
   it('freezes the saved revision, profiles and inputs independently of the editor', () => {
     const doc = savedDocument();
     const run = createRun(doc, crypto.randomUUID(), spec, doc.profiles, 'codex-native');

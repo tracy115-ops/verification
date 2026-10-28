@@ -7,12 +7,12 @@ afterEach(cleanup);
 it('saves only user-entered clarifications and keeps unanswered questions visible', () => {
   const save = vi.fn();
   render(<ClarificationReview issues={['Question A', 'Question B']} busy={false} save={save} />);
-  const button = screen.getByRole('button');
+  const button = screen.getByRole('button', { name: '保存澄清' });
   expect((button as HTMLButtonElement).disabled).toBe(true);
   fireEvent.change(screen.getByRole('textbox', { name: 'Question A' }), {
     target: { value: 'Confirmed rule' },
   });
   fireEvent.click(button);
-  expect(save).toHaveBeenCalledWith({ 'Question A': 'Confirmed rule' });
+  expect(save).toHaveBeenCalledWith({ 'Question A': 'Confirmed rule' }, false);
   expect(screen.getByRole('textbox', { name: 'Question B' })).toBeTruthy();
 });

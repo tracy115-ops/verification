@@ -5,13 +5,22 @@ import { reviewIssues } from '../../domain/runtime/handlers';
 import { useI18n, isMessageKey } from '../../shared/i18n/context';
 import { Status } from '../../shared/components/Status';
 import { RunSteps } from './RunSteps';
+import { RunSummary } from './RunSummary';
 import { ArtifactPanel } from './ArtifactPanel';
 import { hasDesktopBridge } from '../../services/agent-api';
 import { isExecutionPlan, isEvidence, isReport } from '../../domain/execution/schema';
 import { ExecutionReview } from './ExecutionReview';
 import { ClarificationReview, SavedClarifications, SavedExclusions } from './ClarificationReview';
 
-export function RunPanel({ run, actions }: { run: WorkflowRun; actions: Conversations }) {
+export function RunPanel({
+  run,
+  actions,
+  openAssets,
+}: {
+  run: WorkflowRun;
+  actions: Conversations;
+  openAssets?: (cases: boolean) => void;
+}) {
   const { t } = useI18n();
   const pending =
     run.status === 'awaiting_review'
@@ -81,23 +90,7 @@ export function RunPanel({ run, actions }: { run: WorkflowRun; actions: Conversa
         </small>
         {!executed && <p>{t('testsNotExecuted')}</p>}
       </div>
-      {isReport(report) && (
-        <div className="session-result-summary">
-          <strong>{t(`execution_${report.status}`)}</strong>
-          <div className="session-result-counts">
-            {Object.entries(report.counts).map(([key, count]) => (
-              <span key={key}>
-                {t(`result_${key}` as 'result_passed')}: {count}
-              </span>
-            ))}
-          </div>
-          {report.candidates.length > 0 && (
-            <span>
-              {t('candidateDefects')}: {report.candidates.length}
-            </span>
-          )}
-        </div>
-      )}
+      <RunSummary value={report} />
       {run.errorCode && (
         <p className="wb-error">{isMessageKey(run.errorCode) ? t(run.errorCode) : t('cli_failed')}</p>
       )}
@@ -107,27 +100,43 @@ export function RunPanel({ run, actions }: { run: WorkflowRun; actions: Conversa
           {!!issues.length && (
             <div className="wb-banner">
               <p>{t('unresolvedReview')}</p>
-              <ul>
-                {issues.map((issue, i) => (
-                  <li key={i}>{issue}</li>
-                ))}
-              </ul>
               {['review.requirements', 'review.coverage', 'review.cases'].includes(pending.operation) ? (
                 <ClarificationReview
                   key={run.steps[pending.id].reviewDigest}
                   issues={issues}
                   exclusion={pending.operation !== 'review.requirements'}
                   busy={actions.busy || !hasDesktopBridge()}
-                  save={(answers) =>
-                    void actions.clarify(run, pending.id, run.steps[pending.id].reviewDigest ?? '', answers)
+                  save={(answers, exclude) =>
+                    void actions.clarify(
+                      run,
+                      pending.id,
+                      run.steps[pending.id].reviewDigest ?? '',
+                      answers,
+                      exclude,
+                    )
                   }
                 />
               ) : (
-                <p>{t('reviewResolutionHint')}</p>
+                <>
+                  <ul>
+                    {issues.map((issue, i) => (
+                      <li key={i}>{issue}</li>
+                    ))}
+                  </ul>
+                  <p>{t('reviewResolutionHint')}</p>
+                </>
               )}
             </div>
           )}
           {reviewArtifact && <ArtifactPanel artifact={reviewArtifact} />}
+          {reviewArtifact && openAssets && (
+            <button
+              className="workbench-btn"
+              onClick={() => openAssets(pending.operation === 'review.cases')}
+            >
+              {t('viewTaskAssets')}
+            </button>
+          )}
           {pending.operation === 'review.requirements' && (
             <SavedClarifications items={run.clarifications ?? []} />
           )}

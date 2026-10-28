@@ -12,6 +12,7 @@ import { decodePlan } from '../execution/validation';
 import { latestArtifact } from './bindings';
 import { reviewDigest } from './approvals';
 import { generateCaseBatches } from './case-batches';
+import { remainingNodeSeconds } from './deadline';
 export { reviewDigest } from './approvals';
 
 async function storeOutput(run: WorkflowRun, node: WorkflowNode, value: unknown) {
@@ -93,7 +94,7 @@ export async function advanceRun(
             driver: profile.driver,
             prompt: taskFor(run, node, inputs),
             model: inferenceModel(profile),
-            timeoutSeconds: Math.min(node.policy.timeoutSeconds, 600),
+            timeoutSeconds: remainingNodeSeconds(run, node),
           },
           onEvent,
           signal,
@@ -160,7 +161,13 @@ export function retryRun(initial: WorkflowRun): WorkflowRun {
   if (!['failed', 'interrupted'].includes(initial.status)) throw new Error('invalid_run');
   const run = structuredClone(initial);
   const node = run.plan.find((node) => ['failed', 'interrupted'].includes(run.steps[node.id].status));
-  if (!node || run.steps[node.id].attempts >= node.policy.maxAttempts) throw new Error('retry_limit');
+  if (!node) throw new Error('retry_limit');
+  const attempts =
+    node.operation === 'cases.generate'
+      ? (run.steps[node.id].caseBatchAttempts ??
+        (run.steps[node.id].caseBatches?.length ? 1 : run.steps[node.id].attempts))
+      : run.steps[node.id].attempts;
+  if (attempts >= node.policy.maxAttempts) throw new Error('retry_limit');
   run.steps[node.id].status = 'pending';
   delete run.steps[node.id].errorCode;
   delete run.errorCode;

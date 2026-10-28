@@ -67,7 +67,11 @@ export function reviewIssues(run: WorkflowRun, node: WorkflowNode): string[] {
   }
   if (node.operation === 'review.requirements') {
     return decodeRequirements(latestArtifact(run, 'RequirementBaselineDraft'), run.spec).questions.filter(
-      (question) => !run.clarifications?.some((item) => item.question === question && item.answer.trim()),
+      (question) =>
+        !run.clarifications?.some((item) => item.question === question && item.answer.trim()) &&
+        !run.reviewExclusions?.some(
+          (item) => item.nodeId === node.id && item.issue === question && item.reason.trim(),
+        ),
     );
   }
   const requirements = decodeRequirements(latestArtifact(run, 'RequirementBaseline'), run.spec);
@@ -99,15 +103,16 @@ export function reviewIssues(run: WorkflowRun, node: WorkflowNode): string[] {
     const design = decodeDesign(latestArtifact(run, 'TestDesign'), requirements);
     const cases = decodeCases(latestArtifact(run, 'TestCaseSetDraft'), requirements, design);
     const covered = new Set(cases.cases.flatMap((item) => item.scenarioIds));
-    return design.scenarios
-      .filter((item) => !covered.has(item.id))
-      .map((item) => item.id)
-      .filter(
-        (issue) =>
-          !run.reviewExclusions?.some(
-            (item) => item.nodeId === node.id && item.issue === issue && item.reason.trim(),
-          ),
-      );
+    const coveredRequirements = new Set(cases.cases.flatMap((item) => item.requirementIds));
+    return [
+      ...design.scenarios.filter((item) => !covered.has(item.id)).map((item) => item.id),
+      ...requirements.requirements.filter((item) => !coveredRequirements.has(item.id)).map((item) => item.id),
+    ].filter(
+      (issue) =>
+        !run.reviewExclusions?.some(
+          (item) => item.nodeId === node.id && item.issue === issue && item.reason.trim(),
+        ),
+    );
   }
   return [];
 }
