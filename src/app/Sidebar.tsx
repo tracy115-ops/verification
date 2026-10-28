@@ -36,7 +36,6 @@ export function Sidebar({
           >
             <Icon size={19} />
             <span>{t(key)}</span>
-            {item === 'workflow' && <small>01</small>}
           </button>
         ))}
       </nav>

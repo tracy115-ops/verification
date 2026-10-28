@@ -1,4 +1,5 @@
 .session-workspace {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   height: 100%;
@@ -6,7 +7,35 @@
   background: var(--wb-bg);
 }
 .session-workspace.has-task-panel {
-  grid-template-columns: minmax(0, 1fr) 380px;
+  grid-template-columns: minmax(0, 1fr) var(--session-task-width, 360px);
+}
+.session-panel-resizer {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  bottom: 0;
+  right: calc(var(--session-task-width, 360px) - 4px);
+  width: 9px;
+  cursor: col-resize;
+  touch-action: none;
+}
+.session-panel-resizer::after {
+  content: '';
+  position: absolute;
+  inset: 0 3px;
+  background: transparent;
+}
+.session-panel-resizer:hover::after,
+.session-panel-resizer:focus-visible::after,
+.session-workspace.is-resizing .session-panel-resizer::after {
+  background: var(--wb-accent);
+}
+.session-panel-resizer:focus-visible {
+  outline: none;
+}
+.session-workspace.is-resizing {
+  user-select: none;
+  cursor: col-resize;
 }
 .session-workspace.has-run .session-messages {
   flex: 1;
@@ -16,6 +45,29 @@
 .session-workspace.has-run .session-message {
   margin: 0;
   max-width: none;
+}
+.session-message.role-user {
+  width: fit-content;
+  margin-left: auto;
+  max-width: 88%;
+}
+.session-workspace.has-run .session-message.role-user {
+  margin-left: auto;
+  max-width: 88%;
+}
+.session-message.role-user .session-message-author {
+  justify-content: flex-end;
+}
+.session-source {
+  padding: 10px 12px;
+  background: var(--wb-bg);
+  border-radius: 10px;
+}
+.session-source > button {
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+  line-height: 1.6;
 }
 .session-workspace.has-run .session-run-panel {
   overflow: auto;
@@ -159,6 +211,9 @@
 .session-history-item.is-active {
   background: var(--wb-accent-soft);
   color: var(--wb-accent);
+}
+.session-history-item:hover {
+  background: var(--wb-hover);
 }
 @media (max-width: 1100px) {
   .session-history-new span,
@@ -508,9 +563,6 @@
   white-space: pre-wrap;
 }
 @media (max-width: 1100px) {
-  .session-workspace.has-task-panel {
-    grid-template-columns: minmax(0, 1fr) 320px;
-  }
   .session-composer {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -526,6 +578,9 @@
   }
 }
 @media (max-width: 800px) {
+  .session-panel-resizer {
+    display: none;
+  }
   .session-workspace,
   .session-workspace.has-task-panel {
     height: auto;

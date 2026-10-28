@@ -89,15 +89,15 @@ hr {
 }
 .app-sidebar nav {
   display: grid;
-  gap: 6px;
+  gap: 2px;
 }
 .app-nav-item {
   display: flex;
   align-items: center;
   gap: 11px;
   width: 100%;
-  min-height: 42px;
-  padding: 10px 12px;
+  min-height: 36px;
+  padding: 8px 12px;
   border: 0;
   border-radius: 6px;
   background: transparent;
@@ -105,11 +105,6 @@ hr {
   text-align: left;
   font-size: 13px;
   cursor: pointer;
-}
-.app-nav-item small {
-  margin-left: auto;
-  color: var(--wb-accent);
-  font-size: 10px;
 }
 .app-nav-item:hover {
   background: var(--wb-hover);

@@ -3,6 +3,9 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 
 export function SourceMessage({ text }: { text: string }) {
   const [expanded, setExpanded] = useState(false);
+  if (text.length <= 320 && text.split('\n').length <= 6) {
+    return <div className="session-message-text">{text}</div>;
+  }
   const title = text
     .split('\n')
     .find((line) => line.trim())

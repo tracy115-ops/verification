@@ -1,5 +1,4 @@
 import { Bot, MessageSquare, PanelRight } from 'lucide-react';
-import { useState } from 'react';
 import type { Conversations } from '../../app/useConversations';
 import type { AgentProfile, WorkbenchDocument } from '../../domain/workflow';
 import { hasDesktopBridge } from '../../services/agent-api';
@@ -8,6 +7,7 @@ import { ConversationComposer } from './ConversationComposer';
 import { RunPanel } from './RunPanel';
 import { SourceMessage } from './SourceMessage';
 import type { FrameworkProfile } from '../../domain/execution/types';
+import { useTaskPanel } from './useTaskPanel';
 
 export function SessionWorkspace({
   actions,
@@ -29,24 +29,7 @@ export function SessionWorkspace({
   openAssets: (cases: boolean) => void;
 }) {
   const { t } = useI18n();
-  const [panelOpen, setPanelOpen] = useState(() => {
-    try {
-      return localStorage.getItem('verification-workbench.task-panel') !== 'closed';
-    } catch {
-      return true;
-    }
-  });
-  function togglePanel() {
-    setPanelOpen((value) => {
-      const next = !value;
-      try {
-        localStorage.setItem('verification-workbench.task-panel', next ? 'open' : 'closed');
-      } catch {
-        /* Session state still works without persistence. */
-      }
-      return next;
-    });
-  }
+  const panel = useTaskPanel();
   const activeRun =
     actions.session?.runs.find((run) => run.id === actions.selectedRunId) ?? actions.session?.runs.at(-1);
   const composer = (
@@ -61,7 +44,11 @@ export function SessionWorkspace({
     />
   );
   return (
-    <div className={`session-workspace ${activeRun ? 'has-run' : ''} ${panelOpen ? 'has-task-panel' : ''}`}>
+    <div
+      ref={panel.container}
+      style={panel.style}
+      className={`session-workspace ${activeRun ? 'has-run' : ''} ${panel.open ? 'has-task-panel' : ''} ${panel.resizing ? 'is-resizing' : ''}`}
+    >
       <section className="session-conversation">
         <h1 className="wb-sr-only">{t('sessions')}</h1>
         <div className="session-toolbar">
@@ -75,8 +62,8 @@ export function SessionWorkspace({
           <button
             className="workbench-btn wb-text"
             aria-label={t('toggleTaskPanel')}
-            aria-expanded={panelOpen}
-            onClick={togglePanel}
+            aria-expanded={panel.open}
+            onClick={panel.toggle}
           >
             <PanelRight size={18} />
           </button>
@@ -146,7 +133,15 @@ export function SessionWorkspace({
         )}
         {composer}
       </section>
-      {panelOpen &&
+      {panel.open && (
+        <div
+          className="session-panel-resizer"
+          {...panel.separator}
+          aria-label={t('resizeTaskPanel')}
+          title={t('resizeTaskPanelHint')}
+        />
+      )}
+      {panel.open &&
         (activeRun ? (
           <div className="session-task-column">
             {(actions.session?.runs.length ?? 0) > 1 && (
