@@ -212,13 +212,6 @@ hr {
   min-width: 0;
   overflow: auto;
 }
-.app-notice {
-  padding: 9px 24px;
-  color: var(--wb-text);
-  background: var(--wb-accent-soft);
-  font-size: 12px;
-  line-height: 1.7;
-}
 .app-validation-errors {
   margin: 0;
   padding: 10px 24px 10px 40px;

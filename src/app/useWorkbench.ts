@@ -5,6 +5,7 @@ import { browserRepository } from '../services/repository';
 import { loadProfiles, saveProfiles } from '../services/profile-repository';
 import type { AgentProfile } from '../domain/workflow';
 import type { MessageKey } from '../shared/i18n/messages';
+import { useNotice } from './useNotice';
 
 function initialDraft(): {
   document: WorkbenchDocument;
@@ -41,7 +42,7 @@ export function useWorkbench() {
   const [document, setDocument] = useState(initial.document);
   const [savedDocument, setSavedDocument] = useState(initial.saved);
   const [dirty, setDirty] = useState(false);
-  const [notice, setNotice] = useState<MessageKey | null>(initial.notice);
+  const { notice, setNotice, dismissNotice } = useNotice(initial.notice);
   const [issues, setIssues] = useState<WorkflowIssue[]>([]);
   function update(next: WorkbenchDocument | ((current: WorkbenchDocument) => WorkbenchDocument)) {
     setDocument(next);
@@ -118,6 +119,7 @@ export function useWorkbench() {
     importDraft,
     exportDraft,
     setNotice,
+    dismissNotice,
     addProfile,
   };
 }

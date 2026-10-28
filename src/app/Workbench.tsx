@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useWorkbench } from './useWorkbench';
 import { useConversations } from './useConversations';
 import { useFrameworks } from './useFrameworks';
@@ -31,6 +31,11 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
   const frameworks = useFrameworks();
   const conversations = useConversations(workbench.document.profiles, workbench.savedDocument);
   const [page, setPage] = useState<Page>('sessions');
+  const previousPage = useRef(page);
+  useEffect(() => {
+    if (previousPage.current !== page) workbench.setNotice(null);
+    previousPage.current = page;
+  }, [page, workbench.setNotice]);
   const [settingsTab, setSettingsTab] = useState<SettingsTab>('general');
   const [selectedId, setSelectedId] = useState('design_scenarios');
   useEffect(() => {
@@ -55,7 +60,7 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
         <Titlebar page={page} busy={conversations.busy} />
         {page !== 'sessions' && <PageHeading page={page} workbench={workbench} />}
         {page === 'workflow' && <DocumentBar workbench={workbench} />}
-        <Notifications workbench={workbench} />
+        <Notifications workbench={workbench} page={page} />
         <div className="app-content">
           <Suspense fallback={null}>
             {page === 'team' && <TeamWorkspace />}

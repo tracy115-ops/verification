@@ -11,7 +11,13 @@ function download(name: string, text: string, type: string) {
   anchor.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-export function ExecutionArtifact({ artifact }: { artifact: Artifact }) {
+export function ExecutionArtifact({
+  artifact,
+  expandSource = false,
+}: {
+  artifact: Artifact;
+  expandSource?: boolean;
+}) {
   const { t, locale } = useI18n();
   const value = artifact.value;
   return (
@@ -25,7 +31,7 @@ export function ExecutionArtifact({ artifact }: { artifact: Artifact }) {
           >
             {t('downloadScript')}
           </button>
-          <details>
+          <details open={expandSource}>
             <summary>{t('scriptSource')}</summary>
             <pre>{value.script}</pre>
           </details>

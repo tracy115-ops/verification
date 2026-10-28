@@ -62,7 +62,7 @@ test('rejects a malformed import and keeps the current graph', async ({ page }) 
     mimeType: 'application/json',
     buffer: Buffer.from('{"formatVersion":99}'),
   });
-  await expect(page.getByRole('status')).toContainText('导入失败');
+  await expect(page.getByRole('alert')).toContainText('导入失败');
   await expect(page.locator('.workflow-node')).toHaveCount(13);
   await page.screenshot({ path: '.runtime/workflow-light.png' });
 });

@@ -93,13 +93,16 @@
   margin-left: 12px;
   padding: 6px 0 12px 14px;
 }
+.session-flow-stage-wrap {
+  position: relative;
+}
 .session-flow-stage summary {
   display: flex;
   gap: 8px;
   align-items: center;
   cursor: pointer;
   font-size: 12px;
-  padding: 8px 0;
+  padding: 8px 88px 8px 0;
 }
 .session-flow-stage summary small {
   margin-left: auto;
@@ -508,15 +511,39 @@
 }
 .session-step-list li {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
   padding: 10px 0;
   border-bottom: 1px solid var(--wb-border);
   font-size: 12px;
 }
-.session-step-list li > span:first-child {
+.session-step-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.session-step-heading > span:first-child {
   flex: 1;
+}
+.session-stage-artifact {
+  position: absolute;
+  right: 0;
+  top: 10px;
+  padding: 3px 5px;
+  min-height: 26px;
+  width: 76px;
+}
+.session-step-artifact {
+  align-self: flex-start;
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+  color: var(--wb-accent);
+}
+.session-decisions-link {
+  margin-top: 4px;
 }
 .session-review-card {
   padding: 18px;
@@ -592,9 +619,6 @@
   padding-inline: 18px;
   font-size: 12px;
 }
-.session-run-artifacts {
-  padding: 18px;
-}
 .session-result-summary {
   display: flex;
   flex-direction: column;
@@ -605,9 +629,6 @@
   border-radius: var(--wb-radius);
   background: var(--wb-surface);
   font-size: 12px;
-}
-.session-run-artifacts > h3 {
-  font-size: 13px;
 }
 .session-artifact {
   margin-bottom: 16px;

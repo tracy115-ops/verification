@@ -4,6 +4,7 @@ import { useI18n } from '../shared/i18n/context';
 import { Status } from '../shared/components/Status';
 import type { Page } from './navigation';
 import type { useWorkbench } from './useWorkbench';
+import { Toast } from '../shared/components/Toast';
 
 type WorkbenchState = ReturnType<typeof useWorkbench>;
 
@@ -97,16 +98,14 @@ export function DocumentBar({ workbench }: { workbench: WorkbenchState }) {
   );
 }
 
-export function Notifications({ workbench }: { workbench: WorkbenchState }) {
+export function Notifications({ workbench, page }: { workbench: WorkbenchState; page: Page }) {
   const { t } = useI18n();
   return (
     <>
       {workbench.notice && (
-        <div className="app-notice" role="status">
-          {t(workbench.notice)}
-        </div>
+        <Toast key={workbench.notice.id} notice={workbench.notice} dismiss={workbench.dismissNotice} />
       )}
-      {!!workbench.issues.length && (
+      {page === 'workflow' && !!workbench.issues.length && (
         <ul className="app-validation-errors" role="alert">
           {workbench.issues.map((issue, index) => (
             <li key={index}>

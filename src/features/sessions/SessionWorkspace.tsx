@@ -161,7 +161,7 @@ export function SessionWorkspace({
                 </select>
               </label>
             )}
-            <RunPanel run={activeRun} actions={actions} openAssets={openAssets} />
+            <RunPanel key={activeRun.id} run={activeRun} actions={actions} openAssets={openAssets} />
           </div>
         ) : (
           <aside className="session-task-empty">

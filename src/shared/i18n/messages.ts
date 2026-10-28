@@ -3,6 +3,7 @@ import { teamEn, teamZh } from './team-messages';
 import { executionEn, executionZh } from './execution-messages';
 
 export const zh = {
+  dismissNotification: '关闭提示',
   assetTask: '选择验证任务',
   assetChooseTask: '请选择任务',
   assetScopeHint: '当前展示个人会话中某次运行的产物；团队项目资产在项目协作中管理。',
@@ -170,6 +171,7 @@ export const zh = {
 } as const;
 
 export const en: Record<keyof typeof zh, string> = {
+  dismissNotification: 'Dismiss notification',
   assetTask: 'Verification task',
   assetChooseTask: 'Select a task',
   assetScopeHint:

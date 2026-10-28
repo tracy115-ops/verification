@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import type { ConversationSession, WorkflowRun } from '../../domain/runtime/types';
+import type { Artifact, ConversationSession, WorkflowRun } from '../../domain/runtime/types';
 import { isCases, isDesign, isRequirements } from '../../domain/runtime/artifacts';
 import { useI18n } from '../../shared/i18n/context';
 import { ArtifactPanel } from '../sessions/ArtifactPanel';
 import { FactorList } from './FactorList';
 import { TraceLinks } from './TraceLinks';
 
-type View = 'requirements' | 'factors' | 'scenarios' | 'cases';
+export type AssetView = 'requirements' | 'factors' | 'scenarios' | 'cases';
+type View = AssetView;
 export function AssetsWorkspace({
   sessions,
   initialView = 'requirements',
@@ -103,7 +104,7 @@ export function AssetsWorkspace({
   );
 }
 
-function TaskAssets({
+export function TaskAssets({
   run,
   view,
   query,
@@ -111,6 +112,7 @@ function TaskAssets({
   selected,
   setSelected,
   navigate,
+  artifactOverride,
 }: {
   run: WorkflowRun;
   view: View;
@@ -119,6 +121,7 @@ function TaskAssets({
   selected: string;
   setSelected: (value: string) => void;
   navigate: (kind: 'requirements' | 'scenarios' | 'cases', id: string) => void;
+  artifactOverride?: Artifact;
 }) {
   const { t } = useI18n();
   const all = Object.values(run.artifacts);
@@ -128,7 +131,10 @@ function TaskAssets({
       : view === 'scenarios' || view === 'factors'
         ? ['TestDesign', 'TestDesignDraft']
         : ['TestCaseSet', 'TestCaseSetDraft'];
-  const artifact = all.find((item) => item.type === types[0]) ?? all.find((item) => item.type === types[1]);
+  const artifact =
+    artifactOverride ??
+    all.find((item) => item.type === types[0]) ??
+    all.find((item) => item.type === types[1]);
   const value = artifact?.value;
   if (view === 'factors')
     return (
