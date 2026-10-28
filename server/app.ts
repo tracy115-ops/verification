@@ -4,6 +4,8 @@ import { createProject, projectCommand } from './projects.ts';
 import { body, json, staticFile } from './http.ts';
 import type { TeamStore } from './store.ts';
 import type { TeamRole } from '../src/domain/team/types.ts';
+import { uploadSharedScript } from './shared-scripts.ts';
+import { inspectPython } from './python-inspection.ts';
 
 function failure(response: ServerResponse, error: unknown) {
   const code = error instanceof Error ? error.message : '';
@@ -18,6 +20,15 @@ function failure(response: ServerResponse, error: unknown) {
     team_review_blocked: 422,
     team_too_large: 413,
     team_factor_in_use: 422,
+    collab_proposal_stale: 409,
+    collab_replace_blocked: 422,
+    collab_reference_required: 422,
+    collab_script_invalid: 422,
+    collab_method_missing: 422,
+    collab_evidence_mismatch: 422,
+    collab_python_required: 503,
+    collab_parser_busy: 429,
+    collab_parser_timeout: 504,
   };
   json(response, status[code] ?? 500, { code: status[code] ? code : 'team_server_error' });
 }
@@ -50,6 +61,20 @@ export function createTeamServer(store: TeamStore, staticRoot: string) {
       const token = request.headers.authorization?.replace(/^Bearer /, '') ?? '';
       const member = store.authenticate(token);
       if (!member) throw new Error('team_unauthorized');
+      if (pathname === '/api/team/scripts/inspect' && request.method === 'POST') {
+        if (!['admin', 'editor'].includes(member.role)) throw new Error('team_forbidden');
+        const input = await body(request);
+        if (
+          !input ||
+          typeof input !== 'object' ||
+          !('source' in input) ||
+          typeof input.source !== 'string' ||
+          Buffer.byteLength(input.source, 'utf8') > 100000
+        )
+          throw new Error('team_invalid');
+        json(response, 200, { methods: await inspectPython(input.source) });
+        return;
+      }
       if (pathname === '/api/team/me' && request.method === 'GET') {
         json(response, 200, member);
         return;
@@ -86,8 +111,14 @@ export function createTeamServer(store: TeamStore, staticRoot: string) {
         }
       }
       const match =
-        /^\/api\/team\/projects\/(P_[a-f0-9-]+)(?:\/(commands|history|revisions\/([0-9]+)))?$/.exec(pathname);
+        /^\/api\/team\/projects\/(P_[a-f0-9-]+)(?:\/(commands|scripts|history|revisions\/([0-9]+)))?$/.exec(
+          pathname,
+        );
       if (match) {
+        if (request.method === 'POST' && match[2] === 'scripts') {
+          json(response, 200, await uploadSharedScript(store, member, match[1], await body(request)));
+          return;
+        }
         if (request.method === 'GET') {
           const result =
             match[2] === 'history'

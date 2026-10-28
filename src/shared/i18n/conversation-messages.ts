@@ -1,4 +1,7 @@
 export const conversationZh = {
+  searchConversations: '搜索会话',
+  searchConversationPlaceholder: '搜索会话名称或需求',
+  noMatchingConversations: '没有匹配的会话',
   actualAgentRequest: '实际提交给 Agent 的任务',
   actualAgentReply: 'Agent 原始回复预览',
   rawCliReply: '查看完整 CLI 回复',
@@ -153,6 +156,9 @@ export const conversationZh = {
 };
 
 export const conversationEn: Record<keyof typeof conversationZh, string> = {
+  searchConversations: 'Search conversations',
+  searchConversationPlaceholder: 'Search conversation names or requirements',
+  noMatchingConversations: 'No matching conversations',
   actualAgentRequest: 'Task actually submitted to the Agent',
   actualAgentReply: 'Original Agent reply preview',
   rawCliReply: 'View complete CLI reply',

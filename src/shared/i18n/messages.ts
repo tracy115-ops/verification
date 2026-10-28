@@ -2,15 +2,16 @@ import { conversationEn, conversationZh } from './conversation-messages';
 import { teamEn, teamZh } from './team-messages';
 import { executionEn, executionZh } from './execution-messages';
 import { lanEn, lanZh } from './lan-messages';
+import { collaborationEn, collaborationZh } from './collaboration-messages';
 
 export const zh = {
+  ...collaborationZh,
   ...lanZh,
   dismissNotification: '关闭提示',
-  assetTask: '选择验证任务',
-  assetChooseTask: '请选择任务',
-  assetScopeHint: '当前展示个人会话中某次运行的产物；团队项目资产在项目协作中管理。',
-  assetNoTask: '还没有验证任务',
-  assetNoTaskHint: '在 CLI 会话中调用已保存的流程后，按任务查看需求、场景和用例。',
+  assetBackToSession: '返回对话',
+  assetHistoricalRun: '历史运行版本',
+  assetNoTask: '当前会话还没有验证任务',
+  assetNoTaskHint: '返回对话调用测试流程，或从左侧选择已有设计会话。',
   assetItems: '条目',
   assetDraft: '待评审草稿',
   assetApproved: '已确认',
@@ -173,15 +174,14 @@ export const zh = {
 } as const;
 
 export const en: Record<keyof typeof zh, string> = {
+  ...collaborationEn,
   ...lanEn,
   dismissNotification: 'Dismiss notification',
-  assetTask: 'Verification task',
-  assetChooseTask: 'Select a task',
-  assetScopeHint:
-    'Showing artifacts from a personal session run. Team project assets are managed in collaboration.',
-  assetNoTask: 'No verification tasks yet',
+  assetBackToSession: 'Back to conversation',
+  assetHistoricalRun: 'Historical run version',
+  assetNoTask: 'This conversation has no verification task yet',
   assetNoTaskHint:
-    'Invoke a saved workflow in a CLI session to inspect its requirements, scenarios and cases.',
+    'Return to the conversation to run a test workflow, or select an existing design in the sidebar.',
   assetItems: 'Items',
   assetDraft: 'Draft awaiting review',
   assetApproved: 'Approved',

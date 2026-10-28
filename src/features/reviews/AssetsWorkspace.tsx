@@ -5,55 +5,45 @@ import { useI18n } from '../../shared/i18n/context';
 import { ArtifactPanel } from '../sessions/ArtifactPanel';
 import { FactorList } from './FactorList';
 import { TraceLinks } from './TraceLinks';
+import { PersonalCaseCoverage, type UpdateRun } from './PersonalCaseCoverage';
+import { RunContributionExport } from './RunContributionExport';
+import { personalCoverage } from '../../domain/runtime/case-coverage';
 
 export type AssetView = 'requirements' | 'factors' | 'scenarios' | 'cases';
 type View = AssetView;
 export function AssetsWorkspace({
-  sessions,
+  session,
   initialView = 'requirements',
-  initialRunId,
+  runId,
+  updateRun,
+  openSession,
 }: {
-  sessions: ConversationSession[];
+  session?: ConversationSession;
   initialView?: View;
-  initialRunId?: string;
+  runId?: string;
+  updateRun?: UpdateRun;
+  openSession: () => void;
 }) {
-  const { t, locale } = useI18n();
-  const records = sessions.flatMap((session) => session.runs.map((run) => ({ session, run })));
-  const [runId, setRunId] = useState(
-    records.some((item) => item.run.id === initialRunId) ? initialRunId! : (records.at(-1)?.run.id ?? ''),
-  );
+  const { t } = useI18n();
   const [view, setView] = useState<View>(initialView);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState('');
-  const run = records.find((item) => item.run.id === runId)?.run;
+  const run = session?.runs.find((item) => item.id === runId) ?? session?.runs.at(-1);
+  const title = session
+    ? session.title.replace(/^#+\s*/, '').split('\n')[0] || t('untitledSession')
+    : t('assetsTitle');
   return (
     <div className="assets-workspace">
-      <div className="assets-toolbar">
-        <label className="wb-field">
-          {t('assetTask')}
-          <select
-            className="workbench-select"
-            value={run?.id ?? ''}
-            onChange={(event) => {
-              setRunId(event.target.value);
-              setSelected('');
-              setQuery('');
-            }}
-          >
-            <option value="">{t('assetChooseTask')}</option>
-            {records.map(({ session, run }) => (
-              <option key={run.id} value={run.id}>
-                {session.title || t('untitledSession')} ·{' '}
-                {new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'short' }).format(
-                  new Date(run.createdAt),
-                )}{' '}
-                · {run.id.slice(0, 8)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <p className="wb-muted">{t('assetScopeHint')}</p>
-      </div>
+      <header className="assets-context">
+        <div className="assets-context-title">
+          <h1 title={session?.title}>{title}</h1>
+          {run && run.id !== session?.runs.at(-1)?.id && <small>{t('assetHistoricalRun')}</small>}
+        </div>
+        <button className="workbench-btn wb-text" onClick={openSession}>
+          {t('assetBackToSession')}
+        </button>
+        {run && <RunContributionExport run={run} />}
+      </header>
       {!run ? (
         <div className="assets-empty">
           <h2>{t('assetNoTask')}</h2>
@@ -86,6 +76,7 @@ export function AssetsWorkspace({
             ))}
           </nav>
           <TaskAssets
+            updateRun={updateRun}
             run={run}
             view={view}
             query={query}
@@ -113,6 +104,7 @@ export function TaskAssets({
   setSelected,
   navigate,
   artifactOverride,
+  updateRun,
 }: {
   run: WorkflowRun;
   view: View;
@@ -122,8 +114,10 @@ export function TaskAssets({
   setSelected: (value: string) => void;
   navigate: (kind: 'requirements' | 'scenarios' | 'cases', id: string) => void;
   artifactOverride?: Artifact;
+  updateRun?: UpdateRun;
 }) {
   const { t } = useI18n();
+  const [coverageFilter, setCoverageFilter] = useState('all');
   const all = Object.values(run.artifacts);
   const types =
     view === 'requirements'
@@ -154,10 +148,15 @@ export function TaskAssets({
       : isCases(value)
         ? value.cases.map((item) => ({ id: item.id, title: item.title, raw: item }))
         : [];
-  const filtered = items.filter((item) =>
-    `${item.id} ${item.title} ${JSON.stringify(item.raw)}`
-      .toLocaleLowerCase()
-      .includes(query.toLocaleLowerCase()),
+  const caseStates = new Map(
+    isCases(value) ? value.cases.map((item) => [item.id, personalCoverage(run, item)]) : [],
+  );
+  const filtered = items.filter(
+    (item) =>
+      (view !== 'cases' || coverageFilter === 'all' || caseStates.get(item.id)?.status === coverageFilter) &&
+      `${item.id} ${item.title} ${JSON.stringify(item.raw)}`
+        .toLocaleLowerCase()
+        .includes(query.toLocaleLowerCase()),
   );
   const current = filtered.find((item) => item.id === selected) ?? filtered[0];
   const detail =
@@ -191,6 +190,21 @@ export function TaskAssets({
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
+        {view === 'cases' && (
+          <select
+            className="workbench-select"
+            aria-label={t('collab_coverage')}
+            value={coverageFilter}
+            onChange={(event) => setCoverageFilter(event.target.value)}
+          >
+            <option value="all">{t('collab_all')}</option>
+            {(['uncovered', 'declared', 'mapped', 'stale'] as const).map((status) => (
+              <option key={status} value={status}>
+                {t(`collab_${status}`)}
+              </option>
+            ))}
+          </select>
+        )}
         {!filtered.length && (
           <p className="wb-muted">{t(artifact ? 'assetNoMatches' : 'assetNotGenerated')}</p>
         )}
@@ -202,6 +216,11 @@ export function TaskAssets({
           >
             <code>{item.id}</code>
             <span>{item.title}</span>
+            {caseStates.has(item.id) && (
+              <small className={`collab-light is-${caseStates.get(item.id)!.status}`}>
+                {t(`collab_${caseStates.get(item.id)!.status}`)}
+              </small>
+            )}
           </button>
         ))}
       </div>
@@ -210,6 +229,14 @@ export function TaskAssets({
           <>
             <ArtifactPanel artifact={detail} onNavigate={navigate} />
             <TraceLinks run={run} view={view} id={current!.id} navigate={navigate} />
+            {isCases(value) && (
+              <PersonalCaseCoverage
+                key={current!.id}
+                run={run}
+                item={value.cases.find((item) => item.id === current!.id)!}
+                updateRun={updateRun}
+              />
+            )}
           </>
         ) : (
           <p className="wb-muted">{t('assetSelectItem')}</p>

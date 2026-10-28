@@ -46,7 +46,7 @@ export const teamZh = {
   team_choose_or_create: '选择或创建一个共享测试项目',
   team_shared_hint: '共同分析因子与场景、分工和评审；每 5 秒同步服务端修改。',
   team_refresh: '刷新共享版本',
-  team_design_only: '当前为场景设计与评审：覆盖灯只代表设计状态，尚未执行测试。',
+  team_design_only: '本服务不执行测试；场景覆盖灯表示设计状态。成员导入的执行结果在用例页单独展示。',
   team_topic_interfaces: '题目原文与外部接口',
   team_contract_unknown: '契约尚未提供，需补充澄清。',
   team_suggest: '生成待评审建议',
@@ -170,7 +170,7 @@ export const teamEn: Record<keyof typeof teamZh, string> = {
     'Collaborate on factors, scenarios, assignments and reviews. Server changes refresh every 5 seconds.',
   team_refresh: 'Refresh shared revision',
   team_design_only:
-    'Design and review only: coverage lights indicate design state. Tests have not been executed.',
+    'This service does not execute tests. Scenario lights indicate design state; member-imported results appear separately under cases.',
   team_topic_interfaces: 'Original topic and external interfaces',
   team_contract_unknown: 'Contract not provided. Clarification required.',
   team_suggest: 'Suggest review candidates',

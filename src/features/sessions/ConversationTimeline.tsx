@@ -118,7 +118,8 @@ export function ConversationTimeline({
       )}
       {viewing && (
         <RunArtifactViewer
-          run={viewing.run}
+          run={actions.session?.runs.find((run) => run.id === viewing.run.id) ?? viewing.run}
+          updateRun={actions.busy ? undefined : actions.updateRun}
           selected={viewing.key}
           select={(key) => setViewing({ ...viewing, key })}
           close={() => setViewing(null)}

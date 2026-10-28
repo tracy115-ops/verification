@@ -1,4 +1,5 @@
 import { decodeProject } from '../domain/team/rules';
+import type { ScriptInput } from '../domain/team/collaboration';
 import type {
   ProjectInput,
   ProjectSummary,
@@ -98,6 +99,21 @@ export class TeamApi {
     )
       throw new Error('team_invalid');
     return value as TeamHistory[];
+  }
+  async uploadScript(id: string, revision: number, script: ScriptInput): Promise<TeamProject> {
+    return decodeProject(await this.request(`/projects/${id}/scripts`, 'POST', { revision, script }));
+  }
+  async inspectScript(source: string): Promise<string[]> {
+    const result = await this.request('/scripts/inspect', 'POST', { source });
+    if (
+      !result ||
+      typeof result !== 'object' ||
+      !('methods' in result) ||
+      !Array.isArray(result.methods) ||
+      !result.methods.every((item) => typeof item === 'string')
+    )
+      throw new Error('team_invalid');
+    return result.methods;
   }
 }
 function isMember(value: unknown): value is TeamMember {

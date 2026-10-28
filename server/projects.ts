@@ -4,6 +4,8 @@ import { checkAnalysis, readiness } from '../src/domain/team/rules.ts';
 import { suggestAnalysis } from '../src/domain/team/suggestions.ts';
 import type { TeamMember, TeamProject } from '../src/domain/team/types.ts';
 import type { TeamStore } from './store.ts';
+import { applyCollaboration, isCollaborationCommand } from './collaboration.ts';
+import { collaboration, invalidateCases } from '../src/domain/team/collaboration.ts';
 
 function requireRole(member: TeamMember, roles: string[]) {
   if (!roles.includes(member.role)) throw new Error('team_forbidden');
@@ -45,6 +47,15 @@ export function projectCommand(
   )
     throw new Error('team_invalid');
   const command = value.command;
+  if (isCollaborationCommand(command)) {
+    const project = store.get(id);
+    if (project.revision !== value.revision) throw new Error('team_conflict');
+    applyCollaboration(store, project, member, command);
+    project.revision++;
+    project.updatedBy = member.id;
+    project.updatedAt = new Date().toISOString();
+    return store.save(project, Number(value.revision), command.type, member.id);
+  }
   requireRole(
     member,
     command.type === 'review'
@@ -59,6 +70,8 @@ export function projectCommand(
     if (project.factors.length || project.scenarios.length) throw new Error('team_analysis_exists');
     Object.assign(project, suggestAnalysis(project));
   } else if (command.type === 'replace_analysis') {
+    if (collaboration(project).cases.length || collaboration(project).contributions.length)
+      throw new Error('collab_replace_blocked');
     if (!isAnalysis(command.analysis)) throw new Error('team_invalid');
     checkAnalysis(command.analysis, project);
     if (
@@ -83,6 +96,12 @@ export function projectCommand(
     else project.factors[index] = command.factor;
     for (const scenario of project.scenarios)
       if (scenario.factorValues.some((value) => value.factorId === command.factor.id)) delete scenario.review;
+    invalidateCases(
+      project,
+      project.scenarios
+        .filter((scenario) => scenario.factorValues.some((value) => value.factorId === command.factor.id))
+        .map((scenario) => scenario.id),
+    );
   } else if (command.type === 'add_scenario') {
     if (project.scenarios.some((item) => item.id === command.id)) throw new Error('team_invalid');
     project.scenarios.push({
@@ -104,6 +123,7 @@ export function projectCommand(
       const { type: _type, scenarioId: _id, ...patch } = command;
       Object.assign(scenario, patch);
       delete scenario.review;
+      invalidateCases(project, [scenario.id]);
     } else if (command.type === 'review') {
       if (command.decision === 'accepted' && readiness(scenario, project).length)
         throw new Error('team_review_blocked');
@@ -113,6 +133,7 @@ export function projectCommand(
         by: member.id,
         at: new Date().toISOString(),
       };
+      if (command.decision === 'needs_changes') invalidateCases(project, [scenario.id]);
     } else {
       if (project.comments.length >= 1000) throw new Error('team_too_large');
       project.comments.push({

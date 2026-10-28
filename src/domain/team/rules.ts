@@ -1,5 +1,6 @@
 import { isAnalysis, isProject, isProjectInput } from './schema.ts';
 import type { ProjectInput, TeamAnalysis, TeamProject, TeamScenario } from './types.ts';
+import { checkCollaboration } from './collaboration-rules.ts';
 
 function fail(condition: boolean, code = 'team_invalid') {
   if (!condition) throw new Error(code);
@@ -49,6 +50,7 @@ export function decodeProject(value: unknown): TeamProject {
   );
   fail(unique(value.interfaces.map((item) => item.id)));
   checkAnalysis(value, value);
+  checkCollaboration(value);
   return structuredClone(value);
 }
 export function readiness(scenario: TeamScenario, project: TeamProject): string[] {

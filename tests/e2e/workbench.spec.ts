@@ -33,8 +33,8 @@ test('adds a human review and validates it without invoking an Agent', async ({ 
 test('keeps candidate coverage separate from execution results', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: '验证资产', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '还没有验证任务' })).toBeVisible();
-  await expect(page.getByRole('combobox', { name: '选择验证任务' })).toHaveValue('');
+  await expect(page.getByRole('heading', { name: '当前会话还没有验证任务' })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: '选择验证任务' })).toHaveCount(0);
   await expect(page.getByText('添加示例候选')).toHaveCount(0);
 });
 

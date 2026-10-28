@@ -1,3 +1,4 @@
+import type { Collaboration, CollaborationCommand } from './collaboration.ts';
 export type TeamRole = 'admin' | 'editor' | 'reviewer' | 'viewer';
 export interface TeamMember {
   id: string;
@@ -44,6 +45,7 @@ export interface TeamAnalysis {
   questions: string[];
 }
 export interface TeamProject extends TeamAnalysis {
+  collaboration?: Collaboration;
   formatVersion: 1;
   id: string;
   title: string;
@@ -58,6 +60,7 @@ export interface TeamProject extends TeamAnalysis {
 }
 export type ProjectInput = Pick<TeamProject, 'title' | 'mode' | 'locale' | 'topic' | 'interfaces'>;
 export type TeamCommand =
+  | CollaborationCommand
   | { type: 'suggest' }
   | { type: 'replace_analysis'; analysis: TeamAnalysis }
   | { type: 'upsert_factor'; factor: TestFactor }

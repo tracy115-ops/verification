@@ -40,7 +40,7 @@ export function AnalysisExchange({ actions }: { actions: TeamActions }) {
         <button className="workbench-btn" onClick={exportProject}>
           {t('team_export')}
         </button>
-        {editable && (
+        {editable && !actions.project!.factors.length && !actions.project!.scenarios.length && (
           <button
             className="workbench-btn"
             onClick={() => {

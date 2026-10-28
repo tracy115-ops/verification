@@ -101,6 +101,7 @@ export function RunPanel({
       )}
       <RunDecisions run={run} openArtifact={setSelectedArtifact} />
       <RunArtifactViewer
+        updateRun={actions.busy ? undefined : actions.updateRun}
         run={run}
         selected={selectedArtifact}
         select={setSelectedArtifact}

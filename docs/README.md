@@ -17,12 +17,16 @@
 | [界面与真实流程验收](research/interface-workflow-audit.md) | 各页面检查、真实需求分析结果与阻塞问题 |
 | [内部 CodeAgent 驱动](architecture/codeagent-driver.md) | 内置模型、扫描路径、参数探测与实际验证边界 |
 | [ADR-0002](adr/0002-lan-design-collaboration-service.md) | HTTP 协作服务与 SQLite 的职责和取舍 |
+| [ADR-0003](adr/0003-incremental-contributions-and-coverage.md) | 增量合入、版本绑定覆盖及静态解析的信任边界 |
 | [首轮开发计划](roadmap/development-plan.md) | 已实现的第一轮范围及后续开发边界 |
 | [产品定位与头脑风暴](product/vision-and-brainstorm.md) | 谁使用、完整旅程、差异点、优先级与待定项 |
 | [系统架构与选型](architecture/system-design.md) | 为什么选择本地工作台、如何分层、模块边界 |
 | [CLI 与 Provider](architecture/cli-and-provider-design.md) | 使用已安装 Agent、快速配置和兼容性探测 |
 | [桌面真实流程验收](research/desktop-flow-acceptance.md) | 系统代理修复、真实 CLI / Python 闭环与会话管理验证 |
 | [局域网发现与桌面托管](design/lan-discovery-and-hosting.md) | 设置、扫描、浏览器加入、共享范围及资源构建 |
+| [增量协作与脚本覆盖](design/collaborative-contributions-and-script-coverage.md) | 逐条合入、共享用例、覆盖声明、AST 映射与失效规则 |
+| [协作与覆盖验收](research/collaboration-coverage-validation.md) | 真实 CLI 补漏、逐条合入、方法映射及多人验证 |
+| [会话资产归属验收](research/conversation-assets-validation.md) | 当前会话绑定、去除任务下拉、紧凑布局与会话搜索 |
 | [CLI 操作与工作流接入分析](architecture/cli-workflow-operation-analysis.md) | 设置、会话、各 CLI 已验证边界及 CodeAgent 目标环境验收 |
 | [工作流引擎](architecture/workflow-engine.md) | 自定义生成、保存、审核、版本化与恢复 |
 | [需求追溯与点灯](architecture/domain-and-traceability.md) | 原文定位、场景树、完整性评估、变更失效 |

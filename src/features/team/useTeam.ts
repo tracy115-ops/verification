@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { TeamApi, TEAM_TOKEN_KEY } from '../../services/team-api';
+import type { ScriptInput } from '../../domain/team/collaboration';
 import type {
   ProjectInput,
   ProjectSummary,
@@ -128,6 +129,15 @@ export function useTeam() {
     sessionStorage.setItem(TEAM_TOKEN_KEY, value.trim());
     setToken(value.trim());
   }
+  async function uploadScript(script: ScriptInput, revision = project?.revision) {
+    if (!project || !revision) return false;
+    return perform(async () => {
+      const next = await api.uploadScript(project.id, revision, script);
+      setProject(next);
+      setHistory(await api.history(next.id));
+      setProjects(await api.projects());
+    });
+  }
   function logout() {
     sessionStorage.removeItem(TEAM_TOKEN_KEY);
     setToken('');
@@ -151,6 +161,7 @@ export function useTeam() {
     refresh,
     create,
     command,
+    uploadScript,
     setError,
     setMembers,
   };

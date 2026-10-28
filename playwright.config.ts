@@ -4,7 +4,7 @@ const baseURL = production ? 'http://127.0.0.1:5174' : 'http://127.0.0.1:5173';
 
 export default defineConfig({
   testDir: './tests/e2e',
-  testIgnore: '**/team.spec.ts',
+  testIgnore: '**/team*.spec.ts',
   fullyParallel: false,
   workers: 1,
   reporter: 'list',

@@ -191,10 +191,92 @@
   width: 100%;
 }
 .session-history h2 {
-  margin: 18px 12px 8px;
+  margin: 0;
   color: var(--wb-muted);
   font-size: 11px;
   font-weight: 500;
+}
+.session-history-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 12px 8px 4px 12px;
+}
+.session-search-dialog {
+  width: min(640px, calc(100vw - 32px));
+  max-height: min(680px, calc(100dvh - 48px));
+  padding: 0;
+  border: 1px solid var(--wb-border);
+  border-radius: 12px;
+  background: var(--wb-surface);
+  color: var(--wb-text);
+}
+.session-search-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+.session-search-dialog::backdrop {
+  background: var(--wb-overlay);
+}
+.session-search-dialog > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+}
+.session-search-dialog h2 {
+  margin: 0;
+  font-size: 16px;
+}
+.session-search-input {
+  padding: 0 20px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.session-search-input input {
+  flex: 1;
+  min-width: 0;
+}
+.session-search-input small {
+  white-space: nowrap;
+  color: var(--wb-muted);
+}
+.session-search-results {
+  overflow: auto;
+  padding: 0 12px 12px;
+  min-height: 100px;
+}
+.session-search-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 14px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--wb-text);
+  text-align: left;
+  cursor: pointer;
+}
+.session-search-result:hover {
+  background: var(--wb-hover);
+}
+.session-search-result strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.session-search-result small {
+  color: var(--wb-muted);
+  white-space: nowrap;
+}
+.session-search-results > p {
+  padding: 16px 12px;
 }
 .session-history-list {
   max-height: 28vh;
@@ -291,7 +373,7 @@
 }
 @media (max-width: 1100px) {
   .session-history-new span,
-  .session-history h2,
+  .session-history-heading h2,
   .session-history-item span {
     display: none;
   }

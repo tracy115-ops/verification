@@ -3,8 +3,18 @@ import type { Artifact, WorkflowRun } from '../../domain/runtime/types';
 import { isCases, isDesign } from '../../domain/runtime/artifacts';
 import { TaskAssets, type AssetView } from '../reviews/AssetsWorkspace';
 import { useI18n } from '../../shared/i18n/context';
+import type { UpdateRun } from '../reviews/PersonalCaseCoverage';
+import { RunContributionExport } from '../reviews/RunContributionExport';
 
-export function ArtifactCollection({ run, artifact }: { run: WorkflowRun; artifact: Artifact }) {
+export function ArtifactCollection({
+  run,
+  artifact,
+  updateRun,
+}: {
+  run: WorkflowRun;
+  artifact: Artifact;
+  updateRun?: UpdateRun;
+}) {
   const { t } = useI18n();
   const initial: AssetView = isCases(artifact.value)
     ? 'cases'
@@ -17,6 +27,7 @@ export function ArtifactCollection({ run, artifact }: { run: WorkflowRun; artifa
   const override = view === initial || (initial === 'scenarios' && view === 'factors') ? artifact : undefined;
   return (
     <div className="session-artifact-collection">
+      <RunContributionExport run={run} />
       <nav className="assets-tabs" aria-label={t('artifactViews')}>
         {(['requirements', 'factors', 'scenarios', 'cases'] as const).map((kind) => (
           <button
@@ -42,6 +53,7 @@ export function ArtifactCollection({ run, artifact }: { run: WorkflowRun; artifa
         ))}
       </nav>
       <TaskAssets
+        updateRun={updateRun}
         run={run}
         view={view}
         query={query}

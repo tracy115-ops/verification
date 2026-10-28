@@ -14,6 +14,7 @@ import './styles/artifacts-ui.css';
 import './styles/transcript-ui.css';
 import './styles/team-ui.css';
 import './styles/lan-ui.css';
+import './styles/collaboration-ui.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Missing application root');

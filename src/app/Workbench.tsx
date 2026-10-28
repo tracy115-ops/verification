@@ -63,8 +63,10 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
     <div className="app-shell">
       <Sidebar page={page} setPage={navigate} conversations={conversations} />
       <main className="app-main">
-        <Titlebar page={page} busy={conversations.busy} />
-        {page !== 'sessions' && <PageHeading page={page} workbench={workbench} />}
+        {page !== 'assets' && page !== 'cases' && <Titlebar page={page} busy={conversations.busy} />}
+        {page !== 'sessions' && page !== 'assets' && page !== 'cases' && (
+          <PageHeading page={page} workbench={workbench} />
+        )}
         {page === 'workflow' && <DocumentBar workbench={workbench} />}
         <Notifications workbench={workbench} page={page} />
         <div className="app-content">
@@ -116,10 +118,12 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
             )}
             {(page === 'assets' || page === 'cases') && (
               <AssetsWorkspace
-                key={page}
-                sessions={conversations.sessions}
+                updateRun={conversations.busy ? undefined : conversations.updateRun}
+                key={`${page}:${conversations.activeId}:${conversations.selectedRunId}`}
+                session={conversations.session}
+                openSession={() => setPage('sessions')}
                 initialView={page === 'cases' ? 'cases' : 'requirements'}
-                initialRunId={conversations.selectedRunId || conversations.session?.runs.at(-1)?.id}
+                runId={conversations.selectedRunId || conversations.session?.runs.at(-1)?.id}
               />
             )}
             {page === 'runs' && (

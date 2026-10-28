@@ -1,10 +1,13 @@
-import { Plus, MessageSquare } from 'lucide-react';
+import { Plus, MessageSquare, Search } from 'lucide-react';
+import { useState } from 'react';
 import type { Conversations } from '../../app/useConversations';
 import { useI18n } from '../../shared/i18n/context';
 import { SessionActions } from './SessionActions';
+import { ConversationSearch } from './ConversationSearch';
 
 export function SessionHistory({ actions, open }: { actions: Conversations; open: () => void }) {
   const { t } = useI18n();
+  const [searching, setSearching] = useState(false);
   return (
     <section className="session-history">
       <button
@@ -18,7 +21,18 @@ export function SessionHistory({ actions, open }: { actions: Conversations; open
         <Plus size={16} />
         <span>{t('newSession')}</span>
       </button>
-      <h2>{t('sessionHistory')}</h2>
+      <div className="session-history-heading">
+        <h2>{t('sessionHistory')}</h2>
+        <button
+          className="workbench-btn wb-text"
+          disabled={actions.busy}
+          aria-label={t('searchConversations')}
+          title={t('searchConversations')}
+          onClick={() => setSearching(true)}
+        >
+          <Search size={15} />
+        </button>
+      </div>
       <div className="session-history-list">
         {actions.sessions
           .slice()
@@ -44,6 +58,7 @@ export function SessionHistory({ actions, open }: { actions: Conversations; open
             </div>
           ))}
       </div>
+      {searching && <ConversationSearch actions={actions} close={() => setSearching(false)} open={open} />}
     </section>
   );
 }

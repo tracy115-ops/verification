@@ -9,17 +9,20 @@ import { ArtifactCollection } from './ArtifactCollection';
 import { ArtifactPanel } from './ArtifactPanel';
 import { EvidenceViewer } from './EvidenceViewer';
 import { ExecutionArtifact } from './ExecutionArtifact';
+import type { UpdateRun } from '../reviews/PersonalCaseCoverage';
 
 export function RunArtifactViewer({
   run,
   selected,
   select,
   close,
+  updateRun,
 }: {
   run: WorkflowRun;
   selected: string | null;
   select: (key: string) => void;
   close: () => void;
+  updateRun?: UpdateRun;
 }) {
   const { t, locale } = useI18n();
   const ref = useRef<HTMLDialogElement>(null);
@@ -74,7 +77,7 @@ export function RunArtifactViewer({
             </span>
           </div>
           <div className="session-artifact-body">
-            <ArtifactDetail key={selected} run={run} artifact={artifact} />
+            <ArtifactDetail key={selected} run={run} artifact={artifact} updateRun={updateRun} />
           </div>
         </>
       )}
@@ -82,11 +85,19 @@ export function RunArtifactViewer({
   );
 }
 
-function ArtifactDetail({ run, artifact }: { run: WorkflowRun; artifact: Artifact }) {
+function ArtifactDetail({
+  run,
+  artifact,
+  updateRun,
+}: {
+  run: WorkflowRun;
+  artifact: Artifact;
+  updateRun?: UpdateRun;
+}) {
   const { t } = useI18n();
   const value = artifact.value;
   if (isRequirements(value) || isDesign(value) || isCases(value))
-    return <ArtifactCollection run={run} artifact={artifact} />;
+    return <ArtifactCollection run={run} artifact={artifact} updateRun={updateRun} />;
   if (isEvidence(value)) return <EvidenceViewer evidence={value} run={run} />;
   if (isImplementation(value))
     return (
