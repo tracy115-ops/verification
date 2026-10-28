@@ -3,7 +3,7 @@ import { useWorkbench } from './useWorkbench';
 import { useConversations } from './useConversations';
 import { useFrameworks } from './useFrameworks';
 import { Sidebar } from './Sidebar';
-import { Titlebar, PageHeading, DocumentBar, Notifications, Statusbar } from './WorkbenchChrome';
+import { Titlebar, PageHeading, DocumentBar, Notifications } from './WorkbenchChrome';
 import { workspacePage, type Page } from './navigation';
 import type { Appearance, SettingsTab } from '../features/settings/SettingsPage';
 
@@ -113,7 +113,6 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
             )}
           </Suspense>
         </div>
-        <Statusbar />
       </main>
     </div>
   );

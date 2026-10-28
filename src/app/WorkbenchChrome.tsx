@@ -11,12 +11,8 @@ export function Titlebar({ page, busy }: { page: Page; busy: boolean }) {
   const { t } = useI18n();
   return (
     <header className="app-titlebar">
-      <span>
-        {t('project')}
-        <span className="app-breadcrumb-slash">/</span>
-        {t(page)}
-      </span>
-      <Status tone={busy ? 'accent' : 'neutral'}>{t(busy ? 'generating' : 'local')}</Status>
+      <span>{t(page)}</span>
+      {busy && <Status tone="accent">{t('generating')}</Status>}
     </header>
   );
 }
@@ -120,18 +116,5 @@ export function Notifications({ workbench }: { workbench: WorkbenchState }) {
         </ul>
       )}
     </>
-  );
-}
-
-export function Statusbar() {
-  const { t } = useI18n();
-  return (
-    <footer className="app-statusbar">
-      <span>
-        <span className="app-environment-dot" />
-        {t('local')}
-      </span>
-      <span>{t('phase')} · v0.1.0</span>
-    </footer>
   );
 }

@@ -1,4 +1,4 @@
-import { Folder, Settings, ShieldCheck } from 'lucide-react';
+import { Settings, ShieldCheck } from 'lucide-react';
 import { useI18n } from '../shared/i18n/context';
 import { navigation, type Page } from './navigation';
 import { SessionHistory } from '../features/sessions/SessionHistory';
@@ -25,14 +25,7 @@ export function Sidebar({
           <small>VERIFICATION</small>
         </div>
       </div>
-      <div className="app-project">
-        <Folder size={17} />
-        <div>
-          <strong>{t('project')}</strong>
-          <small>{t('local')}</small>
-        </div>
-      </div>
-      <nav aria-label={t('project')}>
+      <nav aria-label={t('app')}>
         {navigation.map(({ page: item, icon: Icon, key }) => (
           <button
             key={item}
@@ -57,11 +50,6 @@ export function Sidebar({
           <Settings size={19} />
           <span>{t('settings')}</span>
         </button>
-      </div>
-      <div className="app-sidebar-footer">
-        <span className="app-environment-dot" />
-        {t('phase')}
-        <p>{t('scope')}</p>
       </div>
     </aside>
   );

@@ -2,6 +2,9 @@ import { test, expect } from '@playwright/test';
 
 test('keeps conversation controls compact and remembers the task panel visibility', async ({ page }) => {
   await page.goto('/');
+  await expect(page.getByText('本地优先', { exact: true })).toHaveCount(0);
+  await expect(page.locator('.app-project')).toHaveCount(0);
+  await expect(page.locator('.app-statusbar')).toHaveCount(0);
   await expect(
     page.locator('.session-conversation').getByRole('button', { name: '新建会话', exact: true }),
   ).toHaveCount(0);
