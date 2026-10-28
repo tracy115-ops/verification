@@ -162,13 +162,13 @@ export function RunPanel({
           </ReviewDialog>
         </>
       )}
-      <details className="session-flow-details">
-        <summary>
-          {t('viewWorkflowSteps')} ·{' '}
+      <section className="session-flow-overview">
+        <h3>
+          {t('workflowProgress')} ·{' '}
           {Object.values(run.steps).filter((step) => step.status === 'succeeded').length} / {run.plan.length}
-        </summary>
+        </h3>
         <RunSteps run={run} />
-      </details>
+      </section>
       {['failed', 'interrupted'].includes(run.status) && !failedExecution && (
         <button
           className="workbench-btn wb-full"

@@ -50,10 +50,10 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
   }
   return (
     <div className="app-shell">
-      <Sidebar page={page} setPage={navigate} />
+      <Sidebar page={page} setPage={navigate} conversations={conversations} />
       <main className="app-main">
         <Titlebar page={page} busy={conversations.busy} />
-        <PageHeading page={page} workbench={workbench} />
+        {page !== 'sessions' && <PageHeading page={page} workbench={workbench} />}
         {page === 'workflow' && <DocumentBar workbench={workbench} />}
         <Notifications workbench={workbench} />
         <div className="app-content">

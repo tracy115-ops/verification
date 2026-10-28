@@ -58,7 +58,7 @@ export function ConversationComposer({
     <div className="session-composer">
       <div className="session-composer-controls">
         <label className="wb-field">
-          {t('sessionAgent')}
+          <span className="wb-sr-only">{t('sessionAgent')}</span>
           <select
             className="workbench-select"
             disabled={actions.busy}
@@ -73,7 +73,7 @@ export function ConversationComposer({
           </select>
         </label>
         <label className="wb-field">
-          {t('savedWorkflow')}
+          <span className="wb-sr-only">{t('savedWorkflow')}</span>
           <select
             className="workbench-select"
             disabled={actions.busy}
@@ -111,7 +111,7 @@ export function ConversationComposer({
           {dirty && <span> · {t('unsavedWorkflowHint')}</span>}
         </p>
       )}
-      {!saved && (
+      {!saved && invoke && (
         <button className="workbench-btn wb-text" onClick={openWorkflow}>
           {t('chooseFlowFirst')}
         </button>
@@ -167,7 +167,6 @@ export function ConversationComposer({
           </button>
         )}
       </div>
-      <p className="wb-muted">{t('profileScopeHint')}</p>
     </div>
   );
 }

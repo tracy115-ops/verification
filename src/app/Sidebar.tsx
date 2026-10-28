@@ -1,8 +1,18 @@
 import { Folder, Settings, ShieldCheck } from 'lucide-react';
 import { useI18n } from '../shared/i18n/context';
 import { navigation, type Page } from './navigation';
+import { SessionHistory } from '../features/sessions/SessionHistory';
+import type { Conversations } from './useConversations';
 
-export function Sidebar({ page, setPage }: { page: Page; setPage: (page: Page) => void }) {
+export function Sidebar({
+  page,
+  setPage,
+  conversations,
+}: {
+  page: Page;
+  setPage: (page: Page) => void;
+  conversations: Conversations;
+}) {
   const { t } = useI18n();
   return (
     <aside className="app-sidebar">
@@ -37,6 +47,7 @@ export function Sidebar({ page, setPage }: { page: Page; setPage: (page: Page) =
           </button>
         ))}
       </nav>
+      <SessionHistory actions={conversations} open={() => setPage('sessions')} />
       <div className="app-settings">
         <button
           className={`app-nav-item ${page === 'settings' ? 'is-active' : ''}`}

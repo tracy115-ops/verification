@@ -1,4 +1,5 @@
-import { Bot, MessageSquare, Plus, Workflow } from 'lucide-react';
+import { Bot, MessageSquare, PanelRight } from 'lucide-react';
+import { useState } from 'react';
 import type { Conversations } from '../../app/useConversations';
 import type { AgentProfile, WorkbenchDocument } from '../../domain/workflow';
 import { hasDesktopBridge } from '../../services/agent-api';
@@ -28,6 +29,24 @@ export function SessionWorkspace({
   openAssets: (cases: boolean) => void;
 }) {
   const { t } = useI18n();
+  const [panelOpen, setPanelOpen] = useState(() => {
+    try {
+      return localStorage.getItem('verification-workbench.task-panel') !== 'closed';
+    } catch {
+      return true;
+    }
+  });
+  function togglePanel() {
+    setPanelOpen((value) => {
+      const next = !value;
+      try {
+        localStorage.setItem('verification-workbench.task-panel', next ? 'open' : 'closed');
+      } catch {
+        /* Session state still works without persistence. */
+      }
+      return next;
+    });
+  }
   const activeRun =
     actions.session?.runs.find((run) => run.id === actions.selectedRunId) ?? actions.session?.runs.at(-1);
   const composer = (
@@ -42,54 +61,26 @@ export function SessionWorkspace({
     />
   );
   return (
-    <div
-      className={`session-workspace ${activeRun ? 'has-run' : ''} ${activeRun?.status === 'awaiting_review' ? 'has-review' : ''}`}
-    >
+    <div className={`session-workspace ${activeRun ? 'has-run' : ''} ${panelOpen ? 'has-task-panel' : ''}`}>
       <section className="session-conversation">
+        <h1 className="wb-sr-only">{t('sessions')}</h1>
         <div className="session-toolbar">
-          <label className="wb-field">
-            <span className="wb-sr-only">{t('sessionHistory')}</span>
-            <select
-              className="workbench-select"
-              aria-label={t('sessionHistory')}
-              disabled={actions.busy}
-              value={actions.activeId}
-              onChange={(event) => actions.setActiveId(event.target.value)}
-            >
-              <option value="">{t('untitledSession')}</option>
-              {actions.sessions.map((session) => (
-                <option key={session.id} value={session.id}>
-                  {session.title || t('untitledSession')}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button className="workbench-btn" disabled={actions.busy} onClick={actions.newSession}>
-            <Plus size={15} />
-            {t('newSession')}
-          </button>
+          <strong className="session-title">
+            {actions.session?.title.replace(/^#+\s*/, '').split('\n')[0] || t('untitledSession')}
+          </strong>
           <button className="workbench-btn wb-text" onClick={openSettings}>
             <Bot size={15} />
             {t('configureAgent')}
           </button>
+          <button
+            className="workbench-btn wb-text"
+            aria-label={t('toggleTaskPanel')}
+            aria-expanded={panelOpen}
+            onClick={togglePanel}
+          >
+            <PanelRight size={18} />
+          </button>
         </div>
-        {(actions.session?.runs.length ?? 0) > 1 && (
-          <label className="wb-field session-run-picker">
-            {t('runRecords')}
-            <select
-              className="workbench-select"
-              value={activeRun?.id ?? ''}
-              disabled={actions.busy}
-              onChange={(event) => actions.setSelectedRunId(event.target.value)}
-            >
-              {actions.session!.runs.map((run, index) => (
-                <option key={run.id} value={run.id}>
-                  {index + 1} · {run.snapshot.definition.name} · r{run.snapshot.revision}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
         {!hasDesktopBridge() && (
           <div className="wb-banner session-browser-note">{t('browserConversation')}</div>
         )}
@@ -113,16 +104,6 @@ export function SessionWorkspace({
               </span>
               <h2>{t('startConversation')}</h2>
               <p>{t('conversationSubtitle')}</p>
-              <div className="session-workflow-shortcut">
-                <Workflow size={20} />
-                <div>
-                  <strong>{saved?.definition.name ?? t('preset')}</strong>
-                  <small>{t('designScope')}</small>
-                </div>
-                <button className="workbench-btn" onClick={openWorkflow}>
-                  {t(saved ? 'workflow' : 'chooseFlowFirst')}
-                </button>
-              </div>
             </div>
           )}
           {actions.session?.messages.map((item) => (
@@ -165,7 +146,37 @@ export function SessionWorkspace({
         )}
         {composer}
       </section>
-      {activeRun && <RunPanel run={activeRun} actions={actions} openAssets={openAssets} />}
+      {panelOpen &&
+        (activeRun ? (
+          <div className="session-task-column">
+            {(actions.session?.runs.length ?? 0) > 1 && (
+              <label className="wb-field session-run-picker">
+                {t('runRecords')}
+                <select
+                  className="workbench-select"
+                  value={activeRun.id}
+                  disabled={actions.busy}
+                  onChange={(event) => actions.setSelectedRunId(event.target.value)}
+                >
+                  {actions.session!.runs.map((run, index) => (
+                    <option key={run.id} value={run.id}>
+                      {index + 1} · {run.snapshot.definition.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <RunPanel run={activeRun} actions={actions} openAssets={openAssets} />
+          </div>
+        ) : (
+          <aside className="session-task-empty">
+            <h2>{t('taskPanel')}</h2>
+            <p>{t('taskPanelEmpty')}</p>
+            <button className="workbench-btn" onClick={openWorkflow}>
+              {t('openWorkflowDesigner')}
+            </button>
+          </aside>
+        ))}
     </div>
   );
 }
