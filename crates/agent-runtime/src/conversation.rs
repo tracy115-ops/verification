@@ -125,6 +125,7 @@ async fn supervise(
     let mut status = None;
     let mut streams_closed = false;
     let mut received = 0usize;
+    let mut stderr_failure = None;
     let deadline = Instant::now() + Duration::from_secs(request.timeout_seconds);
     let mut heartbeat = interval(Duration::from_secs(1));
     let mut interrupted = None;
@@ -141,6 +142,9 @@ async fn supervise(
                     Some((stdout, Ok(line))) => {
                         received += line.len();
                         if received > MAX_OUTPUT { interrupted = Some(("failed", "output_limit")); break; }
+                        if !stdout {
+                            stderr_failure = crate::failure::classify(&String::from_utf8_lossy(&line)).or(stderr_failure);
+                        }
                         if stdout && !line.iter().all(u8::is_ascii_whitespace) {
                             for event in state.consume(request.driver, &line) {
                                 if !sink(event) { interrupted = Some(("cancelled", "client_disconnected")); break; }
@@ -172,7 +176,8 @@ async fn supervise(
             native_session_id: state.session_id,
         };
     }
-    let success = matches!(status, Some(Ok(status)) if status.success())
+    let exited_successfully = matches!(status, Some(Ok(status)) if status.success());
+    let success = exited_successfully
         && input_written
         && state.terminal
         && !state.failed
@@ -180,7 +185,23 @@ async fn supervise(
     TurnOutcome {
         status: if success { "completed" } else { "failed" }.into(),
         text,
-        error_code: (!success).then(|| "cli_failed".into()),
+        error_code: (!success).then(|| {
+            state
+                .error_code
+                .or(stderr_failure)
+                .unwrap_or(if !input_written {
+                    "cli_input_failed"
+                } else if !exited_successfully {
+                    "cli_exit_failed"
+                } else if !state.terminal {
+                    "cli_protocol_invalid"
+                } else if state.failed {
+                    "cli_failed"
+                } else {
+                    "cli_empty_output"
+                })
+                .into()
+        }),
         native_session_id: state.session_id,
     }
 }
@@ -215,6 +236,7 @@ pub async fn run_turn(
             .collect()
     };
     let mut command = Command::new(&launch.program);
+    crate::proxy::configure(&mut command);
     command.args(&launch.args).args(args);
     if !request.model.is_empty() {
         command.arg("--model").arg(&request.model);

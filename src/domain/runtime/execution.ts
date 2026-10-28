@@ -8,12 +8,13 @@ import { canonicalJson } from '../execution/canonical';
 import { buildReport } from '../execution/report';
 import type { WorkflowNode } from '../workflow';
 import { reviewDigest } from './approvals';
+import { implementationClarifications } from './script-revision';
 
 export function executionTask(run: WorkflowRun, node: WorkflowNode, inputs: Record<string, unknown>): string {
   if (node.operation === 'tests.implement')
     return JSON.stringify({
       instruction:
-        'Generate ONE Python test script matching the provided single-file unittest framework. Return only outputSchema JSON. No target source is available. Use only imports unittest and framework; subclass framework.BlackBoxCase (or import BlackBoxCase). Each class body contains only test_ methods, with no decorators, setUp, tearDown, helper methods, global code or main entry. Each test method must assert documented observable behavior. Use the supplied framework for requests; no raw networking, shell, files, reflection or source inspection. Map every executable test method to accepted case IDs; cover every accepted case. Do not invent unspecified oracles. If the framework cannot express a case, list a question instead of faking a pass. No test execution has occurred.',
+        'Generate ONE Python test script matching the provided single-file unittest framework. Return only outputSchema JSON. No target source is available. Use only imports unittest and framework; subclass framework.BlackBoxCase (or import BlackBoxCase). Each class body contains only test_ methods, with no decorators, setUp, tearDown, helper methods, global code or main entry. The script must be at most 2000 physical lines, and each test method at most 200 physical lines; prefer small independent methods with globally unique test_ names. Each test method must assert documented observable behavior. Use the supplied framework for requests; no raw networking, shell, files, reflection or source inspection. Map every executable test method to accepted case IDs; cover every accepted case. Do not invent unspecified oracles. If the framework cannot express a case, list a question instead of faking a pass. No test execution has occurred.',
       operation: node.operation,
       inputs,
       sourceSpec: run.spec,
@@ -21,6 +22,9 @@ export function executionTask(run: WorkflowRun, node: WorkflowNode, inputs: Reco
       reviewExclusions: run.reviewExclusions ?? [],
       frameworkSource: run.executionProfile?.frameworkSource,
       frameworkInstructions: run.executionProfile?.instructions,
+      questionPolicy:
+        'Populate questions only with unresolved blockers to the approved execution scope. ReviewExclusions and explicitly scoped-out assertions remain audit gaps: describe them in script comments, not blocking questions. Do not reintroduce excluded cases. When every remaining approved assertion can execute, return questions: []. This does not certify full coverage.',
+      implementationClarifications: implementationClarifications(run),
       outputSchema: implementationSchema,
     });
   if (node.operation === 'verdicts.evaluate')

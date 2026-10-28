@@ -1,8 +1,10 @@
 mod codeagent;
 mod conversation;
 mod discovery;
+mod failure;
 mod probe;
 mod protocol;
+mod proxy;
 mod turn_types;
 
 pub use conversation::run_turn;

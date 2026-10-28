@@ -1,4 +1,4 @@
-import type { ConversationMessage, ConversationSession, TurnRequest } from './types';
+import type { ConversationMessage, ConversationSession, TurnRequest, TurnOutcome } from './types';
 import { newId } from '../../shared/id';
 import type { AgentProfile } from '../workflow';
 import { inferenceModel } from './profile';
@@ -9,6 +9,15 @@ export function createSession(profileId: string): ConversationSession {
 
 export function message(role: ConversationMessage['role'], text: string): ConversationMessage {
   return { id: newId(), role, text, createdAt: new Date().toISOString(), status: 'complete' };
+}
+
+export function replyMessage(result: TurnOutcome): ConversationMessage {
+  return {
+    ...message('assistant', result.text),
+    status: result.status === 'completed' ? 'complete' : 'failed',
+    errorCode: result.errorCode ?? undefined,
+    nativeSessionId: result.nativeSessionId ?? undefined,
+  };
 }
 
 export function chatRequest(session: ConversationSession, profile: AgentProfile): TurnRequest {

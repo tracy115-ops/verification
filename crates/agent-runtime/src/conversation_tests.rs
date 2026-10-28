@@ -48,6 +48,7 @@ async fn nonzero_exit_overrides_a_success_protocol_record() {
     let (_sender, receiver) = oneshot::channel();
     let result = supervise(fixture("bad-exit", None), &request(), receiver, |_| true).await;
     assert_eq!(result.status, "failed");
+    assert_eq!(result.error_code.as_deref(), Some("cli_exit_failed"));
 }
 
 #[tokio::test]

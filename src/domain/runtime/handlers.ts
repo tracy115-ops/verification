@@ -13,6 +13,7 @@ import type { WorkflowRun } from './types';
 import { executionTask, validatedExecutionArtifact } from './execution';
 import { decodePlan } from '../execution/validation';
 import { canonicalJson } from '../execution/canonical';
+import { scopedCases } from './case-scope';
 
 export function taskFor(run: WorkflowRun, node: WorkflowNode, inputs: Record<string, unknown>) {
   if (['tests.implement', 'verdicts.evaluate'].includes(node.operation))
@@ -101,7 +102,10 @@ export function reviewIssues(run: WorkflowRun, node: WorkflowNode): string[] {
   }
   if (node.operation === 'review.cases') {
     const design = decodeDesign(latestArtifact(run, 'TestDesign'), requirements);
-    const cases = decodeCases(latestArtifact(run, 'TestCaseSetDraft'), requirements, design);
+    const cases = scopedCases(
+      run,
+      decodeCases(latestArtifact(run, 'TestCaseSetDraft'), requirements, design),
+    );
     const covered = new Set(cases.cases.flatMap((item) => item.scenarioIds));
     const coveredRequirements = new Set(cases.cases.flatMap((item) => item.requirementIds));
     return [

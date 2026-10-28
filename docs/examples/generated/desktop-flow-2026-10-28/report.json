@@ -1,0 +1,235 @@
+{
+  "status": "inconclusive",
+  "counts": {
+    "passed": 33,
+    "failed": 11,
+    "error": 0,
+    "skipped": 0
+  },
+  "candidates": [
+    {
+      "id": "D1",
+      "title": "排位房间接受非法模式或容量组合",
+      "explanation": "POST /rooms 对排位 squad 房间和容量为 3 的排位 duel 房间均返回 201；两个用例均期望返回 400。",
+      "testNames": [
+        "test_b1_c05",
+        "test_b1_c06"
+      ],
+      "caseIds": [
+        "B1-C05",
+        "B1-C06"
+      ]
+    },
+    {
+      "id": "D2",
+      "title": "创建房间接受低于下界或类型非法的容量",
+      "explanation": "POST /rooms 对 maxPlayers 为 1、字符串 \"2\" 和布尔值 true 的请求均返回 201；三个用例均期望返回 400。",
+      "testNames": [
+        "test_b1_c07",
+        "test_b1_c10",
+        "test_b1_c11"
+      ],
+      "caseIds": [
+        "B1-C07",
+        "B1-C10",
+        "B1-C11"
+      ]
+    },
+    {
+      "id": "D3",
+      "title": "其他已认证身份可查询私有房间",
+      "explanation": "player-b 查询仅有 player-a 为成员的 private-room 时，接口返回 200 和房间信息；用例期望返回 403。",
+      "testNames": [
+        "test_b2_c5_02"
+      ],
+      "caseIds": [
+        "B2-C5_02"
+      ]
+    },
+    {
+      "id": "D4",
+      "title": "并发争抢最后席位时两个加入请求均成功",
+      "explanation": "容量为 2、初始已有一名成员的房间收到两个并发加入请求，两个响应均为 200；用例期望一个 200、一个 409。第二个响应中的 members 包含三名成员。状态码断言失败后，测试未执行最终房间查询。",
+      "testNames": [
+        "test_b3_c7_1"
+      ],
+      "caseIds": [
+        "B3-C7_1"
+      ]
+    },
+    {
+      "id": "D5",
+      "title": "过期回合行动未返回冲突",
+      "explanation": "在预置 currentTurn 为 3 的进行中对局中提交 turn 为 2 的行动，接口返回 200；用例期望返回 409。",
+      "testNames": [
+        "test_b4_c10_01"
+      ],
+      "caseIds": [
+        "B4-C10_01"
+      ]
+    },
+    {
+      "id": "D6",
+      "title": "已结束对局接受参与者行动",
+      "explanation": "参与者向已结束对局提交行动时，接口返回 200；用例期望返回 409。该测试未验证对局状态是否改变。",
+      "testNames": [
+        "test_b4_c11_01"
+      ],
+      "caseIds": [
+        "B4-C11_01"
+      ]
+    },
+    {
+      "id": "D7",
+      "title": "相同结果提交重放后积分重复增加",
+      "explanation": "首次提交后积分为 10；以相同 submissionId 和内容重放后，积分变为 20，而用例期望仍为 10。",
+      "testNames": [
+        "test_b4_c12_01"
+      ],
+      "caseIds": [
+        "B4-C12_01"
+      ]
+    },
+    {
+      "id": "D8",
+      "title": "模拟匹配服务不可用时仍返回已入队",
+      "explanation": "有效队列请求携带 X-Test-Matchmaker: unavailable 时，接口返回 200 和 status 为 queued；用例期望 503 和 unavailable。",
+      "testNames": [
+        "test_b6_c16_01"
+      ],
+      "caseIds": [
+        "B6-C16_01"
+      ]
+    }
+  ],
+  "notes": [
+    "候选项基于本次执行中的失败断言和记录的请求响应；尚未确认根因。",
+    "测试和契约仍有已记录的覆盖缺口，不能据此声称完整覆盖。",
+    "review_exclusions: 20"
+  ],
+  "action": "review_candidates",
+  "policy": "report_only",
+  "evidenceDigest": "c9f185e836974d5287a8e0adaeb2d9969c15ccbe65ed20e166ce5a62ddba893c",
+  "reviewExclusions": [
+    {
+      "nodeId": "review_requirements",
+      "issue": "进行中对局中，参与者 player-b 在并非当前行为者时提交行动应返回什么？未来回合、非法 action、缺失字段及其与身份错误同时出现时的优先级是什么？",
+      "reason": "题目未明确此规则，本轮仅验证已明示的输入输出；保留缺口，不推断预期。",
+      "recordedAt": "2026-10-28T07:33:01.895Z"
+    },
+    {
+      "nodeId": "review_requirements",
+      "issue": "题目未指定如何读取已结束对局状态；是否有可用的查询接口来证明行动前后状态不变？",
+      "reason": "题目未明确此规则，本轮仅验证已明示的输入输出；保留缺口，不推断预期。",
+      "recordedAt": "2026-10-28T07:33:01.895Z"
+    },
+    {
+      "nodeId": "review_requirements",
+      "issue": "结果提交中，不同 submissionId 的冲突、非法 winnerId 和未认证报告者的具体错误码未约定；相同 submissionId 携带不同内容时如何处理？",
+      "reason": "题目未明确此规则，本轮仅验证已明示的输入输出；保留缺口，不推断预期。",
+      "recordedAt": "2026-10-28T07:33:01.895Z"
+    },
+    {
+      "nodeId": "review_requirements",
+      "issue": "胜者为 player-b 时是否提供积分查询接口及初始积分约定，以验证其加分？",
+      "reason": "题目未明确此规则，本轮仅验证已明示的输入输出；保留缺口，不推断预期。",
+      "recordedAt": "2026-10-28T07:33:01.895Z"
+    },
+    {
+      "nodeId": "review_requirements",
+      "issue": "外部匹配服务不可用与非法输入或无身份同时出现时，返回结果的优先级是什么？",
+      "reason": "题目未明确此规则，本轮仅验证已明示的输入输出；保留缺口，不推断预期。",
+      "recordedAt": "2026-10-28T07:33:01.895Z"
+    },
+    {
+      "nodeId": "review_requirements",
+      "issue": "结果提交或对局行动的并发冲突语义未约定，因此无法断言这类并发请求的具体结果。",
+      "reason": "题目未明确此规则，本轮仅验证已明示的输入输出；保留缺口，不推断预期。",
+      "recordedAt": "2026-10-28T07:33:01.895Z"
+    },
+    {
+      "nodeId": "review_coverage",
+      "issue": "进行中对局中，非当前行为者 player-b 的行动、未来回合、非法 action、缺失字段及多种错误同时出现时的优先级未约定。",
+      "reason": "题目未明确此规则，本轮仅验证已明示的输入输出；保留缺口，不推断预期。",
+      "recordedAt": "2026-10-28T07:35:20.485Z"
+    },
+    {
+      "nodeId": "review_coverage",
+      "issue": "currentTurn 变为 4 的具体响应字段或查询接口未指定，需确认如何观察。",
+      "reason": "题目未明确此规则，本轮仅验证已明示的输入输出；保留缺口，不推断预期。",
+      "recordedAt": "2026-10-28T07:35:20.486Z"
+    },
+    {
+      "nodeId": "review_coverage",
+      "issue": "已结束对局没有指定状态查询接口，无法验证行动前后状态不变。",
+      "reason": "题目未明确此规则，本轮仅验证已明示的输入输出；保留缺口，不推断预期。",
+      "recordedAt": "2026-10-28T07:35:20.486Z"
+    },
+    {
+      "nodeId": "review_coverage",
+      "issue": "已满房间的后续串行加入、重复加入及其错误码未约定；单次加入后仅可依据澄清断言成员长度。",
+      "reason": "题目未明确此规则，本轮仅验证已明示的输入输出；保留缺口，不推断预期。",
+      "recordedAt": "2026-10-28T07:35:20.486Z"
+    },
+    {
+      "nodeId": "review_coverage",
+      "issue": "结果提交中，非法 winnerId 的具体拒绝形式和错误码、不同 submissionId 的冲突、相同 submissionId 携带不同内容时的处理均未约定。",
+      "reason": "题目未明确此规则，本轮仅验证已明示的输入输出；保留缺口，不推断预期。",
+      "recordedAt": "2026-10-28T07:35:20.486Z"
+    },
+    {
+      "nodeId": "review_coverage",
+      "issue": "所有接口无身份返回 401 与结果提交未认证报告者具体错误码未约定之间存在冲突，需澄清后才能断言该接口的无身份状态码。",
+      "reason": "题目未明确此规则，本轮仅验证已明示的输入输出；保留缺口，不推断预期。",
+      "recordedAt": "2026-10-28T07:35:20.486Z"
+    },
+    {
+      "nodeId": "review_coverage",
+      "issue": "player-b 胜出时的积分查询接口和初始积分未指定，无法完整验证其加分。",
+      "reason": "题目未明确此规则，本轮仅验证已明示的输入输出；保留缺口，不推断预期。",
+      "recordedAt": "2026-10-28T07:35:20.486Z"
+    },
+    {
+      "nodeId": "review_coverage",
+      "issue": "匹配服务不可用与非法输入或无身份同时出现时的优先级未约定。",
+      "reason": "题目未明确此规则，本轮仅验证已明示的输入输出；保留缺口，不推断预期。",
+      "recordedAt": "2026-10-28T07:35:20.486Z"
+    },
+    {
+      "nodeId": "review_coverage",
+      "issue": "结果提交和对局行动的并发冲突语义未约定，不能断言此类并发结果。",
+      "reason": "题目未明确此规则，本轮仅验证已明示的输入输出；保留缺口，不推断预期。",
+      "recordedAt": "2026-10-28T07:35:20.486Z"
+    },
+    {
+      "nodeId": "review_coverage",
+      "issue": "本输出仅为场景设计，未生成或执行测试文件，也未取得请求响应证据。",
+      "reason": "题目未明确此规则，本轮仅验证已明示的输入输出；保留缺口，不推断预期。",
+      "recordedAt": "2026-10-28T07:35:20.486Z"
+    },
+    {
+      "nodeId": "review_coverage",
+      "issue": "F1: 指定夹具身份",
+      "reason": "题目未明确此规则，本轮仅验证已明示的输入输出；保留缺口，不推断预期。",
+      "recordedAt": "2026-10-28T07:35:20.486Z"
+    },
+    {
+      "nodeId": "review_coverage",
+      "issue": "F1: 无身份",
+      "reason": "题目未明确此规则，本轮仅验证已明示的输入输出；保留缺口，不推断预期。",
+      "recordedAt": "2026-10-28T07:35:20.486Z"
+    },
+    {
+      "nodeId": "review_cases",
+      "issue": "case:B5-C13_01",
+      "reason": "该用例与题目均未规定非法 winnerId 的可观察拒绝形式或错误码，不能构造可靠断言。保留原用例与 S13 的覆盖缺口，本次不执行；不以无断言脚本冒充通过。",
+      "recordedAt": "2026-10-28T07:48:17.012Z"
+    },
+    {
+      "nodeId": "review_cases",
+      "issue": "S13",
+      "reason": "题目未明确此规则，本轮仅验证已明示的输入输出；保留缺口，不推断预期。",
+      "recordedAt": "2026-10-28T07:48:17.714Z"
+    }
+  ]
+}

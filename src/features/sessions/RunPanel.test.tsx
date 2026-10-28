@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, within } from '@testing-library/react';
 import { afterEach, expect, it } from 'vitest';
 import { fixtureRun } from '../../domain/runtime/fixtures.test-support';
 import type { Conversations } from '../../app/useConversations';
@@ -7,6 +7,18 @@ import { RunPanel } from './RunPanel';
 
 afterEach(cleanup);
 it('shows actual candidate and error counts above the workflow steps', () => {
+  Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+    configurable: true,
+    value(this: HTMLDialogElement) {
+      this.open = true;
+    },
+  });
+  Object.defineProperty(HTMLDialogElement.prototype, 'close', {
+    configurable: true,
+    value(this: HTMLDialogElement) {
+      this.open = false;
+    },
+  });
   const run = fixtureRun();
   run.status = 'completed';
   run.artifacts.report = {
@@ -30,4 +42,6 @@ it('shows actual candidate and error counts above the workflow steps', () => {
     summary.compareDocumentPosition(container.querySelector('.session-step-list')!) &
       Node.DOCUMENT_POSITION_FOLLOWING,
   ).toBeTruthy();
+  fireEvent.click(within(container).getByRole('button', { name: '查看本次报告' }));
+  expect(within(container).getByRole('dialog').textContent).toContain('验证报告');
 });

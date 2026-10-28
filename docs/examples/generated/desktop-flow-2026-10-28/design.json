@@ -1,0 +1,488 @@
+{
+  "strategy": "采用黑盒设计，每个场景从框架恢复的独立初始状态开始；单个场景内按需连续调用以验证状态变化、重放或并发。对创建房间和匹配队列覆盖有效与非法等价类、边界及字段组合；对私有房间、加入和行动覆盖身份与权限；对结果提交覆盖状态及幂等性。并发加入使用框架 parallel，且不预设成功身份。所有接口响应均为 JSON；仅依据契约断言，未知结果列入缺口。测试适配器继承 framework.BlackBoxCase，仅导入 unittest 和 framework，通过 self.client 调用；无身份使用 user=None。受信任框架负责目标地址、初始化、HTTP 调用及证据记录。以下均为设计，未执行测试。",
+  "factors": [
+    {
+      "id": "F1",
+      "name": "测试身份与初始状态",
+      "requirementIds": [
+        "R1"
+      ],
+      "levels": [
+        "指定夹具身份",
+        "无身份",
+        "独立初始状态"
+      ],
+      "sourceQuote": "接口均返回 JSON。测试者身份通过框架参数 user 指定；这里的 player-a / b / c 是夹具身份，不是真实凭据。每个测试的 setUp 由框架恢复独立初始状态。"
+    },
+    {
+      "id": "F2",
+      "name": "创建房间输入组合",
+      "requirementIds": [
+        "R2"
+      ],
+      "levels": [
+        "非排位有效组合",
+        "排位有效组合",
+        "容量越界",
+        "容量类型或缺失非法",
+        "模式非法或缺失",
+        "排位字段非法或缺失",
+        "排位组合非法"
+      ],
+      "sourceQuote": "`POST /rooms` 输入 `{maxPlayers, mode, ranked}`。maxPlayers 为 JSON number 类型整数，范围 2–8，含端点；mode 仅 duel / squad，ranked 为布尔值。ranked=true 时必须 mode=duel 且 maxPlayers=2。有效返回 201，JSON 包含 id；非法输入返回 400。"
+    },
+    {
+      "id": "F3",
+      "name": "私有房间查询身份",
+      "requirementIds": [
+        "R3"
+      ],
+      "levels": [
+        "所有者 player-a",
+        "其他已认证身份",
+        "无身份"
+      ],
+      "sourceQuote": "`GET /rooms/private-room`：预置私有房间 owner=player-a，成员只有 player-a，maxPlayers=2。player-a 可查询，返回 200、owner、members、maxPlayers。其他身份返回 403，无身份返回 401。"
+    },
+    {
+      "id": "F4",
+      "name": "公开房间加入方式",
+      "requirementIds": [
+        "R4"
+      ],
+      "levels": [
+        "player-b 单次加入",
+        "player-b 与 player-c 并发加入",
+        "无身份请求"
+      ],
+      "sourceQuote": "`POST /rooms/race-room/join`：预置容量为 2 的公开房间，初始只有 player-a。player-b / player-c 同时加入时，只能一个成功（200），另一个返回 409；最终 `GET /rooms/race-room` 的 members 长度为 2。单次 player-b 加入应成功。所有接口无身份返回 401。"
+    },
+    {
+      "id": "F5",
+      "name": "进行中对局行动",
+      "requirementIds": [
+        "R5"
+      ],
+      "levels": [
+        "当前行为者合法行动",
+        "参与者过期回合",
+        "非参与者行动"
+      ],
+      "sourceQuote": "`POST /matches/live/actions` 输入 `{turn, action}`。预置 currentTurn=3、参与者 player-a / player-b、当前行为者 player-a，action=attack / defend。合法行动返回 200，currentTurn 变为 4；过期 turn 返回 409，非参与者返回 403。"
+    },
+    {
+      "id": "F6",
+      "name": "已结束对局行动",
+      "requirementIds": [
+        "R6"
+      ],
+      "levels": [
+        "参与者提交行动"
+      ],
+      "sourceQuote": "`POST /matches/finished/actions`：参与者仍为 player-a / player-b，但对局已结束；任何行动返回 409，禁止恢复对局或改变状态。"
+    },
+    {
+      "id": "F7",
+      "name": "结果提交及重放",
+      "requirementIds": [
+        "R7"
+      ],
+      "levels": [
+        "首次有效提交",
+        "相同 submissionId 相同内容重放",
+        "非参与者胜者"
+      ],
+      "sourceQuote": "`POST /matches/result/result` 输入 `{winnerId, submissionId}`。参与者 player-a / player-b，player-a 为报告者；winnerId 必须为参与者。首次有效提交返回 200，胜者积分 +10。相同 submissionId 重放应返回 200，不重复加分。通过 `GET /players/player-a/score` 观察积分，初始为 0。题目未约定不同 submissionId 冲突、未认证报告者或非法 winnerId 的具体错误码，不能自行断言这些状态码。"
+    },
+    {
+      "id": "F8",
+      "name": "匹配输入及外部服务状态",
+      "requirementIds": [
+        "R8"
+      ],
+      "levels": [
+        "有效等级和区域",
+        "等级越界",
+        "等级非整数或缺失",
+        "区域非法或缺失",
+        "服务不可用且输入有效"
+      ],
+      "sourceQuote": "`POST /queue` 输入 `{level, region}`，level 为 1–100 的整数，region 为 cn / eu。有效请求返回 200 / `{status:\"queued\"}`；非法输入返回 400。框架通过 headers 参数设置 `X-Test-Matchmaker: unavailable` 可模拟题目允许控制的外部匹配服务不可用，此时返回 503 / `{status:\"unavailable\"}`，不得宣称已入队。"
+    },
+    {
+      "id": "F9",
+      "name": "框架请求方式",
+      "requirementIds": [
+        "R9"
+      ],
+      "levels": [
+        "单次调用",
+        "最多四个请求的并发调用",
+        "user=None"
+      ],
+      "sourceQuote": "继承 `framework.BlackBoxCase`，使用 `self.client.call(method,path,body=None,user=\"player-a\",headers=None)`，得到含 status / body 的响应。无身份使用 user=None。`self.client.parallel([{method,path,body,user,headers},...])` 支持最多 4 个并发请求。"
+    },
+    {
+      "id": "F10",
+      "name": "交付与证据约束",
+      "requirementIds": [
+        "R10"
+      ],
+      "levels": [
+        "单文件及限定导入",
+        "契约支持的请求响应断言",
+        "未知预期记录为缺口"
+      ],
+      "sourceQuote": "只生成一个 `test_game_platform.py`，仅允许导入 unittest 和 framework。不得访问源码、操作文件、执行 shell 或连接题目之外的服务。先设计正常与异常等价类、边界、决策表、权限、状态、重复和并发场景；未知预期列为问题。所有发现必须由请求 / 响应与契约断言支持。"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "S1",
+      "title": "非排位房间的有效容量和模式",
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R9"
+      ],
+      "dimension": "等价类、边界、决策表",
+      "expected": "在独立测试中，以 ranked=false 分别覆盖 maxPlayers=2、8 和范围内整数，并覆盖 duel、squad；每次返回 201，JSON 包含 id。",
+      "factorLevels": [
+        {
+          "factorId": "F1",
+          "level": "独立初始状态"
+        },
+        {
+          "factorId": "F2",
+          "level": "非排位有效组合"
+        },
+        {
+          "factorId": "F9",
+          "level": "单次调用"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "title": "排位房间的有效与非法组合",
+      "requirementIds": [
+        "R2"
+      ],
+      "dimension": "决策表",
+      "expected": "ranked=true、mode=duel、maxPlayers=2 返回 201 且 JSON 包含 id；分别将 mode 改为 squad 或将容量改为范围内非 2 的整数，返回 400。",
+      "factorLevels": [
+        {
+          "factorId": "F2",
+          "level": "排位有效组合"
+        },
+        {
+          "factorId": "F2",
+          "level": "排位组合非法"
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "title": "创建房间容量边界和类型",
+      "requirementIds": [
+        "R2"
+      ],
+      "dimension": "边界、异常等价类",
+      "expected": "保持其他字段有效，分别提交容量 1、9、非整数、字符串、布尔值、null 和缺失字段，每次返回 400。",
+      "factorLevels": [
+        {
+          "factorId": "F2",
+          "level": "容量越界"
+        },
+        {
+          "factorId": "F2",
+          "level": "容量类型或缺失非法"
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "title": "创建房间模式和排位字段非法",
+      "requirementIds": [
+        "R2"
+      ],
+      "dimension": "异常等价类",
+      "expected": "保持其余字段有效，分别提交其他模式值或缺失 mode，以及非布尔 ranked 或缺失 ranked；每次返回 400。",
+      "factorLevels": [
+        {
+          "factorId": "F2",
+          "level": "模式非法或缺失"
+        },
+        {
+          "factorId": "F2",
+          "level": "排位字段非法或缺失"
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "title": "私有房间查询权限",
+      "requirementIds": [
+        "R3",
+        "R9"
+      ],
+      "dimension": "权限",
+      "expected": "独立请求中，player-a 返回 200，owner 为 player-a、members 仅含 player-a、maxPlayers 为 2；其他已认证身份返回 403；user=None 返回 401。",
+      "factorLevels": [
+        {
+          "factorId": "F3",
+          "level": "所有者 player-a"
+        },
+        {
+          "factorId": "F3",
+          "level": "其他已认证身份"
+        },
+        {
+          "factorId": "F3",
+          "level": "无身份"
+        },
+        {
+          "factorId": "F9",
+          "level": "user=None"
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "title": "单次加入公开房间",
+      "requirementIds": [
+        "R4"
+      ],
+      "dimension": "正常流程、状态",
+      "expected": "独立初始状态下，以 player-b 加入返回 200；随后查询 race-room，members 长度为 2。",
+      "factorLevels": [
+        {
+          "factorId": "F4",
+          "level": "player-b 单次加入"
+        }
+      ]
+    },
+    {
+      "id": "S7",
+      "title": "两个身份并发争抢最后一个席位",
+      "requirementIds": [
+        "R4",
+        "R9"
+      ],
+      "dimension": "并发、容量、状态",
+      "expected": "使用 parallel 同时提交 player-b 和 player-c 的两个加入请求；响应恰为一个 200 和一个 409，不预设成功身份。两请求结束后查询 race-room，members 长度为 2。",
+      "factorLevels": [
+        {
+          "factorId": "F4",
+          "level": "player-b 与 player-c 并发加入"
+        },
+        {
+          "factorId": "F9",
+          "level": "最多四个请求的并发调用"
+        }
+      ]
+    },
+    {
+      "id": "S8",
+      "title": "各接口无身份访问",
+      "requirementIds": [
+        "R4",
+        "R9"
+      ],
+      "dimension": "认证",
+      "expected": "对题目提供的各接口分别使用 user=None，其他输入保持有效，返回 401；结果提交中未认证报告者的具体错误码存在契约冲突，单独列为缺口，不断言其具体状态码。",
+      "factorLevels": [
+        {
+          "factorId": "F4",
+          "level": "无身份请求"
+        },
+        {
+          "factorId": "F9",
+          "level": "user=None"
+        }
+      ]
+    },
+    {
+      "id": "S9",
+      "title": "当前行为者执行两种合法行动",
+      "requirementIds": [
+        "R5"
+      ],
+      "dimension": "正常等价类、状态转换",
+      "expected": "独立测试中，player-a 以 turn=3 分别提交 attack 和 defend；各返回 200，currentTurn 变为 4。currentTurn 的可观察位置须由框架或接口契约确认。",
+      "factorLevels": [
+        {
+          "factorId": "F5",
+          "level": "当前行为者合法行动"
+        }
+      ]
+    },
+    {
+      "id": "S10",
+      "title": "过期回合与非参与者行动",
+      "requirementIds": [
+        "R5"
+      ],
+      "dimension": "状态、权限",
+      "expected": "参与者以过期 turn 和合法 action 提交返回 409；非参与者以当前 turn 和合法 action 提交返回 403。分别在独立初始状态下测试。",
+      "factorLevels": [
+        {
+          "factorId": "F5",
+          "level": "参与者过期回合"
+        },
+        {
+          "factorId": "F5",
+          "level": "非参与者行动"
+        }
+      ]
+    },
+    {
+      "id": "S11",
+      "title": "已结束对局拒绝行动",
+      "requirementIds": [
+        "R6"
+      ],
+      "dimension": "终止状态",
+      "expected": "以参与者身份对已结束对局提交行动，返回 409。禁止恢复或改变状态是契约要求，但缺少已指定的状态读取接口，不能据此声称状态不变已验证。",
+      "factorLevels": [
+        {
+          "factorId": "F6",
+          "level": "参与者提交行动"
+        }
+      ]
+    },
+    {
+      "id": "S12",
+      "title": "首次结果提交和相同内容重放",
+      "requirementIds": [
+        "R7"
+      ],
+      "dimension": "状态、重复、幂等",
+      "expected": "以 player-a 为报告者和胜者，提交有效结果返回 200；查询 player-a 积分为 10。以相同 submissionId 和相同内容重放返回 200，再次查询积分仍为 10。",
+      "factorLevels": [
+        {
+          "factorId": "F7",
+          "level": "首次有效提交"
+        },
+        {
+          "factorId": "F7",
+          "level": "相同 submissionId 相同内容重放"
+        }
+      ]
+    },
+    {
+      "id": "S13",
+      "title": "非参与者不能成为胜者",
+      "requirementIds": [
+        "R7"
+      ],
+      "dimension": "资格、异常等价类",
+      "expected": "以 player-a 为报告者，提交非参与者 winnerId；契约要求胜者必须为参与者，但未指定错误码或可观察的拒绝形式，暂不对具体响应作断言。",
+      "factorLevels": [
+        {
+          "factorId": "F7",
+          "level": "非参与者胜者"
+        }
+      ]
+    },
+    {
+      "id": "S14",
+      "title": "匹配队列有效输入和边界",
+      "requirementIds": [
+        "R8"
+      ],
+      "dimension": "正常等价类、边界",
+      "expected": "以合法身份分别覆盖 level=1、100 和范围内整数，以及 cn、eu；每次返回 200，响应为指定的 queued 状态。",
+      "factorLevels": [
+        {
+          "factorId": "F8",
+          "level": "有效等级和区域"
+        }
+      ]
+    },
+    {
+      "id": "S15",
+      "title": "匹配队列非法等级与区域",
+      "requirementIds": [
+        "R8"
+      ],
+      "dimension": "异常等价类、边界",
+      "expected": "保持其余输入有效，分别提交 level=0、101、非整数或缺失 level，以及非法 region 或缺失 region；每次返回 400。",
+      "factorLevels": [
+        {
+          "factorId": "F8",
+          "level": "等级越界"
+        },
+        {
+          "factorId": "F8",
+          "level": "等级非整数或缺失"
+        },
+        {
+          "factorId": "F8",
+          "level": "区域非法或缺失"
+        }
+      ]
+    },
+    {
+      "id": "S16",
+      "title": "外部匹配服务不可用",
+      "requirementIds": [
+        "R8",
+        "R9"
+      ],
+      "dimension": "外部依赖、故障",
+      "expected": "以合法身份和有效输入，通过 headers 设置 X-Test-Matchmaker: unavailable；返回 503，响应状态为 unavailable，不宣称已入队。",
+      "factorLevels": [
+        {
+          "factorId": "F8",
+          "level": "服务不可用且输入有效"
+        },
+        {
+          "factorId": "F9",
+          "level": "单次调用"
+        }
+      ]
+    },
+    {
+      "id": "S17",
+      "title": "测试适配器及证据约束",
+      "requirementIds": [
+        "R1",
+        "R9",
+        "R10"
+      ],
+      "dimension": "框架、交付、证据",
+      "expected": "设计的测试交付为单个 test_game_platform.py，只导入 unittest 和 framework；继承 framework.BlackBoxCase，通过 self.client 读取 status 和 body，依赖框架重置状态及记录证据。发现仅由请求、响应和契约断言支持，未知预期记录为缺口。",
+      "factorLevels": [
+        {
+          "factorId": "F1",
+          "level": "独立初始状态"
+        },
+        {
+          "factorId": "F10",
+          "level": "单文件及限定导入"
+        },
+        {
+          "factorId": "F10",
+          "level": "契约支持的请求响应断言"
+        },
+        {
+          "factorId": "F10",
+          "level": "未知预期记录为缺口"
+        }
+      ]
+    }
+  ],
+  "gaps": [
+    "进行中对局中，非当前行为者 player-b 的行动、未来回合、非法 action、缺失字段及多种错误同时出现时的优先级未约定。",
+    "currentTurn 变为 4 的具体响应字段或查询接口未指定，需确认如何观察。",
+    "已结束对局没有指定状态查询接口，无法验证行动前后状态不变。",
+    "已满房间的后续串行加入、重复加入及其错误码未约定；单次加入后仅可依据澄清断言成员长度。",
+    "结果提交中，非法 winnerId 的具体拒绝形式和错误码、不同 submissionId 的冲突、相同 submissionId 携带不同内容时的处理均未约定。",
+    "所有接口无身份返回 401 与结果提交未认证报告者具体错误码未约定之间存在冲突，需澄清后才能断言该接口的无身份状态码。",
+    "player-b 胜出时的积分查询接口和初始积分未指定，无法完整验证其加分。",
+    "匹配服务不可用与非法输入或无身份同时出现时的优先级未约定。",
+    "结果提交和对局行动的并发冲突语义未约定，不能断言此类并发结果。",
+    "本输出仅为场景设计，未生成或执行测试文件，也未取得请求响应证据。"
+  ]
+}

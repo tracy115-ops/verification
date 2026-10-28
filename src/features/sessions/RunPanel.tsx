@@ -11,7 +11,11 @@ import { ArtifactPanel } from './ArtifactPanel';
 import { hasDesktopBridge } from '../../services/agent-api';
 import { isExecutionPlan, isEvidence, isReport } from '../../domain/execution/schema';
 import { ExecutionReview } from './ExecutionReview';
-import { ClarificationReview, SavedClarifications, SavedExclusions } from './ClarificationReview';
+import { ClarificationReview, SavedClarifications } from './ClarificationReview';
+import { CaseScopeReview } from './CaseScopeReview';
+import { RunArtifacts } from './RunArtifacts';
+import { ScriptQuestions } from './ScriptQuestions';
+import { RunReport } from './RunReport';
 
 export function RunPanel({
   run,
@@ -35,12 +39,6 @@ export function RunPanel({
   } catch {
     issues = [t('artifact_invalid')];
   }
-  const artifacts = Object.values(run.artifacts).filter(
-    (item) =>
-      !['DocumentRevision', 'RequirementBaselineDraft', 'TestDesignDraft', 'TestCaseSetDraft'].includes(
-        item.type,
-      ),
-  );
   const reviewInputs = pending
     ? Object.values(pending.inputs)
         .map((input) => run.artifacts[input.from])
@@ -76,7 +74,13 @@ export function RunPanel({
         {!executed && <p>{t('testsNotExecuted')}</p>}
       </div>
       <RunSummary value={report} />
+      <RunReport artifact={Object.values(run.artifacts).find((item) => isReport(item.value))} />
       <CurrentStep run={run} />
+      <ScriptQuestions
+        key={Object.values(run.artifacts).find((item) => item.type === 'ImplementationBundle')?.digest}
+        run={run}
+        actions={actions}
+      />
       {actions.busy && (
         <button className="workbench-btn" onClick={() => actions.cancel()}>
           <Square size={14} />
@@ -126,6 +130,14 @@ export function RunPanel({
                 </div>
               )}
               {reviewArtifact && <ArtifactPanel artifact={reviewArtifact} />}
+              {pending.operation === 'review.cases' && (
+                <CaseScopeReview
+                  key={run.steps[pending.id].reviewDigest}
+                  run={run}
+                  nodeId={pending.id}
+                  actions={actions}
+                />
+              )}
               {reviewArtifact && openAssets && (
                 <button
                   className="workbench-btn"
@@ -197,18 +209,7 @@ export function RunPanel({
           {t('cancelRun')}
         </button>
       )}
-      <div className="session-run-artifacts">
-        <details>
-          <summary>{t('artifactTitle')}</summary>
-          {pending?.operation !== 'review.requirements' && (
-            <SavedClarifications items={run.clarifications ?? []} />
-          )}
-          <SavedExclusions items={run.reviewExclusions ?? []} />
-          {artifacts.map((artifact, index) => (
-            <ArtifactPanel key={index} artifact={artifact} />
-          ))}
-        </details>
-      </div>
+      <RunArtifacts run={run} showClarifications={pending?.operation !== 'review.requirements'} />
     </aside>
   );
 }

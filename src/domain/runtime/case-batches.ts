@@ -63,9 +63,12 @@ export async function generateCaseBatches(
       index: index + 1,
       total: groups.length,
       allowedScenarioIds: scenarios.map((item) => item.id),
+      allowedRequirementIdsByScenario: Object.fromEntries(
+        scenarios.map((item) => [item.id, item.requirementIds]),
+      ),
     };
     task.instruction +=
-      ' Generate cases only for the listed allowedScenarioIds. Cover each listed scenario; do not output cases for other scenarios. Use unique case IDs within this batch.';
+      ' Generate cases only for the listed allowedScenarioIds. Cover each listed scenario; do not output cases for other scenarios. Use unique case IDs within this batch. Each case requirementIds must be a nonempty subset of the union of requirementIds mapped by its scenarioIds in allowedRequirementIdsByScenario. Do not cite unrelated requirements even if they describe a related endpoint. Framework and delivery constraints must be expressed as preconditions or acceptance criteria on observable business tests, not separate tests that inspect files, imports or framework internals.';
     const request = {
       turnId: step.turnId,
       sessionId: run.sessionId,

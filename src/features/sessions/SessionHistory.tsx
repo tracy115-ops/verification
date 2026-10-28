@@ -1,6 +1,7 @@
 import { Plus, MessageSquare } from 'lucide-react';
 import type { Conversations } from '../../app/useConversations';
 import { useI18n } from '../../shared/i18n/context';
+import { SessionActions } from './SessionActions';
 
 export function SessionHistory({ actions, open }: { actions: Conversations; open: () => void }) {
   const { t } = useI18n();
@@ -23,19 +24,24 @@ export function SessionHistory({ actions, open }: { actions: Conversations; open
           .slice()
           .reverse()
           .map((session) => (
-            <button
+            <div
               key={session.id}
-              disabled={actions.busy}
-              className={`session-history-item ${actions.activeId === session.id ? 'is-active' : ''}`}
-              onClick={() => {
-                actions.setActiveId(session.id);
-                open();
-              }}
-              title={session.title || t('untitledSession')}
+              className={`session-history-row ${actions.activeId === session.id ? 'is-active' : ''}`}
             >
-              <MessageSquare size={15} />
-              <span>{session.title.replace(/^#+\s*/, '').split('\n')[0] || t('untitledSession')}</span>
-            </button>
+              <button
+                disabled={actions.busy}
+                className={`session-history-item ${actions.activeId === session.id ? 'is-active' : ''}`}
+                onClick={() => {
+                  actions.setActiveId(session.id);
+                  open();
+                }}
+                title={session.title || t('untitledSession')}
+              >
+                <MessageSquare size={15} />
+                <span>{session.title.replace(/^#+\s*/, '').split('\n')[0] || t('untitledSession')}</span>
+              </button>
+              <SessionActions session={session} actions={actions} />
+            </div>
           ))}
       </div>
     </section>

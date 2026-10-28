@@ -263,3 +263,8 @@
   white-space: nowrap;
   border: 0;
 }
+.workbench-btn.wb-danger {
+  color: var(--wb-danger);
+  border-color: var(--wb-danger);
+  background: var(--wb-danger-soft);
+}

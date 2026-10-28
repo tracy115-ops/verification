@@ -1,0 +1,800 @@
+{
+  "cases": [
+    {
+      "id": "B1-C01",
+      "title": "非排位房间：最小容量和 duel 模式",
+      "scenarioIds": [
+        "S1"
+      ],
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R9"
+      ],
+      "preconditions": [
+        "框架已恢复独立初始状态，使用夹具身份 player-a。"
+      ],
+      "steps": [
+        "调用 POST /rooms，请求体为 {\"maxPlayers\":2,\"mode\":\"duel\",\"ranked\":false}。"
+      ],
+      "expected": "返回 201，JSON 响应包含 id。",
+      "assertions": [
+        "响应状态码为 201。",
+        "响应 body 为 JSON 对象，包含 id。"
+      ]
+    },
+    {
+      "id": "B1-C02",
+      "title": "非排位房间：最大容量和 squad 模式",
+      "scenarioIds": [
+        "S1"
+      ],
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R9"
+      ],
+      "preconditions": [
+        "框架已恢复独立初始状态，使用夹具身份 player-a。"
+      ],
+      "steps": [
+        "调用 POST /rooms，请求体为 {\"maxPlayers\":8,\"mode\":\"squad\",\"ranked\":false}。"
+      ],
+      "expected": "返回 201，JSON 响应包含 id。",
+      "assertions": [
+        "响应状态码为 201。",
+        "响应 body 为 JSON 对象，包含 id。"
+      ]
+    },
+    {
+      "id": "B1-C03",
+      "title": "非排位房间：范围内容量",
+      "scenarioIds": [
+        "S1"
+      ],
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R9"
+      ],
+      "preconditions": [
+        "框架已恢复独立初始状态，使用夹具身份 player-a。"
+      ],
+      "steps": [
+        "调用 POST /rooms，请求体为 {\"maxPlayers\":4,\"mode\":\"duel\",\"ranked\":false}。"
+      ],
+      "expected": "返回 201，JSON 响应包含 id。",
+      "assertions": [
+        "响应状态码为 201。",
+        "响应 body 为 JSON 对象，包含 id。"
+      ]
+    },
+    {
+      "id": "B1-C04",
+      "title": "排位房间：合法组合",
+      "scenarioIds": [
+        "S2"
+      ],
+      "requirementIds": [
+        "R2"
+      ],
+      "preconditions": [
+        "框架已恢复独立初始状态，使用夹具身份 player-a。"
+      ],
+      "steps": [
+        "调用 POST /rooms，请求体为 {\"maxPlayers\":2,\"mode\":\"duel\",\"ranked\":true}。"
+      ],
+      "expected": "返回 201，JSON 响应包含 id。",
+      "assertions": [
+        "响应状态码为 201。",
+        "响应 body 为 JSON 对象，包含 id。"
+      ]
+    },
+    {
+      "id": "B1-C05",
+      "title": "排位房间：模式为 squad",
+      "scenarioIds": [
+        "S2"
+      ],
+      "requirementIds": [
+        "R2"
+      ],
+      "preconditions": [
+        "框架已恢复独立初始状态，使用夹具身份 player-a。"
+      ],
+      "steps": [
+        "调用 POST /rooms，请求体为 {\"maxPlayers\":2,\"mode\":\"squad\",\"ranked\":true}。"
+      ],
+      "expected": "非法组合返回 400。",
+      "assertions": [
+        "响应状态码为 400。"
+      ]
+    },
+    {
+      "id": "B1-C06",
+      "title": "排位房间：容量为范围内非 2 的整数",
+      "scenarioIds": [
+        "S2"
+      ],
+      "requirementIds": [
+        "R2"
+      ],
+      "preconditions": [
+        "框架已恢复独立初始状态，使用夹具身份 player-a。"
+      ],
+      "steps": [
+        "调用 POST /rooms，请求体为 {\"maxPlayers\":3,\"mode\":\"duel\",\"ranked\":true}。"
+      ],
+      "expected": "非法组合返回 400。",
+      "assertions": [
+        "响应状态码为 400。"
+      ]
+    },
+    {
+      "id": "B1-C07",
+      "title": "创建房间：容量低于下界",
+      "scenarioIds": [
+        "S3"
+      ],
+      "requirementIds": [
+        "R2"
+      ],
+      "preconditions": [
+        "框架已恢复独立初始状态，使用夹具身份 player-a。"
+      ],
+      "steps": [
+        "调用 POST /rooms，请求体为 {\"maxPlayers\":1,\"mode\":\"duel\",\"ranked\":false}。"
+      ],
+      "expected": "非法容量返回 400。",
+      "assertions": [
+        "响应状态码为 400。"
+      ]
+    },
+    {
+      "id": "B1-C08",
+      "title": "创建房间：容量高于上界",
+      "scenarioIds": [
+        "S3"
+      ],
+      "requirementIds": [
+        "R2"
+      ],
+      "preconditions": [
+        "框架已恢复独立初始状态，使用夹具身份 player-a。"
+      ],
+      "steps": [
+        "调用 POST /rooms，请求体为 {\"maxPlayers\":9,\"mode\":\"duel\",\"ranked\":false}。"
+      ],
+      "expected": "非法容量返回 400。",
+      "assertions": [
+        "响应状态码为 400。"
+      ]
+    },
+    {
+      "id": "B1-C09",
+      "title": "创建房间：容量为非整数",
+      "scenarioIds": [
+        "S3"
+      ],
+      "requirementIds": [
+        "R2"
+      ],
+      "preconditions": [
+        "框架已恢复独立初始状态，使用夹具身份 player-a。"
+      ],
+      "steps": [
+        "调用 POST /rooms，请求体为 {\"maxPlayers\":2.5,\"mode\":\"duel\",\"ranked\":false}。"
+      ],
+      "expected": "非法容量返回 400。",
+      "assertions": [
+        "响应状态码为 400。"
+      ]
+    },
+    {
+      "id": "B1-C10",
+      "title": "创建房间：容量为字符串",
+      "scenarioIds": [
+        "S3"
+      ],
+      "requirementIds": [
+        "R2"
+      ],
+      "preconditions": [
+        "框架已恢复独立初始状态，使用夹具身份 player-a。"
+      ],
+      "steps": [
+        "调用 POST /rooms，请求体为 {\"maxPlayers\":\"2\",\"mode\":\"duel\",\"ranked\":false}。"
+      ],
+      "expected": "非法容量返回 400。",
+      "assertions": [
+        "响应状态码为 400。"
+      ]
+    },
+    {
+      "id": "B1-C11",
+      "title": "创建房间：容量为布尔值",
+      "scenarioIds": [
+        "S3"
+      ],
+      "requirementIds": [
+        "R2"
+      ],
+      "preconditions": [
+        "框架已恢复独立初始状态，使用夹具身份 player-a。"
+      ],
+      "steps": [
+        "调用 POST /rooms，请求体为 {\"maxPlayers\":true,\"mode\":\"duel\",\"ranked\":false}。"
+      ],
+      "expected": "非法容量返回 400。",
+      "assertions": [
+        "响应状态码为 400。"
+      ]
+    },
+    {
+      "id": "B1-C12",
+      "title": "创建房间：容量为 null",
+      "scenarioIds": [
+        "S3"
+      ],
+      "requirementIds": [
+        "R2"
+      ],
+      "preconditions": [
+        "框架已恢复独立初始状态，使用夹具身份 player-a。"
+      ],
+      "steps": [
+        "调用 POST /rooms，请求体为 {\"maxPlayers\":null,\"mode\":\"duel\",\"ranked\":false}。"
+      ],
+      "expected": "非法容量返回 400。",
+      "assertions": [
+        "响应状态码为 400。"
+      ]
+    },
+    {
+      "id": "B1-C13",
+      "title": "创建房间：缺少容量字段",
+      "scenarioIds": [
+        "S3"
+      ],
+      "requirementIds": [
+        "R2"
+      ],
+      "preconditions": [
+        "框架已恢复独立初始状态，使用夹具身份 player-a。"
+      ],
+      "steps": [
+        "调用 POST /rooms，请求体为 {\"mode\":\"duel\",\"ranked\":false}。"
+      ],
+      "expected": "缺少必需容量字段，返回 400。",
+      "assertions": [
+        "响应状态码为 400。"
+      ]
+    },
+    {
+      "id": "B2-C4_01",
+      "title": "创建房间时拒绝非法模式",
+      "scenarioIds": [
+        "S4"
+      ],
+      "requirementIds": [
+        "R2"
+      ],
+      "preconditions": [
+        "框架为测试恢复独立初始状态。"
+      ],
+      "steps": [
+        "以 player-a 调用 POST /rooms，请求体为 {\"maxPlayers\":2,\"mode\":\"other\",\"ranked\":false}。"
+      ],
+      "expected": "响应状态码为 400。",
+      "assertions": [
+        "响应 status 等于 400。"
+      ]
+    },
+    {
+      "id": "B2-C4_02",
+      "title": "创建房间时拒绝缺失模式",
+      "scenarioIds": [
+        "S4"
+      ],
+      "requirementIds": [
+        "R2"
+      ],
+      "preconditions": [
+        "框架为测试恢复独立初始状态。"
+      ],
+      "steps": [
+        "以 player-a 调用 POST /rooms，请求体为 {\"maxPlayers\":2,\"ranked\":false}。"
+      ],
+      "expected": "响应状态码为 400。",
+      "assertions": [
+        "响应 status 等于 400。"
+      ]
+    },
+    {
+      "id": "B2-C4_03",
+      "title": "创建房间时拒绝非布尔排位字段",
+      "scenarioIds": [
+        "S4"
+      ],
+      "requirementIds": [
+        "R2"
+      ],
+      "preconditions": [
+        "框架为测试恢复独立初始状态。"
+      ],
+      "steps": [
+        "以 player-a 调用 POST /rooms，请求体为 {\"maxPlayers\":2,\"mode\":\"duel\",\"ranked\":1}。"
+      ],
+      "expected": "响应状态码为 400。",
+      "assertions": [
+        "响应 status 等于 400。"
+      ]
+    },
+    {
+      "id": "B2-C4_04",
+      "title": "创建房间时拒绝缺失排位字段",
+      "scenarioIds": [
+        "S4"
+      ],
+      "requirementIds": [
+        "R2"
+      ],
+      "preconditions": [
+        "框架为测试恢复独立初始状态。"
+      ],
+      "steps": [
+        "以 player-a 调用 POST /rooms，请求体为 {\"maxPlayers\":2,\"mode\":\"duel\"}。"
+      ],
+      "expected": "响应状态码为 400。",
+      "assertions": [
+        "响应 status 等于 400。"
+      ]
+    },
+    {
+      "id": "B2-C5_01",
+      "title": "私有房间所有者查询",
+      "scenarioIds": [
+        "S5"
+      ],
+      "requirementIds": [
+        "R3",
+        "R9"
+      ],
+      "preconditions": [
+        "框架恢复独立初始状态；private-room 的所有者和唯一成员为 player-a，容量为 2。"
+      ],
+      "steps": [
+        "以 player-a 调用 GET /rooms/private-room。"
+      ],
+      "expected": "响应状态码为 200，返回约定的所有者、成员和容量。",
+      "assertions": [
+        "响应 status 等于 200。",
+        "响应 body 的 owner 等于 player-a。",
+        "响应 body 的 members 仅包含 player-a。",
+        "响应 body 的 maxPlayers 等于 2。"
+      ]
+    },
+    {
+      "id": "B2-C5_02",
+      "title": "其他已认证身份查询私有房间",
+      "scenarioIds": [
+        "S5"
+      ],
+      "requirementIds": [
+        "R3",
+        "R9"
+      ],
+      "preconditions": [
+        "框架恢复独立初始状态；private-room 的所有者和唯一成员为 player-a。"
+      ],
+      "steps": [
+        "以 player-b 调用 GET /rooms/private-room。"
+      ],
+      "expected": "响应状态码为 403。",
+      "assertions": [
+        "响应 status 等于 403。"
+      ]
+    },
+    {
+      "id": "B2-C5_03",
+      "title": "无身份查询私有房间",
+      "scenarioIds": [
+        "S5"
+      ],
+      "requirementIds": [
+        "R3",
+        "R9"
+      ],
+      "preconditions": [
+        "框架恢复独立初始状态；private-room 的所有者和唯一成员为 player-a。"
+      ],
+      "steps": [
+        "以 user=None 调用 GET /rooms/private-room。"
+      ],
+      "expected": "响应状态码为 401。",
+      "assertions": [
+        "响应 status 等于 401。"
+      ]
+    },
+    {
+      "id": "B2-C6_01",
+      "title": "player-b 单次加入公开房间",
+      "scenarioIds": [
+        "S6"
+      ],
+      "requirementIds": [
+        "R4"
+      ],
+      "preconditions": [
+        "框架恢复独立初始状态；race-room 容量为 2，初始成员只有 player-a。"
+      ],
+      "steps": [
+        "以 player-b 调用 POST /rooms/race-room/join。",
+        "以 player-a 调用 GET /rooms/race-room，检查返回的 members。"
+      ],
+      "expected": "加入响应状态码为 200；随后查询所得 members 长度为 2。重复加入和满员后的串行加入行为未约定，本用例不推断其结果。",
+      "assertions": [
+        "加入响应 status 等于 200。",
+        "查询响应 body 中 members 的长度等于 2。"
+      ]
+    },
+    {
+      "id": "B3-C7_1",
+      "title": "两个身份并发争抢公开房间的最后一个席位",
+      "scenarioIds": [
+        "S7"
+      ],
+      "requirementIds": [
+        "R4",
+        "R9"
+      ],
+      "preconditions": [
+        "框架将本用例恢复到独立初始状态：race-room 容量为 2，初始成员只有 player-a。",
+        "通过继承 framework.BlackBoxCase 的单文件适配器调用 self.client；受信任框架负责初始化、目标地址、HTTP 调用和证据记录。"
+      ],
+      "steps": [
+        "使用 self.client.parallel 同时提交两个 POST /rooms/race-room/join 请求，user 分别为 player-b 和 player-c。",
+        "两个请求均结束后，以 player-a 调用 GET /rooms/race-room。"
+      ],
+      "expected": "两个并发加入请求恰有一个返回 200、另一个返回 409；最终房间成员数为 2。不预设哪个身份加入成功。",
+      "assertions": [
+        "两个加入响应的状态码按多重集合比较恰为 {200, 409}。",
+        "最终查询响应的 JSON 中 members 的长度为 2。"
+      ]
+    },
+    {
+      "id": "B3-C8_1",
+      "title": "已明确认证规则的接口拒绝无身份请求",
+      "scenarioIds": [
+        "S8"
+      ],
+      "requirementIds": [
+        "R4",
+        "R9"
+      ],
+      "preconditions": [
+        "框架为本用例恢复独立初始状态。",
+        "通过 self.client.call 调用接口，所有请求均设置 user=None；请求体使用有效输入。"
+      ],
+      "steps": [
+        "分别调用 POST /rooms，body 为 {\"maxPlayers\":2,\"mode\":\"duel\",\"ranked\":false}；GET /rooms/private-room；POST /rooms/race-room/join；GET /rooms/race-room。",
+        "分别调用 POST /matches/live/actions，body 为 {\"turn\":3,\"action\":\"attack\"}；POST /matches/finished/actions，body 为 {\"turn\":3,\"action\":\"attack\"}；GET /players/player-a/score；POST /queue，body 为 {\"level\":1,\"region\":\"cn\"}。"
+      ],
+      "expected": "上述每个无身份请求均返回 401 和 JSON 响应。",
+      "assertions": [
+        "逐个断言每个响应的 status 为 401。",
+        "逐个断言每个响应的 body 为 JSON。"
+      ]
+    },
+    {
+      "id": "B3-C8_2",
+      "title": "记录结果提交的无身份响应及契约冲突",
+      "scenarioIds": [
+        "S8"
+      ],
+      "requirementIds": [
+        "R4",
+        "R9"
+      ],
+      "preconditions": [
+        "框架为本用例恢复独立初始状态，player-a 和 player-b 为对局参与者。",
+        "通过 self.client.call 调用接口并设置 user=None。"
+      ],
+      "steps": [
+        "调用 POST /matches/result/result，body 为 {\"winnerId\":\"player-a\",\"submissionId\":\"unauthenticated-1\"}。",
+        "记录响应供契约澄清后分析。"
+      ],
+      "expected": "响应为 JSON。所有接口无身份返回 401 的规则与结果提交未认证报告者具体错误码未约定之间存在冲突，待澄清后才能断言该请求的具体状态码。",
+      "assertions": [
+        "断言响应 body 为 JSON；不对该请求的具体状态码作断言。"
+      ]
+    },
+    {
+      "id": "B3-C9_1",
+      "title": "当前行为者在第 3 回合执行 attack",
+      "scenarioIds": [
+        "S9"
+      ],
+      "requirementIds": [
+        "R5"
+      ],
+      "preconditions": [
+        "框架为本用例恢复独立初始状态：currentTurn 为 3，player-a 为当前行为者，参与者为 player-a 和 player-b。"
+      ],
+      "steps": [
+        "以 player-a 调用 POST /matches/live/actions，body 为 {\"turn\":3,\"action\":\"attack\"}。"
+      ],
+      "expected": "请求返回 200，currentTurn 变为 4；题目未指定该状态的响应字段或查询接口，需澄清后才能验证状态变化。",
+      "assertions": [
+        "断言响应 status 为 200。",
+        "currentTurn 的可观察位置未明确，不推断字段或查询接口。"
+      ]
+    },
+    {
+      "id": "B3-C9_2",
+      "title": "当前行为者在第 3 回合执行 defend",
+      "scenarioIds": [
+        "S9"
+      ],
+      "requirementIds": [
+        "R5"
+      ],
+      "preconditions": [
+        "框架为本用例恢复独立初始状态：currentTurn 为 3，player-a 为当前行为者，参与者为 player-a 和 player-b。"
+      ],
+      "steps": [
+        "以 player-a 调用 POST /matches/live/actions，body 为 {\"turn\":3,\"action\":\"defend\"}。"
+      ],
+      "expected": "请求返回 200，currentTurn 变为 4；题目未指定该状态的响应字段或查询接口，需澄清后才能验证状态变化。",
+      "assertions": [
+        "断言响应 status 为 200。",
+        "currentTurn 的可观察位置未明确，不推断字段或查询接口。"
+      ]
+    },
+    {
+      "id": "B4-C10_01",
+      "title": "参与者提交过期回合行动",
+      "scenarioIds": [
+        "S10"
+      ],
+      "requirementIds": [
+        "R5"
+      ],
+      "preconditions": [
+        "框架恢复独立初始状态：live 对局 currentTurn=3，参与者为 player-a 和 player-b，当前行为者为 player-a。",
+        "使用受信任框架的 self.client 调用接口；响应为 JSON。"
+      ],
+      "steps": [
+        "以 user=player-a 调用 POST /matches/live/actions，body 为 {\"turn\":2,\"action\":\"attack\"}。"
+      ],
+      "expected": "过期回合行动返回 409。",
+      "assertions": [
+        "响应 status 为 409，body 为 JSON。",
+        "契约依据：`POST /matches/live/actions` 输入 `{turn, action}`。预置 currentTurn=3、参与者 player-a / player-b、当前行为者 player-a，action=attack / defend。合法行动返回 200，currentTurn 变为 4；过期 turn 返回 409，非参与者返回 403。"
+      ]
+    },
+    {
+      "id": "B4-C10_02",
+      "title": "非参与者提交当前回合行动",
+      "scenarioIds": [
+        "S10"
+      ],
+      "requirementIds": [
+        "R5"
+      ],
+      "preconditions": [
+        "框架恢复独立初始状态：live 对局 currentTurn=3，参与者为 player-a 和 player-b，当前行为者为 player-a。",
+        "使用受信任框架的 self.client 调用接口；响应为 JSON。"
+      ],
+      "steps": [
+        "以 user=player-c 调用 POST /matches/live/actions，body 为 {\"turn\":3,\"action\":\"defend\"}。"
+      ],
+      "expected": "非参与者行动返回 403。",
+      "assertions": [
+        "响应 status 为 403，body 为 JSON。",
+        "契约依据：`POST /matches/live/actions` 输入 `{turn, action}`。预置 currentTurn=3、参与者 player-a / player-b、当前行为者 player-a，action=attack / defend。合法行动返回 200，currentTurn 变为 4；过期 turn 返回 409，非参与者返回 403。"
+      ]
+    },
+    {
+      "id": "B4-C11_01",
+      "title": "已结束对局拒绝参与者行动",
+      "scenarioIds": [
+        "S11"
+      ],
+      "requirementIds": [
+        "R6"
+      ],
+      "preconditions": [
+        "框架恢复独立初始状态：finished 对局已结束，参与者为 player-a 和 player-b。",
+        "使用受信任框架的 self.client 调用接口；响应为 JSON。"
+      ],
+      "steps": [
+        "以 user=player-a 调用 POST /matches/finished/actions，body 为 {\"turn\":3,\"action\":\"attack\"}。"
+      ],
+      "expected": "行动返回 409。契约要求禁止恢复对局或改变状态，但未指定状态读取接口，无法验证该部分。",
+      "assertions": [
+        "响应 status 为 409，body 为 JSON。",
+        "契约依据：`POST /matches/finished/actions`：参与者仍为 player-a / player-b，但对局已结束；任何行动返回 409，禁止恢复对局或改变状态。"
+      ]
+    },
+    {
+      "id": "B4-C12_01",
+      "title": "首次提交结果并以相同内容重放",
+      "scenarioIds": [
+        "S12"
+      ],
+      "requirementIds": [
+        "R7"
+      ],
+      "preconditions": [
+        "框架恢复独立初始状态：参与者为 player-a 和 player-b，player-a 为报告者，player-a 初始积分为 0。",
+        "使用受信任框架的 self.client 调用接口；响应为 JSON。"
+      ],
+      "steps": [
+        "以 user=player-a 调用 POST /matches/result/result，body 为 {\"winnerId\":\"player-a\",\"submissionId\":\"submission-1\"}。",
+        "以 user=player-a 调用 GET /players/player-a/score，观察积分。",
+        "以 user=player-a 再次调用 POST /matches/result/result，body 与首次提交完全相同。",
+        "以 user=player-a 再次调用 GET /players/player-a/score，观察积分。"
+      ],
+      "expected": "首次提交和重放均返回 200；首次提交后积分为 10，重放后仍为 10。",
+      "assertions": [
+        "首次提交的响应 status 为 200，body 为 JSON。",
+        "首次提交后的积分查询响应为 JSON，所观察到的 player-a 积分为 10。",
+        "重放的响应 status 为 200，body 为 JSON；重放后的积分查询响应为 JSON，所观察到的 player-a 积分仍为 10。",
+        "契约依据：`POST /matches/result/result` 输入 `{winnerId, submissionId}`。参与者 player-a / player-b，player-a 为报告者；winnerId 必须为参与者。首次有效提交返回 200，胜者积分 +10。相同 submissionId 重放应返回 200，不重复加分。通过 `GET /players/player-a/score` 观察积分，初始为 0。题目未约定不同 submissionId 冲突、未认证报告者或非法 winnerId 的具体错误码，不能自行断言这些状态码。"
+      ]
+    },
+    {
+      "id": "B5-C13_01",
+      "title": "非参与者作为胜者提交结果",
+      "scenarioIds": [
+        "S13"
+      ],
+      "requirementIds": [
+        "R7"
+      ],
+      "preconditions": [
+        "框架恢复独立初始状态；对局参与者为 player-a 和 player-b，报告者为 player-a。"
+      ],
+      "steps": [
+        "以 player-a 调用 POST /matches/result/result，提交 {\"winnerId\":\"player-c\",\"submissionId\":\"nonparticipant-01\"}。",
+        "记录响应及可观察结果。"
+      ],
+      "expected": "契约要求 winnerId 为参与者，但未规定非法 winnerId 的具体拒绝形式或错误码；需要澄清后才能设计可执行的拒绝断言。",
+      "assertions": [
+        "记录响应供后续分析；不对具体状态码或拒绝形式作断言。该资格要求目前缺少明确的可观察验收标准。"
+      ]
+    },
+    {
+      "id": "B5-C14_01",
+      "title": "匹配队列有效等级边界与区域",
+      "scenarioIds": [
+        "S14"
+      ],
+      "requirementIds": [
+        "R8"
+      ],
+      "preconditions": [
+        "每组输入从框架恢复的独立初始状态开始；使用 player-a，匹配服务可用。"
+      ],
+      "steps": [
+        "分别以 {\"level\":1,\"region\":\"cn\"}、{\"level\":100,\"region\":\"eu\"} 和 {\"level\":50,\"region\":\"cn\"} 调用 POST /queue。"
+      ],
+      "expected": "每组有效输入均返回 200，响应状态为 queued。",
+      "assertions": [
+        "每次响应的 status 为 200，JSON body 中 status 为 queued。"
+      ]
+    },
+    {
+      "id": "B5-C15_01",
+      "title": "匹配等级超出边界",
+      "scenarioIds": [
+        "S15"
+      ],
+      "requirementIds": [
+        "R8"
+      ],
+      "preconditions": [
+        "每组输入从框架恢复的独立初始状态开始；使用 player-a，匹配服务可用。"
+      ],
+      "steps": [
+        "分别以 {\"level\":0,\"region\":\"cn\"} 和 {\"level\":101,\"region\":\"cn\"} 调用 POST /queue。"
+      ],
+      "expected": "两个越界等级均为非法输入，返回 400。",
+      "assertions": [
+        "每次响应的 status 为 400。"
+      ]
+    },
+    {
+      "id": "B5-C15_02",
+      "title": "匹配等级非整数或缺失",
+      "scenarioIds": [
+        "S15"
+      ],
+      "requirementIds": [
+        "R8"
+      ],
+      "preconditions": [
+        "每组输入从框架恢复的独立初始状态开始；使用 player-a，匹配服务可用。"
+      ],
+      "steps": [
+        "分别以 {\"level\":1.5,\"region\":\"cn\"}、{\"level\":\"50\",\"region\":\"cn\"}、{\"level\":null,\"region\":\"cn\"} 和 {\"region\":\"cn\"} 调用 POST /queue。"
+      ],
+      "expected": "非整数、错误类型、空值或缺失等级均为非法输入，返回 400。",
+      "assertions": [
+        "每次响应的 status 为 400。"
+      ]
+    },
+    {
+      "id": "B5-C15_03",
+      "title": "匹配区域非法或缺失",
+      "scenarioIds": [
+        "S15"
+      ],
+      "requirementIds": [
+        "R8"
+      ],
+      "preconditions": [
+        "每组输入从框架恢复的独立初始状态开始；使用 player-a，匹配服务可用。"
+      ],
+      "steps": [
+        "分别以 {\"level\":50,\"region\":\"us\"}、{\"level\":50,\"region\":null} 和 {\"level\":50} 调用 POST /queue。"
+      ],
+      "expected": "非法、空值或缺失区域均为非法输入，返回 400。",
+      "assertions": [
+        "每次响应的 status 为 400。"
+      ]
+    },
+    {
+      "id": "B6-C16_01",
+      "title": "匹配服务不可用时返回不可用状态",
+      "scenarioIds": [
+        "S16"
+      ],
+      "requirementIds": [
+        "R8",
+        "R9"
+      ],
+      "preconditions": [
+        "框架为本测试恢复独立初始状态；使用夹具身份 player-a。"
+      ],
+      "steps": [
+        "通过 self.client.call 发送 POST /queue，body 为 {\"level\":1,\"region\":\"cn\"}，user 为 \"player-a\"，headers 为 {\"X-Test-Matchmaker\":\"unavailable\"}。"
+      ],
+      "expected": "响应状态码为 503，JSON 响应体的 status 为 unavailable，不宣称请求已入队。",
+      "assertions": [
+        "断言响应 status 为 503，body 为 JSON 对象且 body.status 为 \"unavailable\"。",
+        "契约依据：`POST /queue` 输入 `{level, region}`，level 为 1–100 的整数，region 为 cn / eu。有效请求返回 200 / `{status:\"queued\"}`；非法输入返回 400。框架通过 headers 参数设置 `X-Test-Matchmaker: unavailable` 可模拟题目允许控制的外部匹配服务不可用，此时返回 503 / `{status:\"unavailable\"}`，不得宣称已入队。",
+        "覆盖缺口：服务不可用同时遇到非法输入或无身份时的优先级未约定。"
+      ]
+    },
+    {
+      "id": "B6-C17_01",
+      "title": "通过受信任框架调用业务接口并获取 JSON 响应",
+      "scenarioIds": [
+        "S17"
+      ],
+      "requirementIds": [
+        "R1",
+        "R9",
+        "R10"
+      ],
+      "preconditions": [
+        "由框架的 setUp 恢复独立初始状态；测试适配器交付为单个 test_game_platform.py，仅导入 unittest 和 framework，继承 framework.BlackBoxCase。",
+        "受信任框架负责目标地址、HTTP 调用和请求响应证据记录；测试通过 self.client 调用。"
+      ],
+      "steps": [
+        "以 user=\"player-a\" 通过 self.client.call 发送 GET /rooms/private-room。",
+        "读取响应的 status 和 body，并检查响应体是否为 JSON。"
+      ],
+      "expected": "框架返回包含 status 和 body 的响应，接口响应为 JSON；测试发现仅依据请求、响应和契约断言，未知预期记录为缺口。",
+      "assertions": [
+        "断言响应包含可读取的 status 和 body，且响应体为 JSON。",
+        "契约依据：接口均返回 JSON。测试者身份通过框架参数 user 指定；这里的 player-a / b / c 是夹具身份，不是真实凭据。每个测试的 setUp 由框架恢复独立初始状态。",
+        "契约依据：继承 `framework.BlackBoxCase`，使用 `self.client.call(method,path,body=None,user=\"player-a\",headers=None)`，得到含 status / body 的响应。无身份使用 user=None。`self.client.parallel([{method,path,body,user,headers},...])` 支持最多 4 个并发请求。",
+        "契约依据：只生成一个 `test_game_platform.py`，仅允许导入 unittest 和 framework。不得访问源码、操作文件、执行 shell 或连接题目之外的服务。先设计正常与异常等价类、边界、决策表、权限、状态、重复和并发场景；未知预期列为问题。所有发现必须由请求 / 响应与契约断言支持。",
+        "交付及证据约束作为执行前提，不通过检查文件、导入或框架内部实现来验证。"
+      ]
+    }
+  ]
+}

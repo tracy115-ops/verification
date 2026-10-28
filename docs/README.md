@@ -21,6 +21,7 @@
 | [产品定位与头脑风暴](product/vision-and-brainstorm.md) | 谁使用、完整旅程、差异点、优先级与待定项 |
 | [系统架构与选型](architecture/system-design.md) | 为什么选择本地工作台、如何分层、模块边界 |
 | [CLI 与 Provider](architecture/cli-and-provider-design.md) | 使用已安装 Agent、快速配置和兼容性探测 |
+| [桌面真实流程验收](research/desktop-flow-acceptance.md) | 系统代理修复、真实 CLI / Python 闭环与会话管理验证 |
 | [CLI 操作与工作流接入分析](architecture/cli-workflow-operation-analysis.md) | 设置、会话、各 CLI 已验证边界及 CodeAgent 目标环境验收 |
 | [工作流引擎](architecture/workflow-engine.md) | 自定义生成、保存、审核、版本化与恢复 |
 | [需求追溯与点灯](architecture/domain-and-traceability.md) | 原文定位、场景树、完整性评估、变更失效 |

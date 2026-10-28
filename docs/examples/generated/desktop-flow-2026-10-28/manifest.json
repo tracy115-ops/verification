@@ -1,0 +1,43 @@
+{
+  "source": "Actual Tauri desktop interactions and installed Codex CLI; no replayed Agent artifacts.",
+  "topic": "docs/examples/game-platform-blackbox-topic.md",
+  "runId": "de364b74-66ae-4127-a0c0-014261ebcafe",
+  "createdAt": "2026-10-28T07:30:25.193Z",
+  "cli": "codex-cli 0.164.0",
+  "model": "gpt-6.1-terra",
+  "workflowStatus": "completed",
+  "completedSteps": 13,
+  "requirements": 10,
+  "factors": 10,
+  "scenarios": 17,
+  "draftCases": 37,
+  "approvedCases": 36,
+  "testMethods": 44,
+  "scriptSha256": "2aecbf0039b588b984f9c7ad3352b9ef8a76060c3e84fb12779b9cd66e6a0076",
+  "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+  "buggyTarget": {
+    "counts": {
+      "passed": 33,
+      "failed": 11,
+      "error": 0,
+      "skipped": 0
+    },
+    "candidateGroups": 8,
+    "requests": 100,
+    "rawEvidenceSha256": "c966a8b2eb4c1f40ceff1b42a593812cc27fbbd3d29c04bf5c2213e9454f6055",
+    "resultSha256": "c9f185e836974d5287a8e0adaeb2d9969c15ccbe65ed20e166ce5a62ddba893c"
+  },
+  "referenceTarget": {
+    "sameScriptSha256": "2aecbf0039b588b984f9c7ad3352b9ef8a76060c3e84fb12779b9cd66e6a0076",
+    "counts": {
+      "passed": 44,
+      "failed": 0,
+      "error": 0,
+      "skipped": 0
+    },
+    "requests": 101
+  },
+  "exclusions": 20,
+  "scriptRevisions": 2,
+  "limits": "Local deliberate-defect sample; incomplete coverage is explicitly retained. Reference control used the native execution bridge separately from the desktop workflow."
+}

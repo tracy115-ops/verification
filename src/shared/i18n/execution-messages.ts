@@ -25,6 +25,16 @@ export const executionZh = {
   approvedTests: '脚本测试方法',
   casePreconditions: '前置条件',
   caseSteps: '测试步骤',
+  caseExecutionScope: '本次执行用例范围',
+  scriptQuestions: '脚本开发待澄清',
+  openScriptQuestions: '处理脚本澄清',
+  scriptQuestionsHint:
+    '补充已确认的接口或框架约定后重新生成脚本；原脚本和回答会保留，尚未执行测试。最多修订两次。',
+  regenerateScript: '保存补充并重新生成脚本',
+  caseExclusionHint:
+    '勾选无法执行或暂不纳入的用例并填写原因。原用例保留，排除项不算已覆盖；新增场景或需求缺口仍须逐项评审。',
+  caseExclusionReason: '用例排除原因',
+  excludeSelectedCases: '排除选中用例',
   caseExpected: '预期结果',
   reviewResolutionHint: '当前版本尚不能在这里编辑或回答问题。请取消本次调用，补充或修订题目后重新发起。',
   clarificationHint:
@@ -80,6 +90,8 @@ export const executionZh = {
   action_review_coverage_exclusions: '评审未覆盖项及排除原因',
   downloadScript: '下载 Python 脚本',
   downloadReport: '下载本次报告',
+  openReport: '查看本次报告',
+  verificationReport: '验证报告',
   noExecutionRetry: '测试执行不会自动重试。请先停止旧任务、检查目标状态，再新建调用。',
   stopOldExecution: '停止旧执行并结束本次调用',
   execution_invalid: '执行配置或数据结构无效。',
@@ -132,6 +144,16 @@ export const executionEn: Record<keyof typeof executionZh, string> = {
   approvedTests: 'Script test methods',
   casePreconditions: 'Preconditions',
   caseSteps: 'Test steps',
+  caseExecutionScope: 'Cases in this execution',
+  scriptQuestions: 'Script questions',
+  openScriptQuestions: 'Resolve script questions',
+  scriptQuestionsHint:
+    'Confirm the interface or framework contract before regenerating. The previous script and answers are retained. No tests have run. Up to two revisions.',
+  regenerateScript: 'Save answers and regenerate script',
+  caseExclusionHint:
+    'Select cases to exclude and record a reason. Original cases remain; exclusions are not coverage. Review any resulting scenario or requirement gaps separately.',
+  caseExclusionReason: 'Case exclusion reason',
+  excludeSelectedCases: 'Exclude selected cases',
   caseExpected: 'Expected result',
   reviewResolutionHint:
     'This version cannot edit or answer review questions here. Cancel this invocation, revise the specification, and start again.',
@@ -190,6 +212,8 @@ export const executionEn: Record<keyof typeof executionZh, string> = {
   action_review_coverage_exclusions: 'Review uncovered items and exclusion reasons',
   downloadScript: 'Download Python script',
   downloadReport: 'Download report',
+  openReport: 'Open report',
+  verificationReport: 'Verification report',
   noExecutionRetry:
     'Test execution is not retried automatically. Stop the old task and inspect target state before creating another invocation.',
   stopOldExecution: 'Stop old execution and close this invocation',

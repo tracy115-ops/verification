@@ -13,6 +13,8 @@ import { latestArtifact } from './bindings';
 import { reviewDigest } from './approvals';
 import { generateCaseBatches } from './case-batches';
 import { remainingNodeSeconds } from './deadline';
+import { scopedCases } from './case-scope';
+import { isCases } from './artifacts';
 export { reviewDigest } from './approvals';
 
 async function storeOutput(run: WorkflowRun, node: WorkflowNode, value: unknown) {
@@ -142,6 +144,7 @@ export async function approveRun(
   );
   if (!['review.custom', 'review.execution'].includes(node.operation) && !inputKey)
     throw new Error('approval_invalid');
+  const reviewed = inputKey ? resolveInputs(run, node)[inputKey] : undefined;
   await storeOutput(
     run,
     node,
@@ -149,7 +152,9 @@ export async function approveRun(
       ? { planDigest: decodePlan(latestArtifact(run, 'ExecutionPlan')).digest, reviewDigest: expectedDigest }
       : node.operation === 'review.custom'
         ? { approved: true }
-        : resolveInputs(run, node)[inputKey!],
+        : node.operation === 'review.cases' && isCases(reviewed)
+          ? scopedCases(run, reviewed)
+          : reviewed,
   );
   run.steps[nodeId].status = 'succeeded';
   run.approvals.push({ nodeId, digest: expectedDigest, approvedAt: new Date().toISOString() });

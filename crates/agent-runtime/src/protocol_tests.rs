@@ -67,6 +67,16 @@ fn invalid_protocol_lines_fail_instead_of_becoming_agent_text() {
     let mut state = ProtocolState::default();
     assert!(state.consume(DriverId::Codex, b"not json").is_empty());
     assert!(state.failed);
+    assert_eq!(state.error_code, Some("cli_protocol_invalid"));
+}
+
+#[test]
+fn codex_native_failures_expose_only_stable_error_codes() {
+    let mut state = ProtocolState::default();
+    state.consume(DriverId::Codex, br#"{"type":"turn.failed","error":{"message":"request timed out at https://private.invalid"}}"#);
+    assert_eq!(state.error_code, Some("cli_network_failed"));
+    assert!(state.failed && state.terminal);
+    assert!(state.text.is_empty());
 }
 
 #[test]

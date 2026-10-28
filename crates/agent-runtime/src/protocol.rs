@@ -7,6 +7,7 @@ pub struct ProtocolState {
     pub final_text: Option<String>,
     pub terminal: bool,
     pub failed: bool,
+    pub error_code: Option<&'static str>,
     pub session_id: Option<String>,
 }
 
@@ -31,6 +32,7 @@ impl ProtocolState {
     pub fn consume(&mut self, driver: DriverId, line: &[u8]) -> Vec<AgentEvent> {
         let Ok(value) = serde_json::from_slice::<Value>(line) else {
             self.failed = true;
+            self.error_code = Some("cli_protocol_invalid");
             return vec![];
         };
         let mut events = Vec::new();
@@ -85,6 +87,15 @@ impl ProtocolState {
             "turn.failed" | "error" => {
                 self.failed = true;
                 self.terminal = true;
+                self.error_code = Some(
+                    crate::failure::classify(
+                        value["error"]["message"]
+                            .as_str()
+                            .or_else(|| value["message"].as_str())
+                            .unwrap_or_default(),
+                    )
+                    .unwrap_or("cli_failed"),
+                );
             }
             _ => {}
         }

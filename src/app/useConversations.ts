@@ -1,14 +1,15 @@
 ﻿import { useEffect, useRef, useState } from 'react';
-import { approveRun, advanceRun, retryRun } from '../domain/runtime/engine';
+import { advanceRun, retryRun } from '../domain/runtime/engine';
 import { createRun } from '../domain/runtime/plan';
-import { chatRequest, createSession, message, workflowCommand } from '../domain/runtime/chat';
+import { chatRequest, createSession, message, replyMessage, workflowCommand } from '../domain/runtime/chat';
 import type { AgentEvent, AgentPort, ConversationSession, WorkflowRun } from '../domain/runtime/types';
 import type { AgentProfile, WorkbenchDocument } from '../domain/workflow';
 import { DesktopAgentPort } from '../services/conversation-api';
 import { useConversationStore } from './useConversationStore';
 import type { ExecutionPort, FrameworkProfile } from '../domain/execution/types';
 import { DesktopExecutionPort } from '../services/execution-api';
-import { clarifyRequirements, excludeReviewIssues } from '../domain/runtime/clarifications';
+import { sessionActions } from './session-actions';
+import { runReviewActions } from './run-review-actions';
 
 export function useConversations(
   profiles: AgentProfile[],
@@ -109,41 +110,12 @@ export function useConversations(
         store.setActiveId(value.id);
         accepted = true;
         const result = await port.send(request, onEvent, controller.signal);
-        const reply = {
-          ...message('assistant', result.text),
-          status: result.status === 'completed' ? ('complete' as const) : ('failed' as const),
-          errorCode: result.errorCode ?? undefined,
-          nativeSessionId: result.nativeSessionId ?? undefined,
-        };
-        const settled = { ...value, messages: [...value.messages, reply] };
+        const settled = { ...value, messages: [...value.messages, replyMessage(result)] };
         delete settled.activeTurnId;
         changeSession(settled);
       }
     });
     return accepted;
-  }
-  async function approve(run: WorkflowRun, nodeId: string, hash: string) {
-    await perform(async (controller) => {
-      await drive(await approveRun(run, nodeId, hash), controller);
-    });
-  }
-  async function clarify(
-    run: WorkflowRun,
-    nodeId: string,
-    hash: string,
-    answers: Record<string, string>,
-    exclude = false,
-  ) {
-    await perform(async () =>
-      updateRun(
-        run.sessionId,
-        await (
-          !exclude && run.plan.find((item) => item.id === nodeId)?.operation === 'review.requirements'
-            ? clarifyRequirements
-            : excludeReviewIssues
-        )(run, nodeId, hash, answers),
-      ),
-    );
   }
   async function retry(run: WorkflowRun) {
     await perform(async (controller) => {
@@ -191,14 +163,18 @@ export function useConversations(
     stream,
     send,
     newSession,
-    approve,
-    clarify,
     retry,
     cancel,
     stopRecovered,
     closeExecution,
     selectedRunId,
     setSelectedRunId,
+    ...runReviewActions({ perform, updateRun, drive }),
+    ...sessionActions(
+      store,
+      () => !!abort.current,
+      () => setSelectedRunId(''),
+    ),
   };
 }
 
