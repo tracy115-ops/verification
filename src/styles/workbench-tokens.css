@@ -21,6 +21,7 @@
   --wb-danger: #c33842;
   --wb-danger-soft: #fff0f1;
   --wb-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  --wb-overlay: rgba(0, 0, 0, 0.32);
   --wb-mask: rgba(210, 219, 232, 0.45);
   --wb-radius: 6px;
   --wb-space: 16px;
@@ -49,5 +50,6 @@
   --wb-danger: #ff9ca2;
   --wb-danger-soft: #422c34;
   --wb-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  --wb-overlay: rgba(0, 0, 0, 0.58);
   --wb-mask: rgba(25, 34, 49, 0.6);
 }

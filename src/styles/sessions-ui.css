@@ -6,7 +6,53 @@
   background: var(--wb-bg);
 }
 .session-workspace.has-run {
-  grid-template-columns: minmax(0, 1fr) 390px;
+  grid-template-columns: minmax(0, 1fr) 380px;
+}
+.session-workspace.has-run .session-messages {
+  flex: 1;
+  min-height: 0;
+  padding: 24px max(24px, calc((100% - 800px) / 2));
+}
+.session-workspace.has-run .session-message {
+  margin: 0;
+  max-width: none;
+}
+.session-workspace.has-run .session-run-panel {
+  overflow: auto;
+  border-left: 1px solid var(--wb-border);
+}
+.session-workspace.has-run .session-composer {
+  width: calc(100% - 48px);
+  max-width: 800px;
+  margin-inline: auto;
+}
+.session-workspace.has-run .session-composer textarea {
+  min-height: 72px;
+  height: 88px;
+}
+.session-workspace.has-run .session-composer > p:last-child {
+  display: none;
+}
+.session-source summary,
+.session-flow-details > summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--wb-text);
+}
+.session-flow-details {
+  margin: 18px;
+  border-top: 1px solid var(--wb-border);
+  padding-top: 16px;
+}
+.session-current-step {
+  padding: 20px 24px 0;
+}
+.session-current-step small {
+  color: var(--wb-muted);
+}
+.session-current-step h2 {
+  font-size: 17px;
+  margin: 6px 0 12px;
 }
 .session-conversation {
   display: flex;
@@ -273,6 +319,29 @@
   flex-direction: column;
   gap: 12px;
 }
+.session-review-dialog {
+  width: min(1000px, calc(100vw - 80px));
+  max-height: 86vh;
+  padding: 0;
+  color: var(--wb-text);
+  background: var(--wb-surface);
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius);
+}
+.session-review-dialog::backdrop {
+  background: var(--wb-overlay);
+}
+.session-review-dialog > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--wb-border);
+}
+.session-review-dialog h2 {
+  font-size: 18px;
+  margin: 0;
+}
 .session-clarifications textarea {
   min-height: 72px;
 }
@@ -346,9 +415,6 @@
   white-space: pre-wrap;
 }
 @media (max-width: 1100px) {
-  .session-workspace.has-run {
-    grid-template-columns: minmax(0, 1fr) 320px;
-  }
   .session-toolbar {
     padding-inline: 16px;
     flex-wrap: wrap;

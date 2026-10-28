@@ -45,3 +45,16 @@ export function RunSteps({ run }: { run: WorkflowRun }) {
     </ol>
   );
 }
+export function CurrentStep({ run }: { run: WorkflowRun }) {
+  const { t } = useI18n();
+  const node = run.plan.find((node) =>
+    ['running', 'awaiting_review', 'failed', 'interrupted'].includes(run.steps[node.id].status),
+  );
+  if (!node) return null;
+  return (
+    <div className="session-current-step">
+      <small>{t('currentStep')}</small>
+      <h2>{nodeLabel(node, run.snapshot, t)}</h2>
+    </div>
+  );
+}

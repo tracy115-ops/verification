@@ -1,11 +1,12 @@
 import { Check, RefreshCw, Square } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ReviewDialog } from './ReviewDialog';
 import type { Conversations } from '../../app/useConversations';
 import type { WorkflowRun } from '../../domain/runtime/types';
 import { reviewIssues } from '../../domain/runtime/handlers';
 import { useI18n, isMessageKey } from '../../shared/i18n/context';
-import { Status } from '../../shared/components/Status';
-import { RunSteps } from './RunSteps';
-import { RunSummary } from './RunSummary';
+import { RunSteps, CurrentStep } from './RunSteps';
+import { RunSummary, RunState } from './RunSummary';
 import { ArtifactPanel } from './ArtifactPanel';
 import { hasDesktopBridge } from '../../services/agent-api';
 import { isExecutionPlan, isEvidence, isReport } from '../../domain/execution/schema';
@@ -22,10 +23,12 @@ export function RunPanel({
   openAssets?: (cases: boolean) => void;
 }) {
   const { t } = useI18n();
+  const [reviewOpen, setReviewOpen] = useState(false);
   const pending =
     run.status === 'awaiting_review'
       ? run.plan.find((node) => run.steps[node.id].status === 'awaiting_review')
       : undefined;
+  useEffect(() => setReviewOpen(false), [pending?.id]);
   let issues: string[] = [];
   try {
     if (pending) issues = reviewIssues(run, pending);
@@ -60,25 +63,7 @@ export function RunPanel({
     <aside className="session-run-panel" aria-label={t('workflowProgress')}>
       <div className="wb-panel-heading">
         <h2>{t('workflowProgress')}</h2>
-        <Status tone={run.status === 'completed' ? 'success' : run.status === 'failed' ? 'danger' : 'accent'}>
-          {t(
-            run.status === 'completed'
-              ? run.scope === 'verification'
-                ? 'workflowComplete'
-                : 'designComplete'
-              : run.status === 'failed'
-                ? 'failedStep'
-                : run.status === 'cancelled'
-                  ? 'cancelledRun'
-                  : run.status === 'interrupted'
-                    ? 'interruptedStep'
-                    : run.status === 'awaiting_review'
-                      ? 'reviewStep'
-                      : run.scope === 'verification'
-                        ? 'verificationScope'
-                        : 'designScope',
-          )}
-        </Status>
+        <RunState run={run} />
       </div>
       <div className="session-run-meta">
         <strong>{run.snapshot.definition.name}</strong>
@@ -91,75 +76,99 @@ export function RunPanel({
         {!executed && <p>{t('testsNotExecuted')}</p>}
       </div>
       <RunSummary value={report} />
+      <CurrentStep run={run} />
+      {actions.busy && (
+        <button className="workbench-btn" onClick={() => actions.cancel()}>
+          <Square size={14} />
+          {t('stopGeneration')}
+        </button>
+      )}
       {run.errorCode && (
         <p className="wb-error">{isMessageKey(run.errorCode) ? t(run.errorCode) : t('cli_failed')}</p>
       )}
       {pending && (
-        <section className="session-review-card">
-          <h3>{t('reviewRequired')}</h3>
-          {!!issues.length && (
-            <div className="wb-banner">
-              <p>{t('unresolvedReview')}</p>
-              {['review.requirements', 'review.coverage', 'review.cases'].includes(pending.operation) ? (
-                <ClarificationReview
-                  key={run.steps[pending.id].reviewDigest}
-                  issues={issues}
-                  exclusion={pending.operation !== 'review.requirements'}
-                  busy={actions.busy || !hasDesktopBridge()}
-                  save={(answers, exclude) =>
-                    void actions.clarify(
-                      run,
-                      pending.id,
-                      run.steps[pending.id].reviewDigest ?? '',
-                      answers,
-                      exclude,
-                    )
+        <>
+          <button className="workbench-btn wb-primary" onClick={() => setReviewOpen(true)}>
+            {t('openReview')}
+          </button>
+          <ReviewDialog open={reviewOpen} close={() => setReviewOpen(false)}>
+            <section className="session-review-card">
+              <h3>{t('reviewRequired')}</h3>
+              {!!issues.length && (
+                <div className="wb-banner">
+                  <p>{t('unresolvedReview')}</p>
+                  {['review.requirements', 'review.coverage', 'review.cases'].includes(pending.operation) ? (
+                    <ClarificationReview
+                      key={run.steps[pending.id].reviewDigest}
+                      issues={issues}
+                      exclusion={pending.operation !== 'review.requirements'}
+                      busy={actions.busy || !hasDesktopBridge()}
+                      save={(answers, exclude) =>
+                        void actions.clarify(
+                          run,
+                          pending.id,
+                          run.steps[pending.id].reviewDigest ?? '',
+                          answers,
+                          exclude,
+                        )
+                      }
+                    />
+                  ) : (
+                    <>
+                      <ul>
+                        {issues.map((issue, i) => (
+                          <li key={i}>{issue}</li>
+                        ))}
+                      </ul>
+                      <p>{t('reviewResolutionHint')}</p>
+                    </>
+                  )}
+                </div>
+              )}
+              {reviewArtifact && <ArtifactPanel artifact={reviewArtifact} />}
+              {reviewArtifact && openAssets && (
+                <button
+                  className="workbench-btn"
+                  onClick={() => openAssets(pending.operation === 'review.cases')}
+                >
+                  {t('viewTaskAssets')}
+                </button>
+              )}
+              {pending.operation === 'review.requirements' && (
+                <SavedClarifications items={run.clarifications ?? []} />
+              )}
+              {isExecutionPlan(executionPlan) ? (
+                <ExecutionReview
+                  key={executionPlan.digest}
+                  plan={executionPlan}
+                  busy={!hasDesktopBridge() || actions.busy || !!issues.length}
+                  approve={() =>
+                    void actions.approve(run, pending.id, run.steps[pending.id].reviewDigest ?? '')
                   }
                 />
               ) : (
-                <>
-                  <ul>
-                    {issues.map((issue, i) => (
-                      <li key={i}>{issue}</li>
-                    ))}
-                  </ul>
-                  <p>{t('reviewResolutionHint')}</p>
-                </>
+                <button
+                  className="workbench-btn wb-primary wb-full"
+                  disabled={!hasDesktopBridge() || actions.busy || !!issues.length}
+                  onClick={() =>
+                    void actions.approve(run, pending.id, run.steps[pending.id].reviewDigest ?? '')
+                  }
+                >
+                  <Check size={15} />
+                  {t('approveContinue')}
+                </button>
               )}
-            </div>
-          )}
-          {reviewArtifact && <ArtifactPanel artifact={reviewArtifact} />}
-          {reviewArtifact && openAssets && (
-            <button
-              className="workbench-btn"
-              onClick={() => openAssets(pending.operation === 'review.cases')}
-            >
-              {t('viewTaskAssets')}
-            </button>
-          )}
-          {pending.operation === 'review.requirements' && (
-            <SavedClarifications items={run.clarifications ?? []} />
-          )}
-          {isExecutionPlan(executionPlan) ? (
-            <ExecutionReview
-              key={executionPlan.digest}
-              plan={executionPlan}
-              busy={!hasDesktopBridge() || actions.busy || !!issues.length}
-              approve={() => void actions.approve(run, pending.id, run.steps[pending.id].reviewDigest ?? '')}
-            />
-          ) : (
-            <button
-              className="workbench-btn wb-primary wb-full"
-              disabled={!hasDesktopBridge() || actions.busy || !!issues.length}
-              onClick={() => void actions.approve(run, pending.id, run.steps[pending.id].reviewDigest ?? '')}
-            >
-              <Check size={15} />
-              {t('approveContinue')}
-            </button>
-          )}
-        </section>
+            </section>
+          </ReviewDialog>
+        </>
       )}
-      <RunSteps run={run} />
+      <details className="session-flow-details">
+        <summary>
+          {t('viewWorkflowSteps')} ·{' '}
+          {Object.values(run.steps).filter((step) => step.status === 'succeeded').length} / {run.plan.length}
+        </summary>
+        <RunSteps run={run} />
+      </details>
       {['failed', 'interrupted'].includes(run.status) && !failedExecution && (
         <button
           className="workbench-btn wb-full"
@@ -189,14 +198,16 @@ export function RunPanel({
         </button>
       )}
       <div className="session-run-artifacts">
-        <h3>{t('artifactTitle')}</h3>
-        {pending?.operation !== 'review.requirements' && (
-          <SavedClarifications items={run.clarifications ?? []} />
-        )}
-        <SavedExclusions items={run.reviewExclusions ?? []} />
-        {artifacts.map((artifact, index) => (
-          <ArtifactPanel key={index} artifact={artifact} />
-        ))}
+        <details>
+          <summary>{t('artifactTitle')}</summary>
+          {pending?.operation !== 'review.requirements' && (
+            <SavedClarifications items={run.clarifications ?? []} />
+          )}
+          <SavedExclusions items={run.reviewExclusions ?? []} />
+          {artifacts.map((artifact, index) => (
+            <ArtifactPanel key={index} artifact={artifact} />
+          ))}
+        </details>
       </div>
     </aside>
   );

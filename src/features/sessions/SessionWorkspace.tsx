@@ -5,6 +5,7 @@ import { hasDesktopBridge } from '../../services/agent-api';
 import { isMessageKey, useI18n } from '../../shared/i18n/context';
 import { ConversationComposer } from './ConversationComposer';
 import { RunPanel } from './RunPanel';
+import { SourceMessage } from './SourceMessage';
 import type { FrameworkProfile } from '../../domain/execution/types';
 
 export function SessionWorkspace({
@@ -29,8 +30,21 @@ export function SessionWorkspace({
   const { t } = useI18n();
   const activeRun =
     actions.session?.runs.find((run) => run.id === actions.selectedRunId) ?? actions.session?.runs.at(-1);
+  const composer = (
+    <ConversationComposer
+      key={actions.activeId}
+      actions={actions}
+      profiles={profiles}
+      saved={saved}
+      dirty={dirty}
+      openWorkflow={openWorkflow}
+      frameworks={frameworks}
+    />
+  );
   return (
-    <div className={`session-workspace ${activeRun ? 'has-run' : ''}`}>
+    <div
+      className={`session-workspace ${activeRun ? 'has-run' : ''} ${activeRun?.status === 'awaiting_review' ? 'has-review' : ''}`}
+    >
       <section className="session-conversation">
         <div className="session-toolbar">
           <label className="wb-field">
@@ -59,7 +73,7 @@ export function SessionWorkspace({
             {t('configureAgent')}
           </button>
         </div>
-        {!!actions.session?.runs.length && (
+        {(actions.session?.runs.length ?? 0) > 1 && (
           <label className="wb-field session-run-picker">
             {t('runRecords')}
             <select
@@ -68,7 +82,7 @@ export function SessionWorkspace({
               disabled={actions.busy}
               onChange={(event) => actions.setSelectedRunId(event.target.value)}
             >
-              {actions.session.runs.map((run, index) => (
+              {actions.session!.runs.map((run, index) => (
                 <option key={run.id} value={run.id}>
                   {index + 1} · {run.snapshot.definition.name} · r{run.snapshot.revision}
                 </option>
@@ -116,7 +130,12 @@ export function SessionWorkspace({
               <div className="session-message-author">
                 {t(item.role === 'user' ? 'userMessage' : 'assistantMessage')}
               </div>
-              {item.text && <div className="session-message-text">{item.text}</div>}
+              {item.text &&
+                (activeRun ? (
+                  <SourceMessage text={item.text} />
+                ) : (
+                  <div className="session-message-text">{item.text}</div>
+                ))}
               {item.errorCode && (
                 <p className="wb-error">
                   {isMessageKey(item.errorCode) ? t(item.errorCode) : t('cli_failed')}
@@ -144,15 +163,7 @@ export function SessionWorkspace({
             {isMessageKey(actions.error) ? t(actions.error) : t('cli_failed')}
           </p>
         )}
-        <ConversationComposer
-          key={actions.activeId}
-          actions={actions}
-          profiles={profiles}
-          saved={saved}
-          dirty={dirty}
-          openWorkflow={openWorkflow}
-          frameworks={frameworks}
-        />
+        {composer}
       </section>
       {activeRun && <RunPanel run={activeRun} actions={actions} openAssets={openAssets} />}
     </div>
