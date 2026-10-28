@@ -3,6 +3,18 @@ import { teamEn, teamZh } from './team-messages';
 import { executionEn, executionZh } from './execution-messages';
 
 export const zh = {
+  assetTask: '选择验证任务',
+  assetChooseTask: '请选择任务',
+  assetScopeHint: '当前展示个人会话中某次运行的产物；团队项目资产在项目协作中管理。',
+  assetNoTask: '还没有验证任务',
+  assetNoTaskHint: '在 CLI 会话中调用已保存的流程后，按任务查看需求、场景和用例。',
+  assetItems: '条目',
+  assetDraft: '待评审草稿',
+  assetApproved: '已确认',
+  assetSearch: '搜索 ID、标题或关联内容',
+  assetNoMatches: '没有匹配条目',
+  assetNotGenerated: '该任务尚未生成此类产物',
+  assetSelectItem: '选择左侧条目查看详情',
   ...executionZh,
   ...teamZh,
   ...conversationZh,
@@ -161,6 +173,20 @@ export const zh = {
 } as const;
 
 export const en: Record<keyof typeof zh, string> = {
+  assetTask: 'Verification task',
+  assetChooseTask: 'Select a task',
+  assetScopeHint:
+    'Showing artifacts from a personal session run. Team project assets are managed in collaboration.',
+  assetNoTask: 'No verification tasks yet',
+  assetNoTaskHint:
+    'Invoke a saved workflow in a CLI session to inspect its requirements, scenarios and cases.',
+  assetItems: 'Items',
+  assetDraft: 'Draft awaiting review',
+  assetApproved: 'Approved',
+  assetSearch: 'Search IDs, titles or relationships',
+  assetNoMatches: 'No matching items',
+  assetNotGenerated: 'This task has not generated these artifacts',
+  assetSelectItem: 'Select an item to view details',
   ...executionEn,
   ...teamEn,
   ...conversationEn,

@@ -10,6 +10,7 @@
 | [界面与交互设计](design/interface-design.md) | 会话首页、设置、编排与评审工作区 |
 | [会话调用与设置方案](design/conversation-and-settings.md) | 保存流程如何从会话调用、真实 CLI 边界与恢复规则 |
 | [黑盒与团队协作](design/blackbox-and-team-testing.md) | 题目 / 框架输入、Python 输出、共享因子场景与局域网部署 |
+| [面向任务的黑盒测试设计](design/task-analysis-workflow.md) | 从题目到需求、因子、场景、用例、执行和问题的逐条追溯设计 |
 | [黑盒与协作验证](research/blackbox-and-team-validation.md) | 真实 CLI 生成 36 项 Python 测试、缺陷证据和多人回归 |
 | [本地 Python 工作流使用与契约](workflows/local-python-verification.md) | 框架设置、四次确认、方法映射、证据格式及恢复边界 |
 | [完整工作流验证记录](research/python-workflow-validation.md) | 正式状态机、真实 Python、12 个失败方法 / 8 组候选与修复版对照 |

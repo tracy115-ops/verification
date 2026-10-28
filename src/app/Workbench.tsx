@@ -94,9 +94,9 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
             )}
             {(page === 'assets' || page === 'cases') && (
               <AssetsWorkspace
-                cases={page === 'cases'}
-                setCases={(value) => setPage(value ? 'cases' : 'assets')}
-                run={conversations.session?.runs.at(-1)}
+                key={page}
+                sessions={conversations.sessions}
+                initialView={page === 'cases' ? 'cases' : 'requirements'}
               />
             )}
             {page === 'runs' && (

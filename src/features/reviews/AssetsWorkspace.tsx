@@ -1,47 +1,181 @@
-import type { WorkflowRun } from '../../domain/runtime/types';
+import { useState } from 'react';
+import type { ConversationSession, WorkflowRun } from '../../domain/runtime/types';
+import { isCases, isDesign, isRequirements } from '../../domain/runtime/artifacts';
 import { useI18n } from '../../shared/i18n/context';
 import { ArtifactPanel } from '../sessions/ArtifactPanel';
-import { CaseReview } from './CaseReview';
-import { ReviewWorkspace } from './ReviewWorkspace';
 
+type View = 'requirements' | 'scenarios' | 'cases';
 export function AssetsWorkspace({
-  cases,
-  setCases,
-  run,
+  sessions,
+  initialView = 'requirements',
 }: {
-  cases: boolean;
-  setCases: (value: boolean) => void;
-  run?: WorkflowRun;
+  sessions: ConversationSession[];
+  initialView?: View;
 }) {
-  const { t } = useI18n();
-  const types = cases
-    ? ['TestCaseSet', 'TestCaseSetDraft']
-    : ['RequirementBaseline', 'TestDesign', 'RequirementBaselineDraft', 'TestDesignDraft'];
-  const artifacts = run ? Object.values(run.artifacts).filter((item) => types.includes(item.type)) : [];
+  const { t, locale } = useI18n();
+  const records = sessions.flatMap((session) => session.runs.map((run) => ({ session, run })));
+  const [runId, setRunId] = useState(records.at(-1)?.run.id ?? '');
+  const [view, setView] = useState<View>(initialView);
+  const [query, setQuery] = useState('');
+  const [selected, setSelected] = useState('');
+  const run = records.find((item) => item.run.id === runId)?.run;
   return (
     <div className="assets-workspace">
-      <nav className="assets-tabs" aria-label={t('assetsTitle')}>
-        <button className="workbench-btn" aria-pressed={!cases} onClick={() => setCases(false)}>
-          {t('requirementsTab')}
-        </button>
-        <button className="workbench-btn" aria-pressed={cases} onClick={() => setCases(true)}>
-          {t('caseTab')}
-        </button>
-      </nav>
-      {run ? (
-        <div className="assets-run-content">
-          <p className="wb-banner">
-            {run.snapshot.definition.name} · r{run.snapshot.revision} · {t('testsNotExecuted')}
-          </p>
-          {artifacts.map((artifact, index) => (
-            <ArtifactPanel key={index} artifact={artifact} />
-          ))}
+      <div className="assets-toolbar">
+        <label className="wb-field">
+          {t('assetTask')}
+          <select
+            className="workbench-select"
+            value={run?.id ?? ''}
+            onChange={(event) => {
+              setRunId(event.target.value);
+              setSelected('');
+              setQuery('');
+            }}
+          >
+            <option value="">{t('assetChooseTask')}</option>
+            {records.map(({ session, run }) => (
+              <option key={run.id} value={run.id}>
+                {session.title || t('untitledSession')} ·{' '}
+                {new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'short' }).format(
+                  new Date(run.createdAt),
+                )}{' '}
+                · {run.id.slice(0, 8)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="wb-muted">{t('assetScopeHint')}</p>
+      </div>
+      {!run ? (
+        <div className="assets-empty">
+          <h2>{t('assetNoTask')}</h2>
+          <p>{t('assetNoTaskHint')}</p>
         </div>
-      ) : cases ? (
-        <CaseReview />
       ) : (
-        <ReviewWorkspace />
+        <>
+          <nav className="assets-tabs" aria-label={t('assetsTitle')}>
+            {(['requirements', 'scenarios', 'cases'] as const).map((item) => (
+              <button
+                key={item}
+                className="workbench-btn"
+                aria-pressed={view === item}
+                onClick={() => {
+                  setView(item);
+                  setSelected('');
+                  setQuery('');
+                }}
+              >
+                {t(
+                  item === 'requirements'
+                    ? 'requirementItems'
+                    : item === 'scenarios'
+                      ? 'scenarioItems'
+                      : 'caseItems',
+                )}
+              </button>
+            ))}
+          </nav>
+          <TaskAssets
+            run={run}
+            view={view}
+            query={query}
+            setQuery={setQuery}
+            selected={selected}
+            setSelected={setSelected}
+          />
+        </>
       )}
+    </div>
+  );
+}
+
+function TaskAssets({
+  run,
+  view,
+  query,
+  setQuery,
+  selected,
+  setSelected,
+}: {
+  run: WorkflowRun;
+  view: View;
+  query: string;
+  setQuery: (value: string) => void;
+  selected: string;
+  setSelected: (value: string) => void;
+}) {
+  const { t } = useI18n();
+  const all = Object.values(run.artifacts);
+  const types =
+    view === 'requirements'
+      ? ['RequirementBaseline', 'RequirementBaselineDraft']
+      : view === 'scenarios'
+        ? ['TestDesign', 'TestDesignDraft']
+        : ['TestCaseSet', 'TestCaseSetDraft'];
+  const artifact = all.find((item) => item.type === types[0]) ?? all.find((item) => item.type === types[1]);
+  const value = artifact?.value;
+  const items = isRequirements(value)
+    ? value.requirements.map((item) => ({ id: item.id, title: item.text, raw: item }))
+    : isDesign(value)
+      ? value.scenarios.map((item) => ({ id: item.id, title: item.title, raw: item }))
+      : isCases(value)
+        ? value.cases.map((item) => ({ id: item.id, title: item.title, raw: item }))
+        : [];
+  const filtered = items.filter((item) =>
+    `${item.id} ${item.title} ${JSON.stringify(item.raw)}`
+      .toLocaleLowerCase()
+      .includes(query.toLocaleLowerCase()),
+  );
+  const current = filtered.find((item) => item.id === selected) ?? filtered[0];
+  const detail =
+    artifact && current
+      ? {
+          ...artifact,
+          value: isRequirements(value)
+            ? { ...value, requirements: [current.raw] }
+            : isDesign(value)
+              ? { ...value, scenarios: [current.raw] }
+              : isCases(value)
+                ? { ...value, cases: [current.raw] }
+                : value,
+        }
+      : undefined;
+  return (
+    <div className="assets-body">
+      <div className="assets-list">
+        <div className="assets-list-heading">
+          <strong>
+            {t('assetItems')} · {filtered.length} / {items.length}
+          </strong>
+          <span className="wb-muted">
+            {artifact?.type.endsWith('Draft') ? t('assetDraft') : artifact ? t('assetApproved') : ''}
+          </span>
+        </div>
+        <input
+          className="workbench-input"
+          aria-label={t('assetSearch')}
+          placeholder={t('assetSearch')}
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+        {!filtered.length && (
+          <p className="wb-muted">{t(artifact ? 'assetNoMatches' : 'assetNotGenerated')}</p>
+        )}
+        {filtered.map((item) => (
+          <button
+            key={item.id}
+            className={`assets-item ${current?.id === item.id ? 'is-selected' : ''}`}
+            onClick={() => setSelected(item.id)}
+          >
+            <code>{item.id}</code>
+            <span>{item.title}</span>
+          </button>
+        ))}
+      </div>
+      <div className="assets-detail">
+        {detail ? <ArtifactPanel artifact={detail} /> : <p className="wb-muted">{t('assetSelectItem')}</p>}
+      </div>
     </div>
   );
 }
