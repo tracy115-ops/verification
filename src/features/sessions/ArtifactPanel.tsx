@@ -59,11 +59,27 @@ export function ArtifactPanel({ artifact }: { artifact: Artifact }) {
                 <small>{t('relatedScenarios')}: </small>
                 {item.scenarioIds.join(', ')}
               </p>
+              <p>
+                <small>{t('relatedRequirements')}: </small>
+                {item.requirementIds.join(', ')}
+              </p>
+              {!!item.preconditions.length && (
+                <>
+                  <small>{t('casePreconditions')}</small>
+                  <ul>
+                    {item.preconditions.map((text, i) => (
+                      <li key={i}>{text}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              <small>{t('caseSteps')}</small>
               <ol>
                 {item.steps.map((text, i) => (
                   <li key={i}>{text}</li>
                 ))}
               </ol>
+              <small>{t('caseExpected')}</small>
               <p>{item.expected}</p>
               <small>{t('assertions')}</small>
               <ul>

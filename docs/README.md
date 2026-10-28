@@ -14,6 +14,7 @@
 | [黑盒与协作验证](research/blackbox-and-team-validation.md) | 真实 CLI 生成 36 项 Python 测试、缺陷证据和多人回归 |
 | [本地 Python 工作流使用与契约](workflows/local-python-verification.md) | 框架设置、四次确认、方法映射、证据格式及恢复边界 |
 | [完整工作流验证记录](research/python-workflow-validation.md) | 正式状态机、真实 Python、12 个失败方法 / 8 组候选与修复版对照 |
+| [界面与真实流程验收](research/interface-workflow-audit.md) | 各页面检查、真实需求分析结果与阻塞问题 |
 | [内部 CodeAgent 驱动](architecture/codeagent-driver.md) | 内置模型、扫描路径、参数探测与实际验证边界 |
 | [ADR-0002](adr/0002-lan-design-collaboration-service.md) | HTTP 协作服务与 SQLite 的职责和取舍 |
 | [首轮开发计划](roadmap/development-plan.md) | 已实现的第一轮范围及后续开发边界 |

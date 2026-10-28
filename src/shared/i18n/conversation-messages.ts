@@ -25,7 +25,7 @@ export const conversationZh = {
   conversationSubtitle: '选择本机 Agent 进行对话，或调用保存的流程生成需求、场景和用例。',
   composerPlaceholder: '描述验证目标或粘贴 Spec。也可输入 /run general-testing 后跟需求内容。',
   sendMessage: '发送消息',
-  invokeWorkflow: '调用设计流程',
+  invokeWorkflow: '调用流程',
   stopGeneration: '停止',
   browserConversation: '浏览器可查看和配置工作台。请打开桌面版，与本机 CLI 对话。',
   analysisOnly: '本次支持需求分析与设计评审，不执行测试脚本。',
@@ -151,7 +151,7 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
   composerPlaceholder:
     'Describe your goal or paste a Spec. You can also use /run general-testing followed by requirements.',
   sendMessage: 'Send message',
-  invokeWorkflow: 'Invoke design workflow',
+  invokeWorkflow: 'Invoke workflow',
   stopGeneration: 'Stop',
   browserConversation:
     'Use the browser to inspect and configure. Open the desktop app to talk to an installed CLI.',

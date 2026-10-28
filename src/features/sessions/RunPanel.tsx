@@ -7,7 +7,7 @@ import { Status } from '../../shared/components/Status';
 import { nodeLabel } from '../workflows/node-label';
 import { ArtifactPanel } from './ArtifactPanel';
 import { hasDesktopBridge } from '../../services/agent-api';
-import { isExecutionPlan, isEvidence } from '../../domain/execution/schema';
+import { isExecutionPlan, isEvidence, isReport } from '../../domain/execution/schema';
 import { ExecutionReview } from './ExecutionReview';
 
 const labels = {
@@ -50,6 +50,7 @@ export function RunPanel({ run, actions }: { run: WorkflowRun; actions: Conversa
       ? reviewInputs.find((item) => isExecutionPlan(item.value))?.value
       : undefined;
   const executed = Object.values(run.artifacts).some((item) => isEvidence(item.value));
+  const report = Object.values(run.artifacts).find((item) => isReport(item.value))?.value;
   const failedExecution = run.plan.some(
     (node) =>
       node.operation === 'targets.execute' && ['failed', 'interrupted'].includes(run.steps[node.id].status),
@@ -58,10 +59,24 @@ export function RunPanel({ run, actions }: { run: WorkflowRun; actions: Conversa
     <aside className="session-run-panel" aria-label={t('workflowProgress')}>
       <div className="wb-panel-heading">
         <h2>{t('workflowProgress')}</h2>
-        <Status tone={run.status === 'completed' ? 'success' : 'accent'}>
-          {run.status === 'completed'
-            ? t(run.scope === 'verification' ? 'workflowComplete' : 'designComplete')
-            : t(run.scope === 'verification' ? 'verificationScope' : 'designScope')}
+        <Status tone={run.status === 'completed' ? 'success' : run.status === 'failed' ? 'danger' : 'accent'}>
+          {t(
+            run.status === 'completed'
+              ? run.scope === 'verification'
+                ? 'workflowComplete'
+                : 'designComplete'
+              : run.status === 'failed'
+                ? 'failedStep'
+                : run.status === 'cancelled'
+                  ? 'cancelledRun'
+                  : run.status === 'interrupted'
+                    ? 'interruptedStep'
+                    : run.status === 'awaiting_review'
+                      ? 'reviewStep'
+                      : run.scope === 'verification'
+                        ? 'verificationScope'
+                        : 'designScope',
+          )}
         </Status>
       </div>
       <div className="session-run-meta">
@@ -74,24 +89,23 @@ export function RunPanel({ run, actions }: { run: WorkflowRun; actions: Conversa
         </small>
         {!executed && <p>{t('testsNotExecuted')}</p>}
       </div>
-      <ol className="session-step-list">
-        {run.plan.map((node) => (
-          <li key={node.id}>
-            <span>{nodeLabel(node, run.snapshot, t)}</span>
-            <Status
-              tone={
-                run.steps[node.id].status === 'succeeded'
-                  ? 'success'
-                  : run.steps[node.id].status === 'failed'
-                    ? 'danger'
-                    : 'neutral'
-              }
-            >
-              {t(labels[run.steps[node.id].status])}
-            </Status>
-          </li>
-        ))}
-      </ol>
+      {isReport(report) && (
+        <div className="session-result-summary">
+          <strong>{t(`execution_${report.status}`)}</strong>
+          <div className="session-result-counts">
+            {Object.entries(report.counts).map(([key, count]) => (
+              <span key={key}>
+                {t(`result_${key}` as 'result_passed')}: {count}
+              </span>
+            ))}
+          </div>
+          {report.candidates.length > 0 && (
+            <span>
+              {t('candidateDefects')}: {report.candidates.length}
+            </span>
+          )}
+        </div>
+      )}
       {run.errorCode && (
         <p className="wb-error">{isMessageKey(run.errorCode) ? t(run.errorCode) : t('cli_failed')}</p>
       )}
@@ -106,6 +120,7 @@ export function RunPanel({ run, actions }: { run: WorkflowRun; actions: Conversa
                   <li key={i}>{issue}</li>
                 ))}
               </ul>
+              <p>{t('reviewResolutionHint')}</p>
             </div>
           )}
           {reviewArtifact && <ArtifactPanel artifact={reviewArtifact} />}
@@ -128,6 +143,24 @@ export function RunPanel({ run, actions }: { run: WorkflowRun; actions: Conversa
           )}
         </section>
       )}
+      <ol className="session-step-list">
+        {run.plan.map((node) => (
+          <li key={node.id}>
+            <span>{nodeLabel(node, run.snapshot, t)}</span>
+            <Status
+              tone={
+                run.steps[node.id].status === 'succeeded'
+                  ? 'success'
+                  : run.steps[node.id].status === 'failed'
+                    ? 'danger'
+                    : 'neutral'
+              }
+            >
+              {t(labels[run.steps[node.id].status])}
+            </Status>
+          </li>
+        ))}
+      </ol>
       {['failed', 'interrupted'].includes(run.status) && !failedExecution && (
         <button
           className="workbench-btn wb-full"
