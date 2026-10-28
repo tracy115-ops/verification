@@ -1,0 +1,1495 @@
+{
+  "id": "0f8fe23b-f394-4ba5-b168-0e42f4287c4b",
+  "sessionId": "b91e582c-bf5c-44fc-b8ed-1c00335fdda5",
+  "createdAt": "2026-10-28T12:12:38.705Z",
+  "scope": "design",
+  "snapshot": {
+    "formatVersion": 1,
+    "revision": 11,
+    "definition": {
+      "$schema": "../schemas/workflow-definition.schema.json",
+      "schemaVersion": "1.0.0",
+      "id": "general-testing",
+      "version": "0.2.0",
+      "status": "draft",
+      "name": "测试设计验证流程",
+      "description": "黑盒测试设计与验证：支持设计评审或单文件 Python unittest 本地闭环；执行前需人工确认脚本、框架及目标。",
+      "contentLocale": "source",
+      "limits": {
+        "deadlineSeconds": 14400,
+        "maxConcurrentNodes": 2,
+        "maxDerivedRuns": 1
+      },
+      "inputs": {
+        "spec": {
+          "type": "SpecInput",
+          "required": true
+        },
+        "context": {
+          "type": "ProjectContext",
+          "required": true
+        },
+        "target": {
+          "type": "ExecutionProfile",
+          "required": true
+        },
+        "implementation": {
+          "type": "ImplementationOptions",
+          "required": true
+        },
+        "action_policy": {
+          "type": "ActionPolicy",
+          "required": true
+        }
+      },
+      "nodes": [
+        {
+          "id": "import_spec",
+          "kind": "import",
+          "operation": "documents.import",
+          "dependsOn": [],
+          "inputs": {
+            "spec": {
+              "from": "$input.spec",
+              "type": "SpecInput"
+            }
+          },
+          "outputs": {
+            "document": "DocumentRevision"
+          },
+          "requiresCapabilities": [
+            "utf8-text-import"
+          ],
+          "policy": {
+            "timeoutSeconds": 60,
+            "maxAttempts": 1,
+            "retryOn": []
+          }
+        },
+        {
+          "id": "extract_requirements",
+          "kind": "agent",
+          "operation": "requirements.extract",
+          "role": "requirement-analyst",
+          "dependsOn": [
+            "import_spec"
+          ],
+          "inputs": {
+            "document": {
+              "from": "import_spec.document",
+              "type": "DocumentRevision"
+            },
+            "context": {
+              "from": "$input.context",
+              "type": "ProjectContext"
+            }
+          },
+          "outputs": {
+            "requirements": "RequirementBaselineDraft"
+          },
+          "requiresCapabilities": [
+            "structured-output",
+            "read-only-tools"
+          ],
+          "policy": {
+            "timeoutSeconds": 600,
+            "maxAttempts": 2,
+            "retryOn": [
+              "invalid_artifact"
+            ]
+          }
+        },
+        {
+          "id": "review_requirements",
+          "kind": "human",
+          "operation": "review.requirements",
+          "dependsOn": [
+            "extract_requirements"
+          ],
+          "inputs": {
+            "requirements": {
+              "from": "extract_requirements.requirements",
+              "type": "RequirementBaselineDraft"
+            },
+            "document": {
+              "from": "import_spec.document",
+              "type": "DocumentRevision"
+            }
+          },
+          "outputs": {
+            "requirements": "RequirementBaseline"
+          },
+          "requiresCapabilities": [
+            "digest-bound-approval"
+          ],
+          "policy": {
+            "timeoutSeconds": 3600,
+            "maxAttempts": 1,
+            "retryOn": []
+          }
+        },
+        {
+          "id": "design_scenarios",
+          "kind": "agent",
+          "operation": "scenarios.design",
+          "role": "test-designer",
+          "dependsOn": [
+            "review_requirements"
+          ],
+          "inputs": {
+            "requirements": {
+              "from": "review_requirements.requirements",
+              "type": "RequirementBaseline"
+            },
+            "document": {
+              "from": "import_spec.document",
+              "type": "DocumentRevision"
+            },
+            "context": {
+              "from": "$input.context",
+              "type": "ProjectContext"
+            }
+          },
+          "outputs": {
+            "design": "TestDesignDraft"
+          },
+          "requiresCapabilities": [
+            "structured-output",
+            "read-only-tools"
+          ],
+          "policy": {
+            "timeoutSeconds": 600,
+            "maxAttempts": 2,
+            "retryOn": [
+              "invalid_artifact"
+            ]
+          }
+        },
+        {
+          "id": "review_coverage",
+          "kind": "human",
+          "operation": "review.coverage",
+          "dependsOn": [
+            "design_scenarios"
+          ],
+          "inputs": {
+            "design": {
+              "from": "design_scenarios.design",
+              "type": "TestDesignDraft"
+            },
+            "requirements": {
+              "from": "review_requirements.requirements",
+              "type": "RequirementBaseline"
+            }
+          },
+          "outputs": {
+            "design": "TestDesign"
+          },
+          "requiresCapabilities": [
+            "traceability-validation",
+            "digest-bound-approval"
+          ],
+          "policy": {
+            "timeoutSeconds": 3600,
+            "maxAttempts": 1,
+            "retryOn": []
+          }
+        },
+        {
+          "id": "generate_cases",
+          "kind": "agent",
+          "operation": "cases.generate",
+          "role": "case-designer",
+          "dependsOn": [
+            "review_coverage"
+          ],
+          "inputs": {
+            "design": {
+              "from": "review_coverage.design",
+              "type": "TestDesign"
+            },
+            "context": {
+              "from": "$input.context",
+              "type": "ProjectContext"
+            }
+          },
+          "outputs": {
+            "cases": "TestCaseSetDraft"
+          },
+          "requiresCapabilities": [
+            "structured-output",
+            "read-only-tools"
+          ],
+          "policy": {
+            "timeoutSeconds": 600,
+            "maxAttempts": 2,
+            "retryOn": [
+              "invalid_artifact"
+            ]
+          }
+        },
+        {
+          "id": "review_cases",
+          "kind": "human",
+          "operation": "review.cases",
+          "dependsOn": [
+            "generate_cases"
+          ],
+          "inputs": {
+            "cases": {
+              "from": "generate_cases.cases",
+              "type": "TestCaseSetDraft"
+            },
+            "design": {
+              "from": "review_coverage.design",
+              "type": "TestDesign"
+            }
+          },
+          "outputs": {
+            "cases": "TestCaseSet"
+          },
+          "requiresCapabilities": [
+            "digest-bound-approval"
+          ],
+          "policy": {
+            "timeoutSeconds": 3600,
+            "maxAttempts": 1,
+            "retryOn": []
+          }
+        },
+        {
+          "id": "implement_tests",
+          "kind": "agent",
+          "operation": "tests.implement",
+          "role": "case-developer",
+          "dependsOn": [
+            "review_cases"
+          ],
+          "inputs": {
+            "cases": {
+              "from": "review_cases.cases",
+              "type": "TestCaseSet"
+            },
+            "options": {
+              "from": "$input.implementation",
+              "type": "ImplementationOptions"
+            },
+            "context": {
+              "from": "$input.context",
+              "type": "ProjectContext"
+            }
+          },
+          "outputs": {
+            "implementation": "ImplementationBundle"
+          },
+          "requiresCapabilities": [
+            "structured-output",
+            "workspace-scoped-write"
+          ],
+          "policy": {
+            "timeoutSeconds": 1200,
+            "maxAttempts": 1,
+            "retryOn": []
+          }
+        },
+        {
+          "id": "preflight",
+          "kind": "validation",
+          "operation": "targets.preflight",
+          "dependsOn": [
+            "implement_tests"
+          ],
+          "inputs": {
+            "implementation": {
+              "from": "implement_tests.implementation",
+              "type": "ImplementationBundle"
+            },
+            "cases": {
+              "from": "review_cases.cases",
+              "type": "TestCaseSet"
+            },
+            "target": {
+              "from": "$input.target",
+              "type": "ExecutionProfile"
+            }
+          },
+          "outputs": {
+            "plan": "ExecutionPlan"
+          },
+          "requiresCapabilities": [
+            "target-preflight",
+            "implementation-validation"
+          ],
+          "policy": {
+            "timeoutSeconds": 120,
+            "maxAttempts": 1,
+            "retryOn": []
+          }
+        },
+        {
+          "id": "review_execution",
+          "kind": "human",
+          "operation": "review.execution",
+          "dependsOn": [
+            "preflight"
+          ],
+          "inputs": {
+            "plan": {
+              "from": "preflight.plan",
+              "type": "ExecutionPlan"
+            }
+          },
+          "outputs": {
+            "authorization": "ExecutionAuthorization"
+          },
+          "requiresCapabilities": [
+            "digest-bound-approval"
+          ],
+          "policy": {
+            "timeoutSeconds": 3600,
+            "maxAttempts": 1,
+            "retryOn": []
+          }
+        },
+        {
+          "id": "execute_tests",
+          "kind": "runner",
+          "operation": "targets.execute",
+          "dependsOn": [
+            "review_execution"
+          ],
+          "inputs": {
+            "plan": {
+              "from": "preflight.plan",
+              "type": "ExecutionPlan"
+            },
+            "authorization": {
+              "from": "review_execution.authorization",
+              "type": "ExecutionAuthorization"
+            }
+          },
+          "outputs": {
+            "evidence": "EvidenceBundle"
+          },
+          "requiresCapabilities": [
+            "managed-execution",
+            "evidence-manifest",
+            "confirmed-cancellation"
+          ],
+          "policy": {
+            "timeoutSeconds": 1800,
+            "maxAttempts": 1,
+            "retryOn": []
+          }
+        },
+        {
+          "id": "analyze_verdict",
+          "kind": "evaluation",
+          "operation": "verdicts.evaluate",
+          "role": "verdict-analyst",
+          "dependsOn": [
+            "execute_tests"
+          ],
+          "inputs": {
+            "evidence": {
+              "from": "execute_tests.evidence",
+              "type": "EvidenceBundle"
+            },
+            "cases": {
+              "from": "review_cases.cases",
+              "type": "TestCaseSet"
+            },
+            "design": {
+              "from": "review_coverage.design",
+              "type": "TestDesign"
+            },
+            "requirements": {
+              "from": "review_requirements.requirements",
+              "type": "RequirementBaseline"
+            }
+          },
+          "outputs": {
+            "verdict": "VerdictBundle"
+          },
+          "requiresCapabilities": [
+            "deterministic-verdict",
+            "evidence-validation",
+            "read-only-tools"
+          ],
+          "policy": {
+            "timeoutSeconds": 600,
+            "maxAttempts": 1,
+            "retryOn": []
+          }
+        },
+        {
+          "id": "dispatch_actions",
+          "kind": "policy",
+          "operation": "actions.dispatch",
+          "dependsOn": [
+            "analyze_verdict"
+          ],
+          "inputs": {
+            "verdict": {
+              "from": "analyze_verdict.verdict",
+              "type": "VerdictBundle"
+            },
+            "policy": {
+              "from": "$input.action_policy",
+              "type": "ActionPolicy"
+            }
+          },
+          "outputs": {
+            "report": "VerificationReport"
+          },
+          "requiresCapabilities": [
+            "bounded-actions",
+            "audit-log"
+          ],
+          "policy": {
+            "timeoutSeconds": 120,
+            "maxAttempts": 1,
+            "retryOn": []
+          }
+        }
+      ]
+    },
+    "profiles": [
+      {
+        "id": "codex-native",
+        "name": "codex / native",
+        "driver": "codex",
+        "protocol": "native",
+        "baseUrl": "",
+        "model": "gpt-6.1-terra",
+        "credentialRef": ""
+      },
+      {
+        "id": "claude-native",
+        "name": "claude / native",
+        "driver": "claude",
+        "protocol": "native",
+        "baseUrl": "",
+        "model": "",
+        "credentialRef": ""
+      },
+      {
+        "id": "pi-native",
+        "name": "pi / native",
+        "driver": "pi",
+        "protocol": "native",
+        "baseUrl": "",
+        "model": "",
+        "credentialRef": ""
+      },
+      {
+        "id": "codeagent-native",
+        "name": "codeagent / native",
+        "driver": "codeagent",
+        "protocol": "native",
+        "baseUrl": "",
+        "model": "",
+        "credentialRef": ""
+      }
+    ],
+    "bindings": {
+      "extract_requirements": "codex-native",
+      "design_scenarios": "codex-native",
+      "generate_cases": "codex-native",
+      "implement_tests": "codex-native",
+      "analyze_verdict": "codex-native"
+    },
+    "layout": {
+      "import_spec": {
+        "x": 80,
+        "y": 60
+      },
+      "extract_requirements": {
+        "x": 390,
+        "y": 60
+      },
+      "review_requirements": {
+        "x": 80,
+        "y": 200
+      },
+      "design_scenarios": {
+        "x": 390,
+        "y": 200
+      },
+      "review_coverage": {
+        "x": 80,
+        "y": 340
+      },
+      "generate_cases": {
+        "x": 390,
+        "y": 340
+      },
+      "review_cases": {
+        "x": 80,
+        "y": 480
+      },
+      "implement_tests": {
+        "x": 390,
+        "y": 480
+      },
+      "preflight": {
+        "x": 80,
+        "y": 620
+      },
+      "review_execution": {
+        "x": 390,
+        "y": 620
+      },
+      "execute_tests": {
+        "x": 80,
+        "y": 760
+      },
+      "analyze_verdict": {
+        "x": 390,
+        "y": 760
+      },
+      "dispatch_actions": {
+        "x": 80,
+        "y": 900
+      }
+    },
+    "nodeTitles": {}
+  },
+  "plan": [
+    {
+      "id": "import_spec",
+      "kind": "import",
+      "operation": "documents.import",
+      "dependsOn": [],
+      "inputs": {
+        "spec": {
+          "from": "$input.spec",
+          "type": "SpecInput"
+        }
+      },
+      "outputs": {
+        "document": "DocumentRevision"
+      },
+      "requiresCapabilities": [
+        "utf8-text-import"
+      ],
+      "policy": {
+        "timeoutSeconds": 60,
+        "maxAttempts": 1,
+        "retryOn": []
+      }
+    },
+    {
+      "id": "extract_requirements",
+      "kind": "agent",
+      "operation": "requirements.extract",
+      "role": "requirement-analyst",
+      "dependsOn": [
+        "import_spec"
+      ],
+      "inputs": {
+        "document": {
+          "from": "import_spec.document",
+          "type": "DocumentRevision"
+        },
+        "context": {
+          "from": "$input.context",
+          "type": "ProjectContext"
+        }
+      },
+      "outputs": {
+        "requirements": "RequirementBaselineDraft"
+      },
+      "requiresCapabilities": [
+        "structured-output",
+        "read-only-tools"
+      ],
+      "policy": {
+        "timeoutSeconds": 600,
+        "maxAttempts": 2,
+        "retryOn": [
+          "invalid_artifact"
+        ]
+      }
+    },
+    {
+      "id": "review_requirements",
+      "kind": "human",
+      "operation": "review.requirements",
+      "dependsOn": [
+        "extract_requirements"
+      ],
+      "inputs": {
+        "requirements": {
+          "from": "extract_requirements.requirements",
+          "type": "RequirementBaselineDraft"
+        },
+        "document": {
+          "from": "import_spec.document",
+          "type": "DocumentRevision"
+        }
+      },
+      "outputs": {
+        "requirements": "RequirementBaseline"
+      },
+      "requiresCapabilities": [
+        "digest-bound-approval"
+      ],
+      "policy": {
+        "timeoutSeconds": 3600,
+        "maxAttempts": 1,
+        "retryOn": []
+      }
+    },
+    {
+      "id": "design_scenarios",
+      "kind": "agent",
+      "operation": "scenarios.design",
+      "role": "test-designer",
+      "dependsOn": [
+        "review_requirements"
+      ],
+      "inputs": {
+        "requirements": {
+          "from": "review_requirements.requirements",
+          "type": "RequirementBaseline"
+        },
+        "document": {
+          "from": "import_spec.document",
+          "type": "DocumentRevision"
+        },
+        "context": {
+          "from": "$input.context",
+          "type": "ProjectContext"
+        }
+      },
+      "outputs": {
+        "design": "TestDesignDraft"
+      },
+      "requiresCapabilities": [
+        "structured-output",
+        "read-only-tools"
+      ],
+      "policy": {
+        "timeoutSeconds": 600,
+        "maxAttempts": 2,
+        "retryOn": [
+          "invalid_artifact"
+        ]
+      }
+    },
+    {
+      "id": "review_coverage",
+      "kind": "human",
+      "operation": "review.coverage",
+      "dependsOn": [
+        "design_scenarios"
+      ],
+      "inputs": {
+        "design": {
+          "from": "design_scenarios.design",
+          "type": "TestDesignDraft"
+        },
+        "requirements": {
+          "from": "review_requirements.requirements",
+          "type": "RequirementBaseline"
+        }
+      },
+      "outputs": {
+        "design": "TestDesign"
+      },
+      "requiresCapabilities": [
+        "traceability-validation",
+        "digest-bound-approval"
+      ],
+      "policy": {
+        "timeoutSeconds": 3600,
+        "maxAttempts": 1,
+        "retryOn": []
+      }
+    },
+    {
+      "id": "generate_cases",
+      "kind": "agent",
+      "operation": "cases.generate",
+      "role": "case-designer",
+      "dependsOn": [
+        "review_coverage"
+      ],
+      "inputs": {
+        "design": {
+          "from": "review_coverage.design",
+          "type": "TestDesign"
+        },
+        "context": {
+          "from": "$input.context",
+          "type": "ProjectContext"
+        }
+      },
+      "outputs": {
+        "cases": "TestCaseSetDraft"
+      },
+      "requiresCapabilities": [
+        "structured-output",
+        "read-only-tools"
+      ],
+      "policy": {
+        "timeoutSeconds": 600,
+        "maxAttempts": 2,
+        "retryOn": [
+          "invalid_artifact"
+        ]
+      }
+    },
+    {
+      "id": "review_cases",
+      "kind": "human",
+      "operation": "review.cases",
+      "dependsOn": [
+        "generate_cases"
+      ],
+      "inputs": {
+        "cases": {
+          "from": "generate_cases.cases",
+          "type": "TestCaseSetDraft"
+        },
+        "design": {
+          "from": "review_coverage.design",
+          "type": "TestDesign"
+        }
+      },
+      "outputs": {
+        "cases": "TestCaseSet"
+      },
+      "requiresCapabilities": [
+        "digest-bound-approval"
+      ],
+      "policy": {
+        "timeoutSeconds": 3600,
+        "maxAttempts": 1,
+        "retryOn": []
+      }
+    }
+  ],
+  "profiles": [
+    {
+      "id": "codex-native",
+      "name": "codex / native",
+      "driver": "codex",
+      "protocol": "native",
+      "baseUrl": "",
+      "model": "gpt-6.1-terra",
+      "credentialRef": ""
+    },
+    {
+      "id": "claude-native",
+      "name": "claude / native",
+      "driver": "claude",
+      "protocol": "native",
+      "baseUrl": "",
+      "model": "",
+      "credentialRef": ""
+    },
+    {
+      "id": "pi-native",
+      "name": "pi / native",
+      "driver": "pi",
+      "protocol": "native",
+      "baseUrl": "",
+      "model": "",
+      "credentialRef": ""
+    },
+    {
+      "id": "codeagent-native",
+      "name": "codeagent / native",
+      "driver": "codeagent",
+      "protocol": "native",
+      "baseUrl": "",
+      "model": "",
+      "credentialRef": ""
+    }
+  ],
+  "defaultProfileId": "codex-native",
+  "spec": "# 房间容量接口：会话驱动验收\n本轮仅分析以下四种输入，生成测试设计，不执行测试。接口 POST /rooms 使用已提供的框架，以 player-a 身份提交 JSON {maxPlayers,mode,ranked}。mode 固定 duel，ranked 固定 false。maxPlayers=2 或 8 时必须返回 HTTP 201；maxPlayers=1 或 9 时必须返回 HTTP 400。每条用例由框架恢复独立初始状态，不复用房间。不要求断言任何未定义的响应字段。\n本轮只需四条独立用例，分别覆盖 2、8、1、9；其他数值、类型、缺失字段、鉴权和并发均明确不在本次范围。请求使用 self.client.call('POST','/rooms',body,user='player-a')，响应通过 response.status 读取状态码。对以上四种输入的预期已经完整，无需补充目标实现细节。",
+  "status": "completed",
+  "steps": {
+    "import_spec": {
+      "status": "succeeded",
+      "attempts": 1
+    },
+    "extract_requirements": {
+      "status": "succeeded",
+      "attempts": 1,
+      "turnId": "2ade8c04-63e9-445d-9a31-d1eeb7b7374f",
+      "nativeSessionId": "01a1826d-3c88-7ff3-b407-1dd0ba34ccfb"
+    },
+    "review_requirements": {
+      "status": "succeeded",
+      "attempts": 0,
+      "reviewDigest": "8446ba9776fbb765a895db402e0df81a79540ee1a25731e26a174bf639f03418"
+    },
+    "design_scenarios": {
+      "status": "succeeded",
+      "attempts": 1,
+      "turnId": "f8fc1233-e2aa-4049-a00c-8db1bc6ced93",
+      "nativeSessionId": "01a1826d-ab57-7563-b8f1-6e6237b60a26"
+    },
+    "review_coverage": {
+      "status": "succeeded",
+      "attempts": 0,
+      "reviewDigest": "b91acc09d37249b90d98b6aa8cfacf8fe76a930f1fe1f3f7e0c4f6b849226d99"
+    },
+    "generate_cases": {
+      "status": "succeeded",
+      "attempts": 1,
+      "turnId": "dd2ce484-f3aa-4f31-9e13-37c92b23ce16",
+      "caseBatchAttempts": 0,
+      "nativeSessionId": "01a18271-eb8c-74f0-acbf-d5bf3048d862",
+      "caseBatches": [
+        {
+          "signature": "50bb60cfcce81d9adf90fe283b58b1936ef4d2d7051e6b3bb97637623e5e7468",
+          "index": 0,
+          "cases": {
+            "cases": [
+              {
+                "id": "B1-C1",
+                "title": "容量为 2 时创建房间",
+                "scenarioIds": [
+                  "S1"
+                ],
+                "requirementIds": [
+                  "R1",
+                  "R2",
+                  "R3",
+                  "R4"
+                ],
+                "preconditions": [
+                  "框架已恢复独立初始状态，不复用房间。"
+                ],
+                "steps": [
+                  "设置 body 为 {\"maxPlayers\":2,\"mode\":\"duel\",\"ranked\":false}。",
+                  "调用 self.client.call('POST','/rooms',body,user='player-a')，并读取 response.status。"
+                ],
+                "expected": "返回 HTTP 201。",
+                "assertions": [
+                  "response.status 等于 201。"
+                ]
+              },
+              {
+                "id": "B1-C2",
+                "title": "容量为 8 时创建房间",
+                "scenarioIds": [
+                  "S2"
+                ],
+                "requirementIds": [
+                  "R1",
+                  "R2",
+                  "R3",
+                  "R4"
+                ],
+                "preconditions": [
+                  "框架已恢复独立初始状态，不复用房间。"
+                ],
+                "steps": [
+                  "设置 body 为 {\"maxPlayers\":8,\"mode\":\"duel\",\"ranked\":false}。",
+                  "调用 self.client.call('POST','/rooms',body,user='player-a')，并读取 response.status。"
+                ],
+                "expected": "返回 HTTP 201。",
+                "assertions": [
+                  "response.status 等于 201。"
+                ]
+              },
+              {
+                "id": "B1-C3",
+                "title": "容量为 1 时创建房间",
+                "scenarioIds": [
+                  "S3"
+                ],
+                "requirementIds": [
+                  "R1",
+                  "R2",
+                  "R3",
+                  "R4"
+                ],
+                "preconditions": [
+                  "框架已恢复独立初始状态，不复用房间。"
+                ],
+                "steps": [
+                  "设置 body 为 {\"maxPlayers\":1,\"mode\":\"duel\",\"ranked\":false}。",
+                  "调用 self.client.call('POST','/rooms',body,user='player-a')，并读取 response.status。"
+                ],
+                "expected": "返回 HTTP 400。",
+                "assertions": [
+                  "response.status 等于 400。"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "signature": "50bb60cfcce81d9adf90fe283b58b1936ef4d2d7051e6b3bb97637623e5e7468",
+          "index": 1,
+          "cases": {
+            "cases": [
+              {
+                "id": "B2-C_S4_9",
+                "title": "房间容量为 9 时返回 HTTP 400",
+                "scenarioIds": [
+                  "S4"
+                ],
+                "requirementIds": [
+                  "R2"
+                ],
+                "preconditions": [
+                  "使用已提供的框架，并由框架为本用例恢复独立初始状态，不复用房间。"
+                ],
+                "steps": [
+                  "构造 body：{\"maxPlayers\":9,\"mode\":\"duel\",\"ranked\":false}。",
+                  "以 player-a 身份调用 self.client.call('POST','/rooms',body,user='player-a')，取得响应。"
+                ],
+                "expected": "响应状态码为 HTTP 400。",
+                "assertions": [
+                  "通过 response.status 断言状态码为 400；不对未定义的响应字段作断言。"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "review_cases": {
+      "status": "succeeded",
+      "attempts": 0,
+      "reviewDigest": "b3a13b8e3014950b92e33d459d5f243e92ea2c548fc66b92201f3be8aa7cbd7b"
+    }
+  },
+  "artifacts": {
+    "import_spec.document": {
+      "type": "DocumentRevision",
+      "value": {
+        "text": "# 房间容量接口：会话驱动验收\n本轮仅分析以下四种输入，生成测试设计，不执行测试。接口 POST /rooms 使用已提供的框架，以 player-a 身份提交 JSON {maxPlayers,mode,ranked}。mode 固定 duel，ranked 固定 false。maxPlayers=2 或 8 时必须返回 HTTP 201；maxPlayers=1 或 9 时必须返回 HTTP 400。每条用例由框架恢复独立初始状态，不复用房间。不要求断言任何未定义的响应字段。\n本轮只需四条独立用例，分别覆盖 2、8、1、9；其他数值、类型、缺失字段、鉴权和并发均明确不在本次范围。请求使用 self.client.call('POST','/rooms',body,user='player-a')，响应通过 response.status 读取状态码。对以上四种输入的预期已经完整，无需补充目标实现细节。",
+        "revision": 1
+      },
+      "digest": "38d0c970a4f1baf6c583fc514079bb81b64287e654eeb03e31c1e7d26442c638"
+    },
+    "extract_requirements.requirements": {
+      "type": "RequirementBaselineDraft",
+      "value": {
+        "requirements": [
+          {
+            "id": "R1",
+            "text": "使用指定身份、请求方法、路径和固定字段提交房间创建请求。",
+            "quote": "接口 POST /rooms 使用已提供的框架，以 player-a 身份提交 JSON {maxPlayers,mode,ranked}。mode 固定 duel，ranked 固定 false。",
+            "acceptanceCriteria": [
+              "使用 self.client.call('POST','/rooms',body,user='player-a') 提交请求；body 包含 maxPlayers、mode 和 ranked，后两者分别固定为 duel 和 false。"
+            ]
+          },
+          {
+            "id": "R2",
+            "text": "验证指定容量值对应的 HTTP 状态码。",
+            "quote": "maxPlayers=2 或 8 时必须返回 HTTP 201；maxPlayers=1 或 9 时必须返回 HTTP 400。",
+            "acceptanceCriteria": [
+              "maxPlayers=2 时，通过 response.status 断言状态码为 201。",
+              "maxPlayers=8 时，通过 response.status 断言状态码为 201。",
+              "maxPlayers=1 时，通过 response.status 断言状态码为 400。",
+              "maxPlayers=9 时，通过 response.status 断言状态码为 400。"
+            ]
+          },
+          {
+            "id": "R3",
+            "text": "四条用例各自使用独立初始状态，且不复用房间；不断言未定义的响应字段。",
+            "quote": "每条用例由框架恢复独立初始状态，不复用房间。不要求断言任何未定义的响应字段。",
+            "acceptanceCriteria": [
+              "每条用例均由框架恢复独立初始状态，且不复用房间。",
+              "不要求断言未定义的响应字段。"
+            ]
+          },
+          {
+            "id": "R4",
+            "text": "本轮仅设计四条独立用例，覆盖指定容量值；其他数值、类型、缺失字段、鉴权和并发不在范围内。",
+            "quote": "本轮只需四条独立用例，分别覆盖 2、8、1、9；其他数值、类型、缺失字段、鉴权和并发均明确不在本次范围。",
+            "acceptanceCriteria": [
+              "设计四条独立用例，分别覆盖 maxPlayers 为 2、8、1 和 9。",
+              "其他数值、类型、缺失字段、鉴权和并发不纳入本轮覆盖。"
+            ]
+          }
+        ],
+        "questions": []
+      },
+      "digest": "9af71d7385df3b5d6861ee2cd93a9e07441155ec914cac6975647872adf187c4"
+    },
+    "review_requirements.requirements": {
+      "type": "RequirementBaseline",
+      "value": {
+        "requirements": [
+          {
+            "id": "R1",
+            "text": "使用指定身份、请求方法、路径和固定字段提交房间创建请求。",
+            "quote": "接口 POST /rooms 使用已提供的框架，以 player-a 身份提交 JSON {maxPlayers,mode,ranked}。mode 固定 duel，ranked 固定 false。",
+            "acceptanceCriteria": [
+              "使用 self.client.call('POST','/rooms',body,user='player-a') 提交请求；body 包含 maxPlayers、mode 和 ranked，后两者分别固定为 duel 和 false。"
+            ]
+          },
+          {
+            "id": "R2",
+            "text": "验证指定容量值对应的 HTTP 状态码。",
+            "quote": "maxPlayers=2 或 8 时必须返回 HTTP 201；maxPlayers=1 或 9 时必须返回 HTTP 400。",
+            "acceptanceCriteria": [
+              "maxPlayers=2 时，通过 response.status 断言状态码为 201。",
+              "maxPlayers=8 时，通过 response.status 断言状态码为 201。",
+              "maxPlayers=1 时，通过 response.status 断言状态码为 400。",
+              "maxPlayers=9 时，通过 response.status 断言状态码为 400。"
+            ]
+          },
+          {
+            "id": "R3",
+            "text": "四条用例各自使用独立初始状态，且不复用房间；不断言未定义的响应字段。",
+            "quote": "每条用例由框架恢复独立初始状态，不复用房间。不要求断言任何未定义的响应字段。",
+            "acceptanceCriteria": [
+              "每条用例均由框架恢复独立初始状态，且不复用房间。",
+              "不要求断言未定义的响应字段。"
+            ]
+          },
+          {
+            "id": "R4",
+            "text": "本轮仅设计四条独立用例，覆盖指定容量值；其他数值、类型、缺失字段、鉴权和并发不在范围内。",
+            "quote": "本轮只需四条独立用例，分别覆盖 2、8、1、9；其他数值、类型、缺失字段、鉴权和并发均明确不在本次范围。",
+            "acceptanceCriteria": [
+              "设计四条独立用例，分别覆盖 maxPlayers 为 2、8、1 和 9。",
+              "其他数值、类型、缺失字段、鉴权和并发不纳入本轮覆盖。"
+            ]
+          }
+        ],
+        "questions": []
+      },
+      "digest": "9af71d7385df3b5d6861ee2cd93a9e07441155ec914cac6975647872adf187c4"
+    },
+    "design_scenarios.design": {
+      "type": "TestDesignDraft",
+      "value": {
+        "strategy": "采用黑盒等价类与边界值设计：分别覆盖指定的有效容量 2、8 和无效容量 1、9。每条用例由框架恢复独立初始状态，不复用房间；以 player-a 身份调用 self.client.call('POST','/rooms',body,user='player-a')，body 中 mode 固定为 duel、ranked 固定为 false，通过 response.status 断言状态码。不对未定义的响应字段作断言。",
+        "scenarios": [
+          {
+            "id": "S1",
+            "title": "容量为 2",
+            "requirementIds": [
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "dimension": "有效容量边界",
+            "expected": "response.status 为 201。",
+            "factorLevels": [
+              {
+                "factorId": "F1",
+                "level": "2"
+              }
+            ]
+          },
+          {
+            "id": "S2",
+            "title": "容量为 8",
+            "requirementIds": [
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "dimension": "有效容量边界",
+            "expected": "response.status 为 201。",
+            "factorLevels": [
+              {
+                "factorId": "F1",
+                "level": "8"
+              }
+            ]
+          },
+          {
+            "id": "S3",
+            "title": "容量为 1",
+            "requirementIds": [
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "dimension": "低于指定有效边界的容量",
+            "expected": "response.status 为 400。",
+            "factorLevels": [
+              {
+                "factorId": "F1",
+                "level": "1"
+              }
+            ]
+          },
+          {
+            "id": "S4",
+            "title": "容量为 9",
+            "requirementIds": [
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "dimension": "高于指定有效边界的容量",
+            "expected": "response.status 为 400。",
+            "factorLevels": [
+              {
+                "factorId": "F1",
+                "level": "9"
+              }
+            ]
+          }
+        ],
+        "gaps": [
+          "按本轮范围，其他数值、类型、缺失字段、鉴权和并发未覆盖。"
+        ],
+        "factors": [
+          {
+            "id": "F1",
+            "name": "maxPlayers 容量",
+            "requirementIds": [
+              "R2"
+            ],
+            "levels": [
+              "2",
+              "8",
+              "1",
+              "9"
+            ],
+            "sourceQuote": "maxPlayers=2 或 8 时必须返回 HTTP 201；maxPlayers=1 或 9 时必须返回 HTTP 400。"
+          }
+        ]
+      },
+      "digest": "c762b76f05352112f0c7a532b03f13488899ab07e9212e1cf4f10b3e61d1f22f"
+    },
+    "review_coverage.design": {
+      "type": "TestDesign",
+      "value": {
+        "strategy": "采用黑盒等价类与边界值设计：分别覆盖指定的有效容量 2、8 和无效容量 1、9。每条用例由框架恢复独立初始状态，不复用房间；以 player-a 身份调用 self.client.call('POST','/rooms',body,user='player-a')，body 中 mode 固定为 duel、ranked 固定为 false，通过 response.status 断言状态码。不对未定义的响应字段作断言。",
+        "scenarios": [
+          {
+            "id": "S1",
+            "title": "容量为 2",
+            "requirementIds": [
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "dimension": "有效容量边界",
+            "expected": "response.status 为 201。",
+            "factorLevels": [
+              {
+                "factorId": "F1",
+                "level": "2"
+              }
+            ]
+          },
+          {
+            "id": "S2",
+            "title": "容量为 8",
+            "requirementIds": [
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "dimension": "有效容量边界",
+            "expected": "response.status 为 201。",
+            "factorLevels": [
+              {
+                "factorId": "F1",
+                "level": "8"
+              }
+            ]
+          },
+          {
+            "id": "S3",
+            "title": "容量为 1",
+            "requirementIds": [
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "dimension": "低于指定有效边界的容量",
+            "expected": "response.status 为 400。",
+            "factorLevels": [
+              {
+                "factorId": "F1",
+                "level": "1"
+              }
+            ]
+          },
+          {
+            "id": "S4",
+            "title": "容量为 9",
+            "requirementIds": [
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "dimension": "高于指定有效边界的容量",
+            "expected": "response.status 为 400。",
+            "factorLevels": [
+              {
+                "factorId": "F1",
+                "level": "9"
+              }
+            ]
+          }
+        ],
+        "gaps": [
+          "按本轮范围，其他数值、类型、缺失字段、鉴权和并发未覆盖。"
+        ],
+        "factors": [
+          {
+            "id": "F1",
+            "name": "maxPlayers 容量",
+            "requirementIds": [
+              "R2"
+            ],
+            "levels": [
+              "2",
+              "8",
+              "1",
+              "9"
+            ],
+            "sourceQuote": "maxPlayers=2 或 8 时必须返回 HTTP 201；maxPlayers=1 或 9 时必须返回 HTTP 400。"
+          }
+        ]
+      },
+      "digest": "c762b76f05352112f0c7a532b03f13488899ab07e9212e1cf4f10b3e61d1f22f"
+    },
+    "generate_cases.cases": {
+      "type": "TestCaseSetDraft",
+      "value": {
+        "cases": [
+          {
+            "id": "B1-C1",
+            "title": "容量为 2 时创建房间",
+            "scenarioIds": [
+              "S1"
+            ],
+            "requirementIds": [
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "preconditions": [
+              "框架已恢复独立初始状态，不复用房间。"
+            ],
+            "steps": [
+              "设置 body 为 {\"maxPlayers\":2,\"mode\":\"duel\",\"ranked\":false}。",
+              "调用 self.client.call('POST','/rooms',body,user='player-a')，并读取 response.status。"
+            ],
+            "expected": "返回 HTTP 201。",
+            "assertions": [
+              "response.status 等于 201。"
+            ]
+          },
+          {
+            "id": "B1-C2",
+            "title": "容量为 8 时创建房间",
+            "scenarioIds": [
+              "S2"
+            ],
+            "requirementIds": [
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "preconditions": [
+              "框架已恢复独立初始状态，不复用房间。"
+            ],
+            "steps": [
+              "设置 body 为 {\"maxPlayers\":8,\"mode\":\"duel\",\"ranked\":false}。",
+              "调用 self.client.call('POST','/rooms',body,user='player-a')，并读取 response.status。"
+            ],
+            "expected": "返回 HTTP 201。",
+            "assertions": [
+              "response.status 等于 201。"
+            ]
+          },
+          {
+            "id": "B1-C3",
+            "title": "容量为 1 时创建房间",
+            "scenarioIds": [
+              "S3"
+            ],
+            "requirementIds": [
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "preconditions": [
+              "框架已恢复独立初始状态，不复用房间。"
+            ],
+            "steps": [
+              "设置 body 为 {\"maxPlayers\":1,\"mode\":\"duel\",\"ranked\":false}。",
+              "调用 self.client.call('POST','/rooms',body,user='player-a')，并读取 response.status。"
+            ],
+            "expected": "返回 HTTP 400。",
+            "assertions": [
+              "response.status 等于 400。"
+            ]
+          },
+          {
+            "id": "B2-C_S4_9",
+            "title": "房间容量为 9 时返回 HTTP 400",
+            "scenarioIds": [
+              "S4"
+            ],
+            "requirementIds": [
+              "R2"
+            ],
+            "preconditions": [
+              "使用已提供的框架，并由框架为本用例恢复独立初始状态，不复用房间。"
+            ],
+            "steps": [
+              "构造 body：{\"maxPlayers\":9,\"mode\":\"duel\",\"ranked\":false}。",
+              "以 player-a 身份调用 self.client.call('POST','/rooms',body,user='player-a')，取得响应。"
+            ],
+            "expected": "响应状态码为 HTTP 400。",
+            "assertions": [
+              "通过 response.status 断言状态码为 400；不对未定义的响应字段作断言。"
+            ]
+          }
+        ]
+      },
+      "digest": "3f20ead822bc526ac93abaf2c145000f1acc16d61a6a6f34e53722fbc4d781b5"
+    },
+    "review_cases.cases": {
+      "type": "TestCaseSet",
+      "value": {
+        "cases": [
+          {
+            "id": "B1-C1",
+            "title": "容量为 2 时创建房间",
+            "scenarioIds": [
+              "S1"
+            ],
+            "requirementIds": [
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "preconditions": [
+              "框架已恢复独立初始状态，不复用房间。"
+            ],
+            "steps": [
+              "设置 body 为 {\"maxPlayers\":2,\"mode\":\"duel\",\"ranked\":false}。",
+              "调用 self.client.call('POST','/rooms',body,user='player-a')，并读取 response.status。"
+            ],
+            "expected": "返回 HTTP 201。",
+            "assertions": [
+              "response.status 等于 201。"
+            ]
+          },
+          {
+            "id": "B1-C2",
+            "title": "容量为 8 时创建房间",
+            "scenarioIds": [
+              "S2"
+            ],
+            "requirementIds": [
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "preconditions": [
+              "框架已恢复独立初始状态，不复用房间。"
+            ],
+            "steps": [
+              "设置 body 为 {\"maxPlayers\":8,\"mode\":\"duel\",\"ranked\":false}。",
+              "调用 self.client.call('POST','/rooms',body,user='player-a')，并读取 response.status。"
+            ],
+            "expected": "返回 HTTP 201。",
+            "assertions": [
+              "response.status 等于 201。"
+            ]
+          },
+          {
+            "id": "B1-C3",
+            "title": "容量为 1 时创建房间",
+            "scenarioIds": [
+              "S3"
+            ],
+            "requirementIds": [
+              "R1",
+              "R2",
+              "R3",
+              "R4"
+            ],
+            "preconditions": [
+              "框架已恢复独立初始状态，不复用房间。"
+            ],
+            "steps": [
+              "设置 body 为 {\"maxPlayers\":1,\"mode\":\"duel\",\"ranked\":false}。",
+              "调用 self.client.call('POST','/rooms',body,user='player-a')，并读取 response.status。"
+            ],
+            "expected": "返回 HTTP 400。",
+            "assertions": [
+              "response.status 等于 400。"
+            ]
+          },
+          {
+            "id": "B2-C_S4_9",
+            "title": "房间容量为 9 时返回 HTTP 400",
+            "scenarioIds": [
+              "S4"
+            ],
+            "requirementIds": [
+              "R2"
+            ],
+            "preconditions": [
+              "使用已提供的框架，并由框架为本用例恢复独立初始状态，不复用房间。"
+            ],
+            "steps": [
+              "构造 body：{\"maxPlayers\":9,\"mode\":\"duel\",\"ranked\":false}。",
+              "以 player-a 身份调用 self.client.call('POST','/rooms',body,user='player-a')，取得响应。"
+            ],
+            "expected": "响应状态码为 HTTP 400。",
+            "assertions": [
+              "通过 response.status 断言状态码为 400；不对未定义的响应字段作断言。"
+            ]
+          }
+        ]
+      },
+      "digest": "3f20ead822bc526ac93abaf2c145000f1acc16d61a6a6f34e53722fbc4d781b5"
+    }
+  },
+  "approvals": [
+    {
+      "nodeId": "review_requirements",
+      "digest": "8446ba9776fbb765a895db402e0df81a79540ee1a25731e26a174bf639f03418",
+      "approvedAt": "2026-10-28T12:13:07.362Z"
+    },
+    {
+      "nodeId": "review_coverage",
+      "digest": "b91acc09d37249b90d98b6aa8cfacf8fe76a930f1fe1f3f7e0c4f6b849226d99",
+      "approvedAt": "2026-10-28T12:17:21.976Z"
+    },
+    {
+      "nodeId": "review_cases",
+      "digest": "b3a13b8e3014950b92e33d459d5f243e92ea2c548fc66b92201f3be8aa7cbd7b",
+      "approvedAt": "2026-10-28T12:18:09.060Z"
+    }
+  ],
+  "reviewExclusions": [
+    {
+      "nodeId": "review_coverage",
+      "issue": "按本轮范围，其他数值、类型、缺失字段、鉴权和并发未覆盖。",
+      "reason": "本轮需求明确只验证容量 2、8、1、9 四种输入；其他数值、类型、缺失字段、鉴权和并发在用户指定范围之外。此项作为有记录的排除，不视为已覆盖。",
+      "recordedAt": "2026-10-28T12:17:21.811Z"
+    }
+  ]
+}

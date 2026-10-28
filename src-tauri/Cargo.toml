@@ -14,5 +14,10 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 agent-runtime = { path = "../crates/agent-runtime" }
 execution-runtime = { path = "../crates/execution-runtime" }
+process-runtime = { path = "../crates/process-runtime" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+dunce = "1"
+if-addrs = "=0.15.0"
 tauri = { version = "2", features = [] }
-tokio = { version = "1", features = ["sync", "fs"] }
+tokio = { version = "1", features = ["sync", "fs", "process", "net", "time", "io-util"] }

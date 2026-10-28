@@ -1,4 +1,22 @@
 export const conversationZh = {
+  actualAgentRequest: '实际提交给 Agent 的任务',
+  actualAgentReply: 'Agent 原始回复预览',
+  rawCliReply: '查看完整 CLI 回复',
+  cliReplyReceived: 'CLI 已返回',
+  cliValidationRejected: '产物校验未通过',
+  awaitingCliReply: 'CLI 调用已开始，正在等待实际返回。',
+  cliActivities: 'CLI 活动事件',
+  openCurrentNodeArtifact: '查看此节点当前产物',
+  legacyTranscriptMissing:
+    '此历史任务未保存 CLI 原始对话。下方评审记录与产物来自已保存的数据；新的调用会保留实际指令和回复。',
+  earlierConversation: '显示更早的会话记录',
+  currentReviewInConversation: '当前产物等待评审',
+  workflowNeedsAttention: '本次流程需要处理',
+  recordedApproval: '已记录的评审确认',
+  recordedDecisionItems: '查看 {count} 项已保存内容',
+  transcript_unavailable: 'CLI 对话记录无法写入或读取；当前内容仍在内存中，请勿把缺失记录视为完整历史。',
+  transcript_invalid: '已保存的 CLI 对话记录格式无效。',
+  transcript_delete_failed: '部分 CLI 对话原始记录未能清理。',
   nativeModels: 'CLI 模型配置',
   nativeModelsHint: 'CodeAgent 使用内部模型配置；其他 CLI 在此指定模型 ID。保存配置不代表已验证推理。',
   codeagentManagedModel: '模型由 CodeAgent 内部管理，无需单独配置。',
@@ -135,6 +153,25 @@ export const conversationZh = {
 };
 
 export const conversationEn: Record<keyof typeof conversationZh, string> = {
+  actualAgentRequest: 'Task actually submitted to the Agent',
+  actualAgentReply: 'Original Agent reply preview',
+  rawCliReply: 'View complete CLI reply',
+  cliReplyReceived: 'CLI returned',
+  cliValidationRejected: 'Artifact validation failed',
+  awaitingCliReply: 'CLI invocation started. Waiting for its actual response.',
+  cliActivities: 'CLI activity events',
+  openCurrentNodeArtifact: 'Open the current artifact for this node',
+  legacyTranscriptMissing:
+    'This historical task has no saved CLI transcript. Review records and artifacts below come from saved data. New calls retain actual requests and replies.',
+  earlierConversation: 'Show earlier conversation records',
+  currentReviewInConversation: 'The current artifact awaits review',
+  workflowNeedsAttention: 'This workflow needs attention',
+  recordedApproval: 'Recorded review approval',
+  recordedDecisionItems: 'View {count} saved items',
+  transcript_unavailable:
+    'CLI transcript storage is unavailable. Current content remains in memory; missing records do not constitute complete history.',
+  transcript_invalid: 'Saved CLI transcript has an invalid format.',
+  transcript_delete_failed: 'Some original CLI transcript records could not be removed.',
   nativeModels: 'CLI model configuration',
   nativeModelsHint:
     'CodeAgent uses its internal model configuration. Set model IDs for the other CLIs here. Saving does not certify inference.',

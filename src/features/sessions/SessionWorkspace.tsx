@@ -5,7 +5,7 @@ import { hasDesktopBridge } from '../../services/agent-api';
 import { isMessageKey, useI18n } from '../../shared/i18n/context';
 import { ConversationComposer } from './ConversationComposer';
 import { RunPanel } from './RunPanel';
-import { SourceMessage } from './SourceMessage';
+import { ConversationTimeline } from './ConversationTimeline';
 import type { FrameworkProfile } from '../../domain/execution/types';
 import { useTaskPanel } from './useTaskPanel';
 
@@ -93,25 +93,13 @@ export function SessionWorkspace({
               <p>{t('conversationSubtitle')}</p>
             </div>
           )}
-          {actions.session?.messages.map((item) => (
-            <article key={item.id} className={`session-message role-${item.role}`}>
-              <div className="session-message-author">
-                {t(item.role === 'user' ? 'userMessage' : 'assistantMessage')}
-              </div>
-              {item.text &&
-                (activeRun ? (
-                  <SourceMessage text={item.text} />
-                ) : (
-                  <div className="session-message-text">{item.text}</div>
-                ))}
-              {item.errorCode && (
-                <p className="wb-error">
-                  {isMessageKey(item.errorCode) ? t(item.errorCode) : t('cli_failed')}
-                </p>
-              )}
-            </article>
-          ))}
-          {actions.busy && (
+          <ConversationTimeline
+            key={actions.activeId}
+            actions={actions}
+            activeRun={activeRun}
+            openAssets={openAssets}
+          />
+          {actions.busy && !activeRun && (
             <article className="session-message role-assistant">
               <div className="session-message-author">
                 <span className="app-environment-dot" />

@@ -11,7 +11,9 @@ import './styles/reviews-ui.css';
 import './styles/runs-ui.css';
 import './styles/sessions-ui.css';
 import './styles/artifacts-ui.css';
+import './styles/transcript-ui.css';
 import './styles/team-ui.css';
+import './styles/lan-ui.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Missing application root');

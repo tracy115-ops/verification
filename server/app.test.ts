@@ -30,7 +30,9 @@ const input = {
   interfaces: [{ id: 'IF_1', name: 'External API', contract: '' }],
 };
 it('serves compiled UI while requiring authentication for all project data', async () => {
-  expect((await fetch(base + '/')).status).toBe(200);
+  const entry = await fetch(base + '/');
+  expect(entry.status).toBe(200);
+  expect(await entry.text()).toContain('data-workspace="team"');
   expect((await fetch(base + '/.env')).status).toBe(404);
   expect((await fetch(base + '/api/team/projects')).status).toBe(401);
   const response = await fetch(base + '/api/team/members', { headers: headers() });

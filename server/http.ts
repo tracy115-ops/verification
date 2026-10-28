@@ -44,5 +44,9 @@ export async function staticFile(root: string, pathname: string, response: Serve
     'Content-Type': mime[path.extname(file)] ?? 'application/octet-stream',
     'Cache-Control': 'no-cache',
   });
-  response.end(content);
+  response.end(
+    path.extname(file) === '.html'
+      ? content.toString('utf8').replace(/<html(?=[\s>])/i, '<html data-workspace="team"')
+      : content,
+  );
 }

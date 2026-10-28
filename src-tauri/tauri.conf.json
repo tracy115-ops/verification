@@ -4,14 +4,18 @@
   "version": "0.1.0",
   "identifier": "dev.verification.workbench",
   "build": {
-    "beforeDevCommand": "npm run dev",
+    "beforeDevCommand": "npm run build:desktop && npm run dev",
     "devUrl": "http://127.0.0.1:5173",
-    "beforeBuildCommand": "npm run build",
+    "beforeBuildCommand": "npm run build:desktop",
     "frontendDist": "../dist"
   },
   "app": {
-    "windows": [{ "title": "Verification Workbench", "width": 1500, "height": 960, "minWidth": 900, "minHeight": 650 }],
-    "security": { "csp": "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src ipc: http://ipc.localhost http://127.0.0.1:5173 ws://127.0.0.1:5173" }
+    "windows": [
+      { "title": "Verification Workbench", "width": 1500, "height": 960, "minWidth": 900, "minHeight": 650 }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src ipc: http://ipc.localhost http://127.0.0.1:5173 ws://127.0.0.1:5173"
+    }
   },
-  "bundle": { "active": false, "icon": [] }
+  "bundle": { "active": false, "icon": [], "resources": { "../.runtime/team-bundle/": "collaboration/" } }
 }

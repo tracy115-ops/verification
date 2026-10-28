@@ -3,7 +3,16 @@ import type { MessageKey } from '../shared/i18n/messages';
 import type { Notice } from '../shared/components/Toast';
 
 function noticeFor(message: MessageKey, id: number): Notice {
-  const success: MessageKey[] = ['savedMessage', 'settingsSaved', 'imported', 'exported', 'passed'];
+  const success: MessageKey[] = [
+    'savedMessage',
+    'settingsSaved',
+    'imported',
+    'exported',
+    'passed',
+    'lan_started',
+    'lan_stopped',
+    'lan_copied',
+  ];
   return {
     id,
     message,

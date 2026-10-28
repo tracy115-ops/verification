@@ -6,6 +6,7 @@ import { Sidebar } from './Sidebar';
 import { Titlebar, PageHeading, DocumentBar, Notifications } from './WorkbenchChrome';
 import { workspacePage, type Page } from './navigation';
 import type { Appearance, SettingsTab } from '../features/settings/SettingsPage';
+import { hasDesktopBridge } from '../services/agent-api';
 
 const WorkflowEditor = lazy(() =>
   import('../features/workflows/WorkflowEditor').then((module) => ({ default: module.WorkflowEditor })),
@@ -25,12 +26,17 @@ const RunRecords = lazy(() =>
 const TeamWorkspace = lazy(() =>
   import('../features/team/TeamWorkspace').then((module) => ({ default: module.TeamWorkspace })),
 );
+const LanDiscovery = lazy(() =>
+  import('../features/team/LanDiscovery').then((module) => ({ default: module.LanDiscovery })),
+);
 
 export function Workbench({ appearance }: { appearance: Appearance }) {
   const workbench = useWorkbench();
   const frameworks = useFrameworks();
   const conversations = useConversations(workbench.document.profiles, workbench.savedDocument);
-  const [page, setPage] = useState<Page>('sessions');
+  const [page, setPage] = useState<Page>(() =>
+    document.documentElement.dataset.workspace === 'team' ? 'team' : 'sessions',
+  );
   const previousPage = useRef(page);
   useEffect(() => {
     if (previousPage.current !== page) workbench.setNotice(null);
@@ -63,7 +69,17 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
         <Notifications workbench={workbench} page={page} />
         <div className="app-content">
           <Suspense fallback={null}>
-            {page === 'team' && <TeamWorkspace />}
+            {page === 'team' &&
+              (hasDesktopBridge() ? (
+                <LanDiscovery
+                  openSettings={() => {
+                    setSettingsTab('collaboration');
+                    setPage('settings');
+                  }}
+                />
+              ) : (
+                <TeamWorkspace />
+              ))}
             {page === 'sessions' && (
               <SessionWorkspace
                 actions={conversations}

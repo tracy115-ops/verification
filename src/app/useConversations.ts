@@ -10,6 +10,8 @@ import type { ExecutionPort, FrameworkProfile } from '../domain/execution/types'
 import { DesktopExecutionPort } from '../services/execution-api';
 import { sessionActions } from './session-actions';
 import { runReviewActions } from './run-review-actions';
+import { recordedAgent } from '../services/recorded-agent';
+import { transcriptStore } from '../services/transcript-store';
 
 export function useConversations(
   profiles: AgentProfile[],
@@ -49,12 +51,18 @@ export function useConversations(
     if (event.type === 'text' && event.text) setStream((text) => text + event.text);
   }
   async function drive(run: WorkflowRun, controller: AbortController) {
+    let current = run;
     await advanceRun(
       run,
-      port,
+      recordedAgent(port, () => current),
       controller.signal,
-      (value) => updateRun(run.sessionId, value),
-      onEvent,
+      (value) => {
+        current = value;
+        updateRun(run.sessionId, value);
+        for (const step of Object.values(value.steps))
+          if (step.turnId && step.errorCode) transcriptStore.validation(step.turnId, step.errorCode);
+      },
+      () => {},
       executionPort,
     );
   }
@@ -109,7 +117,7 @@ export function useConversations(
         changeSession(value);
         store.setActiveId(value.id);
         accepted = true;
-        const result = await port.send(request, onEvent, controller.signal);
+        const result = await recordedAgent(port).send(request, onEvent, controller.signal);
         const settled = { ...value, messages: [...value.messages, replyMessage(result)] };
         delete settled.activeTurnId;
         changeSession(settled);

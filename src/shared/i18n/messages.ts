@@ -1,8 +1,10 @@
 import { conversationEn, conversationZh } from './conversation-messages';
 import { teamEn, teamZh } from './team-messages';
 import { executionEn, executionZh } from './execution-messages';
+import { lanEn, lanZh } from './lan-messages';
 
 export const zh = {
+  ...lanZh,
   dismissNotification: '关闭提示',
   assetTask: '选择验证任务',
   assetChooseTask: '请选择任务',
@@ -171,6 +173,7 @@ export const zh = {
 } as const;
 
 export const en: Record<keyof typeof zh, string> = {
+  ...lanEn,
   dismissNotification: 'Dismiss notification',
   assetTask: 'Verification task',
   assetChooseTask: 'Select a task',

@@ -1,0 +1,61 @@
+.lan-settings,
+.lan-discovery {
+  max-width: 960px;
+  padding: 28px;
+  margin: auto;
+  line-height: 1.8;
+}
+.lan-host-form {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) 130px;
+  gap: 16px;
+  margin-block: 24px;
+}
+.lan-address,
+.lan-owner-token,
+.lan-actions,
+.lan-manual {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-block: 16px;
+  flex-wrap: wrap;
+}
+.lan-address code {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.lan-owner-token > label,
+.lan-manual > label {
+  flex: 1;
+  min-width: 180px;
+}
+.lan-owner-token,
+.lan-manual {
+  align-items: end;
+}
+.lan-discovery-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.lan-discovery-heading h2 {
+  margin-block: 12px;
+}
+.lan-peer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--wb-border);
+}
+.lan-peer p {
+  margin: 4px 0 0;
+}
+.lan-manual {
+  margin-top: 32px;
+}
+.lan-status {
+  color: var(--wb-success);
+}

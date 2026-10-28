@@ -1,0 +1,96 @@
+import { useI18n, isMessageKey } from '../../shared/i18n/context';
+import type { CliTurnRecord } from '../../domain/runtime/transcript';
+import type { WorkflowRun } from '../../domain/runtime/types';
+import { nodeLabel } from '../workflows/node-label';
+import { CliReplyPreview } from './CliReplyPreview';
+import { Status } from '../../shared/components/Status';
+
+export function WorkflowCallCard({
+  turn,
+  run,
+  openArtifact,
+}: {
+  turn: CliTurnRecord;
+  run: WorkflowRun;
+  openArtifact: (run: WorkflowRun, key: string) => void;
+}) {
+  const { t, locale } = useI18n();
+  const node = run.plan.find((item) => item.id === turn.nodeId);
+  const produced = node
+    ? Object.keys(node.outputs)
+        .map((slot) => `${node.id}.${slot}`)
+        .find((key) => run.artifacts[key])
+    : undefined;
+  const error = turn.validationError ?? turn.errorCode;
+  const label = turn.validationError
+    ? 'cliValidationRejected'
+    : turn.status === 'running'
+      ? 'runningStep'
+      : turn.status === 'completed'
+        ? 'cliReplyReceived'
+        : turn.status === 'interrupted'
+          ? 'interruptedStep'
+          : turn.status === 'cancelled'
+            ? 'cancelledRun'
+            : 'failedStep';
+  return (
+    <article className="session-message role-assistant session-cli-turn">
+      <header>
+        <span className="session-message-author">
+          {t('assistantMessage')} · {turn.request.driver}
+          {turn.request.model ? ` / ${turn.request.model}` : ''}
+        </span>
+        <time dateTime={turn.startedAt}>
+          {new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(
+            new Date(turn.startedAt),
+          )}
+        </time>
+      </header>
+      <div className="session-cli-title">
+        <h3>{node ? nodeLabel(node, run.snapshot, t) : turn.operation}</h3>
+        <Status tone={error ? 'danger' : turn.status === 'completed' ? 'success' : 'accent'}>
+          {t(label)}
+        </Status>
+      </div>
+      <details className="session-cli-request">
+        <summary>{t('actualAgentRequest')}</summary>
+        <pre>{turn.request.prompt}</pre>
+      </details>
+      {turn.text &&
+        (turn.status === 'running' ? (
+          <details>
+            <summary>{t('streamingOutput')}</summary>
+            <pre>{turn.text}</pre>
+          </details>
+        ) : (
+          <>
+            <span className="session-cli-reply-label">{t('actualAgentReply')}</span>
+            <CliReplyPreview text={turn.text} />
+            <details>
+              <summary>{t('rawCliReply')}</summary>
+              <pre>{turn.text}</pre>
+            </details>
+          </>
+        ))}
+      {turn.status === 'running' && !turn.text && <p className="wb-muted">{t('awaitingCliReply')}</p>}
+      {error && <p className="wb-error">{isMessageKey(error) ? t(error) : t('cli_failed')}</p>}
+      {!!turn.activities.length && (
+        <details>
+          <summary>
+            {t('cliActivities')} · {turn.activities.length}
+          </summary>
+          <ul>
+            {turn.activities.map((activity, index) => (
+              <li key={index}>{activity.name}</li>
+            ))}
+          </ul>
+        </details>
+      )}
+      {produced && (
+        <button className="workbench-btn wb-text" onClick={() => openArtifact(run, produced)}>
+          {t('openCurrentNodeArtifact')}
+        </button>
+      )}
+    </article>
+  );
+}

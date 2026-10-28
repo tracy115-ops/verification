@@ -1,6 +1,6 @@
 # 验证 Agent 设计档案
 
-更新：2026-10-27。状态：**本地黑盒验证闭环与局域网协作开发版**。正式编排可选择设计评审，或运行完整 13 节点：题目 → 场景 / 用例 → Python → 人工执行确认 → 本地执行 → 证据分析与报告。当前执行适配单文件 Python unittest；共享因子 / 场景、分工与评审使用独立 HTTP / SQLite 服务。任意框架、内部 CodeAgent 目标环境及远程执行仍待接入或验证。
+更新：2026-10-28。状态：**本地黑盒验证闭环与局域网协作开发版**。正式编排可选择设计评审，或运行完整 13 节点：题目 → 场景 / 用例 → Python → 人工执行确认 → 本地执行 → 证据分析与报告。当前执行适配单文件 Python unittest；会话保留实际 CLI 任务与公开回复，桌面设置可托管共享服务，同事从协作页发现并在浏览器加入。任意框架、内部 CodeAgent 目标环境及远程执行仍待接入或验证。
 
 ## 文档导航
 
@@ -22,6 +22,7 @@
 | [系统架构与选型](architecture/system-design.md) | 为什么选择本地工作台、如何分层、模块边界 |
 | [CLI 与 Provider](architecture/cli-and-provider-design.md) | 使用已安装 Agent、快速配置和兼容性探测 |
 | [桌面真实流程验收](research/desktop-flow-acceptance.md) | 系统代理修复、真实 CLI / Python 闭环与会话管理验证 |
+| [局域网发现与桌面托管](design/lan-discovery-and-hosting.md) | 设置、扫描、浏览器加入、共享范围及资源构建 |
 | [CLI 操作与工作流接入分析](architecture/cli-workflow-operation-analysis.md) | 设置、会话、各 CLI 已验证边界及 CodeAgent 目标环境验收 |
 | [工作流引擎](architecture/workflow-engine.md) | 自定义生成、保存、审核、版本化与恢复 |
 | [需求追溯与点灯](architecture/domain-and-traceability.md) | 原文定位、场景树、完整性评估、变更失效 |
