@@ -21,7 +21,7 @@ export function ContributionBoard({ actions }: { actions: TeamActions }) {
     <section className="collab-contributions">
       <div className="collab-toolbar">
         <p className="wb-muted">{t('collab_apply_hint')}</p>
-        <AgentApiGuide project={actions.project!} />
+        <AgentApiGuide project={actions.project!} serverUrl={actions.api.serverUrl} />
         {actions.member?.role !== 'viewer' && (
           <button className="workbench-btn wb-primary" onClick={() => setImporting(true)}>
             {t('collab_import')}

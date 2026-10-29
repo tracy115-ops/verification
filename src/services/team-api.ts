@@ -1,4 +1,6 @@
 import { decodeProject } from '../domain/team/rules';
+import { invoke } from '@tauri-apps/api/core';
+import { serverAddress } from '../domain/team/server-address';
 import type { ScriptInput } from '../domain/team/collaboration';
 import type {
   ProjectInput,
@@ -12,8 +14,29 @@ import type {
 
 export const TEAM_TOKEN_KEY = 'verification-workbench.team-token.v1';
 export class TeamApi {
-  constructor(private token: string) {}
+  constructor(
+    private token: string,
+    readonly serverUrl = '',
+  ) {}
   async request(path: string, method = 'GET', body?: unknown): Promise<unknown> {
+    if (this.serverUrl) {
+      const response = await invoke<{ status: number; body: unknown }>('team_request', {
+        server: serverAddress(this.serverUrl),
+        token: this.token,
+        path,
+        method,
+        body: body ?? null,
+      }).catch((error: unknown) => {
+        throw new Error(typeof error === 'string' ? error : 'team_unavailable');
+      });
+      if (response.status < 200 || response.status >= 300) {
+        const value = response.body;
+        throw new Error(
+          value && typeof value === 'object' && 'code' in value ? String(value.code) : 'team_server_error',
+        );
+      }
+      return response.body;
+    }
     let response: Response;
     try {
       response = await fetch(`/api/team${path}`, {

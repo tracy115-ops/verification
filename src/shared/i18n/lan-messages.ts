@@ -7,7 +7,7 @@ export const lanZh = {
   lan_start_timeout: '协作服务启动超时，请稍后重试。',
   lan_settings: '局域网协作',
   lan_host_hint:
-    '由本机托管共享项目，成员在浏览器中共同梳理因子、场景、分工和评审。需要 Node.js 24 或更新版本；关闭桌面应用将停止服务，项目数据保留。',
+    '由本机托管共享项目，成员通过桌面软件或浏览器共同梳理因子、场景、分工和评审。主机需要 Node.js 24 或更新版本；关闭主机应用将停止服务，项目数据保留。',
   lan_desktop_required: '请在桌面应用中管理服务。网页成员通过管理员提供的地址和个人令牌加入。',
   lan_service_name: '服务名称',
   lan_port: '网页端口',
@@ -20,7 +20,7 @@ export const lanZh = {
   lan_hide_token: '隐藏',
   lan_copy_token: '复制令牌',
   lan_invite_hint:
-    '先使用管理员令牌打开网页，在“成员和角色”中为每位成员生成个人令牌；私下发送地址及其个人令牌。发现服务不会广播令牌。',
+    '管理员在桌面软件或网页中加入共享项目，在“协作成员与角色”中为每位成员生成个人令牌；私下发送地址及其个人令牌。发现服务不会广播令牌。',
   lan_stop: '停止服务',
   lan_start: '启动并允许局域网访问',
   lan_starting: '正在启动…',
@@ -56,7 +56,7 @@ export const lanEn: Record<keyof typeof lanZh, string> = {
   lan_start_timeout: 'Service startup timed out. Try again later.',
   lan_settings: 'LAN collaboration',
   lan_host_hint:
-    'Host shared projects for factors, scenarios, assignments and reviews in a browser. Requires Node.js 24 or later. Closing the desktop app stops the service and retains project data.',
+    'Host shared projects for factors, scenarios, assignments and reviews in desktop clients or browsers. The host requires Node.js 24 or later. Closing the host app stops the service and retains project data.',
   lan_desktop_required:
     'Manage the service in the desktop app. Browser members join with a host URL and personal token.',
   lan_service_name: 'Service name',

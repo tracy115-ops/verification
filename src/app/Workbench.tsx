@@ -26,8 +26,10 @@ const RunRecords = lazy(() =>
 const TeamWorkspace = lazy(() =>
   import('../features/team/TeamWorkspace').then((module) => ({ default: module.TeamWorkspace })),
 );
-const LanDiscovery = lazy(() =>
-  import('../features/team/LanDiscovery').then((module) => ({ default: module.LanDiscovery })),
+const DesktopTeamWorkspace = lazy(() =>
+  import('../features/team/DesktopTeamWorkspace').then((module) => ({
+    default: module.DesktopTeamWorkspace,
+  })),
 );
 
 export function Workbench({ appearance }: { appearance: Appearance }) {
@@ -64,16 +66,18 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
       <Sidebar page={page} setPage={navigate} conversations={conversations} />
       <main className="app-main">
         {page !== 'assets' && page !== 'cases' && <Titlebar page={page} busy={conversations.busy} />}
-        {page !== 'sessions' && page !== 'assets' && page !== 'cases' && page !== 'runs' && (
-          <PageHeading page={page} workbench={workbench} />
-        )}
+        {page !== 'sessions' &&
+          page !== 'assets' &&
+          page !== 'cases' &&
+          page !== 'runs' &&
+          page !== 'team' && <PageHeading page={page} workbench={workbench} />}
         {page === 'workflow' && <DocumentBar workbench={workbench} />}
         <Notifications workbench={workbench} page={page} />
         <div className="app-content">
           <Suspense fallback={null}>
             {page === 'team' &&
               (hasDesktopBridge() ? (
-                <LanDiscovery
+                <DesktopTeamWorkspace
                   openSettings={() => {
                     setSettingsTab('collaboration');
                     setPage('settings');

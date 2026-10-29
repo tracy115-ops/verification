@@ -10,8 +10,11 @@ import type {
   TeamProject,
 } from '../../domain/team/types';
 
-export function useTeam() {
-  const [token, setToken] = useState(() => sessionStorage.getItem(TEAM_TOKEN_KEY) ?? '');
+export function useTeam(serverUrl = '') {
+  const tokenKey = serverUrl ? `${TEAM_TOKEN_KEY}:${serverUrl}` : TEAM_TOKEN_KEY;
+  const [token, setToken] = useState(() => sessionStorage.getItem(tokenKey) ?? '');
+  const [authAttempt, setAuthAttempt] = useState(0);
+  const [authenticating, setAuthenticating] = useState(!!token);
   const [member, setMember] = useState<TeamMember | null>(null);
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
@@ -21,11 +24,12 @@ export function useTeam() {
   const [busy, setBusy] = useState(false);
   const guard = useRef(false);
   const generation = useRef(0);
-  const api = new TeamApi(token);
+  const api = new TeamApi(token, serverUrl);
   useEffect(() => {
     let alive = true;
     if (!token) return;
-    const client = new TeamApi(token);
+    setAuthenticating(true);
+    const client = new TeamApi(token, serverUrl);
     void Promise.all([client.me(), client.members(), client.projects()])
       .then(([me, people, list]) => {
         if (alive) {
@@ -40,15 +44,18 @@ export function useTeam() {
           setMember(null);
           setError(error instanceof Error ? error.message : 'team_unavailable');
         }
+      })
+      .finally(() => {
+        if (alive) setAuthenticating(false);
       });
     return () => {
       alive = false;
     };
-  }, [token]);
+  }, [token, serverUrl, authAttempt]);
   useEffect(() => {
     if (!token || !member) return;
     let alive = true;
-    const client = new TeamApi(token);
+    const client = new TeamApi(token, serverUrl);
     const timer = setInterval(() => {
       if (guard.current) return;
       const started = generation.current;
@@ -77,7 +84,7 @@ export function useTeam() {
       alive = false;
       clearInterval(timer);
     };
-  }, [token, member, project?.id]);
+  }, [token, member, project?.id, serverUrl]);
   async function perform(task: () => Promise<void>): Promise<boolean> {
     if (guard.current) return false;
     generation.current++;
@@ -124,10 +131,12 @@ export function useTeam() {
     });
   }
   function login(value: string) {
+    setAuthenticating(true);
     setError(null);
     setMember(null);
-    sessionStorage.setItem(TEAM_TOKEN_KEY, value.trim());
+    sessionStorage.setItem(tokenKey, value.trim());
     setToken(value.trim());
+    setAuthAttempt((attempt) => attempt + 1);
   }
   async function uploadScript(script: ScriptInput, revision = project?.revision) {
     if (!project || !revision) return false;
@@ -139,12 +148,14 @@ export function useTeam() {
     });
   }
   function logout() {
-    sessionStorage.removeItem(TEAM_TOKEN_KEY);
+    sessionStorage.removeItem(tokenKey);
     setToken('');
     setMember(null);
+    setMembers([]);
     setProject(null);
     setProjects([]);
     setHistory([]);
+    setError(null);
   }
   return {
     api,
@@ -155,9 +166,15 @@ export function useTeam() {
     history,
     error,
     busy,
+    authenticating,
     login,
     logout,
     select,
+    clearProject: () => {
+      setProject(null);
+      setHistory([]);
+      setError(null);
+    },
     refresh,
     create,
     command,

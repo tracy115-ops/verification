@@ -23,7 +23,6 @@ export function ProjectForm({ actions, close }: { actions: TeamActions; close: (
   }
   return (
     <form className="team-project-form" onSubmit={(event) => void submit(event)}>
-      <h2>{t('team_new_project')}</h2>
       <div className="team-form-row">
         <label className="wb-field">
           {t('team_project_title')}

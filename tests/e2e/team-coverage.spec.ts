@@ -54,7 +54,7 @@ test('reviews an incremental suggestion, declares coverage, maps Python and inva
   await page.goto('/');
   await page.getByLabel('个人访问令牌', { exact: true }).fill(token);
   await page.getByRole('button', { name: '进入工作台', exact: true }).click();
-  await page.getByLabel('选择共享项目', { exact: true }).selectOption({ label: project.title });
+  await page.getByRole('button', { name: project.title, exact: true }).click();
   await page.getByRole('button', { name: /^补充建议/ }).click();
   await page.getByRole('button', { name: '导入补充建议', exact: true }).click();
   const proposal = {
@@ -115,7 +115,7 @@ test('reviews an incremental suggestion, declares coverage, maps Python and inva
   await colleague.goto('/');
   await colleague.getByLabel('个人访问令牌', { exact: true }).fill(reviewer.token);
   await colleague.getByRole('button', { name: '进入工作台', exact: true }).click();
-  await colleague.getByLabel('选择共享项目', { exact: true }).selectOption({ label: project.title });
+  await colleague.getByRole('button', { name: project.title, exact: true }).click();
   await colleague.getByRole('button', { name: /^用例与脚本/ }).click();
   await expect(colleague.locator('.collab-list-item')).toContainText('方法映射已核对');
   await expect(colleague.getByRole('button', { name: '编辑用例', exact: true })).toHaveCount(0);
@@ -125,7 +125,7 @@ test('reviews an incremental suggestion, declares coverage, maps Python and inva
   await expect(page.locator('.collab-list-item')).toContainText('映射／声明已失效');
   await expect(colleague.locator('.collab-list-item')).toContainText('映射／声明已失效', { timeout: 10000 });
   await page.reload();
-  await page.getByLabel('选择共享项目', { exact: true }).selectOption({ label: project.title });
+  await page.getByRole('button', { name: project.title, exact: true }).click();
   await page.getByRole('button', { name: /^用例与脚本/ }).click();
   await expect(page.locator('.collab-list-item')).toContainText('映射／声明已失效');
   await context.close();

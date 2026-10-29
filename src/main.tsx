@@ -13,6 +13,7 @@ import './styles/sessions-ui.css';
 import './styles/artifacts-ui.css';
 import './styles/transcript-ui.css';
 import './styles/team-ui.css';
+import './styles/team-workspace-ui.css';
 import './styles/lan-ui.css';
 import './styles/collaboration-ui.css';
 

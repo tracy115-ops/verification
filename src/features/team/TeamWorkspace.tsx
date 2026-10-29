@@ -1,16 +1,31 @@
 import { useState } from 'react';
-import { Users } from 'lucide-react';
+import { Settings2 } from 'lucide-react';
 import { useTeam } from './useTeam';
 import { useI18n, isMessageKey } from '../../shared/i18n/context';
 import { ProjectForm } from './ProjectForm';
 import { ProjectBoard } from './ProjectBoard';
 import { TeamMembers } from './TeamMembers';
+import { TeamLogin } from './TeamLogin';
+import { ProjectPicker } from './ProjectPicker';
+import { ReviewDialog } from '../sessions/ReviewDialog';
 
-export function TeamWorkspace() {
-  const actions = useTeam();
+export function TeamWorkspace({
+  serverUrl = '',
+  leaveServer,
+}: {
+  serverUrl?: string;
+  leaveServer?: () => void;
+}) {
+  const actions = useTeam(serverUrl);
   const { t } = useI18n();
-  const [token, setToken] = useState('');
   const [creating, setCreating] = useState(false);
+  const [members, setMembers] = useState(false);
+  const [account, setAccount] = useState(false);
+  const [locked, setLocked] = useState(false);
+  function changeServer() {
+    actions.logout();
+    leaveServer?.();
+  }
   return (
     <div className="team-workspace">
       {actions.error && (
@@ -19,97 +34,111 @@ export function TeamWorkspace() {
         </div>
       )}
       {!actions.member ? (
-        <section className="team-login">
-          <span className="wb-icon-tile">
-            <Users size={24} />
-          </span>
-          <h2>{t('team_join')}</h2>
-          <p>{t('team_join_hint')}</p>
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              actions.login(token);
-            }}
-          >
-            <label className="wb-field">
-              {t('team_access_token')}
-              <input
-                className="workbench-input"
-                type="password"
-                autoComplete="off"
-                required
-                minLength={32}
-                maxLength={256}
-                value={token}
-                onChange={(event) => setToken(event.target.value)}
-              />
-            </label>
-            <button className="workbench-btn wb-primary" type="submit">
-              {t('team_login')}
-            </button>
-          </form>
-          <p className="wb-muted">{t('team_start_hint')}</p>
-          <code>
-            npm run build
-            <br />
-            npm run serve:lan -- --host 0.0.0.0
-          </code>
-          <p className="wb-muted">{t('team_storage_hint')}</p>
-        </section>
+        <TeamLogin actions={actions} serverUrl={serverUrl} changeServer={changeServer} />
       ) : (
         <>
-          <div className="team-toolbar">
-            <label className="wb-field">
-              <span className="wb-sr-only">{t('team_select_project')}</span>
-              <select
-                aria-label={t('team_select_project')}
-                className="workbench-select"
-                value={actions.project?.id ?? ''}
-                disabled={actions.busy}
-                onChange={(event) => {
-                  setCreating(false);
-                  void actions.select(event.target.value);
-                }}
-              >
-                <option value="" disabled>
-                  {t('team_select_project')}
-                </option>
-                {actions.projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.title}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {['admin', 'editor'].includes(actions.member.role) && (
-              <button
-                className="workbench-btn wb-primary"
-                disabled={actions.busy}
-                onClick={() => setCreating(true)}
-              >
-                {t('team_new_project')}
-              </button>
+          <header className="team-project-header">
+            {actions.project && (
+              <div className="team-project-heading">
+                <h1>{actions.project.title}</h1>
+                <small className="wb-muted">
+                  {actions.project
+                    ? `${t(actions.project.mode === 'black_box' ? 'team_black_box' : 'team_collaborative')} · r${actions.project.revision} · ${t('teamSyncHint')}`
+                    : t('teamConnectProject')}
+                </small>
+              </div>
             )}
-            <span className="wb-muted">
+            <span className="team-current-member">
               {actions.member.name} · {t(`team_role_${actions.member.role}`)}
             </span>
-            <button className="workbench-btn" disabled={actions.busy} onClick={actions.logout}>
-              {t('team_logout')}
+            <button className="workbench-btn" onClick={() => setMembers(true)}>
+              {t('team_members')}
             </button>
-          </div>
-          <TeamMembers actions={actions} />
-          {creating ? (
-            <ProjectForm actions={actions} close={() => setCreating(false)} />
-          ) : actions.project ? (
-            <ProjectBoard key={actions.project.id} actions={actions} />
+            {actions.project && (
+              <button
+                className="workbench-btn"
+                disabled={actions.busy || locked}
+                title={locked ? t('team_unsaved') : undefined}
+                onClick={actions.clearProject}
+              >
+                {t('teamChangeProject')}
+              </button>
+            )}
+            <button
+              className="workbench-btn wb-text"
+              aria-label={t('teamConnectionSettings')}
+              title={t('teamConnectionSettings')}
+              onClick={() => setAccount(true)}
+            >
+              <Settings2 size={18} />
+            </button>
+          </header>
+          {actions.project ? (
+            <ProjectBoard key={actions.project.id} actions={actions} onDirty={setLocked} />
           ) : (
-            <div className="team-empty">
-              <h2>{t('team_choose_or_create')}</h2>
-              <p className="wb-muted">{t('team_shared_hint')}</p>
-            </div>
+            <ProjectPicker actions={actions} create={() => setCreating(true)} />
           )}
         </>
       )}
+      <ReviewDialog
+        open={creating}
+        close={() => setCreating(false)}
+        title="team_new_project"
+        closeLabel="team_close"
+      >
+        {creating && <ProjectForm actions={actions} close={() => setCreating(false)} />}
+      </ReviewDialog>
+      <ReviewDialog
+        open={members}
+        close={() => setMembers(false)}
+        title="team_members"
+        closeLabel="team_close"
+      >
+        {members && <TeamMembers actions={actions} expanded />}
+      </ReviewDialog>
+      <ReviewDialog
+        open={account}
+        close={() => setAccount(false)}
+        title="teamConnectionSettings"
+        closeLabel="team_close"
+      >
+        <div className="collab-form">
+          <label className="wb-field">
+            {t('desktopTeamServer')}
+            <code>{serverUrl || location.origin}</code>
+          </label>
+          {actions.member && (
+            <p>
+              {actions.member.name} · {t(`team_role_${actions.member.role}`)}
+            </p>
+          )}
+          {locked && <p className="wb-muted">{t('team_unsaved')}</p>}
+          <div className="team-actions">
+            <button
+              className="workbench-btn"
+              disabled={actions.busy || locked}
+              onClick={() => {
+                actions.logout();
+                setAccount(false);
+              }}
+            >
+              {t('team_logout')}
+            </button>
+            {serverUrl && (
+              <button
+                className="workbench-btn"
+                disabled={actions.busy || locked}
+                onClick={() => {
+                  changeServer();
+                  setAccount(false);
+                }}
+              >
+                {t('desktopTeamChange')}
+              </button>
+            )}
+          </div>
+        </div>
+      </ReviewDialog>
     </div>
   );
 }

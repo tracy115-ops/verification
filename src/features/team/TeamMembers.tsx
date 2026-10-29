@@ -3,12 +3,13 @@ import type { TeamActions } from './useTeam';
 import type { TeamRole } from '../../domain/team/types';
 import { useI18n } from '../../shared/i18n/context';
 
-export function TeamMembers({ actions }: { actions: TeamActions }) {
+export function TeamMembers({ actions, expanded = false }: { actions: TeamActions; expanded?: boolean }) {
   const { t } = useI18n();
   const [name, setName] = useState('');
   const [role, setRole] = useState<TeamRole>('editor');
   const [token, setToken] = useState('');
   const [busy, setBusy] = useState(false);
+  const Container = expanded ? 'section' : 'details';
   async function add(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
@@ -24,8 +25,8 @@ export function TeamMembers({ actions }: { actions: TeamActions }) {
     }
   }
   return (
-    <details className="team-members">
-      <summary>{t('team_members')}</summary>
+    <Container className={expanded ? 'team-members team-members-dialog' : 'team-members'}>
+      {!expanded && <summary>{t('team_members')}</summary>}
       <ul>
         {actions.members.map((member) => (
           <li key={member.id}>
@@ -48,6 +49,7 @@ export function TeamMembers({ actions }: { actions: TeamActions }) {
           <label className="wb-field">
             {t('team_member_role')}
             <select
+              aria-label={t('team_member_role')}
               className="workbench-select"
               value={role}
               onChange={(event) => setRole(event.target.value as TeamRole)}
@@ -70,6 +72,6 @@ export function TeamMembers({ actions }: { actions: TeamActions }) {
           )}
         </form>
       )}
-    </details>
+    </Container>
   );
 }

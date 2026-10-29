@@ -4,10 +4,10 @@ import { contributionSchema } from '../../domain/team/collaboration-schema';
 import { useI18n } from '../../shared/i18n/context';
 import { ReviewDialog } from '../sessions/ReviewDialog';
 
-export function AgentApiGuide({ project }: { project: TeamProject }) {
+export function AgentApiGuide({ project, serverUrl = '' }: { project: TeamProject; serverUrl?: string }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
-  const endpoint = `${location.origin}/api/team/projects/${project.id}`;
+  const endpoint = `${serverUrl || location.origin}/api/team/projects/${project.id}`;
   const guide = JSON.stringify(
     {
       version: 1,

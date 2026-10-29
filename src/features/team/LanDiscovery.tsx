@@ -2,8 +2,15 @@ import { useState } from 'react';
 import { Network, RefreshCw } from 'lucide-react';
 import { lanApi, type LanPeer } from '../../services/lan-api';
 import { useI18n, isMessageKey } from '../../shared/i18n/context';
+import { ConnectionSteps } from './ConnectionSteps';
 
-export function LanDiscovery({ openSettings }: { openSettings: () => void }) {
+export function LanDiscovery({
+  openSettings,
+  join,
+}: {
+  openSettings: () => void;
+  join: (url: string) => void;
+}) {
   const { t } = useI18n();
   const [peers, setPeers] = useState<LanPeer[]>([]);
   const [scanned, setScanned] = useState(false);
@@ -23,6 +30,7 @@ export function LanDiscovery({ openSettings }: { openSettings: () => void }) {
   }
   return (
     <div className="lan-discovery">
+      <ConnectionSteps step={1} />
       <div className="lan-discovery-heading">
         <Network size={24} />
         <h2>{t('lan_discover')}</h2>
@@ -59,6 +67,13 @@ export function LanDiscovery({ openSettings }: { openSettings: () => void }) {
               <p className="wb-muted">{peer.url}</p>
             </div>
             <button
+              className="workbench-btn wb-primary"
+              disabled={busy}
+              onClick={() => void perform(async () => join(peer.url))}
+            >
+              {t('desktopTeamJoin')}
+            </button>
+            <button
               className="workbench-btn"
               disabled={busy}
               onClick={() => void perform(() => lanApi.open(peer.url))}
@@ -73,7 +88,7 @@ export function LanDiscovery({ openSettings }: { openSettings: () => void }) {
         className="lan-manual"
         onSubmit={(event) => {
           event.preventDefault();
-          void perform(() => lanApi.open(url.trim()));
+          void perform(async () => join(url.trim()));
         }}
       >
         <label className="wb-field">
@@ -88,7 +103,7 @@ export function LanDiscovery({ openSettings }: { openSettings: () => void }) {
           />
         </label>
         <button className="workbench-btn" type="submit" disabled={busy || !url.trim()}>
-          {t('lan_join_browser')}
+          {t('desktopTeamJoin')}
         </button>
       </form>
       <p className="wb-muted">{t('lan_sync_hint')}</p>

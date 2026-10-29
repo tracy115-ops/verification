@@ -83,7 +83,7 @@ test('a separate Agent member submits by HTTP, cannot merge, and the browser rev
   await page.goto('/');
   await page.getByLabel('个人访问令牌', { exact: true }).fill(adminToken);
   await page.getByRole('button', { name: '进入工作台', exact: true }).click();
-  await page.getByLabel('选择共享项目', { exact: true }).selectOption({ label: project.title });
+  await page.getByRole('button', { name: project.title, exact: true }).click();
   await page.getByRole('button', { name: /^补充建议/ }).click();
   await expect(page.locator('.collab-contributions')).toContainText('接口提交的容量因子');
   await page.getByRole('button', { name: 'Agent 接口接入', exact: true }).click();

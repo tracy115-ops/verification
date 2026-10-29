@@ -15,7 +15,7 @@ export interface DraftFields {
 export function ScenarioFields({ actions, draft, change, editable }: DraftFields) {
   const { t } = useI18n();
   return (
-    <>
+    <div className="team-scenario-basics">
       <label className="wb-field">
         {t('team_scenario_title')}
         <input
@@ -29,6 +29,7 @@ export function ScenarioFields({ actions, draft, change, editable }: DraftFields
       <label className="wb-field">
         {t('team_owner')}
         <select
+          aria-label={t('team_owner')}
           className="workbench-select"
           disabled={!editable}
           value={draft.ownerId}
@@ -47,6 +48,7 @@ export function ScenarioFields({ actions, draft, change, editable }: DraftFields
       <label className="wb-field">
         {t('team_oracle')}
         <textarea
+          aria-label={t('team_oracle')}
           className="workbench-textarea"
           maxLength={12000}
           value={draft.oracle}
@@ -57,6 +59,7 @@ export function ScenarioFields({ actions, draft, change, editable }: DraftFields
       <label className="wb-field">
         {t('team_oracle_basis')}
         <select
+          aria-label={t('team_oracle_basis')}
           className="workbench-select"
           disabled={!editable}
           value={draft.oracleBasis}
@@ -72,6 +75,7 @@ export function ScenarioFields({ actions, draft, change, editable }: DraftFields
       <label className="wb-field">
         {t('sourceQuote')}
         <textarea
+          aria-label={t('sourceQuote')}
           className="workbench-textarea"
           maxLength={12000}
           value={draft.sourceQuote}
@@ -79,7 +83,7 @@ export function ScenarioFields({ actions, draft, change, editable }: DraftFields
           onChange={(event) => change({ sourceQuote: event.target.value })}
         />
       </label>
-    </>
+    </div>
   );
 }
 export function FactorValues({ actions, draft, change, editable }: DraftFields) {

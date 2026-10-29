@@ -19,7 +19,8 @@ pub fn run() -> tauri::Result<()> {
             collaboration::stop_collaboration,
             collaboration::collaboration_status,
             lan_discovery::discover_collaboration,
-            lan_discovery::open_collaboration
+            lan_discovery::open_collaboration,
+            team_client::team_request
         ])
         .run(tauri::generate_context!())
 }
@@ -27,3 +28,4 @@ mod collaboration;
 mod conversations;
 mod executions;
 mod lan_discovery;
+mod team_client;

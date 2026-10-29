@@ -41,4 +41,5 @@ jobs:
       - run: cargo test -p agent-runtime -p execution-runtime -p process-runtime --locked
       - run: cargo clippy -p agent-runtime -p execution-runtime -p process-runtime --all-targets --locked -- -D warnings
       - run: cargo check -p verification-desktop --locked
+      - run: cargo test -p verification-desktop --lib --locked
       - run: npm.cmd run verify:workflow

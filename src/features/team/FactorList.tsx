@@ -5,6 +5,8 @@ import type { TestFactor } from '../../domain/team/types';
 import { factorCoverage } from '../../domain/team/rules';
 import { useI18n } from '../../shared/i18n/context';
 import { Status } from '../../shared/components/Status';
+import { ReviewDialog } from '../sessions/ReviewDialog';
+import { InlineTeamError } from './InlineTeamError';
 
 export function FactorList({ actions }: { actions: TeamActions }) {
   const { t, locale } = useI18n();
@@ -14,36 +16,48 @@ export function FactorList({ actions }: { actions: TeamActions }) {
   const number = new Intl.NumberFormat(locale);
   return (
     <section className="team-factor-list">
-      <h3>
-        {t('team_factors')} · {number.format(project.factors.length)}
-      </h3>
+      <header className="team-factor-list-heading">
+        <h3>
+          {t('team_factors')} · {number.format(project.factors.length)}
+        </h3>
+        {editable && (
+          <button
+            className="workbench-btn"
+            disabled={!!editing}
+            onClick={() =>
+              setEditing({
+                id: `F_${newId()}`,
+                name: '',
+                levels: [],
+                basis: 'hypothesis',
+                sourceQuote: '',
+                rationale: '',
+              })
+            }
+          >
+            {t('team_add_factor')}
+          </button>
+        )}
+      </header>
       <p className="wb-muted">{t('team_coverage_hint')}</p>
-      {editable && (
-        <button
-          className="workbench-btn"
-          disabled={!!editing}
-          onClick={() =>
-            setEditing({
-              id: `F_${newId()}`,
-              name: '',
-              levels: [],
-              basis: 'hypothesis',
-              sourceQuote: '',
-              rationale: '',
-            })
-          }
-        >
-          {t('team_add_factor')}
-        </button>
-      )}
-      {editing && (
-        <FactorEditor key={editing.id} actions={actions} factor={editing} close={() => setEditing(null)} />
-      )}
+      <ReviewDialog
+        open={!!editing}
+        close={() => setEditing(null)}
+        title={editing?.name ? 'team_edit_factor' : 'team_add_factor'}
+        closeLabel="team_close"
+      >
+        {editing && (
+          <FactorEditor key={editing.id} actions={actions} factor={editing} close={() => setEditing(null)} />
+        )}
+      </ReviewDialog>
       {project.factors.map((factor) => {
         const coverage = factorCoverage(project, factor.id);
         return (
-          <article key={factor.id}>
-            <strong>{factor.name}</strong>
+          <article key={factor.id} className="team-factor-row">
+            <div className="team-factor-title">
+              <code>{factor.id}</code>
+              <strong>{factor.name}</strong>
+            </div>
             <div className="team-factor-meta">
               <Status tone={factor.basis === 'explicit' ? 'accent' : 'warning'}>
                 {t(factor.basis === 'explicit' ? 'team_explicit' : 'team_hypothesis')}
@@ -57,8 +71,11 @@ export function FactorList({ actions }: { actions: TeamActions }) {
                 <span key={level}>{level}</span>
               ))}
             </div>
-            <p>{factor.rationale}</p>
-            {factor.sourceQuote && <blockquote>{factor.sourceQuote}</blockquote>}
+            <details className="team-factor-evidence">
+              <summary>{t('team_factor_rationale')}</summary>
+              <p>{factor.rationale}</p>
+              {factor.sourceQuote && <blockquote>{factor.sourceQuote}</blockquote>}
+            </details>
             {editable && (
               <button
                 className="workbench-btn wb-text"
@@ -108,6 +125,7 @@ function FactorEditor({
   }
   return (
     <form className="team-factor-form" onSubmit={(event) => void save(event)}>
+      <InlineTeamError code={actions.error} />
       {revision !== actions.project!.revision && <p className="wb-banner">{t('team_conflict_draft')}</p>}
       <label className="wb-field">
         {t('team_factor_name')}
@@ -132,6 +150,7 @@ function FactorEditor({
       <label className="wb-field">
         {t('team_factor_basis')}
         <select
+          aria-label={t('team_factor_basis')}
           className="workbench-select"
           value={draft.basis}
           onChange={(event) => setDraft({ ...draft, basis: event.target.value as TestFactor['basis'] })}

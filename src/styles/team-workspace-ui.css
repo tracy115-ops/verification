@@ -1,0 +1,178 @@
+.team-project-header,
+.team-project-picker > header,
+.team-step-content-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.team-project-header {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--wb-border);
+}
+.team-project-heading {
+  flex: 1;
+  min-width: 160px;
+}
+.team-project-heading h1 {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 20px;
+  margin: 0 0 6px;
+}
+.team-current-member {
+  max-width: 200px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  color: var(--wb-muted);
+  margin-left: auto;
+}
+.team-content-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  padding-block: 16px;
+}
+.team-content-steps > button {
+  min-width: 0;
+  padding: 10px;
+  gap: 8px;
+}
+.team-step-number,
+.team-connect-steps > div > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--wb-border);
+  border-radius: 50%;
+  flex-shrink: 0;
+  font-size: 11px;
+}
+.team-content-steps > button[aria-pressed='true'] .team-step-number {
+  border-color: var(--wb-accent);
+}
+.team-content-steps small {
+  color: var(--wb-muted);
+}
+.team-connect-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 780px;
+  margin: 16px auto 28px;
+  gap: 16px;
+  color: var(--wb-muted);
+}
+.team-connect-steps > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--wb-border);
+  font-size: 13px;
+}
+.team-connect-steps .is-current {
+  color: var(--wb-accent);
+  border-color: var(--wb-accent);
+}
+.team-connect-steps .is-complete {
+  color: var(--wb-success);
+}
+.team-login h1 {
+  font-size: 22px;
+}
+.team-login-address {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.team-login-address code {
+  flex: 1;
+  padding: 0;
+  background: transparent;
+}
+.team-project-picker {
+  max-width: 1100px;
+  margin: auto;
+}
+.team-project-picker h1 {
+  font-size: 22px;
+}
+.team-project-picker > input {
+  width: 100%;
+  margin-block: 16px;
+}
+.team-project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 14px;
+}
+.team-project-card {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  text-align: left;
+  cursor: pointer;
+  background: var(--wb-surface);
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius);
+  color: var(--wb-text);
+}
+.team-project-card:hover {
+  border-color: var(--wb-accent);
+  background: var(--wb-accent-soft);
+}
+.team-project-card span,
+.team-project-card small {
+  color: var(--wb-muted);
+  font-size: 12px;
+}
+.team-step-content-heading {
+  margin-block: 8px 16px;
+}
+.team-step-content-heading h2 {
+  font-size: 18px;
+  margin: 0;
+}
+.team-source-document {
+  padding: 20px;
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius);
+  line-height: 1.8;
+}
+.team-source-document article {
+  padding-top: 16px;
+  margin-top: 16px;
+  border-top: 1px solid var(--wb-border);
+}
+.team-step-content > .team-actions {
+  margin-top: 20px;
+}
+.team-members.team-members-dialog,
+.session-review-dialog .team-project-form {
+  border: 0;
+  margin: 0;
+}
+.team-members-dialog > ul {
+  max-height: 240px;
+  overflow: auto;
+}
+@media (max-width: 1100px) {
+  .team-content-steps small,
+  .team-current-member {
+    display: none;
+  }
+  .team-project-header {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 800px) {
+  .team-content-steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
