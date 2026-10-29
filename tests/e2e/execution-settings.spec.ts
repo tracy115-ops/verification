@@ -28,7 +28,9 @@ test('saves framework settings and selects the full workflow without exposing br
   await page.getByLabel('已保存流程').selectOption('workflow');
   const scope = page.getByRole('combobox', { name: '本次调用范围', exact: true });
   await scope.selectOption({ label: '需求 → Python → 本地执行与分析 · 题目 SDK（本地验证）' });
-  await expect(page.locator('.session-scope')).toContainText('需求 → Python');
+  await expect(scope.locator('option:checked')).toContainText('需求 → Python');
+  await expect(page.locator('.session-scope')).toHaveCount(0);
+  await page.screenshot({ path: '.runtime/composer-workflow.png' });
   await page.getByRole('textbox').fill('游戏对战平台题目：根据外部接口验证房间容量和积分规则。');
   await expect(page.getByRole('button', { name: '调用流程', exact: true })).toBeDisabled();
   expect(errors).toEqual([]);

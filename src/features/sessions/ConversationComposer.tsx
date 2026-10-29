@@ -86,31 +86,26 @@ export function ConversationComposer({
             </option>
           </select>
         </label>
+        {invoke && (
+          <label className="wb-field">
+            <span className="wb-sr-only">{t('executionScope')}</span>
+            <select
+              className="workbench-select"
+              disabled={actions.busy}
+              value={frameworkId}
+              onChange={(event) => setFrameworkId(event.target.value)}
+            >
+              <option value="">{t('designScopeCompact')}</option>
+              {frameworks.map((profile) => (
+                <option key={profile.id} value={profile.id}>
+                  {t('verificationScope')} · {profile.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
-      {invoke && (
-        <label className="wb-field">
-          {t('executionScope')}
-          <select
-            className="workbench-select"
-            disabled={actions.busy}
-            value={frameworkId}
-            onChange={(event) => setFrameworkId(event.target.value)}
-          >
-            <option value="">{t('designScope')}</option>
-            {frameworks.map((profile) => (
-              <option key={profile.id} value={profile.id}>
-                {t('verificationScope')} · {profile.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
-      {invoke && (
-        <p className="session-scope">
-          {t(frameworkId ? 'verificationScope' : 'designScope')}
-          {dirty && <span> · {t('unsavedWorkflowHint')}</span>}
-        </p>
-      )}
+      {invoke && dirty && <p className="session-scope">{t('unsavedWorkflowHint')}</p>}
       {!saved && invoke && (
         <button className="workbench-btn wb-text" onClick={openWorkflow}>
           {t('chooseFlowFirst')}

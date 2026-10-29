@@ -153,7 +153,8 @@ test('opens conversations first and selects only saved workflow revisions', asyn
   await page.getByRole('button', { name: '保存草稿', exact: true }).click();
   await page.getByRole('button', { name: 'CLI 会话', exact: true }).click();
   await page.getByLabel('已保存流程').selectOption('workflow');
-  await expect(page.locator('.session-scope')).toContainText('需求 → 场景 → 用例评审');
+  await expect(page.getByRole('combobox', { name: '本次调用范围', exact: true })).toHaveValue('');
+  await expect(page.locator('.session-scope')).toHaveCount(0);
   await expect(page.getByRole('button', { name: '调用流程', exact: true })).toBeDisabled();
   await page.getByLabel('流程编排', { exact: true }).click();
   await page.getByRole('spinbutton', { name: '超时（秒）', exact: true }).fill('450');

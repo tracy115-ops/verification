@@ -557,6 +557,9 @@
 }
 .session-composer-controls {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
   gap: 8px;
   order: 2;
   grid-column: 1;
@@ -564,13 +567,14 @@
 }
 .session-composer-controls .workbench-select {
   width: auto;
-  max-width: 240px;
+  max-width: 190px;
   border-color: transparent;
   font-size: 12px;
 }
 .session-composer > .wb-field textarea {
   min-height: 48px;
-  height: 64px;
+  height: 72px;
+  resize: vertical;
   border: 0;
   padding: 4px;
 }
@@ -590,7 +594,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   padding-top: 8px;
 }
 .session-scope {
