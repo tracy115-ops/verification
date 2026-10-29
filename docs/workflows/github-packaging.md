@@ -61,6 +61,12 @@ Windows CI 的原生测试曾因测试 HTTP 夹具过早回复而失败。新增
 - [Tauri：Windows 安装程序](https://v2.tauri.app/distribute/windows-installer/)
 - [GitHub CLI：从已有标签创建 Release](https://cli.github.com/manual/gh_release_create)
 
+## 并发夹具冲突回归
+
+连续执行门禁在 `v0.1.1` 捕获 `preflight: execution_already_started` 和共享目录清理失败引发的二次 panic。原夹具仅使用系统时间戳命名并通过 `create_dir_all` 复用已有目录；Windows 时钟粒度使并发创建碰撞。相同时间戳创建 32 个目录的确定性回归在修复前仅得到 1 个独立目录，修复后得到 32 个。新实现使用进程 ID、原子序号与独占 `create_dir`，从边界上禁止共享测试目录；固定工具链及放宽超时本身不能解决此冲突。
+
+诊断分支运行 [40814581759](https://github.com/tracy115-ops/verification/actions/runs/40814581759) 已完成 release 编译、NSIS 生成、资源检查及附件上传；正式版本仍需通过重复测试门禁后发布。
+
 ## 2026-10-29 发布流程修订
 
 新增应用版本同步、锁文件及标签一致性校验；`v*` 标签触发 release 模式打包并发布 GitHub Release。版本规则见 [versioning.md](versioning.md)。

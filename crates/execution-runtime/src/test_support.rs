@@ -6,7 +6,7 @@ use std::{
     path::PathBuf,
     sync::{
         Arc,
-        atomic::{AtomicBool, Ordering},
+        atomic::{AtomicBool, AtomicU64, Ordering},
     },
     thread,
     time::{Duration, SystemTime, UNIX_EPOCH},
@@ -24,8 +24,7 @@ impl Fixture {
             .duration_since(UNIX_EPOCH)
             .expect("clock")
             .as_nanos();
-        let root = std::env::temp_dir().join(format!("verification-python-{nonce}"));
-        fs::create_dir_all(&root).expect("owned fixture");
+        let root = fixture_root(nonce);
         let listener = TcpListener::bind("127.0.0.1:0").expect("listen");
         let target = format!("http://{}", listener.local_addr().expect("address"));
         listener.set_nonblocking(true).expect("nonblocking");
@@ -77,6 +76,23 @@ impl Fixture {
         )
         .await
     }
+}
+pub fn fixture_root(nonce: u128) -> PathBuf {
+    static SEQUENCE: AtomicU64 = AtomicU64::new(0);
+    for _ in 0..100 {
+        let sequence = SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        let root = std::env::temp_dir().join(format!(
+            "verification-python-{}-{nonce}-{sequence}",
+            std::process::id()
+        ));
+        // create_dir exclusively claims ownership; never reuse an existing fixture.
+        match fs::create_dir(&root) {
+            Ok(()) => return root,
+            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
+            Err(error) => panic!("owned fixture: {error}"),
+        }
+    }
+    panic!("could not allocate an exclusive fixture directory");
 }
 fn read_request(stream: &mut std::net::TcpStream) {
     let mut bytes = Vec::new();

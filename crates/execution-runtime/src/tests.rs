@@ -3,6 +3,26 @@ use crate::*;
 use tokio::sync::oneshot;
 
 #[test]
+fn fixture_directories_are_independent_when_timestamps_collide() {
+    use std::{
+        collections::HashSet,
+        time::{SystemTime, UNIX_EPOCH},
+    };
+    let nonce = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let roots: HashSet<_> = (0..32)
+        .map(|_| crate::test_support::fixture_root(nonce))
+        .collect();
+    let count = roots.len();
+    for root in roots {
+        std::fs::remove_dir(root).expect("empty fixture directory");
+    }
+    assert_eq!(count, 32, "each fixture must exclusively own its directory");
+}
+
+#[test]
 fn fixture_waits_for_delayed_request_headers_and_body() {
     use std::io::{Read, Write};
     use std::net::TcpStream;
