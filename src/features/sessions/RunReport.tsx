@@ -14,7 +14,12 @@ export function RunReport({ artifact }: { artifact: Artifact | undefined }) {
       <button className="workbench-btn" onClick={() => setOpen(true)}>
         {t('openReport')}
       </button>
-      <ReviewDialog open={open} close={() => setOpen(false)} title="verificationReport">
+      <ReviewDialog
+        open={open}
+        close={() => setOpen(false)}
+        title="verificationReport"
+        closeLabel="designClose"
+      >
         <section className="session-review-card">
           <ExecutionArtifact artifact={artifact} />
         </section>

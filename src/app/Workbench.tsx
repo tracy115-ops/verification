@@ -64,7 +64,7 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
       <Sidebar page={page} setPage={navigate} conversations={conversations} />
       <main className="app-main">
         {page !== 'assets' && page !== 'cases' && <Titlebar page={page} busy={conversations.busy} />}
-        {page !== 'sessions' && page !== 'assets' && page !== 'cases' && (
+        {page !== 'sessions' && page !== 'assets' && page !== 'cases' && page !== 'runs' && (
           <PageHeading page={page} workbench={workbench} />
         )}
         {page === 'workflow' && <DocumentBar workbench={workbench} />}
@@ -129,6 +129,11 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
             {page === 'runs' && (
               <RunRecords
                 actions={conversations}
+                openAssets={(id, runId) => {
+                  conversations.setActiveId(id);
+                  conversations.setSelectedRunId(runId);
+                  setPage('assets');
+                }}
                 openSession={(id, runId) => {
                   conversations.setActiveId(id);
                   conversations.setSelectedRunId(runId);

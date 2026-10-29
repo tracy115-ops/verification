@@ -10,6 +10,7 @@ import { ArtifactPanel } from './ArtifactPanel';
 import { EvidenceViewer } from './EvidenceViewer';
 import { ExecutionArtifact } from './ExecutionArtifact';
 import type { UpdateRun } from '../reviews/PersonalCaseCoverage';
+import type { MessageKey } from '../../shared/i18n/messages';
 
 export function RunArtifactViewer({
   run,
@@ -17,12 +18,14 @@ export function RunArtifactViewer({
   select,
   close,
   updateRun,
+  closeLabel = 'closeReview',
 }: {
   run: WorkflowRun;
   selected: string | null;
   select: (key: string) => void;
   close: () => void;
   updateRun?: UpdateRun;
+  closeLabel?: MessageKey;
 }) {
   const { t, locale } = useI18n();
   const ref = useRef<HTMLDialogElement>(null);
@@ -49,7 +52,7 @@ export function RunArtifactViewer({
           <p>{t('artifactWorkspaceHint')}</p>
         </div>
         <button className="workbench-btn" onClick={close}>
-          {t('closeReview')}
+          {t(closeLabel)}
         </button>
       </header>
       {artifact && (

@@ -18,9 +18,9 @@ export function RunState({ run }: { run: WorkflowRun }) {
             ? 'interruptedStep'
             : run.status === 'awaiting_review'
               ? 'reviewStep'
-              : run.scope === 'verification'
-                ? 'verificationScope'
-                : 'designScope';
+              : run.status === 'running'
+                ? 'runningStep'
+                : 'pendingStep';
   return (
     <Status tone={run.status === 'completed' ? 'success' : run.status === 'failed' ? 'danger' : 'accent'}>
       {t(key)}

@@ -7,6 +7,7 @@
 | 文档 | 解决的问题 |
 | --- | --- |
 | [企业工程约束](governance/engineering-constraints.md) | 国际化、代码规模、扩展性、测试与配置边界 |
+| [运行实例用途与交互](design/run-records.md) | 跨会话排查、历史产物、报告与耗时记录边界 |
 | [GitHub 手动打包](workflows/github-packaging.md) | Actions 手动触发 Windows 安装包、下载与本地复现 |
 | [人工与 Agent 补充设计](design/human-and-agent-design-editing.md) | 个人因子与场景编辑、修订评审、局域网增量提交接口 |
 | [界面与交互设计](design/interface-design.md) | 会话首页、设置、编排与评审工作区 |

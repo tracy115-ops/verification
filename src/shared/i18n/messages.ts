@@ -1,4 +1,5 @@
 import { conversationEn, conversationZh } from './conversation-messages';
+import { runEn, runZh } from './run-messages';
 import { designEditEn, designEditZh } from './design-edit-messages';
 import { teamEn, teamZh } from './team-messages';
 import { executionEn, executionZh } from './execution-messages';
@@ -6,6 +7,7 @@ import { lanEn, lanZh } from './lan-messages';
 import { collaborationEn, collaborationZh } from './collaboration-messages';
 
 export const zh = {
+  ...runZh,
   ...designEditZh,
   ...collaborationZh,
   ...lanZh,
@@ -176,6 +178,7 @@ export const zh = {
 } as const;
 
 export const en: Record<keyof typeof zh, string> = {
+  ...runEn,
   ...designEditEn,
   ...collaborationEn,
   ...lanEn,
