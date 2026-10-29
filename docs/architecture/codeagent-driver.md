@@ -16,6 +16,8 @@ Windows 扫描支持 `codeagent.exe`、`codeagent.cmd` 和 `codeagent.bat`。路
 
 ## Windows 批处理回归
 
+设置中的可复用 native 配置按 driver 关联同一次 CLI 安装探测结果及版本。CodeAgent 使用内部模型；其他 native 配置缺少模型时明确提示。Provider 配置的接口状态独立于本机 CLI 安装结果；版本探测不认证登录、模型授权或网络连通性。刷新失败会清除旧的成功结果，避免显示过期绿灯。
+
 内部安装入口为带空格目录中的 `codeagent.bat`，此前仅匹配 exe / npm cmd 导致漏检。本地夹具在修改前复现解析失败；修复后执行真实 Windows batch，验证版本输出、受管探测、help 能力参数、MCP JSON、空 tools 参数及含中文和 shell 符号的标准输入原样传递。该夹具不是内部 CodeAgent 安装或模型推理认证。
 
 可在启动工作台前指定入口（示例路径需替换为实际安装位置）：

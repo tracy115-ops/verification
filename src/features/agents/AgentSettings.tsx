@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bot, RefreshCw, Terminal } from 'lucide-react';
+import { RefreshCw, Terminal } from 'lucide-react';
 import type { AgentProfile } from '../../domain/workflow';
 import { hasDesktopBridge, probeAgents, type AgentProbe } from '../../services/agent-api';
 import { isMessageKey, useI18n } from '../../shared/i18n/context';
@@ -7,6 +7,7 @@ import type { MessageKey } from '../../shared/i18n/messages';
 import { Status } from '../../shared/components/Status';
 import { ProfileForm } from './ProfileForm';
 import { NativeModels } from './NativeModels';
+import { AgentProfileRow } from './ProfileProbeStatus';
 
 export function AgentSettings({
   profiles,
@@ -26,6 +27,7 @@ export function AgentSettings({
     try {
       setProbes(await probeAgents());
     } catch {
+      setProbes([]);
       notify(desktop ? 'discoveryFailed' : 'browserOnly');
     } finally {
       setBusy(false);
@@ -73,20 +75,14 @@ export function AgentSettings({
         })}
       </div>
       <h2>{t('profiles')}</h2>
+      <p className="wb-muted">{t('profileProbeScope')}</p>
       <div className="settings-profiles">
         {profiles.map((profile) => (
-          <div className="settings-profile-row" key={profile.id}>
-            <span className="wb-icon-tile">
-              <Bot size={18} />
-            </span>
-            <div>
-              <strong>{profile.name}</strong>
-              <small>
-                {profile.driver} · {profile.protocol === 'native' ? t('native') : profile.protocol}
-              </small>
-            </div>
-            <Status tone="warning">{t('notProbed')}</Status>
-          </div>
+          <AgentProfileRow
+            key={profile.id}
+            profile={profile}
+            probe={probes.find((probe) => probe.driver === profile.driver)}
+          />
         ))}
       </div>
       <NativeModels profiles={profiles} saveProfile={addProfile} />

@@ -1,4 +1,10 @@
 export const conversationZh = {
+  profileProbeScope: '本机 CLI 配置同步上方安装与版本结果；检测不检查登录、模型授权或 Provider 接口连通性。',
+  profileCliNotChecked: '安装未检测',
+  profileCliDetected: '已检测 CLI 安装',
+  profileCliNeedsModel: 'CLI 已发现 · 模型未配置',
+  profileCliMissing: '未找到本机 CLI',
+  providerEndpointUnchecked: 'Provider 配置 · 接口未检测',
   cliEntryDetected: '已找到入口 · 版本未确认',
   cliProbePathMissing: '未找到启动入口，请检查安装目录是否在 PATH 中。',
   cliProbeSpawnFailed: '启动入口已找到，但无法启动或管理进程。请检查文件权限和运行环境。',
@@ -163,6 +169,13 @@ export const conversationZh = {
 };
 
 export const conversationEn: Record<keyof typeof conversationZh, string> = {
+  profileProbeScope:
+    'Local CLI profiles share the installation and version results above. Discovery does not check sign-in, model access or Provider connectivity.',
+  profileCliNotChecked: 'Installation unchecked',
+  profileCliDetected: 'CLI installation checked',
+  profileCliNeedsModel: 'CLI found · model not configured',
+  profileCliMissing: 'Local CLI not found',
+  providerEndpointUnchecked: 'Provider profile · endpoint unchecked',
   cliEntryDetected: 'Entry found · version unverified',
   cliProbePathMissing: 'No launcher found. Check whether its installation directory is on PATH.',
   cliProbeSpawnFailed:
