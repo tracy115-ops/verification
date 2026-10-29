@@ -34,7 +34,11 @@ impl Fixture {
         let worker = thread::spawn(move || {
             while !signal.load(Ordering::Relaxed) {
                 if let Ok((mut stream, _)) = listener.accept() {
-                    let _ = stream.set_read_timeout(Some(Duration::from_secs(10)));
+                    // Windows accepts inherit the listener's nonblocking mode.
+                    stream.set_nonblocking(false).expect("blocking client");
+                    stream
+                        .set_read_timeout(Some(Duration::from_secs(10)))
+                        .expect("client timeout");
                     read_request(&mut stream);
                     let body = r#"{"ready":true}"#;
                     let response = format!(

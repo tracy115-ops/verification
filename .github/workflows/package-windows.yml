@@ -4,6 +4,8 @@ run-name: Windows x64 package · ${{ github.ref_name }} · ${{ github.actor }}
 
 on:
   workflow_dispatch:
+  push:
+    branches: [build/windows]
 
 permissions:
   contents: read

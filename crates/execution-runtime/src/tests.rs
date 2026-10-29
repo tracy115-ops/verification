@@ -2,6 +2,49 @@ use crate::test_support::Fixture;
 use crate::*;
 use tokio::sync::oneshot;
 
+#[test]
+fn fixture_waits_for_delayed_request_headers_and_body() {
+    use std::io::{Read, Write};
+    use std::net::TcpStream;
+    use std::time::Duration;
+    let fixture = Fixture::new();
+    let address = fixture
+        .payload
+        .profile
+        .target_url
+        .strip_prefix("http://")
+        .unwrap();
+    let mut socket = TcpStream::connect(address).expect("fixture connection");
+    socket
+        .set_read_timeout(Some(Duration::from_millis(50)))
+        .unwrap();
+    let mut byte = [0u8; 1];
+    let pending = socket
+        .read(&mut byte)
+        .expect_err("must wait for request headers");
+    assert!(matches!(
+        pending.kind(),
+        std::io::ErrorKind::WouldBlock | std::io::ErrorKind::TimedOut
+    ));
+    socket
+        .write_all(b"POST /probe HTTP/1.1\r\nHost: localhost\r\nContent-Length: 2\r\n\r\n")
+        .unwrap();
+    let pending = socket
+        .read(&mut byte)
+        .expect_err("must wait for request body");
+    assert!(matches!(
+        pending.kind(),
+        std::io::ErrorKind::WouldBlock | std::io::ErrorKind::TimedOut
+    ));
+    socket.write_all(b"{}").unwrap();
+    socket
+        .set_read_timeout(Some(Duration::from_secs(3)))
+        .unwrap();
+    let mut response = String::new();
+    socket.read_to_string(&mut response).unwrap();
+    assert!(response.starts_with("HTTP/1.1 200 OK"));
+}
+
 #[tokio::test]
 async fn preflight_parses_without_importing_framework_then_execution_collects_redacted_evidence() {
     let mut fixture = Fixture::new();

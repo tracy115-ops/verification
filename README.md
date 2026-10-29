@@ -15,7 +15,9 @@ npm.cmd run dev
 
 浏览器打开 `http://127.0.0.1:5173/`。浏览器预览不具备本机 CLI 检测能力。桌面开发使用 `npm.cmd run tauri dev`，先停止单独运行的 Vite 服务。构建包含生产前端的桌面开发版使用 `npm.cmd run tauri -- build --debug --no-bundle`，本 Windows 工作区输出到 `target/debug/verification-desktop.exe`。
 
-## GitHub 手动打包
+## GitHub 打包
+
+也可执行 `git push origin main:build/windows`，通过专用分支推送触发打包，无需本机登录 GitHub CLI。
 
 打开 [Actions → Package Windows Desktop](https://github.com/tracy115-ops/verification/actions/workflows/package-windows.yml)，点击 **Run workflow** 选择分支启动 Windows x64 打包。成功后从运行页面 **Artifacts** 下载 NSIS 安装包和 SHA-256 校验文件。详见[打包说明](docs/workflows/github-packaging.md)；当前为未签名开发版，附件保留 14 天。
 
