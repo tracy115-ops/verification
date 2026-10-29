@@ -8,6 +8,12 @@ export class TranscriptStore {
   private deleted = new Set<string>();
   private snapshot = { records: [] as CliTurnRecord[], error: null as string | null };
   constructor(private repository: TranscriptRepository) {}
+  async flush(): Promise<void> {
+    for (const timer of this.pending.values()) clearTimeout(timer);
+    this.pending.clear();
+    for (const record of this.records.values())
+      if (!this.deleted.has(record.sessionId)) await this.repository.save(structuredClone(record));
+  }
   subscribe = (listener: () => void) => {
     this.listeners.add(listener);
     return () => {

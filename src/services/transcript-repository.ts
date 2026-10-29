@@ -3,6 +3,29 @@ import { isCliTurnRecord, type CliTurnRecord, type TranscriptRepository } from '
 const databaseName = 'verification-workbench-transcripts';
 
 export class IndexedDbTranscripts implements TranscriptRepository {
+  async readAll(): Promise<CliTurnRecord[]> {
+    const db = await this.database();
+    return new Promise((resolve, reject) => {
+      const request = db.transaction('turns').objectStore('turns').getAll();
+      request.onsuccess = () =>
+        request.result.every(isCliTurnRecord)
+          ? resolve(request.result)
+          : reject(new Error('transcript_invalid'));
+      request.onerror = () => reject(new Error('transcript_unavailable'));
+    });
+  }
+  async replaceAll(records: CliTurnRecord[]): Promise<void> {
+    if (!records.every(isCliTurnRecord)) throw new Error('transcript_invalid');
+    const db = await this.database();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction('turns', 'readwrite');
+      const store = transaction.objectStore('turns');
+      store.clear();
+      for (const record of records) store.put(record);
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = transaction.onabort = () => reject(new Error('transcript_unavailable'));
+    });
+  }
   private opening?: Promise<IDBDatabase>;
   private database(): Promise<IDBDatabase> {
     return (this.opening ??= new Promise((resolve, reject) => {

@@ -71,10 +71,23 @@ impl TurnRequest {
 #[derive(Clone, Debug, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum AgentEvent {
-    Text { text: String },
-    Activity { name: String },
-    Session { id: String },
+    Text {
+        text: String,
+    },
+    Activity {
+        name: String,
+    },
+    Session {
+        id: String,
+    },
     Heartbeat,
+    Diagnostic {
+        exit_code: Option<i32>,
+        reason: Option<String>,
+        stderr_bytes: usize,
+        terminal: bool,
+        input_written: bool,
+    },
 }
 
 #[derive(Debug, Serialize)]

@@ -15,6 +15,8 @@ pub async fn send_cli_turn(
     request: TurnRequest,
     on_event: Channel<AgentEvent>,
 ) -> Result<TurnOutcome, String> {
+    let updates = app.state::<crate::updater::UpdateRuntime>();
+    let _activity = updates.task()?;
     request.validate().map_err(str::to_string)?;
     let root = app
         .path()
@@ -46,10 +48,28 @@ pub async fn send_cli_turn(
         active.insert(request.turn_id.clone(), Some(sender));
     }
     let turn_id = request.turn_id.clone();
+    let driver = request.driver.as_str();
+    crate::diagnostics::record(
+        &app,
+        "cli.started",
+        serde_json::json!({"driver":request.driver.as_str(), "turnId":turn_id}),
+    );
     let outcome = agent_runtime::run_turn(request, &workspace, receiver, |event| {
+        if let AgentEvent::Diagnostic { .. } = &event {
+            let mut details = serde_json::to_value(&event).unwrap_or_default();
+            details["turnId"] = serde_json::json!(turn_id);
+            details["driver"] = serde_json::json!(driver);
+            crate::diagnostics::record(&app, "cli.diagnostic", details);
+            return true;
+        }
         on_event.send(event).is_ok()
     })
     .await;
+    crate::diagnostics::record(
+        &app,
+        "cli.finished",
+        serde_json::json!({"turnId":turn_id, "status":outcome.status, "code":outcome.error_code}),
+    );
     state
         .active
         .lock()

@@ -126,6 +126,7 @@ async fn supervise(
     let mut streams_closed = false;
     let mut received = 0usize;
     let mut stderr_failure = None;
+    let mut stderr_bytes = 0usize;
     let deadline = Instant::now() + Duration::from_secs(request.timeout_seconds);
     let mut heartbeat = interval(Duration::from_secs(1));
     let mut interrupted = None;
@@ -143,6 +144,7 @@ async fn supervise(
                         received += line.len();
                         if received > MAX_OUTPUT { interrupted = Some(("failed", "output_limit")); break; }
                         if !stdout {
+                            stderr_bytes += line.len();
                             stderr_failure = crate::failure::classify(&String::from_utf8_lossy(&line)).or(stderr_failure);
                         }
                         if stdout && !line.iter().all(u8::is_ascii_whitespace) {
@@ -164,6 +166,16 @@ async fn supervise(
         tokio::time::timeout(Duration::from_secs(1), &mut writer).await,
         Ok(Ok(Ok(())))
     );
+    let _ = sink(AgentEvent::Diagnostic {
+        exit_code: status
+            .as_ref()
+            .and_then(|result| result.as_ref().ok())
+            .and_then(|value| value.code()),
+        reason: stderr_failure.map(str::to_string),
+        stderr_bytes,
+        terminal: state.terminal,
+        input_written,
+    });
     writer.abort();
     out.abort();
     err.abort();
@@ -212,14 +224,24 @@ pub async fn run_turn(
     cancel: oneshot::Receiver<()>,
     sink: impl Fn(AgentEvent) -> bool,
 ) -> TurnOutcome {
+    let paths = crate::search_paths::driver_search_paths();
+    run_turn_in_paths(request, workspace, cancel, sink, &paths).await
+}
+
+pub(crate) async fn run_turn_in_paths(
+    request: TurnRequest,
+    workspace: &Path,
+    cancel: oneshot::Receiver<()>,
+    sink: impl Fn(AgentEvent) -> bool,
+    paths: &[std::path::PathBuf],
+) -> TurnOutcome {
     if let Err(code) = request.validate() {
         return TurnOutcome::failed(code);
     }
-    let paths = crate::search_paths::driver_search_paths();
     let spec = DRIVERS
         .iter()
         .find(|spec| spec.id == request.driver.as_str());
-    let Some(launch) = spec.and_then(|spec| resolve_driver(spec, &paths)) else {
+    let Some(launch) = spec.and_then(|spec| resolve_driver(spec, paths)) else {
         return TurnOutcome::failed("cli_not_found");
     };
     let args: Vec<String> = if matches!(request.driver, DriverId::Codeagent) {
@@ -234,7 +256,7 @@ pub async fn run_turn(
             .collect()
     };
     let mut command = Command::new(&launch.program);
-    crate::search_paths::configure_command(&mut command, &paths);
+    crate::search_paths::configure_command(&mut command, paths);
     crate::proxy::configure(&mut command);
     command.args(&launch.args).args(args);
     if !request.model.is_empty() {

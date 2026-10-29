@@ -32,7 +32,13 @@ impl ProtocolState {
     pub fn consume(&mut self, driver: DriverId, line: &[u8]) -> Vec<AgentEvent> {
         let Ok(value) = serde_json::from_slice::<Value>(line) else {
             self.failed = true;
-            self.error_code = Some("cli_protocol_invalid");
+            self.error_code = if matches!(driver, DriverId::Codeagent) {
+                crate::failure::classify(&String::from_utf8_lossy(line))
+                    .or(self.error_code)
+                    .or(Some("cli_protocol_invalid"))
+            } else {
+                Some("cli_protocol_invalid")
+            };
             return vec![];
         };
         let mut events = Vec::new();

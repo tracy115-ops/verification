@@ -41,6 +41,8 @@ pub async fn preflight_python(
     payload: ExecutionPayload,
     on_event: Channel<ExecutionEvent>,
 ) -> Result<ExecutionPlan, String> {
+    let updates = app.state::<crate::updater::UpdateRuntime>();
+    let _activity = updates.task()?;
     let root = root(&app)?;
     let id = payload.execution_id.clone();
     let cancel = state.reserve(&id)?;
@@ -58,6 +60,8 @@ pub async fn execute_python(
     approved_digest: String,
     on_event: Channel<ExecutionEvent>,
 ) -> Result<EvidenceBundle, String> {
+    let updates = app.state::<crate::updater::UpdateRuntime>();
+    let _activity = updates.task()?;
     let root = root(&app)?;
     let id = payload.execution_id.clone();
     let cancel = state.reserve(&id)?;

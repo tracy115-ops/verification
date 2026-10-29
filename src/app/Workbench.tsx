@@ -118,6 +118,7 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
                 setTab={setSettingsTab}
                 appearance={appearance}
                 frameworks={frameworks}
+                blocked={conversations.busy || workbench.dirty}
               />
             )}
             {(page === 'assets' || page === 'cases') && (

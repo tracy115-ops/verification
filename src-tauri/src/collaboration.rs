@@ -150,6 +150,8 @@ pub async fn start_collaboration(
     port: u16,
     name: String,
 ) -> Result<HostInfo, String> {
+    let updates = app.state::<crate::updater::UpdateRuntime>();
+    let _activity = updates.task()?;
     if port < 1024
         || name.trim().is_empty()
         || name.chars().count() > 80

@@ -1,4 +1,5 @@
 import { conversationEn, conversationZh } from './conversation-messages';
+import { systemSettingsEn, systemSettingsZh } from './system-settings-messages';
 import { teamWorkspaceEn, teamWorkspaceZh } from './team-workspace-messages';
 import { desktopTeamEn, desktopTeamZh } from './desktop-team-messages';
 import { runEn, runZh } from './run-messages';
@@ -9,6 +10,7 @@ import { lanEn, lanZh } from './lan-messages';
 import { collaborationEn, collaborationZh } from './collaboration-messages';
 
 export const zh = {
+  ...systemSettingsZh,
   ...teamWorkspaceZh,
   ...desktopTeamZh,
   ...runZh,
@@ -182,6 +184,7 @@ export const zh = {
 } as const;
 
 export const en: Record<keyof typeof zh, string> = {
+  ...systemSettingsEn,
   ...teamWorkspaceEn,
   ...desktopTeamEn,
   ...runEn,

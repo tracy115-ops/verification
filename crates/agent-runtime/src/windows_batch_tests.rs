@@ -20,6 +20,58 @@ impl Fixture {
         Self(root)
     }
 }
+
+#[tokio::test]
+async fn headless_codeagent_skips_the_project_trust_prompt_and_finishes_a_real_batch_turn() {
+    let fixture = Fixture::new();
+    let node = crate::search_paths::driver_search_paths()
+        .iter()
+        .map(|p| p.join("node.exe"))
+        .find(|p| p.is_file())
+        .unwrap();
+    fs::write(fixture.0.join("cli.cjs"),r#"
+const a=process.argv.slice(2);
+if(a.includes('--help')) console.log('--print --output-format stream-json --verbose --tools --strict-mcp-config --mcp-config --dangerously-skip-permissions');
+else if(!a.includes('--skip-safe-check')) { console.error('Quick safety check: only use --print in a directory you trust. Hint: --skip-safe-check'); process.exit(21); }
+else { let text=''; process.stdin.setEncoding('utf8'); process.stdin.on('data',v=>text+=v); process.stdin.on('end',()=>console.log(JSON.stringify({type:'result',is_error:false,result:text,session_id:'fixture-session'}))); }
+"#).unwrap();
+    fs::write(
+        fixture.0.join("codeagent.bat"),
+        format!(
+            "@echo off\r\n\"{}\" \"%~dp0cli.cjs\" %*\r\n",
+            node.display()
+        ),
+    )
+    .unwrap();
+    let blocked = Command::new(fixture.0.join("codeagent.bat"))
+        .arg("--print")
+        .output()
+        .unwrap();
+    assert!(!blocked.status.success());
+    assert_eq!(
+        crate::failure::classify(&String::from_utf8_lossy(&blocked.stderr)),
+        Some("cli_trust_required")
+    );
+    let request = crate::TurnRequest {
+        turn_id: "12345678-1234-1234-1234-123456789abc".into(),
+        session_id: "12345678-1234-1234-1234-123456789abc".into(),
+        driver: crate::DriverId::Codeagent,
+        prompt: "你好，测试非交互调用".into(),
+        model: String::new(),
+        timeout_seconds: 5,
+    };
+    let (_sender, receiver) = tokio::sync::oneshot::channel();
+    let outcome = crate::conversation::run_turn_in_paths(
+        request,
+        &fixture.0.canonicalize().unwrap(),
+        receiver,
+        |_| true,
+        std::slice::from_ref(&fixture.0),
+    )
+    .await;
+    assert_eq!(outcome.status, "completed");
+    assert_eq!(outcome.text, "你好，测试非交互调用");
+}
 impl Drop for Fixture {
     fn drop(&mut self) {
         let root = self.0.canonicalize().expect("owned fixture");
@@ -66,8 +118,8 @@ async fn codeagent_bat_in_a_spaced_path_preserves_version_flags_json_and_stdin()
     fs::write(&script, r#"
 const args = process.argv.slice(2);
 if (args.includes('--version')) console.log('1.2605.05.02 (codeAgentCLI)');
-else if (args.includes('--help')) console.log('--print --output-format stream-json --verbose --tools --strict-mcp-config --mcp-config --dangerously-skip-permissions');
-else { let input = ''; process.stdin.setEncoding('utf8'); process.stdin.on('data', s => input += s); process.stdin.on('end', () => console.log(JSON.stringify({args, input}))); }
+else if (args.includes('--help')) console.log('--print --output-format stream-json --verbose --tools --strict-mcp-config --mcp-config --dangerously-skip-permissions --skip-safe-check');
+else { let input = ''; process.stdin.setEncoding('utf8'); process.stdin.on('data', s => input += s); process.stdin.on('end', () => console.log(JSON.stringify({args, input, cwd: process.cwd()}))); }
 "#).unwrap();
     fs::write(
         fixture.0.join("codeagent.bat"),
@@ -101,6 +153,7 @@ else { let input = ''; process.stdin.setEncoding('utf8'); process.stdin.on('data
         .await
         .expect("batch help capability check");
     let mut child = Command::new(&launch.program)
+        .current_dir(fixture.0.canonicalize().unwrap())
         .args(&launch.args)
         .args(&args)
         .stdin(Stdio::piped())
@@ -119,4 +172,10 @@ else { let input = ''; process.stdin.setEncoding('utf8'); process.stdin.on('data
     let echoed: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(echoed["args"], serde_json::json!(args));
     assert_eq!(echoed["input"], prompt);
+    assert_eq!(
+        PathBuf::from(echoed["cwd"].as_str().unwrap())
+            .canonicalize()
+            .unwrap(),
+        fixture.0.canonicalize().unwrap()
+    );
 }

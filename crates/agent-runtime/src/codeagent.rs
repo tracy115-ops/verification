@@ -28,6 +28,7 @@ pub fn compatible_arguments(help: &str) -> Option<Vec<String>> {
         "--mcp-config",
         "{\"mcpServers\":{}}",
         "--dangerously-skip-permissions",
+        "--skip-safe-check",
     ]
     .into_iter()
     .map(str::to_string)
@@ -94,9 +95,10 @@ mod tests {
     #[test]
     fn interactive_launch_alone_does_not_certify_a_structured_driver() {
         assert!(compatible_arguments("codeagent --dangerously-skip-permissions").is_none());
-        let help = "--print --output-format stream-json --verbose --tools --strict-mcp-config --mcp-config --dangerously-skip-permissions";
+        let help = "--print --output-format stream-json --verbose --tools --strict-mcp-config --mcp-config --dangerously-skip-permissions --skip-safe-check";
         let args = compatible_arguments(help).expect("compatible flags");
         assert!(!args.iter().any(|arg| arg == "--model"));
+        assert!(args.iter().any(|arg| arg == "--skip-safe-check"));
         assert!(args.windows(2).any(|args| args == ["--tools", ""]));
         assert!(compatible_arguments(&help.replace("--strict-mcp-config", "")).is_none());
     }

@@ -1,7 +1,21 @@
 /// Only return stable classifications. Native messages may contain credentials or URLs.
 pub fn classify(message: &str) -> Option<&'static str> {
     let text = message.to_ascii_lowercase();
-    if [
+    if text.contains("quick safety check")
+        || (text.contains("hint:") && text.contains("--skip-safe-check"))
+        || text.contains("only use --print in a directory you trust")
+    {
+        Some("cli_trust_required")
+    } else if text.contains("unknown option")
+        || text.contains("unrecognized option")
+        || text.contains("unexpected argument")
+    {
+        Some("cli_option_unsupported")
+    } else if text.contains("mcp")
+        && (text.contains("invalid") || text.contains("parse") || text.contains("json error"))
+    {
+        Some("cli_mcp_invalid")
+    } else if [
         "401 unauthorized",
         "authentication failed",
         "invalid api key",
