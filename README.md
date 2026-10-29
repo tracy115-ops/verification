@@ -2,7 +2,7 @@
 
 面向企业验证工作的本地优先 Agent 工作台：直接驱动本机 Claude Code、Codex、Pi 等 CLI，将需求、场景、用例、脚本、执行证据与判定结果连接为可追溯的验证闭环。
 
-**当前为第一轮开发版。** 已实现流程画布、节点与 Agent Profile 配置、定义校验、草稿保存 / 导入导出、中英文与主题、示例评审，以及 Tauri / Rust 的 CLI 安装和版本探测。真实模型调度、Provider 鉴权连接、运行引擎、SQLite、SSH / WSL 和测试执行仍在后续阶段。
+**当前为本地黑盒验证与协作开发版。** 已实现真实 CLI 会话、流程编排、需求／因子／场景／用例评审、本地 Python 执行与证据分析，以及 SQLite 共享项目、局域网发现和增量协作。支持中英文和主题。SSH／WSL 执行、任意测试框架及内部 CodeAgent 目标环境仍待接入或验证。
 
 ## 运行
 
@@ -15,6 +15,10 @@ npm.cmd run dev
 
 浏览器打开 `http://127.0.0.1:5173/`。浏览器预览不具备本机 CLI 检测能力。桌面开发使用 `npm.cmd run tauri dev`，先停止单独运行的 Vite 服务。构建包含生产前端的桌面开发版使用 `npm.cmd run tauri -- build --debug --no-bundle`，本 Windows 工作区输出到 `target/debug/verification-desktop.exe`。
 
+## GitHub 手动打包
+
+打开 [Actions → Package Windows Desktop](https://github.com/tracy115-ops/verification/actions/workflows/package-windows.yml)，点击 **Run workflow** 选择分支启动 Windows x64 打包。成功后从运行页面 **Artifacts** 下载 NSIS 安装包和 SHA-256 校验文件。详见[打包说明](docs/workflows/github-packaging.md)；当前为未签名开发版，附件保留 14 天。
+
 ## 从这里开始
 
 - [设计文档索引](docs/README.md)：产品头脑风暴、架构方案、默认测试工作流及实施计划。
@@ -24,7 +28,7 @@ npm.cmd run dev
 
 ## 核心设计
 
-采用 Tauri 2 + React / TypeScript + Rust 骨架，以流程编排为首页，默认预置“测试设计验证流程”。通过独立适配器扩展 CLI、Provider、模板、执行环境和判定器；可恢复、可审计的运行引擎属于后续阶段。
+采用 Tauri 2 + React / TypeScript + Rust，以会话为主要入口，默认预置“测试设计验证流程”。通过独立适配器扩展 CLI、Provider、模板、执行环境和判定器；运行记录保留审批摘要、产物与证据，个人会话与团队项目通过补充包交接。
 
 需求覆盖灯和测试结果灯分别计算；Agent 提议映射与结论，系统依据确认记录、版本和证据计算状态。
 

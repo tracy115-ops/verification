@@ -32,7 +32,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm.cmd ci
-      - run: npm.cmd run build
+      - run: npm.cmd run build:desktop
       - run: rustup component add rustfmt clippy
       - uses: actions/setup-python@v5
         with:
