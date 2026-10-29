@@ -28,6 +28,7 @@ jobs:
     env:
       CARGO_TARGET_DIR: ${{ github.workspace }}/target
       CARGO_TERM_COLOR: always
+      RUST_BACKTRACE: full
     steps:
       - name: Check out selected branch
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -66,7 +67,7 @@ jobs:
         run: npm.cmd run check
 
       - name: Check native runtime contracts
-        run: cargo test -p agent-runtime -p execution-runtime -p process-runtime --locked
+        run: cargo test -p agent-runtime -p execution-runtime -p process-runtime --locked -- --nocapture
 
       - name: Build release installer with bundled collaboration service
         run: npm.cmd run package:windows -- -- --locked
