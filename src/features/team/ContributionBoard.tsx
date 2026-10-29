@@ -4,6 +4,7 @@ import { useI18n } from '../../shared/i18n/context';
 import type { TeamActions } from './useTeam';
 import { ContributionImport } from './ContributionImport';
 import { ContributionReview } from './ContributionReview';
+import { AgentApiGuide } from './AgentApiGuide';
 
 export function ContributionBoard({ actions }: { actions: TeamActions }) {
   const { t, locale } = useI18n();
@@ -20,6 +21,7 @@ export function ContributionBoard({ actions }: { actions: TeamActions }) {
     <section className="collab-contributions">
       <div className="collab-toolbar">
         <p className="wb-muted">{t('collab_apply_hint')}</p>
+        <AgentApiGuide project={actions.project!} />
         {actions.member?.role !== 'viewer' && (
           <button className="workbench-btn wb-primary" onClick={() => setImporting(true)}>
             {t('collab_import')}

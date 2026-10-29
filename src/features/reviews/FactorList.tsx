@@ -1,5 +1,8 @@
 import { isDesign } from '../../domain/runtime/artifacts';
 import { useI18n } from '../../shared/i18n/context';
+import type { WorkflowRun } from '../../domain/runtime/types';
+import type { UpdateRun } from './PersonalCaseCoverage';
+import { DesignEditActions } from './DesignEditor';
 
 export function FactorList({
   value,
@@ -8,6 +11,8 @@ export function FactorList({
   selected,
   setSelected,
   navigate,
+  run,
+  updateRun,
 }: {
   value: unknown;
   query: string;
@@ -15,6 +20,8 @@ export function FactorList({
   selected: string;
   setSelected: (value: string) => void;
   navigate: (kind: 'requirements' | 'scenarios', id: string) => void;
+  run: WorkflowRun;
+  updateRun?: UpdateRun;
 }) {
   const { t } = useI18n();
   const factors = isDesign(value) ? (value.factors ?? []) : [];
@@ -29,6 +36,15 @@ export function FactorList({
           <strong>
             {t('factorItems')} · {filtered.length} / {factors.length}
           </strong>
+          {isDesign(value) && (
+            <DesignEditActions
+              run={run}
+              value={value}
+              kind="factors"
+              currentId={current?.id}
+              updateRun={updateRun}
+            />
+          )}
         </div>
         <input
           className="workbench-input"

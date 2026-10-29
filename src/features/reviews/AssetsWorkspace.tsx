@@ -8,6 +8,7 @@ import { TraceLinks } from './TraceLinks';
 import { PersonalCaseCoverage, type UpdateRun } from './PersonalCaseCoverage';
 import { RunContributionExport } from './RunContributionExport';
 import { personalCoverage } from '../../domain/runtime/case-coverage';
+import { DesignEditActions } from './DesignEditor';
 
 export type AssetView = 'requirements' | 'factors' | 'scenarios' | 'cases';
 type View = AssetView;
@@ -133,6 +134,8 @@ export function TaskAssets({
   if (view === 'factors')
     return (
       <FactorList
+        run={run}
+        updateRun={artifactOverride ? undefined : updateRun}
         value={value}
         query={query}
         setQuery={setQuery}
@@ -179,6 +182,15 @@ export function TaskAssets({
           <strong>
             {t('assetItems')} · {filtered.length} / {items.length}
           </strong>
+          {view === 'scenarios' && isDesign(value) && !artifactOverride && (
+            <DesignEditActions
+              run={run}
+              value={value}
+              kind="scenarios"
+              currentId={current?.id}
+              updateRun={updateRun}
+            />
+          )}
           <span className="wb-muted">
             {artifact?.type.endsWith('Draft') ? t('assetDraft') : artifact ? t('assetApproved') : ''}
           </span>

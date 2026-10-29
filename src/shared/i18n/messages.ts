@@ -1,10 +1,12 @@
 import { conversationEn, conversationZh } from './conversation-messages';
+import { designEditEn, designEditZh } from './design-edit-messages';
 import { teamEn, teamZh } from './team-messages';
 import { executionEn, executionZh } from './execution-messages';
 import { lanEn, lanZh } from './lan-messages';
 import { collaborationEn, collaborationZh } from './collaboration-messages';
 
 export const zh = {
+  ...designEditZh,
   ...collaborationZh,
   ...lanZh,
   dismissNotification: '关闭提示',
@@ -174,6 +176,7 @@ export const zh = {
 } as const;
 
 export const en: Record<keyof typeof zh, string> = {
+  ...designEditEn,
   ...collaborationEn,
   ...lanEn,
   dismissNotification: 'Dismiss notification',
