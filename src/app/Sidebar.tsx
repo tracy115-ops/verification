@@ -39,7 +39,11 @@ export function Sidebar({
           </button>
         ))}
       </nav>
-      <SessionHistory actions={conversations} open={() => setPage('sessions')} />
+      <SessionHistory
+        actions={conversations}
+        open={() => setPage('sessions')}
+        openAssets={() => setPage('assets')}
+      />
       <div className="app-settings">
         <button
           className={`app-nav-item ${page === 'settings' ? 'is-active' : ''}`}

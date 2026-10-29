@@ -1,5 +1,5 @@
-import { useEffect, useId, useRef, useState } from 'react';
-import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { MoreHorizontal, Pencil, Trash2, GitBranch } from 'lucide-react';
 import type { Conversations } from '../../app/useConversations';
 import type { ConversationSession } from '../../domain/runtime/types';
 import { useI18n } from '../../shared/i18n/context';
@@ -7,9 +7,13 @@ import { useI18n } from '../../shared/i18n/context';
 export function SessionActions({
   session,
   actions,
+  openAssets,
+  context,
 }: {
   session: ConversationSession;
   actions: Conversations;
+  openAssets: () => void;
+  context?: { x: number; y: number };
 }) {
   const { t } = useI18n();
   const id = useId();
@@ -27,6 +31,20 @@ export function SessionActions({
     if (mode) dialog.current?.showModal();
     else dialog.current?.close();
   }, [mode]);
+  function showAt(x: number, y: number) {
+    const element = menu.current;
+    if (!element) return;
+    element.showPopover();
+    const rect = element.getBoundingClientRect();
+    setPosition({
+      top: Math.max(8, Math.min(y, window.innerHeight - rect.height - 8)),
+      left: Math.max(8, Math.min(x, window.innerWidth - rect.width - 8)),
+    });
+  }
+  useLayoutEffect(() => {
+    if (context) showAt(context.x, context.y);
+    else menu.current?.hidePopover();
+  }, [context]);
   function begin(next: 'rename' | 'delete') {
     menu.current?.hidePopover();
     setTitle(session.title.replace(/^#+\s*/, '').split('\n')[0]);
@@ -45,19 +63,31 @@ export function SessionActions({
         className="workbench-btn wb-text session-history-more"
         aria-label={t('sessionActions')}
         title={t('sessionActions')}
-        popoverTarget={id}
+        aria-haspopup="true"
+        aria-controls={id}
         disabled={actions.busy}
         onClick={(event) => {
           const rect = event.currentTarget.getBoundingClientRect();
-          setPosition({
-            top: Math.min(rect.bottom + 4, window.innerHeight - 110),
-            left: Math.max(8, rect.right - 164),
-          });
+          if (menu.current?.matches(':popover-open')) menu.current.hidePopover();
+          else showAt(rect.right - 164, rect.bottom + 4);
         }}
       >
         <MoreHorizontal size={16} />
       </button>
       <div id={id} ref={menu} popover="auto" className="session-history-menu" style={position}>
+        <button
+          className="workbench-btn wb-text"
+          disabled={actions.busy}
+          onClick={() => {
+            menu.current?.hidePopover();
+            actions.setActiveId(session.id);
+            actions.setSelectedRunId('');
+            openAssets();
+          }}
+        >
+          <GitBranch size={14} />
+          {t('assetsTitle')}
+        </button>
         <button className="workbench-btn wb-text" onClick={() => begin('rename')}>
           <Pencil size={14} />
           {t('renameSession')}
