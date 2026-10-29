@@ -17,7 +17,10 @@ export function TeamLogin({
   const [token, setToken] = useState('');
   return (
     <>
-      <ConnectionSteps step={2} />
+      <ConnectionSteps
+        step={2}
+        back={serverUrl && !actions.authenticating ? () => changeServer?.() : undefined}
+      />
       <section className="team-login">
         <span className="wb-icon-tile">
           <Users size={24} />

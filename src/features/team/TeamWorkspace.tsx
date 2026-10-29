@@ -76,7 +76,11 @@ export function TeamWorkspace({
           {actions.project ? (
             <ProjectBoard key={actions.project.id} actions={actions} onDirty={setLocked} />
           ) : (
-            <ProjectPicker actions={actions} create={() => setCreating(true)} />
+            <ProjectPicker
+              actions={actions}
+              create={() => setCreating(true)}
+              changeServer={serverUrl ? changeServer : undefined}
+            />
           )}
         </>
       )}

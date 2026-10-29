@@ -10,7 +10,7 @@ checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
 
 [[package]]
 name = "agent-runtime"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "libc",
  "process-runtime",
@@ -765,7 +765,7 @@ dependencies = [
 
 [[package]]
 name = "execution-runtime"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "process-runtime",
  "serde",
@@ -2488,7 +2488,7 @@ dependencies = [
 
 [[package]]
 name = "process-runtime"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "libc",
  "tokio",
@@ -3956,7 +3956,7 @@ checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
 
 [[package]]
 name = "verification-desktop"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "agent-runtime",
  "dunce",

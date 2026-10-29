@@ -42,7 +42,8 @@
   gap: 8px;
 }
 .team-step-number,
-.team-connect-steps > div > span {
+.team-connect-steps > div > span,
+.team-connect-steps > div > button > span {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -82,6 +83,18 @@
 }
 .team-connect-steps .is-complete {
   color: var(--wb-success);
+}
+.team-connect-steps > div > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.team-connect-steps > div > button:hover strong {
+  text-decoration: underline;
 }
 .team-login h1 {
   font-size: 22px;

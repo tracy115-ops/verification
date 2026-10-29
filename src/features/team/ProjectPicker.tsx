@@ -3,7 +3,15 @@ import type { TeamActions } from './useTeam';
 import { useI18n } from '../../shared/i18n/context';
 import { ConnectionSteps } from './ConnectionSteps';
 
-export function ProjectPicker({ actions, create }: { actions: TeamActions; create: () => void }) {
+export function ProjectPicker({
+  actions,
+  create,
+  changeServer,
+}: {
+  actions: TeamActions;
+  create: () => void;
+  changeServer?: () => void;
+}) {
   const { t, locale } = useI18n();
   const [query, setQuery] = useState('');
   const visible = actions.projects.filter((item) =>
@@ -11,7 +19,15 @@ export function ProjectPicker({ actions, create }: { actions: TeamActions; creat
   );
   return (
     <section className="team-project-picker" aria-label={t('team_select_project')}>
-      <ConnectionSteps step={3} />
+      <ConnectionSteps
+        step={3}
+        canChangeServer={Boolean(changeServer)}
+        back={
+          actions.busy
+            ? undefined
+            : (step) => (step === 1 && changeServer ? changeServer() : actions.logout())
+        }
+      />
       <header>
         <div>
           <h1>{t('team_select_project')}</h1>
