@@ -100,6 +100,16 @@ jobs:
           @{ schemaVersion = 1; appVersion = $env:APP_VERSION; buildIdentity = $env:BUILD_IDENTITY; buildProfile = 'release'; commit = $env:GITHUB_SHA; ref = $env:GITHUB_REF; runId = $env:GITHUB_RUN_ID; runAttempt = $env:GITHUB_RUN_ATTEMPT; platform = 'windows-x64'; signed = $false } |
             ConvertTo-Json | Set-Content -LiteralPath 'artifacts/windows-x64/build-info.json' -Encoding utf8
 
+      - name: Smoke test installation and upgrade
+        run: ./scripts/test-windows-installer.ps1
+
+      - name: Verify seeded black-box regressions
+        run: |
+          npm run verify:blackbox
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run verify:game-agent -- --reuse-script
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Upload Windows installer
         id: upload
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7

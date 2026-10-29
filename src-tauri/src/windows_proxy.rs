@@ -283,6 +283,58 @@ pub async fn resolve(script: Option<String>, url: String) -> Result<Route, Strin
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[tokio::test]
+    #[ignore = "explicit Windows PAC service integration check"]
+    async fn evaluates_a_local_pac_for_each_destination() {
+        use std::io::{Read, Write};
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        listener.set_nonblocking(true).unwrap();
+        let address = listener.local_addr().unwrap();
+        let server = std::thread::spawn(move || {
+            let deadline = std::time::Instant::now() + Duration::from_secs(20);
+            while std::time::Instant::now() < deadline {
+                if let Ok((mut socket, _)) = listener.accept() {
+                    socket
+                        .set_read_timeout(Some(Duration::from_secs(2)))
+                        .unwrap();
+                    socket
+                        .set_write_timeout(Some(Duration::from_secs(2)))
+                        .unwrap();
+                    let mut request = [0; 4096];
+                    let _ = socket.read(&mut request);
+                    let body = "function FindProxyForURL(url, host) { if (host == 'api.github.com') return 'PROXY 127.0.0.1:17891'; return 'DIRECT'; }";
+                    let response = format!(
+                        "HTTP/1.1 200 OK\r\nContent-Type: application/x-ns-proxy-autoconfig\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                        body.len(),
+                        body
+                    );
+                    let _ = socket.write_all(response.as_bytes());
+                } else {
+                    std::thread::sleep(Duration::from_millis(20));
+                }
+            }
+        });
+        let script = Some(format!("http://{address}/proxy.pac"));
+        let api = resolve(
+            script.clone(),
+            "https://api.github.com/repos/example".into(),
+        )
+        .await;
+        let asset = resolve(
+            script,
+            "https://release-assets.githubusercontent.com/example".into(),
+        )
+        .await;
+        server.join().unwrap();
+        assert!(
+            matches!(api, Ok(Route::Proxy(..))),
+            "API must use the PAC proxy"
+        );
+        assert!(
+            matches!(asset, Ok(Route::Direct)),
+            "asset must use PAC DIRECT"
+        );
+    }
     #[test]
     fn pac_output_supports_explicit_failover_without_implicit_direct_access() {
         assert!(matches!(
