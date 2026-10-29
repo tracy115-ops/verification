@@ -6,6 +6,7 @@ export interface AgentProbe {
   status: 'found' | 'missing' | 'error' | 'timeout';
   version: string | null;
   executable: string | null;
+  reason?: string | null;
 }
 
 function isProbe(value: unknown): value is AgentProbe {
@@ -18,7 +19,8 @@ function isProbe(value: unknown): value is AgentProbe {
     'version' in value &&
     (value.version === null || typeof value.version === 'string') &&
     'executable' in value &&
-    (value.executable === null || typeof value.executable === 'string')
+    (value.executable === null || typeof value.executable === 'string') &&
+    (!('reason' in value) || value.reason === null || typeof value.reason === 'string')
   );
 }
 

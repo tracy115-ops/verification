@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Bot, RefreshCw, Terminal } from 'lucide-react';
 import type { AgentProfile } from '../../domain/workflow';
 import { hasDesktopBridge, probeAgents, type AgentProbe } from '../../services/agent-api';
-import { useI18n } from '../../shared/i18n/context';
+import { isMessageKey, useI18n } from '../../shared/i18n/context';
 import type { MessageKey } from '../../shared/i18n/messages';
 import { Status } from '../../shared/components/Status';
 import { ProfileForm } from './ProfileForm';
@@ -52,7 +52,7 @@ export function AgentSettings({
             <section className="settings-cli" key={driver}>
               <Terminal size={22} />
               <h3>{driver}</h3>
-              <Status tone={found ? 'success' : 'neutral'}>
+              <Status tone={found ? 'success' : probe?.executable ? 'warning' : 'neutral'}>
                 {t(
                   !probe
                     ? 'notProbed'
@@ -60,11 +60,14 @@ export function AgentSettings({
                       ? 'found'
                       : probe.status === 'missing'
                         ? 'missing'
-                        : 'probeError',
+                        : probe?.executable
+                          ? 'cliEntryDetected'
+                          : 'probeError',
                 )}
               </Status>
               {probe?.version && <p className="wb-code">{probe.version}</p>}
               {probe?.executable && <p className="settings-executable">{probe.executable}</p>}
+              {probe?.reason && isMessageKey(probe.reason) && <p className="wb-muted">{t(probe.reason)}</p>}
             </section>
           );
         })}

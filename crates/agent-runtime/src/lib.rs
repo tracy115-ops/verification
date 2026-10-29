@@ -5,6 +5,7 @@ mod failure;
 mod probe;
 mod protocol;
 mod proxy;
+mod search_paths;
 mod turn_types;
 
 pub use conversation::run_turn;
@@ -13,3 +14,6 @@ pub use turn_types::{AgentEvent, DriverId, TurnOutcome, TurnRequest};
 
 #[cfg(test)]
 mod protocol_tests;
+
+#[cfg(all(test, windows))]
+mod windows_batch_tests;

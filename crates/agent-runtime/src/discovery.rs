@@ -49,7 +49,7 @@ fn find_node(paths: &[PathBuf]) -> Option<PathBuf> {
 
 pub fn resolve_driver(spec: &DriverSpec, paths: &[PathBuf]) -> Option<LaunchSpec> {
     if spec.id == "codeagent"
-        && let Some(file) = std::env::var_os("CODEAGENT_CLI_PATH").map(PathBuf::from)
+        && let Some(file) = crate::search_paths::configured_codeagent_path()
         && let Some(launch) = explicit_launch(&file, paths)
     {
         return Some(launch);
@@ -67,10 +67,12 @@ pub fn resolve_driver(spec: &DriverSpec, paths: &[PathBuf]) -> Option<LaunchSpec
                 args: vec![],
             });
         }
-        if spec.id == "codeagent"
-            && let Some(launch) = npm_shim(&base.join("codeagent.cmd"), paths)
-        {
-            return Some(launch);
+        if spec.id == "codeagent" {
+            for name in ["codeagent.cmd", "codeagent.bat"] {
+                if let Some(launch) = explicit_launch(&base.join(name), paths) {
+                    return Some(launch);
+                }
+            }
         }
         for entry in spec.entries {
             let candidate = base.join(Path::new(entry));
@@ -100,22 +102,36 @@ fn explicit_launch(file: &Path, paths: &[PathBuf]) -> Option<LaunchSpec> {
     if !file.is_file() {
         return None;
     }
-    match file.extension().and_then(|value| value.to_str()) {
-        Some("js" | "mjs") => Some(LaunchSpec {
-            program: find_node(paths)?,
+    let extension = file
+        .extension()
+        .and_then(|value| value.to_str())
+        .map(str::to_ascii_lowercase);
+    match extension.as_deref() {
+        Some("js" | "mjs" | "cjs") => Some(LaunchSpec {
+            program: find_node_near(file, paths)?,
             args: vec![file.as_os_str().into()],
         }),
         Some("exe") => Some(LaunchSpec {
             program: file.into(),
             args: vec![],
         }),
-        Some("cmd") => npm_shim(file, paths),
+        Some("cmd") => npm_shim(file, paths).or_else(|| batch_launch(file)),
+        Some("bat") => batch_launch(file),
         _ if cfg!(unix) => Some(LaunchSpec {
             program: file.into(),
             args: vec![],
         }),
         _ => None,
     }
+}
+
+fn batch_launch(file: &Path) -> Option<LaunchSpec> {
+    // Rust's Windows Command implementation handles batch quoting. The prompt
+    // remains stdin data; never concatenate it into a cmd.exe command string.
+    cfg!(windows).then(|| LaunchSpec {
+        program: file.into(),
+        args: vec![],
+    })
 }
 
 fn npm_shim(file: &Path, paths: &[PathBuf]) -> Option<LaunchSpec> {
@@ -134,7 +150,9 @@ fn npm_shim(file: &Path, paths: &[PathBuf]) -> Option<LaunchSpec> {
             continue;
         };
         if !relative.starts_with("node_modules\\")
-            || !(relative.ends_with(".js") || relative.ends_with(".mjs"))
+            || !(relative.ends_with(".js")
+                || relative.ends_with(".mjs")
+                || relative.ends_with(".cjs"))
         {
             continue;
         }
@@ -150,9 +168,15 @@ fn npm_shim(file: &Path, paths: &[PathBuf]) -> Option<LaunchSpec> {
         return None;
     }
     Some(LaunchSpec {
-        program: find_node(paths)?,
+        program: find_node_near(file, paths)?,
         args: vec![candidates.pop()?.into_os_string()],
     })
+}
+
+fn find_node_near(file: &Path, paths: &[PathBuf]) -> Option<PathBuf> {
+    file.parent()
+        .and_then(|parent| find_node(&[parent.into()]))
+        .or_else(|| find_node(paths))
 }
 
 #[cfg(test)]
@@ -220,6 +244,19 @@ mod tests {
                     .expect("canonical entry")
                     .into_os_string()
             ]
+        );
+        let cjs = entry.with_extension("cjs");
+        fs::write(&cjs, "").expect("cjs entry");
+        fs::write(
+            &shim,
+            "@echo off\n\"%dp0%\\node_modules\\internal-codeagent\\cli.cjs\" %*\n",
+        )
+        .expect("cjs shim");
+        let portable = npm_shim(&shim, &[]).expect("adjacent Node without PATH");
+        assert_eq!(portable.program, node);
+        assert_eq!(
+            portable.args,
+            vec![cjs.canonicalize().unwrap().into_os_string()]
         );
         let resolved = base.canonicalize().expect("owned fixture");
         let temp_root = std::env::temp_dir().canonicalize().expect("temp root");

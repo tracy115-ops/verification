@@ -1,4 +1,10 @@
 export const conversationZh = {
+  cliEntryDetected: '已找到入口 · 版本未确认',
+  cliProbePathMissing: '未找到启动入口，请检查安装目录是否在 PATH 中。',
+  cliProbeSpawnFailed: '启动入口已找到，但无法启动或管理进程。请检查文件权限和运行环境。',
+  cliProbeVersionFailed: '入口已找到，但 --version 执行失败。这不代表工具未安装。',
+  cliProbeVersionEmpty: '入口已找到，但 --version 没有返回版本内容。',
+  cliProbeVersionTimeout: '入口已找到，但 --version 未在 5 秒内完成。',
   searchConversations: '搜索会话',
   searchConversationPlaceholder: '搜索会话名称或需求',
   noMatchingConversations: '没有匹配的会话',
@@ -157,6 +163,14 @@ export const conversationZh = {
 };
 
 export const conversationEn: Record<keyof typeof conversationZh, string> = {
+  cliEntryDetected: 'Entry found · version unverified',
+  cliProbePathMissing: 'No launcher found. Check whether its installation directory is on PATH.',
+  cliProbeSpawnFailed:
+    'The entry was found, but its process could not be started or managed. Check permissions and the runtime environment.',
+  cliProbeVersionFailed:
+    'The entry was found, but --version failed. This does not mean the tool is uninstalled.',
+  cliProbeVersionEmpty: 'The entry was found, but --version returned no version text.',
+  cliProbeVersionTimeout: 'The entry was found, but --version did not finish within 5 seconds.',
   searchConversations: 'Search conversations',
   searchConversationPlaceholder: 'Search conversation names or requirements',
   noMatchingConversations: 'No matching conversations',

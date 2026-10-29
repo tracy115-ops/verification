@@ -17,6 +17,7 @@ pub struct AgentProbe {
     pub status: String,
     pub version: Option<String>,
     pub executable: Option<String>,
+    pub reason: Option<String>,
 }
 
 async fn read_capped(reader: impl AsyncRead + Unpin) -> std::io::Result<Vec<u8>> {
@@ -25,12 +26,13 @@ async fn read_capped(reader: impl AsyncRead + Unpin) -> std::io::Result<Vec<u8>>
     Ok(bytes)
 }
 
-async fn probe(spec: &DriverSpec, paths: &[PathBuf]) -> AgentProbe {
+pub(crate) async fn probe(spec: &DriverSpec, paths: &[PathBuf]) -> AgentProbe {
     let mut result = AgentProbe {
         driver: spec.id.into(),
         status: "missing".into(),
         version: None,
         executable: None,
+        reason: Some("cliProbePathMissing".into()),
     };
     let Some(launch) = resolve_driver(spec, paths) else {
         return result;
@@ -42,7 +44,9 @@ async fn probe(spec: &DriverSpec, paths: &[PathBuf]) -> AgentProbe {
             .map(|entry| entry.to_string_lossy().into_owned())
             .unwrap_or_else(|| launch.program.to_string_lossy().into_owned()),
     );
+    result.reason = None;
     let mut command = Command::new(&launch.program);
+    crate::search_paths::configure_command(&mut command, paths);
     command
         .args(&launch.args)
         .arg("--version")
@@ -52,13 +56,23 @@ async fn probe(spec: &DriverSpec, paths: &[PathBuf]) -> AgentProbe {
         .kill_on_drop(true);
     #[cfg(windows)]
     command.creation_flags(0x08000000);
+    #[cfg(unix)]
+    command.process_group(0);
     let Ok(mut child) = command.spawn() else {
         result.status = "error".into();
+        result.reason = Some("cliProbeSpawnFailed".into());
+        return result;
+    };
+    let Ok(_guard) = process_runtime::ProcessGuard::attach(&child) else {
+        let _ = child.kill().await;
+        result.status = "error".into();
+        result.reason = Some("cliProbeSpawnFailed".into());
         return result;
     };
     let (Some(stdout), Some(stderr)) = (child.stdout.take(), child.stderr.take()) else {
         let _ = child.kill().await;
         result.status = "error".into();
+        result.reason = Some("cliProbeVersionFailed".into());
         return result;
     };
     let output = timeout(PROBE_TIMEOUT, async {
@@ -74,23 +88,24 @@ async fn probe(spec: &DriverSpec, paths: &[PathBuf]) -> AgentProbe {
                 result.status = "found".into();
             } else {
                 result.status = "error".into();
+                result.reason = Some("cliProbeVersionEmpty".into());
             }
         }
         Err(_) => {
             let _ = child.kill().await;
             result.status = "timeout".into();
+            result.reason = Some("cliProbeVersionTimeout".into());
         }
         _ => {
             result.status = "error".into();
+            result.reason = Some("cliProbeVersionFailed".into());
         }
     }
     result
 }
 
 pub async fn probe_installed_agents() -> Vec<AgentProbe> {
-    let paths: Vec<PathBuf> = std::env::var_os("PATH")
-        .map(|path| std::env::split_paths(&path).collect())
-        .unwrap_or_default();
+    let paths = crate::search_paths::driver_search_paths();
     let mut results = Vec::new();
     for spec in &DRIVERS {
         results.push(probe(spec, &paths).await);

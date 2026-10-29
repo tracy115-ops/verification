@@ -42,6 +42,10 @@ pub fn compatible_arguments(help: &str) -> Option<Vec<String>> {
 
 pub async fn checked_arguments(launch: &LaunchSpec) -> Option<Vec<String>> {
     let mut command = Command::new(&launch.program);
+    crate::search_paths::configure_command(
+        &mut command,
+        &crate::search_paths::driver_search_paths(),
+    );
     command
         .args(&launch.args)
         .arg("--help")

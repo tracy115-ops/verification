@@ -215,9 +215,7 @@ pub async fn run_turn(
     if let Err(code) = request.validate() {
         return TurnOutcome::failed(code);
     }
-    let paths = std::env::var_os("PATH")
-        .map(|path| std::env::split_paths(&path).collect::<Vec<_>>())
-        .unwrap_or_default();
+    let paths = crate::search_paths::driver_search_paths();
     let spec = DRIVERS
         .iter()
         .find(|spec| spec.id == request.driver.as_str());
@@ -236,6 +234,7 @@ pub async fn run_turn(
             .collect()
     };
     let mut command = Command::new(&launch.program);
+    crate::search_paths::configure_command(&mut command, &paths);
     crate::proxy::configure(&mut command);
     command.args(&launch.args).args(args);
     if !request.model.is_empty() {
