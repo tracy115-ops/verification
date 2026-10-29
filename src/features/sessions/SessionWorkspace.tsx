@@ -99,20 +99,6 @@ export function SessionWorkspace({
             activeRun={activeRun}
             openAssets={openAssets}
           />
-          {actions.busy && !activeRun && (
-            <article className="session-message role-assistant">
-              <div className="session-message-author">
-                <span className="app-environment-dot" />
-                {t('generating')}
-              </div>
-              {actions.stream && (
-                <details open={!activeRun}>
-                  <summary>{t('streamingOutput')}</summary>
-                  <pre>{actions.stream}</pre>
-                </details>
-              )}
-            </article>
-          )}
         </div>
         {actions.error && (
           <p className="session-error wb-error" role="alert">

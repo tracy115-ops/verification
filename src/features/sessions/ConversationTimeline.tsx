@@ -13,6 +13,7 @@ import { RunSummary } from './RunSummary';
 import { ScriptQuestions } from './ScriptQuestions';
 import { nodeLabel } from '../workflows/node-label';
 import { useTranscriptScroll } from './useTranscriptScroll';
+import { PendingAgentReply } from './AgentReplyStatus';
 
 export function ConversationTimeline({
   actions,
@@ -30,7 +31,11 @@ export function ConversationTimeline({
     [actions.session, turns],
   );
   const [visible, setVisible] = useState(60);
-  const anchor = useTranscriptScroll(entries);
+  const scrollRevision = useMemo(
+    () => ({ entries, stream: actions.stream, busy: actions.busy }),
+    [entries, actions.stream, actions.busy],
+  );
+  const anchor = useTranscriptScroll(scrollRevision);
   const [viewing, setViewing] = useState<{ run: WorkflowRun; key: string } | null>(null);
   const openArtifact = (run: WorkflowRun, key: string) => setViewing({ run, key });
   const missingHistory =
@@ -124,6 +129,9 @@ export function ConversationTimeline({
           select={(key) => setViewing({ ...viewing, key })}
           close={() => setViewing(null)}
         />
+      )}
+      {actions.busy && (actions.session?.activeTurnId || !activeRun) && (
+        <PendingAgentReply text={actions.stream} />
       )}
       <div ref={anchor} />
     </>

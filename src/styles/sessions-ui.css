@@ -487,6 +487,50 @@
   font-size: 13px;
   line-height: 1.9;
 }
+.session-reply-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 10px;
+  color: var(--wb-muted);
+  font-size: 12px;
+  min-height: 20px;
+}
+.session-reply-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.session-reply-dots > span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: session-reply-pulse 1.2s ease-in-out infinite;
+}
+.session-reply-dots > span:nth-child(2) {
+  animation-delay: 0.16s;
+}
+.session-reply-dots > span:nth-child(3) {
+  animation-delay: 0.32s;
+}
+@keyframes session-reply-pulse {
+  0%,
+  80%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .session-reply-dots > span {
+    animation: none;
+  }
+}
 .session-message pre {
   white-space: pre-wrap;
   overflow-wrap: anywhere;

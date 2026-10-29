@@ -4,6 +4,7 @@ import type { WorkflowRun } from '../../domain/runtime/types';
 import { nodeLabel } from '../workflows/node-label';
 import { CliReplyPreview } from './CliReplyPreview';
 import { Status } from '../../shared/components/Status';
+import { AgentReplyStatus } from './AgentReplyStatus';
 
 export function WorkflowCallCard({
   turn,
@@ -72,7 +73,7 @@ export function WorkflowCallCard({
             </details>
           </>
         ))}
-      {turn.status === 'running' && !turn.text && <p className="wb-muted">{t('awaitingCliReply')}</p>}
+      {turn.status === 'running' && <AgentReplyStatus />}
       {error && <p className="wb-error">{isMessageKey(error) ? t(error) : t('cli_failed')}</p>}
       {!!turn.activities.length && (
         <details>
