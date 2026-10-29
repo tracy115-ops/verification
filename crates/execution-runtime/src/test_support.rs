@@ -54,7 +54,9 @@ impl Fixture {
         });
         Self { root, payload: ExecutionPayload {
             session_id: "11111111-1111-4111-8111-111111111111".into(), run_id: "22222222-2222-4222-8222-222222222222".into(), execution_id: "33333333-3333-4333-8333-333333333333".into(),
-            profile: FrameworkProfile { id: "fixture".into(), name: "Python fixture".into(), adapter: "python-unittest-v1".into(), python_command: "python".into(), framework_source: DEFAULT_FRAMEWORK.into(), instructions: String::new(), target_url: target, timeout_seconds: 5 },
+            // Includes Python startup under concurrent load on hosted Windows runners.
+            // The timeout/cancellation test overrides this with a one-second deadline.
+            profile: FrameworkProfile { id: "fixture".into(), name: "Python fixture".into(), adapter: "python-unittest-v1".into(), python_command: "python".into(), framework_source: DEFAULT_FRAMEWORK.into(), instructions: String::new(), target_url: target, timeout_seconds: 30 },
             implementation: ImplementationBundle { script: "from framework import BlackBoxCase\nclass Tests(BlackBoxCase):\n    def test_probe(self):\n        response = self.client.call('GET', '/probe', headers={'Authorization':'fixture-secret'})\n        self.assertEqual(response.status, 200)\n".into(), tests: vec![TestMapping { test_name: "test_probe".into(), case_ids: vec!["TC-1".into()] }], questions: vec![] },
         }, stop, worker: Some(worker) }
     }

@@ -4,10 +4,10 @@
 
 1. 打开仓库 [Package Windows Desktop](https://github.com/tracy115-ops/verification/actions/workflows/package-windows.yml)。
 2. 点击 **Run workflow**，选择分支（通常为 `main`），再次点击 **Run workflow**。
-3. 等待 `Windows x64 installer` 成功。在运行页面的 **Artifacts** 下载 `verification-windows-x64-<运行编号>`；运行摘要也提供下载链接。
-4. 解压附件，运行 `Verification Workbench_*_x64-setup.exe` 安装。`SHA256SUMS.txt` 用于校验下载完整性，`build-info.json` 标明源提交和运行编号。
+3. 等待 `Windows x64 installer` 成功。在运行页面的 **Artifacts** 下载 `verification-<应用版本>-build.<运行编号>.<重试次数>-<提交短号>-windows-x64`；运行摘要也提供下载链接。
+4. 解压附件，运行 `Verification-Workbench-*-windows-x64-setup.exe` 安装。`SHA256SUMS.txt` 用于校验下载完整性，`build-info.json` 标明应用版本、release 编译模式、源提交和运行编号。
 
-工作流支持手动触发，以及推送专用 `build/windows` 分支触发；普通 `main` 推送不生成安装包。手动触发需要仓库写权限，下载附件需要 GitHub 登录；附件保留 14 天（受仓库保留策略限制）。此流程不会创建 GitHub Release。
+工作流支持手动触发、专用 `build/windows` 分支和 `v*` 标签推送；普通 `main` 推送不生成安装包。手动触发需要仓库写权限，下载附件需要 GitHub 登录；附件保留 14 天（受仓库保留策略限制）。版本标签构建成功后自动创建 GitHub Release；分支构建仅生成 Actions 附件。所有 GitHub 构建均使用 release 模式。[版本规则与发布步骤](versioning.md)说明版本同步、标签检查和发布记录。
 
 只有 Git SSH 推送权限、尚未登录 `gh` 时，可以使用专用分支：
 
@@ -47,7 +47,7 @@ npm.cmd run package:windows -- --debug -- --locked
 
 ## English quick start
 
-Open **Actions → Package Windows Desktop → Run workflow**, select a branch and start the run. Alternatively, push the committed version with `git push origin main:build/windows`; SSH push access is sufficient for this trigger. Download `verification-windows-x64-<run number>` from **Artifacts** after success. It contains an unsigned NSIS installer, SHA-256 checksums and commit metadata; artifacts are retained for 14 days. No Release is published automatically. Local Agent CLIs, Node.js 24+ for hosting and Python for test inspection/execution remain separate prerequisites.
+Push a matching version tag such as `v0.1.0` to publish a GitHub Release after successful checks and release-mode compilation. Branch pushes (`git push origin main:build/windows`) and manual branch runs only produce Actions artifacts, retained for 14 days. Artifact and installer names include application version, run number, attempt and commit. Each contains an unsigned NSIS installer, SHA-256 checksums and build metadata. Local Agent CLIs, Node.js 24+ for hosting and Python for test inspection/execution remain separate prerequisites.
 
 ## 2026-10-29 本地验证
 
@@ -59,3 +59,10 @@ Windows CI 的原生测试曾因测试 HTTP 夹具过早回复而失败。新增
 
 - [GitHub：手动运行工作流](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow)
 - [Tauri：Windows 安装程序](https://v2.tauri.app/distribute/windows-installer/)
+- [GitHub CLI：从已有标签创建 Release](https://cli.github.com/manual/gh_release_create)
+
+## 2026-10-29 发布流程修订
+
+新增应用版本同步、锁文件及标签一致性校验；`v*` 标签触发 release 模式打包并发布 GitHub Release。版本规则见 [versioning.md](versioning.md)。
+
+首次远端打包后续仍有两项普通测试在 5 秒预算内超时。测试夹具预算改为 30 秒以容纳 runner 上的 Python 启动与并发调度，生产超时逻辑保持原样，超时／取消测试继续显式使用 1 秒。增加 6 秒框架启动后仍能正常采集证据的回归。本地版本契约 5 项、前端 104 项、原生 Agent 19 项及执行运行时 10 项通过；执行运行时另连续运行 3 轮验证。远端打包结果以对应 Actions run 为准。

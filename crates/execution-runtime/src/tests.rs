@@ -91,6 +91,19 @@ async fn preflight_parses_without_importing_framework_then_execution_collects_re
 }
 
 #[tokio::test]
+async fn slow_framework_startup_still_collects_evidence_within_fixture_budget() {
+    let mut fixture = Fixture::new();
+    fixture
+        .payload
+        .profile
+        .framework_source
+        .push_str("\nimport time\ntime.sleep(6)\n");
+    let plan = fixture.plan().await;
+    let evidence = fixture.run(&plan).await.expect("slow startup evidence");
+    assert_eq!(evidence.results[0].status, "passed");
+}
+
+#[tokio::test]
 async fn changed_payload_and_missing_preflight_cannot_execute() {
     let fixture = Fixture::new();
     let plan = fixture.plan().await;

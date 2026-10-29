@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
   push:
     branches: [build/windows]
+    tags: ['v*']
 
 permissions:
   contents: read
@@ -17,6 +18,8 @@ concurrency:
 jobs:
   package:
     name: Windows x64 installer
+    permissions:
+      contents: write
     runs-on: windows-2022
     timeout-minutes: 60
     defaults:
@@ -48,6 +51,17 @@ jobs:
       - name: Install locked frontend dependencies
         run: npm.cmd ci
 
+      - name: Validate and identify application version
+        id: version
+        run: |
+          node scripts/version.mjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          if ($env:GITHUB_REF.StartsWith('refs/tags/v') -and -not (Test-Path -LiteralPath "docs/releases/$version.md")) { throw 'Missing versioned release notes.' }
+          $identity = "$version-build.$env:GITHUB_RUN_NUMBER.$env:GITHUB_RUN_ATTEMPT-$($env:GITHUB_SHA.Substring(0, 7))"
+          "app=$version" | Add-Content -LiteralPath $env:GITHUB_OUTPUT
+          "identity=$identity" | Add-Content -LiteralPath $env:GITHUB_OUTPUT
+
       - name: Check frontend, domain tests and source constraints
         run: npm.cmd run check
 
@@ -58,6 +72,9 @@ jobs:
         run: npm.cmd run package:windows -- -- --locked
 
       - name: Collect installer and SHA-256 checksums
+        env:
+          APP_VERSION: ${{ steps.version.outputs.app }}
+          BUILD_IDENTITY: ${{ steps.version.outputs.identity }}
         run: |
           $ErrorActionPreference = 'Stop'
           $installerFiles = @(Get-ChildItem -LiteralPath 'target/release/bundle/nsis' -Filter '*-setup.exe' -File)
@@ -66,20 +83,35 @@ jobs:
             if (-not (Test-Path -LiteralPath $resource -PathType Leaf)) { throw "Missing packaged resource: $resource" }
           }
           $outputDirectory = New-Item -ItemType Directory -Path 'artifacts/windows-x64' -Force
-          Copy-Item -LiteralPath $installerFiles[0].FullName -Destination $outputDirectory.FullName
+          $installerName = "Verification-Workbench-$env:BUILD_IDENTITY-windows-x64-setup.exe"
+          Copy-Item -LiteralPath $installerFiles[0].FullName -Destination (Join-Path $outputDirectory.FullName $installerName)
           $hash = Get-FileHash -LiteralPath $installerFiles[0].FullName -Algorithm SHA256
-          "$($hash.Hash.ToLowerInvariant())  $($installerFiles[0].Name)" | Set-Content -LiteralPath 'artifacts/windows-x64/SHA256SUMS.txt' -Encoding utf8
-          @{ version = 1; commit = $env:GITHUB_SHA; ref = $env:GITHUB_REF; runId = $env:GITHUB_RUN_ID; platform = 'windows-x64'; signed = $false } |
+          "$($hash.Hash.ToLowerInvariant())  $installerName" | Set-Content -LiteralPath 'artifacts/windows-x64/SHA256SUMS.txt' -Encoding utf8
+          @{ schemaVersion = 1; appVersion = $env:APP_VERSION; buildIdentity = $env:BUILD_IDENTITY; buildProfile = 'release'; commit = $env:GITHUB_SHA; ref = $env:GITHUB_REF; runId = $env:GITHUB_RUN_ID; runAttempt = $env:GITHUB_RUN_ATTEMPT; platform = 'windows-x64'; signed = $false } |
             ConvertTo-Json | Set-Content -LiteralPath 'artifacts/windows-x64/build-info.json' -Encoding utf8
 
       - name: Upload Windows installer
         id: upload
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
-          name: verification-windows-x64-${{ github.run_number }}
+          name: verification-${{ steps.version.outputs.identity }}-windows-x64
           path: artifacts/windows-x64/
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publish tagged GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          APP_VERSION: ${{ steps.version.outputs.app }}
+        run: |
+          $releaseArgs = @('release', 'create', $env:RELEASE_TAG, '--verify-tag', '--title', "Verification Workbench $env:APP_VERSION", '--notes-file', "docs/releases/$env:APP_VERSION.md")
+          if ($env:APP_VERSION.Contains('-')) { $releaseArgs += '--prerelease' }
+          $releaseArgs += @(Get-ChildItem -LiteralPath 'artifacts/windows-x64' -File | ForEach-Object { $_.FullName })
+          & gh @releaseArgs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Write download summary
         env:
@@ -90,5 +122,5 @@ jobs:
           - Commit: $env:GITHUB_SHA
           - [Download installer and SHA-256 checksums]($env:ARTIFACT_URL)
           - The installer includes the collaboration service and web UI.
-          - This development installer is unsigned. Agent CLIs, Node.js 24+ and Python are installed separately as needed.
+          - Profile: release. This installer is unsigned. Agent CLIs, Node.js 24+ and Python are installed separately as needed.
           "@ | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Encoding utf8

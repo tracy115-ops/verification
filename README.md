@@ -19,7 +19,7 @@ npm.cmd run dev
 
 也可执行 `git push origin main:build/windows`，通过专用分支推送触发打包，无需本机登录 GitHub CLI。
 
-打开 [Actions → Package Windows Desktop](https://github.com/tracy115-ops/verification/actions/workflows/package-windows.yml)，点击 **Run workflow** 选择分支启动 Windows x64 打包。成功后从运行页面 **Artifacts** 下载 NSIS 安装包和 SHA-256 校验文件。详见[打包说明](docs/workflows/github-packaging.md)；当前为未签名开发版，附件保留 14 天。
+正式发布使用匹配应用版本的标签，例如 `v0.1.0`；检查与 release 模式编译成功后，安装包、SHA-256 和构建信息上传至 [GitHub Releases](https://github.com/tracy115-ops/verification/releases)。分支打包保留 Actions 附件 14 天。安装程序当前未签名。详见[版本规则](docs/workflows/versioning.md)和[打包说明](docs/workflows/github-packaging.md)。
 
 ## 从这里开始
 
