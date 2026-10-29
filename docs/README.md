@@ -13,6 +13,7 @@
 | [GitHub 手动打包](workflows/github-packaging.md) | Actions 手动触发 Windows 安装包、下载与本地复现 |
 | [版本与发布规则](workflows/versioning.md) | 应用版本同步、标签校验、正式 Release 与构建追溯 |
 | [0.1.2 发布验证](research/release-0.1.2-validation.md) | 远端构建、目录冲突回归、回复动效和下载校验结果 |
+| [0.1.4 CLI 探测验证](research/release-0.1.4-validation.md) | Windows bat 入口、可复用配置状态同步与正式包校验 |
 | [人工与 Agent 补充设计](design/human-and-agent-design-editing.md) | 个人因子与场景编辑、修订评审、局域网增量提交接口 |
 | [界面与交互设计](design/interface-design.md) | 会话首页、设置、编排与评审工作区 |
 | [会话调用与设置方案](design/conversation-and-settings.md) | 保存流程如何从会话调用、真实 CLI 边界与恢复规则 |
