@@ -46,8 +46,10 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Set up Rust stable
-        run: rustup default stable
+      - name: Set up pinned Rust toolchain
+        run: |
+          rustup show active-toolchain
+          rustc --version --verbose
 
       - name: Install locked frontend dependencies
         run: npm.cmd ci
@@ -68,6 +70,13 @@ jobs:
 
       - name: Check native runtime contracts
         run: cargo test -p agent-runtime -p execution-runtime -p process-runtime --locked -- --nocapture
+
+      - name: Repeat execution contracts to detect intermittent failures
+        run: |
+          for ($pass = 1; $pass -le 3; $pass++) {
+            cargo test -p execution-runtime --locked -- --nocapture
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
 
       - name: Build release installer with bundled collaboration service
         run: npm.cmd run package:windows -- -- --locked

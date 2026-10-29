@@ -28,7 +28,7 @@ gh run download <运行ID> --repo tracy115-ops/verification --dir artifacts/down
 
 ## 构建与产物
 
-Windows x64 runner 使用 Node.js 24、Python 3.11、Rust stable；先运行前端／领域检查和原生运行时测试，再执行锁定 Cargo 依赖的 NSIS release 构建。打包配置 `src-tauri/tauri.bundle.conf.json` 独立于日常开发配置。
+Windows x64 runner 使用 Node.js 24、Python 3.11、根目录 `rust-toolchain.toml` 指定的 Rust 1.97.0；先运行前端／领域检查和原生运行时测试，再执行锁定 Cargo 依赖的 NSIS release 构建。打包配置 `src-tauri/tauri.bundle.conf.json` 独立于日常开发配置。
 
 安装包包含应用、协作服务 `server.cjs` 和网页资源；流程检查这些资源是否随桌面构建复制。安装程序支持中文和英文，默认安装到当前用户目录。WebView2 缺失时由安装程序下载运行时，因此不是完全离线安装包。
 
