@@ -244,7 +244,7 @@ pub(crate) async fn run_turn_in_paths(
     let Some(launch) = spec.and_then(|spec| resolve_driver(spec, paths)) else {
         return TurnOutcome::failed("cli_not_found");
     };
-    let args: Vec<String> = if matches!(request.driver, DriverId::Codeagent) {
+    let mut args: Vec<String> = if matches!(request.driver, DriverId::Codeagent) {
         let Some(args) = crate::codeagent::checked_arguments(&launch).await else {
             return TurnOutcome::failed("cli_capability_unverified");
         };
@@ -255,6 +255,11 @@ pub(crate) async fn run_turn_in_paths(
             .map(str::to_string)
             .collect()
     };
+    let _mcp_config =
+        match crate::codeagent::prepare_mcp_config(&mut args, workspace, &request.turn_id) {
+            Ok(config) => config,
+            Err(_) => return TurnOutcome::failed("workspace_failed"),
+        };
     let mut command = Command::new(&launch.program);
     crate::search_paths::configure_command(&mut command, paths);
     crate::proxy::configure(&mut command);

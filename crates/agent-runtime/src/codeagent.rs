@@ -3,6 +3,36 @@ use process_runtime::ProcessGuard;
 use std::{process::Stdio, time::Duration};
 use tokio::{io::AsyncReadExt, process::Command, time::timeout};
 
+pub(crate) struct McpConfig(std::path::PathBuf);
+impl Drop for McpConfig {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_file(&self.0);
+    }
+}
+
+pub(crate) fn prepare_mcp_config(
+    args: &mut [String],
+    workspace: &std::path::Path,
+    turn_id: &str,
+) -> std::io::Result<Option<McpConfig>> {
+    use std::io::Write;
+    let Some(index) = args.iter().position(|arg| arg == "--mcp-config") else {
+        return Ok(None);
+    };
+    let name = format!(".verification-mcp-{turn_id}.json");
+    let path = workspace.join(&name);
+    let mut file = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&path)?;
+    let guard = McpConfig(path);
+    file.write_all(b"{\"mcpServers\":{}}")?;
+    file.flush()?;
+    drop(file);
+    args[index + 1] = name;
+    Ok(Some(guard))
+}
+
 pub fn compatible_arguments(help: &str) -> Option<Vec<String>> {
     let required = [
         "--print",
@@ -92,6 +122,29 @@ pub async fn checked_arguments(launch: &LaunchSpec) -> Option<Vec<String>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn mcp_file_is_owned_valid_and_never_overwrites_an_existing_file() {
+        let root = std::env::temp_dir().join(format!(
+            "verification-mcp-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir(&root).unwrap();
+        let mut args = vec!["--mcp-config".into(), "inline".into()];
+        let guard = prepare_mcp_config(&mut args, &root, "owned").unwrap();
+        let path = root.join(&args[1]);
+        assert_eq!(
+            serde_json::from_slice::<serde_json::Value>(&std::fs::read(&path).unwrap()).unwrap(),
+            serde_json::json!({"mcpServers": {}})
+        );
+        assert!(prepare_mcp_config(&mut args, &root, "owned").is_err());
+        drop(guard);
+        assert!(!path.exists());
+        std::fs::remove_dir(root).unwrap();
+    }
     #[test]
     fn interactive_launch_alone_does_not_certify_a_structured_driver() {
         assert!(compatible_arguments("codeagent --dangerously-skip-permissions").is_none());

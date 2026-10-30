@@ -33,6 +33,8 @@ async fn headless_codeagent_skips_the_project_trust_prompt_and_finishes_a_real_b
 const a=process.argv.slice(2);
 if(a.includes('--help')) console.log('--print --output-format stream-json --verbose --tools --strict-mcp-config --mcp-config --dangerously-skip-permissions');
 else if(!a.includes('--skip-safe-check')) { console.error('Quick safety check: only use --print in a directory you trust. Hint: --skip-safe-check'); process.exit(21); }
+else if(a.includes('--mcp-config') && a[a.indexOf('--mcp-config')+1].startsWith('{')) { console.error('Invalid MCP config: expected a JSON file path'); process.exit(22); }
+else if(JSON.stringify(JSON.parse(require('fs').readFileSync(a[a.indexOf('--mcp-config')+1], 'utf8'))) !== '{"mcpServers":{}}') { console.error('Invalid MCP config content'); process.exit(23); }
 else { let text=''; process.stdin.setEncoding('utf8'); process.stdin.on('data',v=>text+=v); process.stdin.on('end',()=>console.log(JSON.stringify({type:'result',is_error:false,result:text,session_id:'fixture-session'}))); }
 "#).unwrap();
     fs::write(
@@ -71,6 +73,12 @@ else { let text=''; process.stdin.setEncoding('utf8'); process.stdin.on('data',v
     .await;
     assert_eq!(outcome.status, "completed");
     assert_eq!(outcome.text, "你好，测试非交互调用");
+    assert!(
+        !fixture
+            .0
+            .join(".verification-mcp-12345678-1234-1234-1234-123456789abc.json")
+            .exists()
+    );
 }
 impl Drop for Fixture {
     fn drop(&mut self) {

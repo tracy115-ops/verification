@@ -10,6 +10,8 @@ Windows 扫描支持 `codeagent.exe`、`codeagent.cmd` 和 `codeagent.bat`。路
 
 自动流程调用时先通过有界 `--help` 检查非交互、stream-json、verbose、关闭工具与 MCP 等参数；满足所需参数后使用 Claude 风格事件归一化。启动参数仅表示可能兼容，终态事件、退出码和产物 Schema 仍须全部检查。
 
+从 0.2.3 起，实际调用的 `--mcp-config` 使用工作台工作目录内的独立 JSON 文件，而非内联 JSON。配置内容为 `{"mcpServers":{}}`，保留 `--strict-mcp-config`；文件按 turn ID 排他创建，调用结束清理。相对文件名避免把 Windows 长路径和内联 JSON 同时交给批处理解析。CodeAgent、Claude 共享该配置传递方式。`cli_mcp_invalid` 只是分类，不能仅凭分类认定具体的 CLI 解析错误；内部环境仍需复测。
+
 `--dangerously-skip-permissions` 仅用于用户确认的内部驱动调用；扫描不会附带该标志，其他驱动不继承它。设计节点关闭工具与 MCP；本轮不将它开放为局域网远程命令入口。
 
 本机没有安装 CodeAgent，实测扫描结果为 missing。版本、参数和真实推理必须在安装环境回归；不能把 Codex 的实测结果当作 CodeAgent 的兼容认证。缺少所需非交互参数时返回 `cli_capability_unverified`，不将交互窗口文本猜测成成功产物。
