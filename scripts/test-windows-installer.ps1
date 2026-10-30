@@ -36,7 +36,34 @@ Start-WorkbenchSmoke
 New-Item -ItemType Directory -Path $profileRoot -Force | Out-Null
 $sentinel = Join-Path $profileRoot 'upgrade-smoke-sentinel.txt'
 'keep-profile' | Set-Content -LiteralPath $sentinel
-Install-Workbench -Upgrade
+New-Item -ItemType Directory -Path (Join-Path $env:RUNNER_TEMP 'verification-update-worker') -Force | Out-Null
+$workerRoot = Join-Path $env:RUNNER_TEMP 'verification-update-worker'
+$worker = Join-Path $workerRoot 'wb-update-worker.exe'
+Copy-Item -LiteralPath $binary -Destination $worker
+$workerInstaller = Join-Path $workerRoot 'update-smoke.exe'
+Copy-Item -LiteralPath $installers[0].FullName -Destination $workerInstaller
+$build = Get-Content -LiteralPath 'artifacts/windows-x64/build-info.json' -Raw | ConvertFrom-Json
+$workerRequest = Join-Path $workerRoot 'wb-update-request.json'
+$oldApplication = Start-Process -FilePath $binary -WindowStyle Hidden -PassThru
+@{ installer = $workerInstaller; application = $binary; parent_pid = $oldApplication.Id; version = $build.appVersion; size = (Get-Item -LiteralPath $workerInstaller).Length; sha256 = (Get-FileHash -LiteralPath $workerInstaller -Algorithm SHA256).Hash.ToLowerInvariant() } | ConvertTo-Json | Set-Content -LiteralPath $workerRequest -Encoding utf8NoBOM
+$supervisor = Start-Process -FilePath $worker -ArgumentList @('--verification-update-worker', ('"' + $workerRequest + '"')) -WindowStyle Hidden -PassThru
+try {
+  $waitingDeadline = [DateTime]::UtcNow.AddSeconds(30)
+  do {
+    Start-Sleep -Milliseconds 200
+    $receiptPath = Join-Path $workerRoot 'last-install.json'
+    $state = if (Test-Path -LiteralPath $receiptPath) { try { Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json } catch { $null } } else { $null }
+  } until ($state.status -eq 'waiting_for_app_exit' -or [DateTime]::UtcNow -ge $waitingDeadline -or $supervisor.HasExited)
+  if ($state.status -ne 'waiting_for_app_exit' -or $supervisor.HasExited) { throw 'Supervisor did not wait for the existing application.' }
+} finally {
+  if (-not $oldApplication.HasExited) {
+    $null = $oldApplication.CloseMainWindow()
+    if (-not $oldApplication.WaitForExit(10000)) { $oldApplication.Kill(); $oldApplication.WaitForExit() }
+  }
+}
+if (-not $supervisor.WaitForExit(180000)) { $supervisor.Kill(); throw 'Update supervisor timed out.' }
+$result = Get-Content -LiteralPath (Join-Path $workerRoot 'last-install.json') -Raw | ConvertFrom-Json
+if ($supervisor.ExitCode -ne 0 -or $result.status -ne 'restart_started') { throw "Update supervisor failed: $($result.status), exit $($result.exit_code)" }
 if ((Get-Content -LiteralPath $sentinel -Raw).Trim() -ne 'keep-profile') { throw 'Upgrade modified the existing profile directory.' }
 $restartDeadline = [DateTime]::UtcNow.AddSeconds(30)
 $restarted = $null
@@ -54,4 +81,4 @@ try {
     if (-not $restarted.WaitForExit(10000)) { $restarted.Kill(); $restarted.WaitForExit() }
   }
 }
-'Installer and same-version automatic restart tests passed. Business-data restoration is covered separately.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+'Installer and supervised same-version restart tests passed. Business-data restoration is covered separately.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY

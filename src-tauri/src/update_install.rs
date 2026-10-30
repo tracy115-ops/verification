@@ -1,6 +1,6 @@
 use std::path::Path;
 
-fn parameters(directory: &Path) -> Result<String, String> {
+pub(crate) fn parameters(directory: &Path) -> Result<String, String> {
     let directory = directory.to_str().ok_or("update_install_failed")?;
     if directory.contains(['\0', '\r', '\n', '"']) || !Path::new(directory).is_absolute() {
         return Err("update_install_failed".into());
@@ -11,11 +11,33 @@ fn parameters(directory: &Path) -> Result<String, String> {
 }
 
 #[cfg(windows)]
-pub fn launch(installer: &Path, directory: &Path) -> Result<(), String> {
+pub fn launch(
+    installer: &Path,
+    directory: &Path,
+    version: &str,
+    size: u64,
+    sha256: &str,
+) -> Result<(), String> {
     use std::os::windows::ffi::OsStrExt;
     use windows_sys::Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOWNORMAL};
-    let file: Vec<u16> = installer.as_os_str().encode_wide().chain(Some(0)).collect();
-    let arguments: Vec<u16> = parameters(directory)?
+    let _ = parameters(directory)?;
+    let root = installer.parent().ok_or("update_install_failed")?;
+    let helper = root.join("wb-update-worker.exe");
+    let manifest = root.join("wb-update-request.json");
+    let current = std::env::current_exe().map_err(|_| "update_install_failed")?;
+    let request = crate::update_worker::Request {
+        installer: installer.into(),
+        application: current.clone(),
+        parent_pid: std::process::id(),
+        version: version.into(),
+        size,
+        sha256: sha256.into(),
+    };
+    let bytes = serde_json::to_vec(&request).map_err(|_| "update_install_failed")?;
+    std::fs::copy(current, &helper).map_err(|_| "update_install_failed")?;
+    std::fs::write(&manifest, bytes).map_err(|_| "update_install_failed")?;
+    let file: Vec<u16> = helper.as_os_str().encode_wide().chain(Some(0)).collect();
+    let arguments: Vec<u16> = format!("--verification-update-worker \"{}\"", manifest.display())
         .encode_utf16()
         .chain(Some(0))
         .collect();
@@ -40,7 +62,13 @@ pub fn launch(installer: &Path, directory: &Path) -> Result<(), String> {
 }
 
 #[cfg(not(windows))]
-pub fn launch(_installer: &Path, directory: &Path) -> Result<(), String> {
+pub fn launch(
+    _installer: &Path,
+    directory: &Path,
+    _version: &str,
+    _size: u64,
+    _sha256: &str,
+) -> Result<(), String> {
     let _ = parameters(directory)?;
     Err("update_install_release_only".into())
 }

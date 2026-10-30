@@ -322,7 +322,13 @@ pub async fn install_update(app: AppHandle, state: State<'_, UpdateRuntime>) -> 
     let parent = dunce::simplified(&current)
         .parent()
         .ok_or("update_install_failed")?;
-    if let Err(error) = crate::update_install::launch(&ready, parent) {
+    if let Err(error) = crate::update_install::launch(
+        &ready,
+        parent,
+        &release.version,
+        release.size,
+        &release.sha256,
+    ) {
         crate::diagnostics::record(&app, "update.launch_failed", json!({"code":error}));
         return Err(error);
     }

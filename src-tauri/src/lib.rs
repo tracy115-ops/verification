@@ -12,12 +12,16 @@ async fn probe_agents(app: tauri::AppHandle) -> Vec<agent_runtime::AgentProbe> {
 }
 
 pub fn run() -> tauri::Result<()> {
+    if let Some(code) = update_worker::dispatch() {
+        std::process::exit(code);
+    }
     tauri::Builder::default()
         .manage(conversations::ConversationRuntime::default())
         .manage(executions::ExecutionRuntime::default())
         .manage(collaboration::CollaborationRuntime::default())
         .manage(updater::UpdateRuntime::default())
         .setup(|app| {
+            update_worker::report(app.handle());
             diagnostics::record(
                 app.handle(),
                 "app.started",
@@ -60,6 +64,7 @@ mod team_client;
 mod update_install;
 mod update_network;
 mod update_release;
+mod update_worker;
 mod updater;
 #[cfg(windows)]
 mod windows_proxy;
