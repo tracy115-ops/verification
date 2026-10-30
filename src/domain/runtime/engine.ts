@@ -14,7 +14,7 @@ import { reviewDigest } from './approvals';
 import { generateCaseBatches } from './case-batches';
 import { remainingNodeSeconds, runDeadline } from './deadline';
 import { scopedCases } from './case-scope';
-import { isCases } from './artifacts';
+import { isCases, isRequirements } from './artifacts';
 export { reviewDigest } from './approvals';
 
 async function storeOutput(run: WorkflowRun, node: WorkflowNode, value: unknown) {
@@ -103,7 +103,19 @@ export async function advanceRun(
         );
         step.nativeSessionId = result.nativeSessionId ?? undefined;
         if (result.status !== 'completed') throw new Error(result.errorCode ?? 'cli_failed');
-        await storeOutput(run, node, validateTaskArtifact(run, node, parseArtifact(result.text)));
+        const parsed = parseArtifact(result.text);
+        try {
+          await storeOutput(run, node, validateTaskArtifact(run, node, parsed));
+        } catch (error) {
+          if (
+            node.operation === 'requirements.extract' &&
+            isRequirements(parsed) &&
+            error instanceof Error &&
+            ['source_quote_invalid', 'source_quote_ambiguous'].includes(error.message)
+          )
+            await storeOutput(run, node, parsed);
+          throw error;
+        }
       }
       step.status = 'succeeded';
       onUpdate(structuredClone(run));

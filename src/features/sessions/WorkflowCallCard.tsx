@@ -23,6 +23,11 @@ export function WorkflowCallCard({
         .find((key) => run.artifacts[key])
     : undefined;
   const error = turn.validationError ?? turn.errorCode;
+  const repaired =
+    node?.operation === 'requirements.extract' &&
+    ['source_quote_invalid', 'source_quote_ambiguous'].includes(error ?? '') &&
+    run.steps[node.id]?.status === 'succeeded' &&
+    Object.values(run.artifacts).some((item) => item.type === 'RequirementQuoteRepair');
   const label = turn.validationError
     ? 'cliValidationRejected'
     : turn.status === 'running'
@@ -49,8 +54,8 @@ export function WorkflowCallCard({
       </header>
       <div className="session-cli-title">
         <h3>{node ? nodeLabel(node, run.snapshot, t) : turn.operation}</h3>
-        <Status tone={error ? 'danger' : turn.status === 'completed' ? 'success' : 'accent'}>
-          {t(label)}
+        <Status tone={error && !repaired ? 'danger' : turn.status === 'completed' ? 'success' : 'accent'}>
+          {t(repaired ? 'quoteRepairAppliedLabel' : label)}
         </Status>
       </div>
       <details className="session-cli-request">
@@ -74,7 +79,8 @@ export function WorkflowCallCard({
           </>
         ))}
       {turn.status === 'running' && <AgentReplyStatus />}
-      {error && <p className="wb-error">{isMessageKey(error) ? t(error) : t('cli_failed')}</p>}
+      {repaired && <p className="wb-muted">{t('quoteRepairApplied')}</p>}
+      {error && !repaired && <p className="wb-error">{isMessageKey(error) ? t(error) : t('cli_failed')}</p>}
       {!!turn.activities.length && (
         <details>
           <summary>

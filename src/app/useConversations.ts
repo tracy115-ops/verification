@@ -14,6 +14,7 @@ import { runReviewActions } from './run-review-actions';
 import { recordedAgent } from '../services/recorded-agent';
 import { transcriptStore } from '../services/transcript-store';
 import type { ChatContextMode } from '../domain/runtime/chat-context';
+import { recoverRequirementDraft } from '../services/requirement-recovery';
 
 export function useConversations(
   profiles: AgentProfile[],
@@ -128,7 +129,7 @@ export function useConversations(
         .find((step) => ['failed', 'interrupted'].includes(step.status));
       if (previous?.turnId) await port.cancel(previous.turnId);
       if (previous?.executionId) await executionPort.cancel(previous.executionId);
-      await drive(retryRun(run), controller);
+      await drive(retryRun(await recoverRequirementDraft(run)), controller);
     });
   }
   async function stopRecovered() {

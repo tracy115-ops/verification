@@ -3,6 +3,8 @@ import { clarifyRequirements, excludeReviewIssues } from '../domain/runtime/clar
 import { excludeCases } from '../domain/runtime/case-scope';
 import { resolveScriptQuestions } from '../domain/runtime/script-revision';
 import type { WorkflowRun } from '../domain/runtime/types';
+import { repairRequirementQuotes } from '../domain/runtime/quote-repair';
+import { recoverRequirementDraft } from '../services/requirement-recovery';
 
 export function runReviewActions({
   perform,
@@ -14,6 +16,13 @@ export function runReviewActions({
   drive: (run: WorkflowRun, controller: AbortController) => Promise<void>;
 }) {
   return {
+    repairQuotes(run: WorkflowRun, quotes: Record<string, string>) {
+      return perform(async (controller) => {
+        const repaired = await repairRequirementQuotes(await recoverRequirementDraft(run), quotes);
+        updateRun(run.sessionId, repaired);
+        await drive(repaired, controller);
+      });
+    },
     approve(run: WorkflowRun, nodeId: string, hash: string) {
       return perform(async (controller) => drive(await approveRun(run, nodeId, hash), controller));
     },

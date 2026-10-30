@@ -6,6 +6,7 @@ import {
   decodeRequirements,
   generatedDesignSchema,
   isGeneratedDesign,
+  isRequirements,
   requirementSchema,
 } from './artifacts';
 import { latestArtifact } from './bindings';
@@ -14,6 +15,7 @@ import { executionTask, validatedExecutionArtifact } from './execution';
 import { decodePlan } from '../execution/validation';
 import { canonicalJson } from '../execution/canonical';
 import { scopedCases } from './case-scope';
+import { quoteIssues } from './source-quotes';
 
 export function taskFor(run: WorkflowRun, node: WorkflowNode, inputs: Record<string, unknown>) {
   if (['tests.implement', 'verdicts.evaluate'].includes(node.operation))
@@ -25,6 +27,11 @@ export function taskFor(run: WorkflowRun, node: WorkflowNode, inputs: Record<str
   };
   const schema = schemas[node.operation];
   if (!schema) throw new Error('unsupported_workflow');
+  const previous = run.artifacts[`${node.id}.${Object.keys(node.outputs)[0]}`]?.value;
+  const issues =
+    node.operation === 'requirements.extract' && isRequirements(previous)
+      ? quoteIssues(previous.requirements, run.spec)
+      : [];
   const taskInputs = { ...inputs };
   for (const [key, contract] of Object.entries(node.inputs)) {
     const value = taskInputs[key];
@@ -50,6 +57,21 @@ export function taskFor(run: WorkflowRun, node: WorkflowNode, inputs: Record<str
     clarifications: run.clarifications ?? [],
     reviewExclusions: run.reviewExclusions ?? [],
     outputSchema: schema,
+    ...(issues.length && isRequirements(previous)
+      ? {
+          validationFeedback: {
+            instruction:
+              'A prior response had invalid or ambiguous source quotes. Copy unique literal spans from sourceSpec, never paraphrase quote fields. Return the complete requirements JSON object.',
+            totalIssues: issues.length,
+            examples: issues.slice(0, 5).map((item) => ({
+              ...item,
+              quotePreview: previous.requirements
+                .find((requirement) => requirement.id === item.id)
+                ?.quote.slice(0, 80),
+            })),
+          },
+        }
+      : {}),
   });
 }
 

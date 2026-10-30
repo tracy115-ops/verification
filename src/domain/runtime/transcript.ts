@@ -55,7 +55,7 @@ export function isCliTurnRecord(value: unknown): value is CliTurnRecord {
     new TextEncoder().encode(request.prompt).length <= 131072 &&
     Number.isInteger(request.timeoutSeconds) &&
     request.timeoutSeconds > 0 &&
-    request.timeoutSeconds <= 600 &&
+    request.timeoutSeconds <= 86400 &&
     (item.errorCode === undefined || typeof item.errorCode === 'string') &&
     (item.validationError === undefined || typeof item.validationError === 'string') &&
     Array.isArray(item.activities) &&

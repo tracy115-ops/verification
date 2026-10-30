@@ -6,6 +6,7 @@
 
 | 文档 | 解决的问题 |
 | --- | --- |
+| [需求引用校验与恢复](design/requirement-quote-recovery.md) | 格式匹配、问题引用定位、旧任务草稿恢复及修复审计 |
 | [对话上下文预算](design/conversation-context-budget.md) | 历史窗口、仅本条消息、完整输入与流程 Spec 去重 |
 | [受监督更新交接](design/supervised-desktop-update.md) | 独立更新进程、等待退出、安装退出码和重启记录 |
 | [0.4.2 更新验收](research/release-0.4.2-update-validation.md) | 远端完整更新进程检查、下载校验及目标环境边界 |

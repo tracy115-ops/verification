@@ -1,5 +1,6 @@
 import Ajv2020 from 'ajv/dist/2020.js';
 import type { CaseArtifact, DesignArtifact, RequirementArtifact } from './types';
+import { quoteMatcher } from './source-quotes';
 
 const text = { type: 'string', minLength: 1, maxLength: 12000 };
 const id = { type: 'string', pattern: '^[A-Za-z][A-Za-z0-9_-]{0,79}$' };
@@ -81,36 +82,47 @@ export function decodeRequirements(value: unknown, spec: string): RequirementArt
   fail(isRequirements(value));
   if (!isRequirements(value)) throw new Error('artifact_invalid');
   fail(unique(value.requirements.map((item) => item.id)));
-  for (const requirement of value.requirements) {
-    fail(spec.includes(requirement.quote), 'source_quote_invalid');
-    fail(spec.indexOf(requirement.quote) === spec.lastIndexOf(requirement.quote), 'source_quote_ambiguous');
-  }
-  return value;
+  const result = structuredClone(value);
+  const match = quoteMatcher(spec);
+  for (const requirement of result.requirements) requirement.quote = match(requirement.quote);
+  return result;
 }
 
 export function decodeDesign(value: unknown, requirements: RequirementArtifact): DesignArtifact {
   if (!isDesign(value)) throw new Error('artifact_invalid');
-  fail(unique(value.scenarios.map((item) => item.id)));
+  const design = structuredClone(value);
+  fail(unique(design.scenarios.map((item) => item.id)));
   const ids = new Set(requirements.requirements.map((item) => item.id));
-  for (const scenario of value.scenarios)
+  for (const scenario of design.scenarios)
     fail(unique(scenario.requirementIds) && scenario.requirementIds.every((id) => ids.has(id)));
-  if (value.factors) {
-    fail(unique(value.factors.map((item) => item.id)));
-    for (const factor of value.factors) {
+  if (design.factors) {
+    fail(unique(design.factors.map((item) => item.id)));
+    for (const factor of design.factors) {
       fail(unique(factor.requirementIds) && factor.requirementIds.every((id) => ids.has(id)));
       fail(unique(factor.levels));
-      fail(
-        factor.requirementIds.some((id) =>
-          requirements.requirements.find((item) => item.id === id)?.quote.includes(factor.sourceQuote),
-        ),
-      );
+      const linked = requirements.requirements.filter((item) => factor.requirementIds.includes(item.id));
+      let original = linked.some((item) => item.quote.includes(factor.sourceQuote))
+        ? factor.sourceQuote
+        : undefined;
+      if (original === undefined) {
+        for (const item of linked) {
+          try {
+            original = quoteMatcher(item.quote)(factor.sourceQuote);
+            break;
+          } catch {
+            /* Try another explicitly linked requirement. */
+          }
+        }
+      }
+      if (original === undefined) throw new Error('artifact_invalid');
+      factor.sourceQuote = original;
     }
   }
-  for (const scenario of value.scenarios) {
+  for (const scenario of design.scenarios) {
     const combinations = scenario.factorLevels ?? [];
     fail(unique(combinations.map((item) => JSON.stringify([item.factorId, item.level]))));
     for (const item of combinations) {
-      const factor = value.factors?.find((factor) => factor.id === item.factorId);
+      const factor = design.factors?.find((factor) => factor.id === item.factorId);
       fail(
         !!factor &&
           factor.levels.includes(item.level) &&
@@ -118,7 +130,7 @@ export function decodeDesign(value: unknown, requirements: RequirementArtifact):
       );
     }
   }
-  return value;
+  return design;
 }
 
 export function decodeCases(

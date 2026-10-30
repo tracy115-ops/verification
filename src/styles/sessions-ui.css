@@ -866,3 +866,23 @@
     font-size: 21px;
   }
 }
+.session-quote-repair {
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+  border-bottom: 1px solid var(--wb-border);
+}
+.session-quote-repair h3,
+.session-quote-repair p {
+  margin: 0;
+}
+.session-quote-repair textarea {
+  min-height: 90px;
+}
+.session-quote-repair pre {
+  max-height: 220px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}

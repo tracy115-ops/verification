@@ -12,6 +12,7 @@ import { RunArtifactViewer } from './RunArtifactViewer';
 import { ScriptQuestions } from './ScriptQuestions';
 import { RunReport } from './RunReport';
 import { RunReview } from './RunReview';
+import { RequirementQuoteRepair } from './RequirementQuoteRepair';
 
 export function RunPanel({
   run,
@@ -49,6 +50,10 @@ export function RunPanel({
       <RunSummary value={report} />
       <RunReport artifact={Object.values(run.artifacts).find((item) => isReport(item.value))} />
       <CurrentStep run={run} />
+      {run.status === 'failed' &&
+        ['source_quote_invalid', 'source_quote_ambiguous'].includes(run.errorCode ?? '') && (
+          <RequirementQuoteRepair key={run.id} run={run} actions={actions} />
+        )}
       <ScriptQuestions
         key={Object.values(run.artifacts).find((item) => item.type === 'ImplementationBundle')?.digest}
         run={run}
