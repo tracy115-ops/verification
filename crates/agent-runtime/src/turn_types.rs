@@ -81,6 +81,17 @@ pub enum AgentEvent {
         id: String,
     },
     Heartbeat,
+    Progress {
+        elapsed_ms: u64,
+        stdout_bytes: usize,
+        stderr_bytes: usize,
+        last_output_age_ms: Option<u64>,
+        protocol_records: usize,
+        unknown_records: usize,
+        last_event: &'static str,
+        public_text_bytes: usize,
+        terminal: bool,
+    },
     Diagnostic {
         protocol_records: usize,
         unknown_records: usize,

@@ -5,6 +5,8 @@ import type { AgentProfile, WorkbenchDocument } from '../../domain/workflow';
 import { hasDesktopBridge } from '../../services/agent-api';
 import { useI18n } from '../../shared/i18n/context';
 import type { FrameworkProfile } from '../../domain/execution/types';
+import type { ChatContextMode } from '../../domain/runtime/chat-context';
+import { ChatContextControl } from './ChatContextControl';
 
 export function ConversationComposer({
   actions,
@@ -28,6 +30,7 @@ export function ConversationComposer({
   const [attachmentError, setAttachmentError] = useState(false);
   const [frameworkId, setFrameworkId] = useState('');
   const [useNodeBindings, setUseNodeBindings] = useState(false);
+  const [contextMode, setContextMode] = useState<ChatContextMode>('recent');
   const file = useRef<HTMLInputElement>(null);
   async function send() {
     const framework = invoke && frameworkId ? frameworks.find((item) => item.id === frameworkId) : undefined;
@@ -35,7 +38,7 @@ export function ConversationComposer({
       actions.setError('execution_invalid');
       return;
     }
-    if (await actions.send(text, invoke, profileId, framework, useNodeBindings)) setText('');
+    if (await actions.send(text, invoke, profileId, framework, useNodeBindings, contextMode)) setText('');
   }
   async function attach(input?: File) {
     if (!input) return;
@@ -106,6 +109,15 @@ export function ConversationComposer({
           </label>
         )}
       </div>
+      {!invoke && (
+        <ChatContextControl
+          messages={actions.session?.messages ?? []}
+          draft={text}
+          mode={contextMode}
+          change={setContextMode}
+          disabled={actions.busy}
+        />
+      )}
       {invoke && (
         <label className="session-binding-choice wb-muted">
           <input

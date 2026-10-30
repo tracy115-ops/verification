@@ -65,11 +65,22 @@ pub async fn send_cli_turn(
         serde_json::json!({"driver":request.driver.as_str(), "turnId":turn_id, "timeoutSeconds":request.timeout_seconds, "promptBytes":request.prompt.len()}),
     );
     let outcome = agent_runtime::run_turn(request, &workspace, receiver, |event| {
-        if let AgentEvent::Diagnostic { .. } = &event {
+        if matches!(
+            &event,
+            AgentEvent::Diagnostic { .. } | AgentEvent::Progress { .. }
+        ) {
             let mut details = serde_json::to_value(&event).unwrap_or_default();
             details["turnId"] = serde_json::json!(turn_id);
             details["driver"] = serde_json::json!(driver);
-            crate::diagnostics::record(&app, "cli.diagnostic", details);
+            crate::diagnostics::record(
+                &app,
+                if matches!(&event, AgentEvent::Progress { .. }) {
+                    "cli.progress"
+                } else {
+                    "cli.diagnostic"
+                },
+                details,
+            );
             return true;
         }
         on_event.send(event).is_ok()

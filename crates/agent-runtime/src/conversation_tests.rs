@@ -78,10 +78,45 @@ async fn codeagent_native_errors_fail_without_waiting_for_timeout_and_init_only_
     assert!(result.text.is_empty());
     request.timeout_seconds = 1;
     let (_sender, receiver) = oneshot::channel();
-    let result = supervise(fixture("codeagent-init", None), &request, receiver, |_| {
+    let progress_seen = std::cell::Cell::new(false);
+    let result = supervise(
+        fixture("codeagent-init", None),
+        &request,
+        receiver,
+        |event| {
+            if matches!(event, crate::AgentEvent::Progress { .. }) {
+                progress_seen.set(true);
+            }
+            true
+        },
+    )
+    .await;
+    assert_eq!(result.error_code.as_deref(), Some("cli_timeout_no_text"));
+    assert!(progress_seen.get());
+}
+
+#[tokio::test]
+async fn counts_partial_protocol_bytes_before_a_newline_arrives() {
+    let mut request = request();
+    request.driver = DriverId::Codeagent;
+    request.model.clear();
+    request.timeout_seconds = 1;
+    let measured = std::cell::Cell::new(false);
+    let (_sender, receiver) = oneshot::channel();
+    let result = supervise(fixture("partial-json", None), &request, receiver, |event| {
+        if let crate::AgentEvent::Diagnostic {
+            stdout_bytes,
+            protocol_records,
+            last_output_age_ms,
+            ..
+        } = event
+        {
+            measured.set(stdout_bytes > 0 && protocol_records == 0 && last_output_age_ms.is_some());
+        }
         true
     })
     .await;
+    assert!(measured.get());
     assert_eq!(result.error_code.as_deref(), Some("cli_timeout_no_text"));
 }
 

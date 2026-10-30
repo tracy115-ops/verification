@@ -595,10 +595,16 @@
   order: 1;
   grid-column: 1 / -1;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
   font-size: 12px;
   padding-top: 6px;
+}
+.session-binding-choice .workbench-select {
+  width: auto;
+  max-width: 210px;
+  font-size: 12px;
 }
 .session-composer-actions {
   display: flex;

@@ -44,6 +44,11 @@ export const conversationZh = {
   model_required: '此 CLI 需要配置模型，请到设置 → Agent 与 Provider 填写模型 ID。',
   useNodeBindings: '使用编排中的节点 Agent（默认使用当前会话 Agent）',
   sessionRunning: '此会话正在后台执行',
+  chatContextLabel: '对话上下文',
+  chatContextRecent: '最近内容（约 32 KB）',
+  chatContextCurrent: '仅本条消息',
+  chatContextFull: '全部完整消息',
+  chatContextOmitted: '本次不携带 {count} 条旧消息；原记录保留。',
   cli_capability_unverified: '该 CLI 尚未确认支持所需的非交互与结构化事件参数，请核对目标环境版本。',
   previous_turn_active: '上次 CLI 调用的结束状态未确认。请先停止旧调用，再发送新消息。',
   cancel_not_confirmed: '停止尚未确认，请稍后重试。',
@@ -233,6 +238,11 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
   model_required: 'Configure a model in Settings → Agents & providers before using this CLI.',
   useNodeBindings: 'Use node Agent bindings (defaults to the current conversation Agent)',
   sessionRunning: 'This conversation is running in the background',
+  chatContextLabel: 'Conversation context',
+  chatContextRecent: 'Recent context (~32 KB)',
+  chatContextCurrent: 'Current message only',
+  chatContextFull: 'All complete messages',
+  chatContextOmitted: '{count} earlier messages omitted from this request; records are retained.',
   cli_capability_unverified:
     'Required noninteractive and structured-event options are not verified for this CLI version.',
   previous_turn_active:

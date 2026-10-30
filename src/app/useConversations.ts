@@ -13,6 +13,7 @@ import { sessionActions } from './session-actions';
 import { runReviewActions } from './run-review-actions';
 import { recordedAgent } from '../services/recorded-agent';
 import { transcriptStore } from '../services/transcript-store';
+import type { ChatContextMode } from '../domain/runtime/chat-context';
 
 export function useConversations(
   profiles: AgentProfile[],
@@ -61,6 +62,7 @@ export function useConversations(
     profileId: string,
     framework?: FrameworkProfile,
     useNodeBindings = false,
+    contextMode: ChatContextMode = 'recent',
   ): Promise<boolean> {
     const current = session ?? createSession(profileId);
     if (tasks.isSessionBusy(current.id) || !text.trim()) return false;
@@ -96,7 +98,7 @@ export function useConversations(
         accepted = true;
         await drive(run, controller);
       } else {
-        const request = chatRequest(value, profile);
+        const request = chatRequest(value, profile, contextMode);
         value.activeTurnId = request.turnId;
         changeSession(value);
         store.setActiveId(value.id);

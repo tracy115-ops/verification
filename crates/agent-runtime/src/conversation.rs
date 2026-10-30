@@ -59,42 +59,66 @@ fn arguments(driver: DriverId) -> Vec<&'static str> {
     }
 }
 
-async fn pump(
-    mut reader: impl AsyncRead + Unpin,
-    source: bool,
-    sender: mpsc::Sender<(bool, Result<Vec<u8>, ()>)>,
-) {
+enum OutputFrame {
+    Bytes { stdout: bool, count: usize },
+    Line { stdout: bool, line: Vec<u8> },
+    Limit,
+}
+
+async fn pump(mut reader: impl AsyncRead + Unpin, source: bool, sender: mpsc::Sender<OutputFrame>) {
     let mut buffer = [0u8; 4096];
     let mut pending = Vec::new();
     loop {
         let count = match reader.read(&mut buffer).await {
             Ok(count) => count,
             Err(_) => {
-                let _ = sender.send((source, Err(()))).await;
+                let _ = sender.send(OutputFrame::Limit).await;
                 return;
             }
         };
         if count == 0 {
             break;
         }
+        if sender
+            .send(OutputFrame::Bytes {
+                stdout: source,
+                count,
+            })
+            .await
+            .is_err()
+        {
+            return;
+        }
         pending.extend_from_slice(&buffer[..count]);
         while let Some(end) = pending.iter().position(|byte| *byte == b'\n') {
             if end > MAX_LINE {
-                let _ = sender.send((source, Err(()))).await;
+                let _ = sender.send(OutputFrame::Limit).await;
                 return;
             }
             let line: Vec<u8> = pending.drain(..=end).collect();
-            if sender.send((source, Ok(line))).await.is_err() {
+            if sender
+                .send(OutputFrame::Line {
+                    stdout: source,
+                    line,
+                })
+                .await
+                .is_err()
+            {
                 return;
             }
         }
         if pending.len() > MAX_LINE {
-            let _ = sender.send((source, Err(()))).await;
+            let _ = sender.send(OutputFrame::Limit).await;
             return;
         }
     }
     if !pending.is_empty() {
-        let _ = sender.send((source, Ok(pending))).await;
+        let _ = sender
+            .send(OutputFrame::Line {
+                stdout: source,
+                line: pending,
+            })
+            .await;
     }
 }
 
@@ -128,26 +152,38 @@ async fn supervise(
     let mut stderr_failure = None;
     let mut stderr_bytes = 0usize;
     let started = Instant::now();
-    let mut last_output = None;
+    let mut last_output: Option<Instant> = None;
     let deadline = Instant::now() + Duration::from_secs(request.timeout_seconds);
     let mut heartbeat = interval(Duration::from_secs(1));
+    let mut diagnostics = interval(Duration::from_secs(15));
     let mut interrupted = None;
     while !(status.is_some() && streams_closed) {
         tokio::select! {
             _ = &mut cancel => { interrupted = Some(("cancelled", "cancelled")); break; }
             _ = sleep_until(deadline) => { interrupted = Some(("timed_out", if state.terminal { "cli_timeout_shutdown" } else if received == 0 { "cli_timeout_no_output" } else if state.text.is_empty() && state.final_text.as_ref().is_none_or(|text| text.is_empty()) { "cli_timeout_no_text" } else { "cli_timeout_no_completion" })); break; }
             _ = heartbeat.tick() => { if !sink(AgentEvent::Heartbeat) { interrupted = Some(("cancelled", "client_disconnected")); break; } }
+            _ = diagnostics.tick() => {
+                if !sink(AgentEvent::Progress {
+                    elapsed_ms: started.elapsed().as_millis() as u64,
+                    stdout_bytes: received.saturating_sub(stderr_bytes), stderr_bytes,
+                    last_output_age_ms: last_output.map(|time| time.elapsed().as_millis() as u64),
+                    protocol_records: state.records, unknown_records: state.unknown_records,
+                    last_event: state.last_event, public_text_bytes: state.final_text.as_ref().unwrap_or(&state.text).len(), terminal: state.terminal,
+                }) { interrupted = Some(("cancelled", "client_disconnected")); break; }
+            }
             result = child.wait(), if status.is_none() => { status = Some(result); }
             frame = rx.recv(), if !streams_closed => {
                 match frame {
                     None => streams_closed = true,
-                    Some((_, Err(()))) => { interrupted = Some(("failed", "output_limit")); break; }
-                    Some((stdout, Ok(line))) => {
+                    Some(OutputFrame::Limit) => { interrupted = Some(("failed", "output_limit")); break; }
+                    Some(OutputFrame::Bytes { stdout, count }) => {
                         last_output = Some(Instant::now());
-                        received += line.len();
+                        received += count;
+                        if !stdout { stderr_bytes += count; }
                         if received > MAX_OUTPUT { interrupted = Some(("failed", "output_limit")); break; }
+                    }
+                    Some(OutputFrame::Line { stdout, line }) => {
                         if !stdout {
-                            stderr_bytes += line.len();
                             stderr_failure = crate::failure::classify(&String::from_utf8_lossy(&line)).or(stderr_failure);
                         }
                         if stdout && !line.iter().all(u8::is_ascii_whitespace) {

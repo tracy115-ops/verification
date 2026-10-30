@@ -8,6 +8,7 @@ process.stdin.on('data', (value) => { input += value; });
 process.stdin.on('end', () => {
   if (mode === 'oversized') { process.stdout.write('x'.repeat(300000)); return; }
   if (mode === 'wait') { setInterval(() => {}, 1000); return; }
+  if (mode === 'partial-json') { process.stdout.write('{"type":"stream_event"'); setInterval(() => {}, 1000); return; }
   if (mode === 'codeagent-error' || mode === 'codeagent-init') {
     console.log(JSON.stringify(mode === 'codeagent-error' ? { type: 'error', error: { message: 'authentication failed: private-token' } } : { type: 'system', subtype: 'init', session_id: 'fixture-session' }));
     setInterval(() => {}, 1000);
