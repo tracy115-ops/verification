@@ -10,6 +10,7 @@ import {
 import { useI18n } from '../../shared/i18n/context';
 import type { TeamActions } from './useTeam';
 import { InlineTeamError } from './InlineTeamError';
+import { FieldChanges } from './FieldChanges';
 
 export function ContributionReview({
   actions,
@@ -69,16 +70,7 @@ export function ContributionReview({
         </p>
       )}
       {stale && item.status === 'pending' && <p className="wb-error">{t('collab_proposal_stale')}</p>}
-      <div className="collab-diff">
-        <section>
-          <h4>{t('collab_before')}</h4>
-          <pre>{JSON.stringify(item.before, null, 2)}</pre>
-        </section>
-        <section>
-          <h4>{t('collab_after')}</h4>
-          <pre>{JSON.stringify(item.value, null, 2)}</pre>
-        </section>
-      </div>
+      <FieldChanges before={item.before} after={item.value} />
       {stale && (
         <details>
           <summary>{t('collab_current')}</summary>

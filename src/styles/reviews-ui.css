@@ -1,6 +1,56 @@
 .review-shell {
   padding: 20px;
 }
+.coverage-matrix {
+  padding: 16px 20px;
+  min-width: 0;
+}
+.coverage-matrix-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+.coverage-matrix-toolbar .workbench-input {
+  width: min(100%, 360px);
+}
+.coverage-matrix-toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.coverage-matrix-scroll {
+  overflow: auto;
+}
+.coverage-matrix table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.coverage-matrix th,
+.coverage-matrix td {
+  padding: 12px;
+  border-bottom: 1px solid var(--wb-border);
+  text-align: left;
+  vertical-align: top;
+}
+.coverage-matrix td:first-child {
+  min-width: 200px;
+  max-width: 340px;
+}
+.coverage-matrix td:first-child button {
+  white-space: normal;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.coverage-matrix-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 90px;
+  max-height: 150px;
+  overflow: auto;
+}
 .review-status-strip {
   display: flex;
   flex-wrap: wrap;

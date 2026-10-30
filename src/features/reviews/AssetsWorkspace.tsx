@@ -9,6 +9,7 @@ import { PersonalCaseCoverage, type UpdateRun } from './PersonalCaseCoverage';
 import { RunContributionExport } from './RunContributionExport';
 import { personalCoverage } from '../../domain/runtime/case-coverage';
 import { DesignEditActions } from './DesignEditor';
+import { CoverageMatrix } from './CoverageMatrix';
 
 export type AssetView = 'requirements' | 'factors' | 'scenarios' | 'cases';
 type View = AssetView;
@@ -29,6 +30,7 @@ export function AssetsWorkspace({
   const [view, setView] = useState<View>(initialView);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState('');
+  const [matrix, setMatrix] = useState(false);
   const run = session?.runs.find((item) => item.id === runId) ?? session?.runs.at(-1);
   const title = session
     ? session.title.replace(/^#+\s*/, '').split('\n')[0] || t('untitledSession')
@@ -57,9 +59,10 @@ export function AssetsWorkspace({
               <button
                 key={item}
                 className="workbench-btn"
-                aria-pressed={view === item}
+                aria-pressed={!matrix && view === item}
                 onClick={() => {
                   setView(item);
+                  setMatrix(false);
                   setSelected('');
                   setQuery('');
                 }}
@@ -75,21 +78,36 @@ export function AssetsWorkspace({
                 )}
               </button>
             ))}
+            <button className="workbench-btn" aria-pressed={matrix} onClick={() => setMatrix(true)}>
+              {t('matrixTitle')}
+            </button>
           </nav>
-          <TaskAssets
-            updateRun={updateRun}
-            run={run}
-            view={view}
-            query={query}
-            setQuery={setQuery}
-            selected={selected}
-            setSelected={setSelected}
-            navigate={(next, id) => {
-              setView(next);
-              setSelected(id);
-              setQuery('');
-            }}
-          />
+          {matrix ? (
+            <CoverageMatrix
+              run={run}
+              navigate={(next, id) => {
+                setMatrix(false);
+                setView(next);
+                setSelected(id);
+                setQuery('');
+              }}
+            />
+          ) : (
+            <TaskAssets
+              updateRun={updateRun}
+              run={run}
+              view={view}
+              query={query}
+              setQuery={setQuery}
+              selected={selected}
+              setSelected={setSelected}
+              navigate={(next, id) => {
+                setView(next);
+                setSelected(id);
+                setQuery('');
+              }}
+            />
+          )}
         </>
       )}
     </div>

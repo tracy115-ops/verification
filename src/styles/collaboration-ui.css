@@ -153,3 +153,37 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+.field-changes {
+  min-width: 0;
+}
+.field-changes-scroll {
+  overflow: auto;
+}
+.field-changes table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.field-changes th,
+.field-changes td {
+  padding: 10px;
+  border: 1px solid var(--wb-border);
+  vertical-align: top;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.field-changes th:first-child {
+  width: 20%;
+}
+.field-changes pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 0;
+  max-height: 220px;
+  overflow: auto;
+}
+.field-changes td pre {
+  padding: 0;
+  background: transparent;
+}

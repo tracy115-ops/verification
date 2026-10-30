@@ -84,6 +84,9 @@ test('reviews an incremental suggestion, declares coverage, maps Python and inva
   await dialog.getByLabel('补充包 JSON', { exact: true }).fill(JSON.stringify(proposal));
   await dialog.getByRole('button', { name: '提交待评审建议', exact: true }).click();
   await expect(page.locator('.collab-detail')).toContainText('容量2创建成功');
+  await expect(page.getByRole('region', { name: '字段变更', exact: true })).toBeVisible();
+  await expect(page.locator('.field-changes tbody')).toContainText('HTTP201');
+  await page.screenshot({ path: '.runtime/collaboration-field-changes.png' });
   await page.getByRole('button', { name: '合入此条', exact: true }).click();
   await expect(page.locator('.collab-detail')).toContainText('已合入');
   await page.getByRole('button', { name: /^用例与脚本/ }).click();
