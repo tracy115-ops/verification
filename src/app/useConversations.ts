@@ -85,6 +85,7 @@ export function useConversations(
     invoke: boolean,
     profileId: string,
     framework?: FrameworkProfile,
+    useNodeBindings = false,
   ): Promise<boolean> {
     if (abort.current || !text.trim()) return false;
     let accepted = false;
@@ -104,7 +105,15 @@ export function useConversations(
         if (!saved) throw new Error('workflow_not_saved');
         if (current.runs.some((run) => ['ready', 'running', 'awaiting_review'].includes(run.status)))
           throw new Error('run_in_progress');
-        const run = createRun(saved, value.id, command.spec, profiles, profileId, framework);
+        const run = createRun(
+          saved,
+          value.id,
+          command.spec,
+          profiles,
+          profileId,
+          framework,
+          useNodeBindings ? 'bindings' : 'session',
+        );
         value.runs = [...value.runs, run];
         setSelectedRunId(run.id);
         changeSession(value);

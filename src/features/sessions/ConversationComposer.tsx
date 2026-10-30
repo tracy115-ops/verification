@@ -27,6 +27,7 @@ export function ConversationComposer({
   const [profileId, setProfileId] = useState(actions.session?.profileId ?? profiles[0]?.id ?? '');
   const [attachmentError, setAttachmentError] = useState(false);
   const [frameworkId, setFrameworkId] = useState('');
+  const [useNodeBindings, setUseNodeBindings] = useState(false);
   const file = useRef<HTMLInputElement>(null);
   async function send() {
     const framework = invoke && frameworkId ? frameworks.find((item) => item.id === frameworkId) : undefined;
@@ -34,7 +35,7 @@ export function ConversationComposer({
       actions.setError('execution_invalid');
       return;
     }
-    if (await actions.send(text, invoke, profileId, framework)) setText('');
+    if (await actions.send(text, invoke, profileId, framework, useNodeBindings)) setText('');
   }
   async function attach(input?: File) {
     if (!input) return;
@@ -105,6 +106,17 @@ export function ConversationComposer({
           </label>
         )}
       </div>
+      {invoke && (
+        <label className="session-binding-choice wb-muted">
+          <input
+            type="checkbox"
+            checked={useNodeBindings}
+            disabled={actions.busy}
+            onChange={(event) => setUseNodeBindings(event.target.checked)}
+          />{' '}
+          {t('useNodeBindings')}
+        </label>
+      )}
       {invoke && dirty && <p className="session-scope">{t('unsavedWorkflowHint')}</p>}
       {!saved && invoke && (
         <button className="workbench-btn wb-text" onClick={openWorkflow}>

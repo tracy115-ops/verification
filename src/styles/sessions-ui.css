@@ -589,6 +589,16 @@
 }
 .session-composer .session-scope {
   order: 1;
+  grid-column: 1 / -1;
+}
+.session-binding-choice {
+  order: 1;
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding-top: 6px;
 }
 .session-composer-actions {
   display: flex;

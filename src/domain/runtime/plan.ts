@@ -31,7 +31,9 @@ export function createRun(
   profiles: AgentProfile[],
   defaultProfileId: string,
   executionProfile?: FrameworkProfile,
+  agentSelection: 'bindings' | 'session' = 'bindings',
 ): WorkflowRun {
+  if (agentSelection === 'session') snapshot = { ...snapshot, bindings: {} };
   if (snapshot.revision < 1 || checkDocument(snapshot).length || !spec.trim() || spec.length > 40000)
     throw new Error('invalid_run');
   const terminal = snapshot.definition.nodes.find(
