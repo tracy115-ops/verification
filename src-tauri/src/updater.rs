@@ -273,7 +273,9 @@ async fn verify(path: &std::path::Path, release: &Release) -> Result<(), String>
         return Err("update_integrity_failed".into());
     }
     let mut hash = Sha256::new();
-    let mut bytes = [0u8; 65536];
+    // This buffer survives an await and becomes part of the IPC future. Keep it
+    // on the heap: WebView callbacks can run on a small Windows thread stack.
+    let mut bytes = vec![0u8; 65536];
     loop {
         let n = file
             .read(&mut bytes)

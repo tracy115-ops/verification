@@ -21,10 +21,19 @@ function Install-Workbench([switch]$Upgrade) {
   }
 }
 function Start-WorkbenchSmoke {
+  $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, 0)
+  $listener.Start()
+  $debugPort = $listener.LocalEndpoint.Port
+  $listener.Stop()
+  $previousArguments = $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS
+  $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = "--remote-debugging-port=$debugPort --remote-debugging-address=127.0.0.1"
   $application = Start-Process -FilePath $binary -WindowStyle Hidden -PassThru
   try {
-    if ($application.WaitForExit(10000)) { throw "Application exited during startup: $($application.ExitCode)" }
+    node scripts/test-desktop-update-ipc.mjs "http://127.0.0.1:$debugPort"
+    if ($LASTEXITCODE -ne 0) { throw 'Native desktop install IPC failed.' }
+    if ($application.HasExited) { throw "Application exited during IPC: $($application.ExitCode)" }
   } finally {
+    $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = $previousArguments
     if (-not $application.HasExited) {
       $null = $application.CloseMainWindow()
       if (-not $application.WaitForExit(10000)) { $application.Kill(); $application.WaitForExit() }

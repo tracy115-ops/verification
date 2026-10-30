@@ -4,6 +4,21 @@ use std::{
     net::TcpListener,
 };
 
+#[test]
+fn installer_verification_future_fits_the_desktop_ipc_stack() {
+    let release = release(String::new(), b"fixture");
+    let future = verify(std::path::Path::new("fixture.exe"), &release);
+    let bytes = std::mem::size_of_val(&future);
+    println!("Installer verification future: {bytes} bytes");
+    assert!(bytes < 16 * 1024, "verification future uses {bytes} bytes");
+    fn future_size<A, B, F>(_: impl FnOnce(A, B) -> F) -> usize {
+        std::mem::size_of::<F>()
+    }
+    let bytes = future_size(install_update);
+    println!("Install IPC future: {bytes} bytes");
+    assert!(bytes < 16 * 1024, "installation future uses {bytes} bytes");
+}
+
 fn response(body: &'static [u8]) -> (String, std::thread::JoinHandle<()>) {
     let listener = TcpListener::bind("127.0.0.1:0").unwrap();
     let url = format!("http://{}", listener.local_addr().unwrap());
