@@ -68,6 +68,9 @@ jobs:
       - name: Check frontend, domain tests and source constraints
         run: npm.cmd run check
 
+      - name: Prepare bundled resources for native desktop tests
+        run: node scripts/bundle-team.mjs
+
       - name: Check native runtime contracts
         run: cargo test -p verification-desktop -p agent-runtime -p execution-runtime -p process-runtime --locked -- --nocapture
 
