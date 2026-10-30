@@ -322,17 +322,10 @@ pub async fn install_update(app: AppHandle, state: State<'_, UpdateRuntime>) -> 
     let parent = dunce::simplified(&current)
         .parent()
         .ok_or("update_install_failed")?;
-    let mut command = std::process::Command::new(&ready);
-    command.args(["/UPDATE", "/P", "/R"]);
-    #[cfg(windows)]
-    {
-        use std::os::windows::process::CommandExt;
-        // NSIS requires /D to be last and unquoted, even for paths with spaces.
-        // This is an exe invocation, not a shell command.
-        command.raw_arg(format!("/D={}", parent.display()));
-        command.creation_flags(0x08000000);
+    if let Err(error) = crate::update_install::launch(&ready, parent) {
+        crate::diagnostics::record(&app, "update.launch_failed", json!({"code":error}));
+        return Err(error);
     }
-    command.spawn().map_err(|_| "update_install_failed")?;
     state.installing.store(true, Ordering::SeqCst);
     crate::diagnostics::record(
         &app,

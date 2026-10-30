@@ -57,6 +57,7 @@ mod diagnostics;
 mod executions;
 mod lan_discovery;
 mod team_client;
+mod update_install;
 mod update_network;
 mod update_release;
 mod updater;
