@@ -82,6 +82,10 @@ pub enum AgentEvent {
     },
     Heartbeat,
     Diagnostic {
+        protocol_records: usize,
+        unknown_records: usize,
+        last_event: &'static str,
+        public_text_bytes: usize,
         elapsed_ms: u64,
         stdout_bytes: usize,
         last_output_age_ms: Option<u64>,

@@ -143,6 +143,11 @@ export const conversationZh = {
   cli_input_failed: '无法向 CLI 进程完整发送输入。',
   cli_empty_output: 'CLI 已结束，但没有返回有效内容。',
   cli_timeout: 'CLI 调用超时，进程已请求停止。',
+  cli_timeout_no_output: 'CLI 超时：本次未收到任何输出，进程已请求停止。',
+  cli_timeout_shutdown: 'CLI 已返回完成事件，但进程未在时限内结束，已请求停止。',
+  cli_timeout_no_text:
+    'CLI 超时：收到协议或状态输出，但未收到回复正文。请查看日志中的 last_event 和 unknown_records。',
+  cli_timeout_no_completion: 'CLI 超时：收到部分回复，但未收到完成事件；请检查诊断日志。',
   cli_busy: '另一个 CLI 调用尚未结束，请稍后重试。',
   browser_only: '当前是浏览器模式，请使用桌面版。',
   unsupported_profile: '此连接尚未接入真实调用。请选择复用已有登录的 CLI 原生配置。',
@@ -340,6 +345,13 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
   cli_input_failed: 'Could not deliver the complete input to the CLI process.',
   cli_empty_output: 'CLI finished without returning content.',
   cli_timeout: 'CLI deadline exceeded. Process shutdown was requested.',
+  cli_timeout_no_output: 'CLI timed out without producing output. Process shutdown was requested.',
+  cli_timeout_shutdown:
+    'CLI returned a completion event but did not exit before the deadline. Shutdown was requested.',
+  cli_timeout_no_text:
+    'CLI timed out after protocol or status output, without reply text. Check last_event and unknown_records in diagnostics.',
+  cli_timeout_no_completion:
+    'CLI timed out after a partial reply, without a completion event. Check diagnostics.',
   cli_busy: 'Another CLI invocation has not finished yet.',
   browser_only: 'Browser mode. Use the desktop app.',
   unsupported_profile:

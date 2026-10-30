@@ -3,6 +3,9 @@ use serde_json::Value;
 
 #[derive(Default)]
 pub struct ProtocolState {
+    pub records: usize,
+    pub last_event: &'static str,
+    pub unknown_records: usize,
     pub text: String,
     pub final_text: Option<String>,
     pub terminal: bool,
@@ -40,6 +43,35 @@ impl ProtocolState {
                 Some("cli_protocol_invalid")
             };
             return vec![];
+        };
+        self.records += 1;
+        self.last_event = match value["type"].as_str().unwrap_or_default() {
+            "system" => match value["subtype"].as_str().unwrap_or_default() {
+                "init" => "system.init",
+                "api_retry" => "system.api_retry",
+                "hook_started" => "system.hook_started",
+                "hook_progress" => "system.hook_progress",
+                "hook_response" => "system.hook_response",
+                _ => "system",
+            },
+            "stream_event" => "stream_event",
+            "assistant" => "assistant",
+            "result" => "result",
+            "error" => "error",
+            "thread.started" => "thread.started",
+            "item.started" => "item.started",
+            "item.completed" => "item.completed",
+            "turn.completed" => "turn.completed",
+            "turn.failed" => "turn.failed",
+            "session" => "session",
+            "message_update" => "message_update",
+            "message_end" => "message_end",
+            "tool_execution_start" => "tool_execution_start",
+            "agent_settled" => "agent_settled",
+            _ => {
+                self.unknown_records += 1;
+                "unknown"
+            }
         };
         let mut events = Vec::new();
         match driver {
@@ -109,6 +141,20 @@ impl ProtocolState {
 
     fn claude(&mut self, value: &Value, events: &mut Vec<AgentEvent>) {
         match value["type"].as_str().unwrap_or_default() {
+            "error" => {
+                self.failed = true;
+                self.terminal = true;
+                self.error_code = Some(
+                    crate::failure::classify(
+                        value["error"]["message"]
+                            .as_str()
+                            .or_else(|| value["message"].as_str())
+                            .or_else(|| value["error"].as_str())
+                            .unwrap_or_default(),
+                    )
+                    .unwrap_or("cli_failed"),
+                );
+            }
             "system" => self.session(value["session_id"].as_str(), events),
             "stream_event" => {
                 if value["event"]["delta"]["type"] == "text_delta" {
@@ -130,6 +176,17 @@ impl ProtocolState {
             "result" => {
                 self.terminal = true;
                 self.failed |= value["is_error"] == true;
+                if value["is_error"] == true {
+                    self.error_code = Some(
+                        crate::failure::classify(&format!(
+                            "{} {}",
+                            value["result"].as_str().unwrap_or_default(),
+                            value["errors"]
+                        ))
+                        .unwrap_or("cli_failed"),
+                    );
+                    return;
+                }
                 if let Some(text) = value["result"].as_str() {
                     if self.text.is_empty() {
                         self.append(text, events);

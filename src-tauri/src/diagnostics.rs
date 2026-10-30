@@ -62,6 +62,10 @@ pub fn record(app: &AppHandle, event: &str, fields: Value) {
         "elapsed_ms",
         "stdout_bytes",
         "last_output_age_ms",
+        "protocol_records",
+        "unknown_records",
+        "last_event",
+        "public_text_bytes",
     ];
     let details: serde_json::Map<String, Value> = fields
         .as_object()

@@ -64,6 +64,28 @@ async fn output_limit_and_timeout_stop_the_managed_process() {
 }
 
 #[tokio::test]
+async fn codeagent_native_errors_fail_without_waiting_for_timeout_and_init_only_is_distinguished() {
+    let mut request = request();
+    request.driver = DriverId::Codeagent;
+    request.model.clear();
+    let (_sender, receiver) = oneshot::channel();
+    let result = supervise(fixture("codeagent-error", None), &request, receiver, |_| {
+        true
+    })
+    .await;
+    assert_eq!(result.status, "failed");
+    assert_eq!(result.error_code.as_deref(), Some("cli_auth_failed"));
+    assert!(result.text.is_empty());
+    request.timeout_seconds = 1;
+    let (_sender, receiver) = oneshot::channel();
+    let result = supervise(fixture("codeagent-init", None), &request, receiver, |_| {
+        true
+    })
+    .await;
+    assert_eq!(result.error_code.as_deref(), Some("cli_timeout_no_text"));
+}
+
+#[tokio::test]
 async fn cancel_and_disconnected_consumer_stop_without_success() {
     let (sender, receiver) = oneshot::channel();
     let _ = sender.send(());

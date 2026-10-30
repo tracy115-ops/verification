@@ -135,7 +135,7 @@ async fn supervise(
     while !(status.is_some() && streams_closed) {
         tokio::select! {
             _ = &mut cancel => { interrupted = Some(("cancelled", "cancelled")); break; }
-            _ = sleep_until(deadline) => { interrupted = Some(("timed_out", "cli_timeout")); break; }
+            _ = sleep_until(deadline) => { interrupted = Some(("timed_out", if state.terminal { "cli_timeout_shutdown" } else if received == 0 { "cli_timeout_no_output" } else if state.text.is_empty() && state.final_text.as_ref().is_none_or(|text| text.is_empty()) { "cli_timeout_no_text" } else { "cli_timeout_no_completion" })); break; }
             _ = heartbeat.tick() => { if !sink(AgentEvent::Heartbeat) { interrupted = Some(("cancelled", "client_disconnected")); break; } }
             result = child.wait(), if status.is_none() => { status = Some(result); }
             frame = rx.recv(), if !streams_closed => {
@@ -155,6 +155,7 @@ async fn supervise(
                                 if !sink(event) { interrupted = Some(("cancelled", "client_disconnected")); break; }
                             }
                             if interrupted.is_some() { break; }
+                            if state.failed && (state.terminal || state.error_code.is_some()) { interrupted = Some(("failed", state.error_code.unwrap_or("cli_failed"))); break; }
                         }
                     }
                 }
@@ -170,6 +171,10 @@ async fn supervise(
         Ok(Ok(Ok(())))
     );
     let _ = sink(AgentEvent::Diagnostic {
+        protocol_records: state.records,
+        unknown_records: state.unknown_records,
+        last_event: state.last_event,
+        public_text_bytes: state.final_text.as_ref().unwrap_or(&state.text).len(),
         elapsed_ms: started.elapsed().as_millis() as u64,
         stdout_bytes: received.saturating_sub(stderr_bytes),
         last_output_age_ms: last_output.map(|time| time.elapsed().as_millis() as u64),
@@ -177,7 +182,7 @@ async fn supervise(
             .as_ref()
             .and_then(|result| result.as_ref().ok())
             .and_then(|value| value.code()),
-        reason: stderr_failure.map(str::to_string),
+        reason: state.error_code.or(stderr_failure).map(str::to_string),
         stderr_bytes,
         terminal: state.terminal,
         input_written,

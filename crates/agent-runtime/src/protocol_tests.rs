@@ -52,6 +52,24 @@ fn claude_zero_exit_error_result_still_fails() {
 }
 
 #[test]
+fn codeagent_error_records_are_classified_without_exposing_native_messages() {
+    let mut state = ProtocolState::default();
+    let events = state.consume(DriverId::Codeagent, br#"{"type":"error","error":{"message":"authentication failed at https://private.invalid secret"}}"#);
+    assert!(events.is_empty());
+    assert!(state.failed && state.terminal);
+    assert_eq!(state.error_code, Some("cli_auth_failed"));
+    assert_eq!(state.last_event, "error");
+    assert!(state.text.is_empty());
+    let mut unknown = ProtocolState::default();
+    unknown.consume(
+        DriverId::Codeagent,
+        br#"{"type":"private-token-value","payload":"secret"}"#,
+    );
+    assert_eq!(unknown.last_event, "unknown");
+    assert_eq!(unknown.unknown_records, 1);
+}
+
+#[test]
 fn pi_agent_end_is_not_session_settled() {
     let mut state = ProtocolState::default();
     state.consume(DriverId::Pi, br#"{"type":"agent_end","willRetry":true}"#);

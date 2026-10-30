@@ -8,6 +8,11 @@ process.stdin.on('data', (value) => { input += value; });
 process.stdin.on('end', () => {
   if (mode === 'oversized') { process.stdout.write('x'.repeat(300000)); return; }
   if (mode === 'wait') { setInterval(() => {}, 1000); return; }
+  if (mode === 'codeagent-error' || mode === 'codeagent-init') {
+    console.log(JSON.stringify(mode === 'codeagent-error' ? { type: 'error', error: { message: 'authentication failed: private-token' } } : { type: 'system', subtype: 'init', session_id: 'fixture-session' }));
+    setInterval(() => {}, 1000);
+    return;
+  }
   if (mode === 'tree') {
     const child = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' });
     writeFileSync(process.argv[3], String(child.pid));
