@@ -15,7 +15,8 @@ while (true) {
 }
 const browser = await chromium.connectOverCDP(endpoint);
 try {
-  const page = browser.contexts()[0].pages()[0];
+  const context = browser.contexts()[0];
+  const page = context.pages()[0] ?? (await context.waitForEvent('page', { timeout: 60_000 }));
   await page.waitForFunction(() => typeof window.__TAURI_INTERNALS__?.invoke === 'function');
   const result = await page.evaluate(async () => {
     const invoke = window.__TAURI_INTERNALS__.invoke;
