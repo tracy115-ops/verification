@@ -24,7 +24,7 @@ export function SessionActions({
   const [failed, setFailed] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const blocked =
-    actions.busy ||
+    (actions.isSessionBusy?.(session.id) ?? actions.busy) ||
     !!session.activeTurnId ||
     session.runs.some((run) => ['ready', 'running', 'interrupted'].includes(run.status));
   useEffect(() => {
@@ -65,7 +65,7 @@ export function SessionActions({
         title={t('sessionActions')}
         aria-haspopup="true"
         aria-controls={id}
-        disabled={actions.busy}
+        disabled={actions.isSessionBusy?.(session.id) ?? actions.busy}
         onClick={(event) => {
           const rect = event.currentTarget.getBoundingClientRect();
           if (menu.current?.matches(':popover-open')) menu.current.hidePopover();
@@ -77,7 +77,7 @@ export function SessionActions({
       <div id={id} ref={menu} popover="auto" className="session-history-menu" style={position}>
         <button
           className="workbench-btn wb-text"
-          disabled={actions.busy}
+          disabled={actions.isSessionBusy?.(session.id) ?? actions.busy}
           onClick={() => {
             menu.current?.hidePopover();
             actions.setActiveId(session.id);
@@ -145,7 +145,10 @@ export function SessionActions({
             <button
               type="submit"
               className={`workbench-btn ${mode === 'delete' ? 'wb-danger' : 'wb-primary'}`}
-              disabled={actions.busy || (mode === 'rename' ? !title.trim() : blocked)}
+              disabled={
+                (actions.isSessionBusy?.(session.id) ?? actions.busy) ||
+                (mode === 'rename' ? !title.trim() : blocked)
+              }
             >
               {t(mode === 'delete' ? 'confirmDeleteSession' : 'saveSessionName')}
             </button>

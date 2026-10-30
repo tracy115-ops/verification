@@ -67,7 +67,6 @@ export function ConversationSearch({
             <button
               className="session-search-result"
               key={session.id}
-              disabled={actions.busy}
               onClick={() => {
                 actions.setActiveId(session.id);
                 close();

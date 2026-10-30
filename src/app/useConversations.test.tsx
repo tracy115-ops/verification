@@ -12,6 +12,89 @@ import { requirements } from '../domain/runtime/fixtures.test-support';
 beforeEach(() => localStorage.clear());
 afterEach(cleanup);
 
+it('runs two sessions concurrently and isolates streams, cancellation and final replies', async () => {
+  const saved = savedDocument();
+  const pending = new Map<
+    string,
+    { emit: (text: string) => void; finish: () => void; signal: AbortSignal }
+  >();
+  const port: AgentPort = {
+    async cancel() {},
+    send: (request, emit, signal) =>
+      new Promise((resolve) => {
+        pending.set(request.sessionId, {
+          signal,
+          emit: (text) => emit({ type: 'text', text }),
+          finish: () =>
+            resolve({
+              status: 'completed',
+              text: request.prompt.includes('second') ? 'second reply' : 'first reply',
+              errorCode: null,
+              nativeSessionId: null,
+            }),
+        });
+        signal.addEventListener(
+          'abort',
+          () =>
+            resolve({
+              status: 'cancelled',
+              text: 'cancelled first',
+              errorCode: 'cancelled',
+              nativeSessionId: null,
+            }),
+          { once: true },
+        );
+      }),
+  };
+  const { result } = renderHook(() => useConversations(saved.profiles, saved, port));
+  let first!: Promise<boolean>, second!: Promise<boolean>;
+  act(() => {
+    result.current.newSession();
+  });
+  const firstId = result.current.activeId;
+  act(() => {
+    first = result.current.send('first', false, 'codex-native');
+  });
+  await waitFor(() => expect(pending.has(firstId)).toBe(true));
+  act(() => {
+    result.current.newSession();
+  });
+  const secondId = result.current.activeId;
+  expect(result.current.busy).toBe(false);
+  expect(result.current.anyBusy).toBe(true);
+  act(() => {
+    second = result.current.send('second', false, 'codex-native');
+  });
+  await waitFor(() => expect(pending.size).toBe(2));
+  act(() => {
+    pending.get(firstId)!.emit('first stream');
+    pending.get(secondId)!.emit('second stream');
+  });
+  expect(result.current.stream).toBe('second stream');
+  act(() => {
+    result.current.setActiveId(firstId);
+  });
+  expect(result.current.stream).toBe('first stream');
+  await act(async () => {
+    result.current.cancel();
+    await first;
+  });
+  expect(pending.get(secondId)!.signal.aborted).toBe(false);
+  expect(result.current.anyBusy).toBe(true);
+  act(() => {
+    result.current.setActiveId(secondId);
+  });
+  await act(async () => {
+    pending.get(secondId)!.finish();
+    await second;
+  });
+  expect(result.current.session!.messages.at(-1)?.text).toBe('second reply');
+  expect(result.current.sessions.find((item) => item.id === firstId)!.messages.at(-1)?.text).toBe(
+    'cancelled first',
+  );
+  expect(result.current.anyBusy).toBe(false);
+});
+
 it('saves clarification within the same run and preserves it after reload', async () => {
   const doc = savedDocument();
   const { port } = fixturePort({ ...requirements, questions: ['Need a rule?'] });

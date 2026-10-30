@@ -14,7 +14,7 @@ impl ExecutionRuntime {
         }
         let (sender, receiver) = oneshot::channel();
         let mut active = self.active.lock().map_err(|_| "runtime_failed")?;
-        if !active.is_empty() {
+        if active.len() >= 8 || active.contains_key(id) {
             return Err("execution_busy".into());
         }
         active.insert(id.into(), Some(sender));
@@ -24,6 +24,23 @@ impl ExecutionRuntime {
         if let Ok(mut active) = self.active.lock() {
             active.remove(id);
         }
+    }
+}
+
+#[cfg(test)]
+mod concurrency_tests {
+    use super::*;
+    #[test]
+    fn permits_independent_executions_and_prevents_duplicate_reservations() {
+        let state = ExecutionRuntime::default();
+        let first = "12345678-1234-1234-1234-123456789abc";
+        let second = "12345678-1234-1234-1234-123456789abd";
+        let _first = state.reserve(first).unwrap();
+        let _second = state.reserve(second).unwrap();
+        assert!(state.reserve(first).is_err());
+        state.finish(first);
+        assert!(state.reserve(first).is_ok());
+        assert!(state.reserve(second).is_err());
     }
 }
 fn root(app: &AppHandle) -> Result<PathBuf, String> {

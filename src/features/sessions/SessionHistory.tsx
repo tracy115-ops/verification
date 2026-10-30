@@ -1,4 +1,4 @@
-import { Plus, MessageSquare, Search } from 'lucide-react';
+import { Plus, MessageSquare, Search, LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
 import type { Conversations } from '../../app/useConversations';
 import { useI18n } from '../../shared/i18n/context';
@@ -21,7 +21,6 @@ export function SessionHistory({
     <section className="session-history">
       <button
         className="workbench-btn session-history-new"
-        disabled={actions.busy}
         onClick={() => {
           actions.newSession();
           open();
@@ -34,7 +33,6 @@ export function SessionHistory({
         <h2>{t('sessionHistory')}</h2>
         <button
           className="workbench-btn wb-text"
-          disabled={actions.busy}
           aria-label={t('searchConversations')}
           title={t('searchConversations')}
           onClick={() => setSearching(true)}
@@ -52,17 +50,16 @@ export function SessionHistory({
               className={`session-history-row ${actions.activeId === session.id ? 'is-active' : ''}`}
               onContextMenu={(event) => {
                 event.preventDefault();
-                if (!actions.busy) setContext({ sessionId: session.id, x: event.clientX, y: event.clientY });
+                setContext({ sessionId: session.id, x: event.clientX, y: event.clientY });
               }}
               onKeyDown={(event) => {
                 if (event.key !== 'ContextMenu' && !(event.shiftKey && event.key === 'F10')) return;
                 event.preventDefault();
                 const rect = event.currentTarget.getBoundingClientRect();
-                if (!actions.busy) setContext({ sessionId: session.id, x: rect.left + 20, y: rect.bottom });
+                setContext({ sessionId: session.id, x: rect.left + 20, y: rect.bottom });
               }}
             >
               <button
-                disabled={actions.busy}
                 className={`session-history-item ${actions.activeId === session.id ? 'is-active' : ''}`}
                 onClick={() => {
                   actions.setActiveId(session.id);
@@ -72,6 +69,9 @@ export function SessionHistory({
               >
                 <MessageSquare size={15} />
                 <span>{session.title.replace(/^#+\s*/, '').split('\n')[0] || t('untitledSession')}</span>
+                {actions.isSessionBusy?.(session.id) && (
+                  <LoaderCircle className="wb-spin" size={13} aria-label={t('sessionRunning')} />
+                )}
               </button>
               <SessionActions
                 session={session}

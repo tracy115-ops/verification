@@ -1,8 +1,9 @@
-﻿import { useEffect, useRef, useState } from 'react';
+﻿import { useState } from 'react';
+import { useSessionTasks } from './useSessionTasks';
 import { advanceRun, retryRun } from '../domain/runtime/engine';
 import { createRun } from '../domain/runtime/plan';
 import { chatRequest, createSession, message, replyMessage, workflowCommand } from '../domain/runtime/chat';
-import type { AgentEvent, AgentPort, ConversationSession, WorkflowRun } from '../domain/runtime/types';
+import type { AgentPort, ConversationSession, WorkflowRun } from '../domain/runtime/types';
 import type { AgentProfile, WorkbenchDocument } from '../domain/workflow';
 import { DesktopAgentPort } from '../services/conversation-api';
 import { useConversationStore } from './useConversationStore';
@@ -24,32 +25,10 @@ export function useConversations(
   const port = providedPort ?? nativePort;
   const [nativeExecution] = useState(() => new DesktopExecutionPort());
   const executionPort = providedExecutionPort ?? nativeExecution;
-  const [busy, setBusy] = useState(false);
-  const [stream, setStream] = useState('');
   const [selectedRunId, setSelectedRunId] = useState('');
-  const abort = useRef<AbortController | null>(null);
+  const tasks = useSessionTasks(store.activeId);
+  const { perform } = tasks;
   const { session, changeSession, updateRun, setError } = store;
-  useEffect(() => () => abort.current?.abort(), []);
-  async function perform(task: (controller: AbortController) => Promise<void>) {
-    if (abort.current) return;
-    const controller = new AbortController();
-    abort.current = controller;
-    setBusy(true);
-    setStream('');
-    setError(null);
-    try {
-      await task(controller);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : typeof error === 'string' ? error : 'cli_failed');
-    } finally {
-      setBusy(false);
-      setStream('');
-      abort.current = null;
-    }
-  }
-  function onEvent(event: AgentEvent) {
-    if (event.type === 'text' && event.text) setStream((text) => text + event.text);
-  }
   async function drive(run: WorkflowRun, controller: AbortController) {
     let current = run;
     await advanceRun(
@@ -67,18 +46,14 @@ export function useConversations(
     );
   }
   function selectSession(id: string) {
-    if (!abort.current) {
-      store.setActiveId(id);
-      setSelectedRunId('');
-      setStream('');
-    }
+    store.setActiveId(id);
+    setSelectedRunId('');
+    setError(null);
   }
   function newSession() {
-    if (abort.current) return;
     const value = createSession(profiles[0]?.id ?? 'codex-native');
     changeSession(value);
     selectSession(value.id);
-    setError(null);
   }
   async function send(
     text: string,
@@ -87,10 +62,10 @@ export function useConversations(
     framework?: FrameworkProfile,
     useNodeBindings = false,
   ): Promise<boolean> {
-    if (abort.current || !text.trim()) return false;
+    const current = session ?? createSession(profileId);
+    if (tasks.isSessionBusy(current.id) || !text.trim()) return false;
     let accepted = false;
     await perform(async (controller) => {
-      const current = session ?? createSession(profileId);
       if (current.activeTurnId) throw new Error('previous_turn_active');
       const profile = profiles.find((item) => item.id === profileId);
       const command = workflowCommand(text, saved?.definition.id);
@@ -126,12 +101,16 @@ export function useConversations(
         changeSession(value);
         store.setActiveId(value.id);
         accepted = true;
-        const result = await recordedAgent(port).send(request, onEvent, controller.signal);
+        const result = await recordedAgent(port).send(
+          request,
+          (event) => tasks.onEvent(value.id, event),
+          controller.signal,
+        );
         const settled = { ...value, messages: [...value.messages, replyMessage(result)] };
         delete settled.activeTurnId;
         changeSession(settled);
       }
-    });
+    }, current.id);
     return accepted;
   }
   async function retry(run: WorkflowRun) {
@@ -167,8 +146,8 @@ export function useConversations(
     });
   }
   function cancel(run?: WorkflowRun) {
-    if (abort.current) {
-      abort.current.abort();
+    if (tasks.isSessionBusy(run?.sessionId ?? store.activeId)) {
+      tasks.cancel(run?.sessionId ?? store.activeId);
       return;
     }
     if (run && run.status === 'awaiting_review') updateRun(run.sessionId, { ...run, status: 'cancelled' });
@@ -176,8 +155,11 @@ export function useConversations(
   return {
     ...store,
     setActiveId: selectSession,
-    busy,
-    stream,
+    busy: tasks.busy,
+    anyBusy: tasks.anyBusy,
+    stream: tasks.stream,
+    error: tasks.error ?? store.error,
+    isSessionBusy: tasks.isSessionBusy,
     send,
     newSession,
     retry,
@@ -189,7 +171,7 @@ export function useConversations(
     ...runReviewActions({ perform, updateRun, drive }),
     ...sessionActions(
       store,
-      () => !!abort.current,
+      (id) => tasks.isSessionBusy(id),
       () => setSelectedRunId(''),
     ),
   };

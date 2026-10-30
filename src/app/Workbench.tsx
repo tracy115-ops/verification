@@ -48,11 +48,11 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
   const [selectedId, setSelectedId] = useState('design_scenarios');
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => {
-      if (workbench.dirty || conversations.busy) event.preventDefault();
+      if (workbench.dirty || conversations.anyBusy) event.preventDefault();
     };
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
-  }, [workbench.dirty, conversations.busy]);
+  }, [workbench.dirty, conversations.anyBusy]);
   function openAgents() {
     setSettingsTab('agents');
     setPage('settings');
@@ -118,7 +118,7 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
                 setTab={setSettingsTab}
                 appearance={appearance}
                 frameworks={frameworks}
-                blocked={conversations.busy || workbench.dirty}
+                blocked={conversations.anyBusy || workbench.dirty}
               />
             )}
             {(page === 'assets' || page === 'cases') && (
