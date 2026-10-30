@@ -6,6 +6,8 @@
 
 | 文档 | 解决的问题 |
 | --- | --- |
+| [受监督更新交接](design/supervised-desktop-update.md) | 独立更新进程、等待退出、安装退出码和重启记录 |
+| [0.4.2 更新验收](research/release-0.4.2-update-validation.md) | 远端完整更新进程检查、下载校验及目标环境边界 |
 | [非 CodeAgent 环境验收](research/post-codeagent-independent-acceptance.md) | 黑盒执行、失败恢复、原生 PAC 与安装流水线检查及待验收边界 |
 | [企业工程约束](governance/engineering-constraints.md) | 国际化、代码规模、扩展性、测试与配置边界 |
 | [桌面客户端协作](design/desktop-collaboration.md) | 软件内发现、登录和加入项目，网络边界与协作视图 |
