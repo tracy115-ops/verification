@@ -74,14 +74,20 @@ describe('saved workflow execution', () => {
     const gap = await advance(ready, fixturePort({ ...design, gaps: ['缺少异常路径'] }).port);
     await expect(approve(gap)).rejects.toThrow('review_unresolved');
   });
-  it('stops invalid output, supports explicit retry and respects attempt limits', async () => {
+  it('permits manual retries beyond configured attempt limits without losing artifacts', async () => {
     const failed = await advance(fixtureRun(), fixturePort({ invalid: true }).port);
     expect(failed.status).toBe('failed');
     expect(failed.errorCode).toBe('artifact_invalid');
     const node = failed.plan.find((node) => failed.steps[node.id].status === 'failed')!;
     if (node.policy.maxAttempts > 1) expect(retryRun(failed).steps[node.id].status).toBe('pending');
     failed.steps[node.id].attempts = node.policy.maxAttempts;
-    expect(() => retryRun(failed)).toThrow('retry_limit');
+    failed.steps[node.id].attempts = 100;
+    const retried = retryRun(failed);
+    expect(retried.steps[node.id].status).toBe('pending');
+    expect(retried.steps[node.id].attempts).toBe(100);
+    expect(retried.artifacts).toEqual(failed.artifacts);
+    expect(retried.createdAt).toBe(failed.createdAt);
+    expect(retried.resumedAt).toBeTruthy();
   });
   it('does not advance after CLI failure or cancellation', async () => {
     const port = fixturePort().port;

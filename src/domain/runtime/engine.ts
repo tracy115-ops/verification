@@ -12,7 +12,7 @@ import { decodePlan } from '../execution/validation';
 import { latestArtifact } from './bindings';
 import { reviewDigest } from './approvals';
 import { generateCaseBatches } from './case-batches';
-import { remainingNodeSeconds } from './deadline';
+import { remainingNodeSeconds, runDeadline } from './deadline';
 import { scopedCases } from './case-scope';
 import { isCases } from './artifacts';
 export { reviewDigest } from './approvals';
@@ -35,7 +35,7 @@ export async function advanceRun(
   const run = structuredClone(initial);
   run.status = 'running';
   while (!signal.aborted) {
-    if (Date.now() > Date.parse(run.createdAt) + run.snapshot.definition.limits.deadlineSeconds * 1000) {
+    if (Date.now() > runDeadline(run)) {
       run.status = 'failed';
       run.errorCode = 'run_deadline';
       break;
@@ -127,8 +127,7 @@ export async function approveRun(
 ): Promise<WorkflowRun> {
   const run = structuredClone(initial);
   const node = run.plan.find((node) => node.id === nodeId);
-  if (Date.now() > Date.parse(run.createdAt) + run.snapshot.definition.limits.deadlineSeconds * 1000)
-    throw new Error('run_deadline');
+  if (Date.now() > runDeadline(run)) throw new Error('run_deadline');
   if (run.status !== 'awaiting_review' || !node || run.steps[nodeId].status !== 'awaiting_review')
     throw new Error('approval_invalid');
   if (expectedDigest !== run.steps[nodeId].reviewDigest || expectedDigest !== (await reviewDigest(run, node)))
@@ -165,14 +164,13 @@ export async function approveRun(
 export function retryRun(initial: WorkflowRun): WorkflowRun {
   if (!['failed', 'interrupted'].includes(initial.status)) throw new Error('invalid_run');
   const run = structuredClone(initial);
-  const node = run.plan.find((node) => ['failed', 'interrupted'].includes(run.steps[node.id].status));
-  if (!node) throw new Error('retry_limit');
-  const attempts =
-    node.operation === 'cases.generate'
-      ? (run.steps[node.id].caseBatchAttempts ??
-        (run.steps[node.id].caseBatches?.length ? 1 : run.steps[node.id].attempts))
-      : run.steps[node.id].attempts;
-  if (attempts >= node.policy.maxAttempts) throw new Error('retry_limit');
+  const node =
+    run.plan.find((node) => ['failed', 'interrupted'].includes(run.steps[node.id].status)) ??
+    (run.errorCode === 'run_deadline'
+      ? run.plan.find((node) => ['pending', 'awaiting_review'].includes(run.steps[node.id].status))
+      : undefined);
+  if (!node) throw new Error('invalid_run');
+  run.resumedAt = new Date().toISOString();
   run.steps[node.id].status = 'pending';
   delete run.steps[node.id].errorCode;
   delete run.errorCode;

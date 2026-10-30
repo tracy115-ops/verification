@@ -55,6 +55,7 @@ const run = {
     id: string,
     sessionId: string,
     createdAt: string,
+    resumedAt: string,
     scope: { enum: ['design', 'verification'] },
     executionProfile: frameworkSchema,
     snapshot: { type: 'object' },
@@ -159,6 +160,8 @@ export function decodeConversations(value: unknown): ConversationSession[] {
     for (const run of session.runs) {
       if (run.scope === 'verification') decodeFramework(run.executionProfile);
       if (!Number.isFinite(Date.parse(run.createdAt))) throw new Error('session_storage_invalid');
+      if (run.resumedAt !== undefined && !Number.isFinite(Date.parse(run.resumedAt)))
+        throw new Error('session_storage_invalid');
       decodeDocument(run.snapshot);
       decodeDocument({ ...run.snapshot, profiles: run.profiles });
       if (checkWorkflow({ ...run.snapshot.definition, nodes: run.plan }).length)

@@ -46,6 +46,7 @@ export interface WorkflowRun {
   id: string;
   sessionId: string;
   createdAt: string;
+  resumedAt?: string;
   scope: 'design' | 'verification';
   executionProfile?: FrameworkProfile;
   snapshot: WorkbenchDocument;
