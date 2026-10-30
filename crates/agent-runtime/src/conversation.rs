@@ -127,6 +127,8 @@ async fn supervise(
     let mut received = 0usize;
     let mut stderr_failure = None;
     let mut stderr_bytes = 0usize;
+    let started = Instant::now();
+    let mut last_output = None;
     let deadline = Instant::now() + Duration::from_secs(request.timeout_seconds);
     let mut heartbeat = interval(Duration::from_secs(1));
     let mut interrupted = None;
@@ -141,6 +143,7 @@ async fn supervise(
                     None => streams_closed = true,
                     Some((_, Err(()))) => { interrupted = Some(("failed", "output_limit")); break; }
                     Some((stdout, Ok(line))) => {
+                        last_output = Some(Instant::now());
                         received += line.len();
                         if received > MAX_OUTPUT { interrupted = Some(("failed", "output_limit")); break; }
                         if !stdout {
@@ -167,6 +170,9 @@ async fn supervise(
         Ok(Ok(Ok(())))
     );
     let _ = sink(AgentEvent::Diagnostic {
+        elapsed_ms: started.elapsed().as_millis() as u64,
+        stdout_bytes: received.saturating_sub(stderr_bytes),
+        last_output_age_ms: last_output.map(|time| time.elapsed().as_millis() as u64),
         exit_code: status
             .as_ref()
             .and_then(|result| result.as_ref().ok())

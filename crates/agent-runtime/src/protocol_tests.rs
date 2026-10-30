@@ -114,6 +114,8 @@ fn requests_reject_path_traversal_ids_and_unbounded_deadlines() {
     request.session_id = "../../other".into();
     assert!(request.validate().is_err());
     request.session_id = request.turn_id.clone();
-    request.timeout_seconds = 601;
+    request.timeout_seconds = 1800;
+    assert!(request.validate().is_ok());
+    request.timeout_seconds = 86401;
     assert!(request.validate().is_err());
 }

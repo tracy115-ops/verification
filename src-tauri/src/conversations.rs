@@ -52,7 +52,7 @@ pub async fn send_cli_turn(
     crate::diagnostics::record(
         &app,
         "cli.started",
-        serde_json::json!({"driver":request.driver.as_str(), "turnId":turn_id}),
+        serde_json::json!({"driver":request.driver.as_str(), "turnId":turn_id, "timeoutSeconds":request.timeout_seconds, "promptBytes":request.prompt.len()}),
     );
     let outcome = agent_runtime::run_turn(request, &workspace, receiver, |event| {
         if let AgentEvent::Diagnostic { .. } = &event {

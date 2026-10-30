@@ -52,7 +52,7 @@ impl TurnRequest {
         if self.prompt.trim().is_empty() || self.prompt.len() > 131_072 {
             return Err("prompt_too_large");
         }
-        if !(1..=600).contains(&self.timeout_seconds) {
+        if !(1..=86400).contains(&self.timeout_seconds) {
             return Err("invalid_request");
         }
         if !matches!(self.driver, DriverId::Codeagent) && self.model.trim().is_empty() {
@@ -82,6 +82,9 @@ pub enum AgentEvent {
     },
     Heartbeat,
     Diagnostic {
+        elapsed_ms: u64,
+        stdout_bytes: usize,
+        last_output_age_ms: Option<u64>,
         exit_code: Option<i32>,
         reason: Option<String>,
         stderr_bytes: usize,
