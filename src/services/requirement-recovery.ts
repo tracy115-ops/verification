@@ -12,6 +12,7 @@ export async function recoverRequirementDraft(run: WorkflowRun): Promise<Workflo
     return run;
   const key = `${node.id}.${Object.keys(node.outputs)[0]}`;
   if (isRequirements(run.artifacts[key]?.value)) return run;
+  if (run.steps[node.id].analysis) return run;
   await transcriptStore.load(run.sessionId);
   const turn = transcriptStore
     .getSnapshot()

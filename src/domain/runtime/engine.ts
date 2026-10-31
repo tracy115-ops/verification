@@ -15,6 +15,9 @@ import { generateCaseBatches } from './case-batches';
 import { remainingNodeSeconds, runDeadline } from './deadline';
 import { scopedCases } from './case-scope';
 import { isCases, isRequirements } from './artifacts';
+import { ANALYSIS_PROMPT_LIMIT, byteLength } from './analysis-plan';
+import { extractRequirementBatches } from './requirement-batches';
+import { generateDesignBatches } from './design-batches';
 export { reviewDigest } from './approvals';
 
 async function storeOutput(run: WorkflowRun, node: WorkflowNode, value: unknown) {
@@ -77,6 +80,22 @@ export async function advanceRun(
         const profileId = run.snapshot.bindings[node.id] ?? run.defaultProfileId;
         const profile = run.profiles.find((profile) => profile.id === profileId);
         if (!profile || profile.protocol !== 'native') throw new Error('unsupported_profile');
+        if (
+          ['requirements.extract', 'scenarios.design'].includes(node.operation) &&
+          (step.analysis || byteLength(taskFor(run, node, inputs)) > ANALYSIS_PROMPT_LIMIT)
+        ) {
+          const context = { run, node, profile, port, signal, onUpdate, onEvent };
+          await storeOutput(
+            run,
+            node,
+            node.operation === 'requirements.extract'
+              ? await extractRequirementBatches(context, inputs)
+              : await generateDesignBatches(context, inputs),
+          );
+          step.status = 'succeeded';
+          onUpdate(structuredClone(run));
+          continue;
+        }
         if (node.operation === 'cases.generate') {
           await storeOutput(
             run,
@@ -174,11 +193,11 @@ export async function approveRun(
 }
 
 export function retryRun(initial: WorkflowRun): WorkflowRun {
-  if (!['failed', 'interrupted'].includes(initial.status)) throw new Error('invalid_run');
+  if (!['failed', 'interrupted', 'cancelled'].includes(initial.status)) throw new Error('invalid_run');
   const run = structuredClone(initial);
   const node =
     run.plan.find((node) => ['failed', 'interrupted'].includes(run.steps[node.id].status)) ??
-    (run.errorCode === 'run_deadline'
+    (run.errorCode === 'run_deadline' || run.status === 'cancelled'
       ? run.plan.find((node) => ['pending', 'awaiting_review'].includes(run.steps[node.id].status))
       : undefined);
   if (!node) throw new Error('invalid_run');

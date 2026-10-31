@@ -40,7 +40,18 @@ export interface StepState {
   reviewDigest?: string;
   caseBatches?: { signature: string; index: number; cases: CaseArtifact }[];
   caseBatchAttempts?: number;
+  analysis?: AnalysisCheckpoint;
   errorCode?: string;
+}
+
+export interface AnalysisCheckpoint {
+  version: 1;
+  signature: string;
+  kind: 'requirements' | 'design';
+  total: number;
+  localTotal: number;
+  completed: { index: number; digest: string; value: RequirementArtifact | DesignArtifact }[];
+  rejected?: { index: number; value: RequirementArtifact };
 }
 export interface WorkflowRun {
   id: string;

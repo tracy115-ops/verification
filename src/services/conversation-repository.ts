@@ -4,7 +4,7 @@ import { checkWorkflow } from '../domain/workflow';
 import type { ConversationSession } from '../domain/runtime/types';
 import { frameworkSchema } from '../domain/execution/schema';
 import { decodeFramework } from '../domain/execution/validation';
-import { caseSchema } from '../domain/runtime/artifacts';
+import { caseSchema, requirementIncrementSchema, designIncrementSchema } from '../domain/runtime/artifacts';
 
 export const CONVERSATIONS_KEY = 'verification-workbench.conversations.v1';
 const string = { type: 'string' };
@@ -17,6 +17,41 @@ const step = {
     status: { enum: ['pending', 'running', 'awaiting_review', 'succeeded', 'failed', 'interrupted'] },
     attempts: { type: 'integer', minimum: 0 },
     caseBatchAttempts: { type: 'integer', minimum: 0 },
+    analysis: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['version', 'signature', 'kind', 'total', 'localTotal', 'completed'],
+      properties: {
+        version: { const: 1 },
+        signature: { type: 'string', pattern: '^[a-f0-9]{64}$' },
+        kind: { enum: ['requirements', 'design'] },
+        total: { type: 'integer', minimum: 1, maximum: 600 },
+        localTotal: { type: 'integer', minimum: 1, maximum: 80 },
+        completed: {
+          type: 'array',
+          maxItems: 600,
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['index', 'digest', 'value'],
+            properties: {
+              index: { type: 'integer', minimum: 0, maximum: 599 },
+              digest: { type: 'string', pattern: '^[a-f0-9]{64}$' },
+              value: { anyOf: [requirementIncrementSchema, designIncrementSchema] },
+            },
+          },
+        },
+        rejected: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['index', 'value'],
+          properties: {
+            index: { type: 'integer', minimum: 0, maximum: 599 },
+            value: requirementIncrementSchema,
+          },
+        },
+      },
+    },
     turnId: string,
     executionId: string,
     reviewDigest: string,
@@ -167,6 +202,28 @@ export function decodeConversations(value: unknown): ConversationSession[] {
       if (checkWorkflow({ ...run.snapshot.definition, nodes: run.plan }).length)
         throw new Error('session_storage_invalid');
       if (run.plan.some((node) => !run.steps[node.id])) throw new Error('session_storage_invalid');
+      for (const node of run.plan) {
+        const checkpoint = run.steps[node.id].analysis;
+        if (!checkpoint) continue;
+        const indexes = checkpoint.completed.map((item) => item.index);
+        if (
+          node.operation !==
+            (checkpoint.kind === 'requirements' ? 'requirements.extract' : 'scenarios.design') ||
+          checkpoint.localTotal > checkpoint.total ||
+          new Set(indexes).size !== indexes.length ||
+          indexes.some((index) => index >= checkpoint.total) ||
+          (checkpoint.kind === 'requirements'
+            ? checkpoint.localTotal !== checkpoint.total
+            : checkpoint.localTotal > 32 ||
+              checkpoint.total !== (checkpoint.localTotal * (checkpoint.localTotal + 1)) / 2) ||
+          (checkpoint.rejected &&
+            (checkpoint.kind !== 'requirements' ||
+              checkpoint.rejected.index >= checkpoint.total ||
+              indexes.includes(checkpoint.rejected.index))) ||
+          (run.steps[node.id].status === 'succeeded' && indexes.length !== checkpoint.total)
+        )
+          throw new Error('session_storage_invalid');
+      }
       if (
         run.plan.some(
           (node) =>

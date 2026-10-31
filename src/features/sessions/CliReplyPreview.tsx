@@ -1,8 +1,15 @@
-import { parseArtifact, isCases, isDesign, isRequirements } from '../../domain/runtime/artifacts';
+import {
+  parseArtifact,
+  isCases,
+  isDesign,
+  isRequirements,
+  isRequirementIncrement,
+  isDesignIncrement,
+} from '../../domain/runtime/artifacts';
 import { isImplementation, isVerdict } from '../../domain/execution/schema';
 import { useI18n } from '../../shared/i18n/context';
 
-export function CliReplyPreview({ text }: { text: string }) {
+export function CliReplyPreview({ text, batch = false }: { text: string; batch?: boolean }) {
   const { t, locale } = useI18n();
   let value: unknown;
   try {
@@ -10,6 +17,25 @@ export function CliReplyPreview({ text }: { text: string }) {
   } catch {
     /* Non-JSON replies are shown as public CLI text. */
   }
+  if (batch && isRequirementIncrement(value) && !value.requirements.length)
+    return (
+      <div className="session-cli-preview">
+        <p>{t('analysisEmptyRequirements')}</p>
+        {value.questions.map((item, index) => (
+          <p key={index}>{item}</p>
+        ))}
+      </div>
+    );
+  if (batch && isDesignIncrement(value) && !value.scenarios.length)
+    return (
+      <div className="session-cli-preview">
+        <p>{t('analysisEmptyCross')}</p>
+        <p>{value.strategy}</p>
+        {value.gaps.map((item, index) => (
+          <p key={index}>{item}</p>
+        ))}
+      </div>
+    );
   if (isRequirements(value))
     return (
       <div className="session-cli-preview">

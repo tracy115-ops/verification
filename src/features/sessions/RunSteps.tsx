@@ -60,6 +60,25 @@ export function RunSteps({ run, openArtifact }: { run: WorkflowRun; openArtifact
                       <div className="session-step-heading">
                         <span>
                           {nodeLabel(node, run.snapshot, t)}
+                          {step.analysis && (
+                            <small>
+                              {' '}
+                              · {t('completedBatches')}: {step.analysis.completed.length} /{' '}
+                              {step.analysis.total}
+                              {step.analysis.kind === 'design' && (
+                                <>
+                                  {' '}
+                                  · {t('analysisCrossReviews')}:{' '}
+                                  {
+                                    step.analysis.completed.filter(
+                                      (item) => item.index >= step.analysis!.localTotal,
+                                    ).length
+                                  }{' '}
+                                  / {step.analysis.total - step.analysis.localTotal}
+                                </>
+                              )}
+                            </small>
+                          )}
                           {!!step.caseBatches?.length && (
                             <small>
                               {' '}

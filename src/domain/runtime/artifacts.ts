@@ -12,6 +12,13 @@ export const requirementSchema = record({
   requirements: list(record({ id, text, quote: text, acceptanceCriteria: list(text) })),
   questions: list(text, 0),
 });
+export const requirementIncrementSchema = {
+  ...requirementSchema,
+  properties: {
+    ...requirementSchema.properties,
+    requirements: { ...requirementSchema.properties.requirements, minItems: 0 },
+  },
+};
 const scenarioBase = record({ id, title: text, requirementIds: list(id), dimension: text, expected: text });
 const scenarioSchema = {
   ...scenarioBase,
@@ -65,11 +72,21 @@ export const caseSchema = record({
     }),
   ),
 });
+export const designIncrementSchema = {
+  ...generatedDesignSchema,
+  properties: {
+    ...generatedDesignSchema.properties,
+    factors: { ...generatedDesignSchema.properties.factors, minItems: 0 },
+    scenarios: { ...generatedDesignSchema.properties.scenarios, minItems: 0 },
+  },
+};
 const ajv = new Ajv2020({ strict: false, allErrors: true });
 export const isRequirements = ajv.compile<RequirementArtifact>(requirementSchema);
+export const isRequirementIncrement = ajv.compile<RequirementArtifact>(requirementIncrementSchema);
 export const isDesign = ajv.compile<DesignArtifact>(designSchema);
 export const isGeneratedDesign = ajv.compile<DesignArtifact>(generatedDesignSchema);
 export const isCases = ajv.compile<CaseArtifact>(caseSchema);
+export const isDesignIncrement = ajv.compile<DesignArtifact>(designIncrementSchema);
 
 function unique(ids: string[]): boolean {
   return new Set(ids).size === ids.length;
@@ -88,8 +105,14 @@ export function decodeRequirements(value: unknown, spec: string): RequirementArt
   return result;
 }
 
-export function decodeDesign(value: unknown, requirements: RequirementArtifact): DesignArtifact {
-  if (!isDesign(value)) throw new Error('artifact_invalid');
+export function decodeDesign(
+  value: unknown,
+  requirements: RequirementArtifact,
+  increment = false,
+): DesignArtifact {
+  if (increment) {
+    if (!isDesignIncrement(value)) throw new Error('artifact_invalid');
+  } else if (!isDesign(value)) throw new Error('artifact_invalid');
   const design = structuredClone(value);
   fail(unique(design.scenarios.map((item) => item.id)));
   const ids = new Set(requirements.requirements.map((item) => item.id));

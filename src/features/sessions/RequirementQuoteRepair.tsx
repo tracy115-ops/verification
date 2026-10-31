@@ -12,6 +12,7 @@ export function RequirementQuoteRepair({ run, actions }: { run: WorkflowRun; act
   const [selected, setSelected] = useState('');
   const transcript = useTranscript(run.sessionId);
   const node = run.plan.find((item) => item.operation === 'requirements.extract');
+  const batched = !!(node && run.steps[node.id].analysis);
   const stored = node ? run.artifacts[`${node.id}.${Object.keys(node.outputs)[0]}`]?.value : undefined;
   const draft = useMemo(() => {
     if (isRequirements(stored)) return stored;
@@ -33,7 +34,7 @@ export function RequirementQuoteRepair({ run, actions }: { run: WorkflowRun; act
       <h3>
         {t('quoteRepairTitle')} · {issues.length}
       </h3>
-      <p className="wb-muted">{t('quoteRepairHint')}</p>
+      <p className="wb-muted">{t(batched ? 'quoteRepairBatchHint' : 'quoteRepairHint')}</p>
       {!draft && <p>{t(transcript.loading ? 'quoteRepairLoading' : 'quoteRepairUnavailable')}</p>}
       {draft && !issues.length && (
         <>
@@ -43,7 +44,7 @@ export function RequirementQuoteRepair({ run, actions }: { run: WorkflowRun; act
             disabled={actions.busy}
             onClick={() => void actions.repairQuotes(run, {})}
           >
-            {t('quoteRepairSave')}
+            {t(batched ? 'quoteRepairBatchSave' : 'quoteRepairSave')}
           </button>
         </>
       )}
@@ -85,7 +86,7 @@ export function RequirementQuoteRepair({ run, actions }: { run: WorkflowRun; act
             disabled={actions.busy || !Object.keys(edits).length}
             onClick={() => void actions.repairQuotes(run, edits)}
           >
-            {t('quoteRepairSave')}
+            {t(batched ? 'quoteRepairBatchSave' : 'quoteRepairSave')}
           </button>
         </>
       )}

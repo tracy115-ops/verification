@@ -76,7 +76,7 @@ export function RunPanel({
         </h3>
         <RunSteps run={run} openArtifact={setSelectedArtifact} />
       </section>
-      {['failed', 'interrupted'].includes(run.status) && !failedExecution && (
+      {['failed', 'interrupted', 'cancelled'].includes(run.status) && !failedExecution && (
         <button
           className="workbench-btn wb-full"
           disabled={!hasDesktopBridge() || actions.busy}

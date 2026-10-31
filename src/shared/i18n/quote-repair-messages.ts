@@ -10,6 +10,9 @@ export const quoteRepairZh = {
   quoteRepairQuote: '原文引用（从 Spec 原样复制）',
   quoteRepairSource: '查看原始 Spec',
   quoteRepairSave: '保存引用并进入需求评审',
+  quoteRepairBatchSave: '保存引用并继续分批分析',
+  quoteRepairBatchHint:
+    '修复当前批次引用后继续处理剩余批次，不重跑已完成批次；全部完成后才进入需求评审。引用须位于本批原文窗口并能在完整 Spec 唯一定位。',
   quoteRepairFormatting: '引用可通过格式校正恢复，请确认后继续。',
 };
 export const quoteRepairEn: Record<keyof typeof quoteRepairZh, string> = {
@@ -26,5 +29,8 @@ export const quoteRepairEn: Record<keyof typeof quoteRepairZh, string> = {
   quoteRepairQuote: 'Source quote (copy verbatim from Spec)',
   quoteRepairSource: 'View original Spec',
   quoteRepairSave: 'Save quotes and review requirements',
+  quoteRepairBatchSave: 'Save quotes and continue analysis',
+  quoteRepairBatchHint:
+    'Repair this batch and continue the remaining batches without repeating completed work. Review starts only after all batches finish. Quotes must lie in this source window and uniquely match the full Spec.',
   quoteRepairFormatting: 'Formatting normalization can recover these quotes. Confirm to continue.',
 };

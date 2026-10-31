@@ -73,6 +73,17 @@ export const executionZh = {
   factorLevels: '因子水平',
   noFactors: '此任务没有独立因子数据；旧任务不会自动生成因子。',
   completedBatches: '已保存批次',
+  analysisCrossReviews: '组间检查',
+  analysisBatchLabel: '分析批次',
+  analysisEmptyRequirements: '本批未提取到新增需求；完整原文仍保留在任务中。',
+  analysisEmptyCross: '本轮未新增跨组场景；因子和覆盖缺口仍需评审。',
+  analysis_batch: '正在分析当前批次',
+  analysis_cross_review: '正在检查需求组间关联',
+  analysis_checkpoint_full:
+    '本节点的分批产物超过恢复存储预算。已完成批次和 CLI 回复保留，请按子系统缩小本次设计范围。',
+  analysis_request_too_large:
+    '单条需求或本批上下文超过分析输入预算。请精简冗长引用或澄清内容；已完成批次保留。',
+  analysis_plan_limit: '需求分组超过当前 32 组上限。请按子系统拆分设计任务；未截断需求或跳过组间检查。',
   assetTrace: '关联场景与用例',
   viewTaskAssets: '在任务资产中查看',
   viewFullQuote: '查看完整原文引用',
@@ -218,6 +229,20 @@ export const executionEn: Record<keyof typeof executionZh, string> = {
   factorLevels: 'Factor levels',
   noFactors: 'This task has no separate factor data. Older runs do not generate factors automatically.',
   completedBatches: 'Saved batches',
+  analysisCrossReviews: 'Cross-group checks',
+  analysisBatchLabel: 'Analysis batch',
+  analysisEmptyRequirements:
+    'No additional requirements were extracted in this batch. The complete source remains in the task.',
+  analysisEmptyCross:
+    'No cross-group scenarios were added in this review. Factors and coverage gaps still require review.',
+  analysis_batch: 'Analyzing the current batch',
+  analysis_cross_review: 'Reviewing interactions between requirement groups',
+  analysis_checkpoint_full:
+    'Batch artifacts exceed this node’s recovery storage budget. Completed batches and CLI replies are retained. Narrow the design task to a subsystem.',
+  analysis_request_too_large:
+    'A requirement or batch context exceeds the analysis input budget. Shorten verbose quotes or clarifications. Completed batches are retained.',
+  analysis_plan_limit:
+    'Analysis exceeds the current limit of 32 requirement groups. Split the design task by subsystem. No requirements or cross-group checks were silently skipped.',
   assetTrace: 'Related scenarios and cases',
   viewTaskAssets: 'View task artifacts',
   viewFullQuote: 'View the full source quote',

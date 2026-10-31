@@ -5,6 +5,8 @@ import { nodeLabel } from '../workflows/node-label';
 import { CliReplyPreview } from './CliReplyPreview';
 import { Status } from '../../shared/components/Status';
 import { AgentReplyStatus } from './AgentReplyStatus';
+import { useMemo } from 'react';
+import { analysisMetadata } from '../../domain/runtime/analysis-metadata';
 
 export function WorkflowCallCard({
   turn,
@@ -16,6 +18,7 @@ export function WorkflowCallCard({
   openArtifact: (run: WorkflowRun, key: string) => void;
 }) {
   const { t, locale } = useI18n();
+  const batch = useMemo(() => analysisMetadata(turn.request.prompt), [turn.request.prompt]);
   const node = run.plan.find((item) => item.id === turn.nodeId);
   const produced = node
     ? Object.keys(node.outputs)
@@ -53,7 +56,15 @@ export function WorkflowCallCard({
         </time>
       </header>
       <div className="session-cli-title">
-        <h3>{node ? nodeLabel(node, run.snapshot, t) : turn.operation}</h3>
+        <h3>
+          {node ? nodeLabel(node, run.snapshot, t) : turn.operation}
+          {batch && (
+            <small>
+              {' '}
+              · {t(batch.cross ? 'analysisCrossReviews' : 'analysisBatchLabel')} {batch.index} / {batch.total}
+            </small>
+          )}
+        </h3>
         <Status tone={error && !repaired ? 'danger' : turn.status === 'completed' ? 'success' : 'accent'}>
           {t(repaired ? 'quoteRepairAppliedLabel' : label)}
         </Status>
@@ -71,7 +82,7 @@ export function WorkflowCallCard({
         ) : (
           <>
             <span className="session-cli-reply-label">{t('actualAgentReply')}</span>
-            <CliReplyPreview text={turn.text} />
+            <CliReplyPreview text={turn.text} batch={!!batch} />
             <details>
               <summary>{t('rawCliReply')}</summary>
               <pre>{turn.text}</pre>
@@ -88,7 +99,12 @@ export function WorkflowCallCard({
           </summary>
           <ul>
             {turn.activities.map((activity, index) => (
-              <li key={index}>{activity.name}</li>
+              <li key={index}>
+                {['analysis_batch', 'analysis_cross_review'].includes(activity.name) &&
+                isMessageKey(activity.name)
+                  ? t(activity.name)
+                  : activity.name}
+              </li>
             ))}
           </ul>
         </details>

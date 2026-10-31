@@ -15,11 +15,29 @@ export function gameWorkflowFixture(targetUrl: string) {
     readFileSync('docs/examples/generated/game-platform/report.json', 'utf8'),
   );
   const script = readFileSync('docs/examples/generated/game-platform/test_game_platform.py', 'utf8');
+  const quotePrefixes: Record<string, string> = {
+    'ROOM-CAPACITY': '`POST /rooms`',
+    'ROOM-MODE-RANKED': '`POST /rooms`',
+    'ROOM-PRIVATE-ACCESS': '`GET /rooms/private-room`',
+    'ROOM-JOIN-CAPACITY': '`POST /rooms/race-room/join`',
+    'MATCH-LIVE': '`POST /matches/live/actions`',
+    'MATCH-FINISHED': '`POST /matches/finished/actions`',
+    'RESULT-SCORING': '`POST /matches/result/result`',
+    'QUEUE-INPUT': '`POST /queue`',
+    'QUEUE-DEPENDENCY': '`POST /queue`',
+  };
+  const quotes = archive.coverage.map((item) => {
+    if (item.requirementId.endsWith('AUTHENTICATION')) return '所有接口无身份返回 401。';
+    const prefix = quotePrefixes[item.requirementId];
+    const quote = source.split(/\r?\n\r?\n/).find((paragraph) => prefix && paragraph.startsWith(prefix));
+    if (!quote) throw new Error('Missing interface source quote in replay fixture');
+    return quote;
+  });
   const requirements = {
     requirements: archive.coverage.map((item, i) => ({
       id: `REQ-${i + 1}`,
       text: item.requirementId,
-      quote: source,
+      quote: quotes[i],
       acceptanceCriteria: [item.method],
     })),
     questions: [],
@@ -31,7 +49,7 @@ export function gameWorkflowFixture(targetUrl: string) {
       name: item.requirementId,
       requirementIds: [`REQ-${i + 1}`],
       levels: [item.method],
-      sourceQuote: source,
+      sourceQuote: quotes[i],
     })),
     scenarios: archive.coverage.map((item, i) => ({
       id: `SC-${i + 1}`,

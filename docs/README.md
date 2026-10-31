@@ -31,6 +31,8 @@
 | [界面与真实流程验收](research/interface-workflow-audit.md) | 各页面检查、真实需求分析结果与阻塞问题 |
 | [内部 CodeAgent 驱动](architecture/codeagent-driver.md) | 内置模型、扫描路径、参数探测与实际验证边界 |
 | [CodeAgent 初始化后超时](research/codeagent-initialization-timeout.md) | 初始化无正文的诊断边界、事件追踪和独立原生驱动对比 |
+| [分批需求与场景分析](design/bounded-design-analysis.md) | 输入预算、完整原文分段、组间检查及检查点恢复 |
+| [分批分析本地验证](research/bounded-analysis-validation.md) | 输入框交互、刷新续跑、组间映射与真实 Python 闭环 |
 | [ADR-0002](adr/0002-lan-design-collaboration-service.md) | HTTP 协作服务与 SQLite 的职责和取舍 |
 | [ADR-0003](adr/0003-incremental-contributions-and-coverage.md) | 增量合入、版本绑定覆盖及静态解析的信任边界 |
 | [首轮开发计划](roadmap/development-plan.md) | 已实现的第一轮范围及后续开发边界 |
