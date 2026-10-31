@@ -12,6 +12,45 @@ import { requirements } from '../domain/runtime/fixtures.test-support';
 beforeEach(() => localStorage.clear());
 afterEach(cleanup);
 
+it('acknowledges a saved message before the CLI finishes and keeps rejected input unaccepted', async () => {
+  const saved = savedDocument();
+  let finish!: (outcome: TurnOutcome) => void;
+  let accepted = 0;
+  const port: AgentPort = {
+    cancel: async () => {},
+    send: () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  };
+  const { result } = renderHook(() => useConversations(saved.profiles, saved, port));
+  let sent!: Promise<boolean>;
+  act(() => {
+    result.current.newSession();
+  });
+  await act(async () => {
+    expect(
+      await result.current.send('', false, 'codex-native', undefined, false, 'recent', () => {
+        accepted++;
+      }),
+    ).toBe(false);
+  });
+  expect(accepted).toBe(0);
+  act(() => {
+    sent = result.current.send('hello', false, 'codex-native', undefined, false, 'recent', () => {
+      accepted++;
+    });
+  });
+  await waitFor(() => expect(finish).toBeTypeOf('function'));
+  expect(accepted).toBe(1);
+  expect(result.current.busy).toBe(true);
+  await act(async () => {
+    finish({ status: 'completed', text: 'hello back', errorCode: null, nativeSessionId: null });
+    expect(await sent).toBe(true);
+  });
+  expect(accepted).toBe(1);
+});
+
 it('runs two sessions concurrently and isolates streams, cancellation and final replies', async () => {
   const saved = savedDocument();
   const pending = new Map<

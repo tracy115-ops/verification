@@ -60,6 +60,11 @@ export function RunSteps({ run, openArtifact }: { run: WorkflowRun; openArtifact
                       <div className="session-step-heading">
                         <span>
                           {nodeLabel(node, run.snapshot, t)}
+                          {!step.analysis &&
+                            step.turnId &&
+                            ['requirements.extract', 'scenarios.design'].includes(node.operation) && (
+                              <small> · {t('analysisSingleMode')}</small>
+                            )}
                           {step.analysis && (
                             <small>
                               {' '}

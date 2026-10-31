@@ -13,6 +13,7 @@ import { ScriptQuestions } from './ScriptQuestions';
 import { RunReport } from './RunReport';
 import { RunReview } from './RunReview';
 import { RequirementQuoteRepair } from './RequirementQuoteRepair';
+import { canRetryAnalysisInBatches } from '../../domain/runtime/analysis-retry';
 
 export function RunPanel({
   run,
@@ -84,6 +85,16 @@ export function RunPanel({
         >
           <RefreshCw size={15} />
           {t('retryStep')}
+        </button>
+      )}
+      {canRetryAnalysisInBatches(run) && (
+        <button
+          className="workbench-btn wb-full"
+          disabled={!hasDesktopBridge() || actions.busy}
+          title={t('retryAnalysisInBatchesHint')}
+          onClick={() => void actions.retry(run, true)}
+        >
+          {t('retryAnalysisInBatches')}
         </button>
       )}
       {failedExecution && (

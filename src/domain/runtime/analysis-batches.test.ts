@@ -14,6 +14,37 @@ const largeSpec = Array.from(
   (_, i) =>
     `## 子系统${i}\n接口${i}容量必须为2到8。\n${'这是背景说明，保留原始中文和表情😀。'.repeat(100)}\n`,
 ).join('');
+
+it('allows a failed small analysis to opt into batches and persists that choice', async () => {
+  const doc = savedDocument();
+  const initial = createRun(
+    doc,
+    crypto.randomUUID(),
+    '接口0容量必须为2到8。',
+    doc.profiles,
+    'codeagent-native',
+  );
+  const first = testPort(1);
+  const failed = await advance(initial, first.port);
+  expect(JSON.parse(first.requests[0].prompt).analysisBatch).toBeUndefined();
+  const retry = retryRun(failed, true);
+  const session = {
+    id: retry.sessionId,
+    title: 'retry',
+    profileId: 'codeagent-native',
+    messages: [],
+    runs: [retry],
+  };
+  const saved = new Map<string, string>();
+  saveConversations({ setItem: (key, value) => saved.set(key, value) }, [session]);
+  const restored = decodeConversations(JSON.parse([...saved.values()][0]))[0].runs[0];
+  const second = testPort();
+  const done = await advance(retryRun(restored), second.port);
+  expect(done.errorCode).toBeUndefined();
+  expect(JSON.parse(second.requests[0].prompt).analysisBatch).toBeTruthy();
+  expect(done.id).toBe(initial.id);
+  expect(done.status).toBe('awaiting_review');
+});
 const advance = (run: WorkflowRun, port: AgentPort, signal = new AbortController().signal) =>
   advanceRun(
     run,

@@ -64,6 +64,7 @@ export function useConversations(
     framework?: FrameworkProfile,
     useNodeBindings = false,
     contextMode: ChatContextMode = 'recent',
+    onAccepted?: () => void,
   ): Promise<boolean> {
     const current = session ?? createSession(profileId);
     if (tasks.isSessionBusy(current.id) || !text.trim()) return false;
@@ -97,6 +98,7 @@ export function useConversations(
         changeSession(value);
         store.setActiveId(value.id);
         accepted = true;
+        onAccepted?.();
         await drive(run, controller);
       } else {
         const request = chatRequest(value, profile, contextMode);
@@ -104,6 +106,7 @@ export function useConversations(
         changeSession(value);
         store.setActiveId(value.id);
         accepted = true;
+        onAccepted?.();
         const result = await recordedAgent(port).send(
           request,
           (event) => tasks.onEvent(value.id, event),
@@ -116,7 +119,7 @@ export function useConversations(
     }, current.id);
     return accepted;
   }
-  async function retry(run: WorkflowRun) {
+  async function retry(run: WorkflowRun, forceBatchAnalysis = false) {
     await perform(async (controller) => {
       if (
         session?.runs.some(
@@ -129,7 +132,7 @@ export function useConversations(
         .find((step) => ['failed', 'interrupted'].includes(step.status));
       if (previous?.turnId) await port.cancel(previous.turnId);
       if (previous?.executionId) await executionPort.cancel(previous.executionId);
-      await drive(retryRun(await recoverRequirementDraft(run)), controller);
+      await drive(retryRun(await recoverRequirementDraft(run), forceBatchAnalysis), controller);
     });
   }
   async function stopRecovered() {

@@ -7,6 +7,7 @@ import { useI18n } from '../../shared/i18n/context';
 import type { FrameworkProfile } from '../../domain/execution/types';
 import type { ChatContextMode } from '../../domain/runtime/chat-context';
 import { ChatContextControl } from './ChatContextControl';
+import { ComposerInput } from './ComposerInput';
 
 export function ConversationComposer({
   actions,
@@ -33,12 +34,28 @@ export function ConversationComposer({
   const [contextMode, setContextMode] = useState<ChatContextMode>('recent');
   const file = useRef<HTMLInputElement>(null);
   async function send() {
+    if (actions.busy || !hasDesktopBridge() || !text.trim()) return;
     const framework = invoke && frameworkId ? frameworks.find((item) => item.id === frameworkId) : undefined;
     if (invoke && frameworkId && !framework) {
       actions.setError('execution_invalid');
       return;
     }
-    if (await actions.send(text, invoke, profileId, framework, useNodeBindings, contextMode)) setText('');
+    const submitted = text;
+    let acknowledged = false;
+    const clearAccepted = () => {
+      acknowledged = true;
+      setText((current) => (current === submitted ? '' : current));
+    };
+    const accepted = await actions.send(
+      submitted,
+      invoke,
+      profileId,
+      framework,
+      useNodeBindings,
+      contextMode,
+      clearAccepted,
+    );
+    if (accepted && !acknowledged) clearAccepted();
   }
   async function attach(input?: File) {
     if (!input) return;
@@ -135,17 +152,7 @@ export function ConversationComposer({
           {t('chooseFlowFirst')}
         </button>
       )}
-      <label className="wb-field">
-        <span className="wb-sr-only">{t('composerPlaceholder')}</span>
-        <textarea
-          className="workbench-textarea"
-          value={text}
-          maxLength={40000}
-          disabled={actions.busy}
-          placeholder={t('composerPlaceholder')}
-          onChange={(event) => setText(event.target.value)}
-        />
-      </label>
+      <ComposerInput value={text} disabled={actions.busy} change={setText} send={send} />
       {attachmentError && (
         <p className="wb-error" role="alert">
           {t('prompt_too_large')}
@@ -179,6 +186,7 @@ export function ConversationComposer({
           <button
             className="workbench-btn wb-primary"
             disabled={!hasDesktopBridge() || !text.trim()}
+            title={t('composerKeyboardHint')}
             onClick={() => void send()}
           >
             <Send size={15} />

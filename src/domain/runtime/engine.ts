@@ -18,6 +18,7 @@ import { isCases, isRequirements } from './artifacts';
 import { ANALYSIS_PROMPT_LIMIT, byteLength } from './analysis-plan';
 import { extractRequirementBatches } from './requirement-batches';
 import { generateDesignBatches } from './design-batches';
+import { retryNode, canRetryAnalysisInBatches } from './analysis-retry';
 export { reviewDigest } from './approvals';
 
 async function storeOutput(run: WorkflowRun, node: WorkflowNode, value: unknown) {
@@ -82,7 +83,9 @@ export async function advanceRun(
         if (!profile || profile.protocol !== 'native') throw new Error('unsupported_profile');
         if (
           ['requirements.extract', 'scenarios.design'].includes(node.operation) &&
-          (step.analysis || byteLength(taskFor(run, node, inputs)) > ANALYSIS_PROMPT_LIMIT)
+          (step.analysis ||
+            step.forceBatchAnalysis ||
+            byteLength(taskFor(run, node, inputs)) > ANALYSIS_PROMPT_LIMIT)
         ) {
           const context = { run, node, profile, port, signal, onUpdate, onEvent };
           await storeOutput(
@@ -192,15 +195,13 @@ export async function approveRun(
   return run;
 }
 
-export function retryRun(initial: WorkflowRun): WorkflowRun {
+export function retryRun(initial: WorkflowRun, forceBatchAnalysis = false): WorkflowRun {
   if (!['failed', 'interrupted', 'cancelled'].includes(initial.status)) throw new Error('invalid_run');
+  if (forceBatchAnalysis && !canRetryAnalysisInBatches(initial)) throw new Error('approval_invalid');
   const run = structuredClone(initial);
-  const node =
-    run.plan.find((node) => ['failed', 'interrupted'].includes(run.steps[node.id].status)) ??
-    (run.errorCode === 'run_deadline' || run.status === 'cancelled'
-      ? run.plan.find((node) => ['pending', 'awaiting_review'].includes(run.steps[node.id].status))
-      : undefined);
+  const node = retryNode(run);
   if (!node) throw new Error('invalid_run');
+  if (forceBatchAnalysis) run.steps[node.id].forceBatchAnalysis = true;
   run.resumedAt = new Date().toISOString();
   run.steps[node.id].status = 'pending';
   delete run.steps[node.id].errorCode;

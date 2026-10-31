@@ -41,6 +41,7 @@ export interface StepState {
   caseBatches?: { signature: string; index: number; cases: CaseArtifact }[];
   caseBatchAttempts?: number;
   analysis?: AnalysisCheckpoint;
+  forceBatchAnalysis?: true;
   errorCode?: string;
 }
 

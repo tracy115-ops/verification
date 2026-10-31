@@ -67,7 +67,9 @@ for (const large of [false, true]) {
     if (large) {
       await expect(title).toContainText('分析批次 1 /');
       await expect(page.locator('.session-step-list').first()).toContainText('已保存批次: 0 /');
-    } else await expect(title).not.toContainText('分析批次');
+    } else await expect(title).toContainText('单次分析');
+    await expect(card.locator('.session-cli-request summary')).toContainText('字节');
+    await expect(page.locator('.session-composer textarea')).toHaveValue('');
     const request = await page.evaluate(() =>
       JSON.parse(
         (globalThis as unknown as { analysisVisibility: { prompt: string } }).analysisVisibility.prompt,
@@ -79,5 +81,18 @@ for (const large of [false, true]) {
       (globalThis as unknown as { analysisVisibility: { finish: () => void } }).analysisVisibility.finish(),
     );
     await expect(card.getByRole('status').filter({ hasText: 'Agent 正在回复' })).toHaveCount(0);
+    if (!large) {
+      await page
+        .getByRole('complementary', { name: '流程进度' })
+        .getByRole('button', { name: '改用分批分析重试', exact: true })
+        .click();
+      await expect(page.locator('.session-cli-title h3').last()).toContainText('分析批次 1 / 1');
+      await page.evaluate(() =>
+        (globalThis as unknown as { analysisVisibility: { finish: () => void } }).analysisVisibility.finish(),
+      );
+      await expect(
+        page.locator('.session-cli-turn').last().getByRole('status').filter({ hasText: 'Agent 正在回复' }),
+      ).toHaveCount(0);
+    }
   });
 }

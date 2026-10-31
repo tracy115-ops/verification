@@ -17,6 +17,7 @@ const step = {
     status: { enum: ['pending', 'running', 'awaiting_review', 'succeeded', 'failed', 'interrupted'] },
     attempts: { type: 'integer', minimum: 0 },
     caseBatchAttempts: { type: 'integer', minimum: 0 },
+    forceBatchAnalysis: { const: true },
     analysis: {
       type: 'object',
       additionalProperties: false,
@@ -203,6 +204,11 @@ export function decodeConversations(value: unknown): ConversationSession[] {
         throw new Error('session_storage_invalid');
       if (run.plan.some((node) => !run.steps[node.id])) throw new Error('session_storage_invalid');
       for (const node of run.plan) {
+        if (
+          run.steps[node.id].forceBatchAnalysis &&
+          !['requirements.extract', 'scenarios.design'].includes(node.operation)
+        )
+          throw new Error('session_storage_invalid');
         const checkpoint = run.steps[node.id].analysis;
         if (!checkpoint) continue;
         const indexes = checkpoint.completed.map((item) => item.index);

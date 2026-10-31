@@ -75,6 +75,10 @@ export const executionZh = {
   completedBatches: '已保存批次',
   analysisCrossReviews: '组间检查',
   analysisBatchLabel: '分析批次',
+  analysisSingleMode: '单次分析',
+  analysisInputBytes: '输入 {bytes} 字节',
+  retryAnalysisInBatches: '改用分批分析重试',
+  retryAnalysisInBatchesHint: '在当前任务中启用分批分析，不依赖 24 KB 自动阈值；不缩短超时或跳过人工评审。',
   analysisEmptyRequirements: '本批未提取到新增需求；完整原文仍保留在任务中。',
   analysisEmptyCross: '本轮未新增跨组场景；因子和覆盖缺口仍需评审。',
   analysis_batch: '正在分析当前批次',
@@ -231,6 +235,11 @@ export const executionEn: Record<keyof typeof executionZh, string> = {
   completedBatches: 'Saved batches',
   analysisCrossReviews: 'Cross-group checks',
   analysisBatchLabel: 'Analysis batch',
+  analysisSingleMode: 'Single analysis request',
+  analysisInputBytes: 'Input: {bytes} bytes',
+  retryAnalysisInBatches: 'Retry with batched analysis',
+  retryAnalysisInBatchesHint:
+    'Use batched analysis in this task regardless of the 24 KB automatic threshold. Timeouts and human review remain in effect.',
   analysisEmptyRequirements:
     'No additional requirements were extracted in this batch. The complete source remains in the task.',
   analysisEmptyCross:

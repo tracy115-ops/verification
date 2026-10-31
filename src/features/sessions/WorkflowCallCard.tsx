@@ -7,6 +7,7 @@ import { Status } from '../../shared/components/Status';
 import { AgentReplyStatus } from './AgentReplyStatus';
 import { useMemo } from 'react';
 import { analysisMetadata } from '../../domain/runtime/analysis-metadata';
+import { byteLength } from '../../domain/runtime/analysis-plan';
 
 export function WorkflowCallCard({
   turn,
@@ -19,6 +20,8 @@ export function WorkflowCallCard({
 }) {
   const { t, locale } = useI18n();
   const batch = useMemo(() => analysisMetadata(turn.request.prompt), [turn.request.prompt]);
+  const inputBytes = useMemo(() => byteLength(turn.request.prompt), [turn.request.prompt]);
+  const analysisCall = ['requirements.extract', 'scenarios.design'].includes(turn.operation);
   const node = run.plan.find((item) => item.id === turn.nodeId);
   const produced = node
     ? Object.keys(node.outputs)
@@ -64,13 +67,17 @@ export function WorkflowCallCard({
               · {t(batch.cross ? 'analysisCrossReviews' : 'analysisBatchLabel')} {batch.index} / {batch.total}
             </small>
           )}
+          {analysisCall && !batch && <small> · {t('analysisSingleMode')}</small>}
         </h3>
         <Status tone={error && !repaired ? 'danger' : turn.status === 'completed' ? 'success' : 'accent'}>
           {t(repaired ? 'quoteRepairAppliedLabel' : label)}
         </Status>
       </div>
       <details className="session-cli-request">
-        <summary>{t('actualAgentRequest')}</summary>
+        <summary>
+          {t('actualAgentRequest')} ·{' '}
+          {t('analysisInputBytes').replace('{bytes}', new Intl.NumberFormat(locale).format(inputBytes))}
+        </summary>
         <pre>{turn.request.prompt}</pre>
       </details>
       {turn.text &&
