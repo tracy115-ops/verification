@@ -33,6 +33,10 @@
 
 本机未安装内部 CodeAgent。输入预算、恢复及校验已验证；真实推理耗时和模型输出质量仍需安装环境复测。若小批次仍停在 system.init，没有模型回复，不能继续把原因归结为输入长度。截图 `.runtime/analysis-batches.png` 来自上述浏览器交互回归，CLI 边界为夹具。
 
+## 批次标识补充检查
+
+两项生产构建界面回归保持 CLI 调用未完成、无正文输出：超过阈值的大请求在第一条调用卡片显示分析批次 1 / N，右侧显示已保存批次 0 / N；小请求沿用单次模式，没有批次标识。因此缺少标识本身不能证明旧版本，也不能证明分批已执行；还需核对工作台当前版本、同一次 cli.started 的操作和 promptBytes，以及查看的是否为重试后生成的新记录。历史调用不会因升级而被改写。
+
 ## 正式发布
 
 [v0.6.0 打包流水线](https://github.com/tracy115-ops/verification/actions/runs/41157367543) 已通过，包含实际 release WebView 安装 IPC、覆盖安装、更新辅助进程和自动重启检查，以及黑盒样例回归。[正式安装包](https://github.com/tracy115-ops/verification/releases/tag/v0.6.0) 来源提交 cd3e1ba，版本标识 0.6.0-build.27.1-cd3e1ba。
