@@ -110,7 +110,12 @@ test('shows recorded public replies and exact requests, restores them and delete
   const card = page.locator('.session-cli-turn');
   await expect(card).toContainText('账户连续失败5次后锁定。');
   await expect(card).toContainText('产物校验未通过');
-  await card.getByText('实际提交给 Agent 的任务', { exact: true }).click();
+  const requestSummary = card.locator('.session-cli-request summary');
+  await expect(requestSummary).toContainText('实际提交给 Agent 的任务');
+  await expect(requestSummary).toContainText(
+    `输入 ${new Intl.NumberFormat('zh-CN').format(Buffer.byteLength(record.request.prompt, 'utf8'))} 字节`,
+  );
+  await requestSummary.click();
   await expect(card.locator('pre').first()).toHaveText(record.request.prompt);
   await card.getByText('查看完整 CLI 回复', { exact: true }).click();
   await expect(card.locator('pre').last()).toHaveText(record.text);
