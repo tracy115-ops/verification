@@ -149,6 +149,8 @@ export const conversationZh = {
   cli_empty_output: 'CLI 已结束，但没有返回有效内容。',
   cli_timeout: 'CLI 调用超时，进程已请求停止。',
   cli_timeout_no_output: 'CLI 超时：本次未收到任何输出，进程已请求停止。',
+  cli_timeout_after_init:
+    'CLI 初始化后超时：仅收到初始化事件，没有模型回复或具体错误。写入成功不代表模型已收到输入；请对照 cli.launch 与 cli.progress 诊断。',
   cli_timeout_shutdown: 'CLI 已返回完成事件，但进程未在时限内结束，已请求停止。',
   cli_timeout_no_text:
     'CLI 超时：收到协议或状态输出，但未收到回复正文。请查看日志中的 last_event 和 unknown_records。',
@@ -356,6 +358,8 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
   cli_empty_output: 'CLI finished without returning content.',
   cli_timeout: 'CLI deadline exceeded. Process shutdown was requested.',
   cli_timeout_no_output: 'CLI timed out without producing output. Process shutdown was requested.',
+  cli_timeout_after_init:
+    'CLI timed out after initialization events only, without a model reply or specific error. A successful pipe write does not confirm model receipt. Compare cli.launch and cli.progress diagnostics.',
   cli_timeout_shutdown:
     'CLI returned a completion event but did not exit before the deadline. Shutdown was requested.',
   cli_timeout_no_text:

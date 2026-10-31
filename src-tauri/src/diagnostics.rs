@@ -48,6 +48,7 @@ pub fn record(app: &AppHandle, event: &str, fields: Value) {
     };
     let allowed = [
         "driver",
+        "operation",
         "status",
         "code",
         "exit_code",
@@ -66,6 +67,11 @@ pub fn record(app: &AppHandle, event: &str, fields: Value) {
         "unknown_records",
         "last_event",
         "public_text_bytes",
+        "initialization_records",
+        "event_trace",
+        "partial_messages",
+        "session_persistence_disabled",
+        "proxy_mode",
     ];
     let details: serde_json::Map<String, Value> = fields
         .as_object()

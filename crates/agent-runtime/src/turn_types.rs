@@ -81,7 +81,15 @@ pub enum AgentEvent {
         id: String,
     },
     Heartbeat,
+    LaunchDiagnostic {
+        partial_messages: bool,
+        session_persistence_disabled: bool,
+        proxy_mode: &'static str,
+    },
     Progress {
+        input_written: bool,
+        initialization_records: usize,
+        event_trace: String,
         elapsed_ms: u64,
         stdout_bytes: usize,
         stderr_bytes: usize,
@@ -93,6 +101,8 @@ pub enum AgentEvent {
         terminal: bool,
     },
     Diagnostic {
+        initialization_records: usize,
+        event_trace: String,
         protocol_records: usize,
         unknown_records: usize,
         last_event: &'static str,

@@ -59,25 +59,36 @@ pub async fn send_cli_turn(
     let receiver = state.reserve(&request.turn_id, &request.session_id)?;
     let turn_id = request.turn_id.clone();
     let driver = request.driver.as_str();
+    let task: serde_json::Value = serde_json::from_str(&request.prompt).unwrap_or_default();
+    let operation = match task["operation"].as_str() {
+        Some("requirements.extract") => "requirements.extract",
+        Some("scenarios.design") => "scenarios.design",
+        Some("cases.generate") => "cases.generate",
+        Some("tests.implement") => "tests.implement",
+        Some("verdicts.evaluate") => "verdicts.evaluate",
+        _ => "conversation",
+    };
     crate::diagnostics::record(
         &app,
         "cli.started",
-        serde_json::json!({"driver":request.driver.as_str(), "turnId":turn_id, "timeoutSeconds":request.timeout_seconds, "promptBytes":request.prompt.len()}),
+        serde_json::json!({"driver":request.driver.as_str(), "turnId":turn_id, "operation":operation, "timeoutSeconds":request.timeout_seconds, "promptBytes":request.prompt.len()}),
     );
     let outcome = agent_runtime::run_turn(request, &workspace, receiver, |event| {
         if matches!(
             &event,
-            AgentEvent::Diagnostic { .. } | AgentEvent::Progress { .. }
+            AgentEvent::Diagnostic { .. }
+                | AgentEvent::Progress { .. }
+                | AgentEvent::LaunchDiagnostic { .. }
         ) {
             let mut details = serde_json::to_value(&event).unwrap_or_default();
             details["turnId"] = serde_json::json!(turn_id);
             details["driver"] = serde_json::json!(driver);
             crate::diagnostics::record(
                 &app,
-                if matches!(&event, AgentEvent::Progress { .. }) {
-                    "cli.progress"
-                } else {
-                    "cli.diagnostic"
+                match &event {
+                    AgentEvent::Progress { .. } => "cli.progress",
+                    AgentEvent::LaunchDiagnostic { .. } => "cli.launch",
+                    _ => "cli.diagnostic",
                 },
                 details,
             );

@@ -84,6 +84,9 @@ jobs:
       - name: Build release installer with bundled collaboration service
         run: npm.cmd run package:windows -- -- --locked
 
+      - name: Build standalone native CLI diagnostic
+        run: cargo build -p agent-runtime --example turn --release --locked
+
       - name: Collect installer and SHA-256 checksums
         env:
           APP_VERSION: ${{ steps.version.outputs.app }}
@@ -100,6 +103,10 @@ jobs:
           Copy-Item -LiteralPath $installerFiles[0].FullName -Destination (Join-Path $outputDirectory.FullName $installerName)
           $hash = Get-FileHash -LiteralPath $installerFiles[0].FullName -Algorithm SHA256
           "$($hash.Hash.ToLowerInvariant())  $installerName" | Set-Content -LiteralPath 'artifacts/windows-x64/SHA256SUMS.txt' -Encoding utf8
+          $diagnosticName = "Verification-Workbench-$env:BUILD_IDENTITY-windows-x64-cli-diagnostic.exe"
+          Copy-Item -LiteralPath 'target/release/examples/turn.exe' -Destination (Join-Path $outputDirectory.FullName $diagnosticName)
+          $diagnosticHash = Get-FileHash -LiteralPath (Join-Path $outputDirectory.FullName $diagnosticName) -Algorithm SHA256
+          "$($diagnosticHash.Hash.ToLowerInvariant())  $diagnosticName" | Add-Content -LiteralPath 'artifacts/windows-x64/SHA256SUMS.txt' -Encoding utf8
           @{ schemaVersion = 1; appVersion = $env:APP_VERSION; buildIdentity = $env:BUILD_IDENTITY; buildProfile = 'release'; commit = $env:GITHUB_SHA; ref = $env:GITHUB_REF; runId = $env:GITHUB_RUN_ID; runAttempt = $env:GITHUB_RUN_ATTEMPT; platform = 'windows-x64'; signed = $false } |
             ConvertTo-Json | Set-Content -LiteralPath 'artifacts/windows-x64/build-info.json' -Encoding utf8
 

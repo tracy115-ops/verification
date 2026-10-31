@@ -4,6 +4,24 @@ use crate::{
 };
 
 #[test]
+fn initialization_trace_is_bounded_and_never_contains_untrusted_event_names() {
+    let mut state = ProtocolState::default();
+    for _ in 0..5 {
+        state.consume(
+            DriverId::Codeagent,
+            br#"{"type":"system","subtype":"init","model":"private-model"}"#,
+        );
+    }
+    assert_eq!(state.initialization_records, 5);
+    assert!(state.initialization_only());
+    assert_eq!(state.event_trace(), "system.init:system.init:system.init");
+    state.consume(DriverId::Codeagent, br#"{"type":"private-secret-event"}"#);
+    assert!(!state.initialization_only());
+    assert_eq!(state.event_trace(), "system.init:system.init:unknown");
+    assert!(!state.event_trace().contains("private"));
+}
+
+#[test]
 fn codex_requires_a_terminal_event_and_never_emits_reasoning() {
     let mut state = ProtocolState::default();
     assert!(

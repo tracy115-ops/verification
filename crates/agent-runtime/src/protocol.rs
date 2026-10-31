@@ -4,6 +4,8 @@ use serde_json::Value;
 #[derive(Default)]
 pub struct ProtocolState {
     pub records: usize,
+    pub initialization_records: usize,
+    recent_events: std::collections::VecDeque<&'static str>,
     pub last_event: &'static str,
     pub unknown_records: usize,
     pub text: String,
@@ -32,6 +34,18 @@ fn text_blocks(value: &Value) -> String {
 }
 
 impl ProtocolState {
+    pub fn event_trace(&self) -> String {
+        self.recent_events
+            .iter()
+            .copied()
+            .collect::<Vec<_>>()
+            .join(":")
+    }
+
+    pub fn initialization_only(&self) -> bool {
+        self.records > 0 && self.records == self.initialization_records
+    }
+
     pub fn consume(&mut self, driver: DriverId, line: &[u8]) -> Vec<AgentEvent> {
         let Ok(value) = serde_json::from_slice::<Value>(line) else {
             self.failed = true;
@@ -73,6 +87,13 @@ impl ProtocolState {
                 "unknown"
             }
         };
+        if self.last_event == "system.init" {
+            self.initialization_records += 1;
+        }
+        if self.recent_events.len() == 3 {
+            self.recent_events.pop_front();
+        }
+        self.recent_events.push_back(self.last_event);
         let mut events = Vec::new();
         match driver {
             DriverId::Codeagent => self.claude(&value, &mut events),

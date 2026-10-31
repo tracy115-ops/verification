@@ -91,7 +91,7 @@ async fn codeagent_native_errors_fail_without_waiting_for_timeout_and_init_only_
         },
     )
     .await;
-    assert_eq!(result.error_code.as_deref(), Some("cli_timeout_no_text"));
+    assert_eq!(result.error_code.as_deref(), Some("cli_timeout_after_init"));
     assert!(progress_seen.get());
 }
 

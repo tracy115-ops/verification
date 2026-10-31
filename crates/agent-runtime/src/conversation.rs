@@ -138,9 +138,13 @@ async fn supervise(
         return TurnOutcome::failed("cli_failed");
     };
     let input = request.prompt.as_bytes().to_vec();
+    let written = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let writer_state = written.clone();
     let mut writer = tokio::spawn(async move {
         stdin.write_all(&input).await?;
-        stdin.shutdown().await
+        stdin.shutdown().await?;
+        writer_state.store(true, std::sync::atomic::Ordering::Release);
+        Ok::<(), std::io::Error>(())
     });
     let (tx, mut rx) = mpsc::channel(32);
     let out = tokio::spawn(pump(stdout, true, tx.clone()));
@@ -160,10 +164,12 @@ async fn supervise(
     while !(status.is_some() && streams_closed) {
         tokio::select! {
             _ = &mut cancel => { interrupted = Some(("cancelled", "cancelled")); break; }
-            _ = sleep_until(deadline) => { interrupted = Some(("timed_out", if state.terminal { "cli_timeout_shutdown" } else if received == 0 { "cli_timeout_no_output" } else if state.text.is_empty() && state.final_text.as_ref().is_none_or(|text| text.is_empty()) { "cli_timeout_no_text" } else { "cli_timeout_no_completion" })); break; }
+            _ = sleep_until(deadline) => { interrupted = Some(("timed_out", if state.terminal { "cli_timeout_shutdown" } else if received == 0 { "cli_timeout_no_output" } else if state.initialization_only() { "cli_timeout_after_init" } else if state.text.is_empty() && state.final_text.as_ref().is_none_or(|text| text.is_empty()) { "cli_timeout_no_text" } else { "cli_timeout_no_completion" })); break; }
             _ = heartbeat.tick() => { if !sink(AgentEvent::Heartbeat) { interrupted = Some(("cancelled", "client_disconnected")); break; } }
             _ = diagnostics.tick() => {
                 if !sink(AgentEvent::Progress {
+                    input_written: written.load(std::sync::atomic::Ordering::Acquire),
+                    initialization_records: state.initialization_records, event_trace: state.event_trace(),
                     elapsed_ms: started.elapsed().as_millis() as u64,
                     stdout_bytes: received.saturating_sub(stderr_bytes), stderr_bytes,
                     last_output_age_ms: last_output.map(|time| time.elapsed().as_millis() as u64),
@@ -207,6 +213,8 @@ async fn supervise(
         Ok(Ok(Ok(())))
     );
     let _ = sink(AgentEvent::Diagnostic {
+        initialization_records: state.initialization_records,
+        event_trace: state.event_trace(),
         protocol_records: state.records,
         unknown_records: state.unknown_records,
         last_event: state.last_event,
@@ -309,7 +317,14 @@ pub(crate) async fn run_turn_in_paths(
         };
     let mut command = Command::new(&launch.program);
     crate::search_paths::configure_command(&mut command, paths);
-    crate::proxy::configure(&mut command);
+    let proxy_mode = crate::proxy::configure(&mut command);
+    if !sink(AgentEvent::LaunchDiagnostic {
+        partial_messages: args.iter().any(|arg| arg == "--include-partial-messages"),
+        session_persistence_disabled: args.iter().any(|arg| arg == "--no-session-persistence"),
+        proxy_mode,
+    }) {
+        return TurnOutcome::failed("client_disconnected");
+    }
     command.args(&launch.args).args(args);
     if !request.model.is_empty() {
         command.arg("--model").arg(&request.model);

@@ -35,7 +35,7 @@ if(a.includes('--help')) console.log('--print --output-format stream-json --verb
 else if(!a.includes('--skip-safe-check')) { console.error('Quick safety check: only use --print in a directory you trust. Hint: --skip-safe-check'); process.exit(21); }
 else if(a.includes('--mcp-config') && a[a.indexOf('--mcp-config')+1].startsWith('{')) { console.error('Invalid MCP config: expected a JSON file path'); process.exit(22); }
 else if(JSON.stringify(JSON.parse(require('fs').readFileSync(a[a.indexOf('--mcp-config')+1], 'utf8'))) !== '{"mcpServers":{}}') { console.error('Invalid MCP config content'); process.exit(23); }
-else { let text=''; process.stdin.setEncoding('utf8'); process.stdin.on('data',v=>text+=v); process.stdin.on('end',()=>console.log(JSON.stringify({type:'result',is_error:false,result:text,session_id:'fixture-session'}))); }
+else { for(let i=0;i<5;i++) console.log(JSON.stringify({type:'system',subtype:'init'})); let text=''; process.stdin.setEncoding('utf8'); process.stdin.on('data',v=>text+=v); process.stdin.on('end',()=>console.log(JSON.stringify({type:'result',is_error:false,result:text,session_id:'fixture-session'}))); }
 "#).unwrap();
     fs::write(
         fixture.0.join("codeagent.bat"),
@@ -54,31 +54,57 @@ else { let text=''; process.stdin.setEncoding('utf8'); process.stdin.on('data',v
         crate::failure::classify(&String::from_utf8_lossy(&blocked.stderr)),
         Some("cli_trust_required")
     );
-    let request = crate::TurnRequest {
-        turn_id: "12345678-1234-1234-1234-123456789abc".into(),
-        session_id: "12345678-1234-1234-1234-123456789abc".into(),
-        driver: crate::DriverId::Codeagent,
-        prompt: "你好，测试非交互调用".into(),
-        model: String::new(),
-        timeout_seconds: 5,
-    };
-    let (_sender, receiver) = tokio::sync::oneshot::channel();
-    let outcome = crate::conversation::run_turn_in_paths(
-        request,
-        &fixture.0.canonicalize().unwrap(),
-        receiver,
-        |_| true,
-        std::slice::from_ref(&fixture.0),
-    )
-    .await;
-    assert_eq!(outcome.status, "completed");
-    assert_eq!(outcome.text, "你好，测试非交互调用");
-    assert!(
-        !fixture
-            .0
-            .join(".verification-mcp-12345678-1234-1234-1234-123456789abc.json")
-            .exists()
-    );
+    let large_prompt = serde_json::json!({
+        "operation": "requirements.extract",
+        "sourceSpec": "黑盒题目 & | %PATH% !value!\n输入和预期输出。".repeat(1500),
+        "outputSchema": {"type": "object"}
+    })
+    .to_string();
+    assert!(large_prompt.len() > 32_800 && large_prompt.len() < 131_072);
+    for prompt in ["你好，测试非交互调用".to_string(), large_prompt] {
+        let request = crate::TurnRequest {
+            turn_id: "12345678-1234-1234-1234-123456789abc".into(),
+            session_id: "12345678-1234-1234-1234-123456789abc".into(),
+            driver: crate::DriverId::Codeagent,
+            prompt: prompt.clone(),
+            model: String::new(),
+            timeout_seconds: 5,
+        };
+        let (_sender, receiver) = tokio::sync::oneshot::channel();
+        let diagnostic_seen = std::cell::Cell::new(false);
+        let outcome = crate::conversation::run_turn_in_paths(
+            request,
+            &fixture.0.canonicalize().unwrap(),
+            receiver,
+            |event| {
+                if let crate::AgentEvent::Diagnostic {
+                    input_written,
+                    initialization_records,
+                    public_text_bytes,
+                    ..
+                } = event
+                {
+                    diagnostic_seen.set(
+                        input_written
+                            && initialization_records == 5
+                            && public_text_bytes == prompt.len(),
+                    );
+                }
+                true
+            },
+            std::slice::from_ref(&fixture.0),
+        )
+        .await;
+        assert_eq!(outcome.status, "completed");
+        assert_eq!(outcome.text, prompt);
+        assert!(diagnostic_seen.get());
+        assert!(
+            !fixture
+                .0
+                .join(".verification-mcp-12345678-1234-1234-1234-123456789abc.json")
+                .exists()
+        );
+    }
 }
 impl Drop for Fixture {
     fn drop(&mut self) {

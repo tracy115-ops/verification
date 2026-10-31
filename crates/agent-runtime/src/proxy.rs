@@ -86,7 +86,7 @@ fn system_proxy() -> Option<(String, String)> {
 
 /// Native CLIs inherit explicit environment configuration first. Windows desktop
 /// launches otherwise use the current user's enabled static system proxy.
-pub fn configure(command: &mut Command) {
+pub fn configure(command: &mut Command) -> &'static str {
     #[cfg(windows)]
     {
         if [
@@ -100,17 +100,19 @@ pub fn configure(command: &mut Command) {
         .iter()
         .any(|key| std::env::var_os(key).is_some())
         {
-            return;
+            return "inherited_environment";
         }
         if let Some((http, https)) = system_proxy() {
             command.env("HTTP_PROXY", http).env("HTTPS_PROXY", https);
             if std::env::var_os("NO_PROXY").is_none() && std::env::var_os("no_proxy").is_none() {
                 command.env("NO_PROXY", "localhost,127.0.0.1,::1");
             }
+            return "system_static";
         }
     }
     #[cfg(not(windows))]
     let _ = command;
+    "unchanged"
 }
 
 #[cfg(test)]
