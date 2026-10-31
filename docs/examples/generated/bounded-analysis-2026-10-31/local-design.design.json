@@ -1,0 +1,175 @@
+{
+  "strategy": "针对 maxPlayers 划分整数范围与非法输入等价类，覆盖上下边界及相邻值；针对私有房间按访问身份划分权限场景。",
+  "factors": [
+    {
+      "id": "D1-F1",
+      "name": "maxPlayers 输入",
+      "requirementIds": [
+        "R1"
+      ],
+      "levels": [
+        "整数 2",
+        "整数 8",
+        "整数 3 至 7",
+        "整数 1",
+        "整数 9",
+        "整数小于 1 或大于 9",
+        "非整数"
+      ],
+      "sourceQuote": "创建房间：maxPlayers 必须为整数，范围为 2 到 8，合法返回 201，非法返回 400。"
+    },
+    {
+      "id": "D1-F2",
+      "name": "查询者身份",
+      "requirementIds": [
+        "R2"
+      ],
+      "levels": [
+        "owner",
+        "其他身份"
+      ],
+      "sourceQuote": "私有房间：只有 owner 可查询，返回 200；其他身份返回 403。"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "D1-S1",
+      "title": "容量取下边界 2",
+      "requirementIds": [
+        "R1"
+      ],
+      "dimension": "边界",
+      "expected": "返回 201",
+      "factorLevels": [
+        {
+          "factorId": "D1-F1",
+          "level": "整数 2"
+        }
+      ]
+    },
+    {
+      "id": "D1-S2",
+      "title": "容量取上边界 8",
+      "requirementIds": [
+        "R1"
+      ],
+      "dimension": "边界",
+      "expected": "返回 201",
+      "factorLevels": [
+        {
+          "factorId": "D1-F1",
+          "level": "整数 8"
+        }
+      ]
+    },
+    {
+      "id": "D1-S3",
+      "title": "容量为范围内整数",
+      "requirementIds": [
+        "R1"
+      ],
+      "dimension": "等价类",
+      "expected": "返回 201",
+      "factorLevels": [
+        {
+          "factorId": "D1-F1",
+          "level": "整数 3 至 7"
+        }
+      ]
+    },
+    {
+      "id": "D1-S4",
+      "title": "容量低于下边界",
+      "requirementIds": [
+        "R1"
+      ],
+      "dimension": "边界",
+      "expected": "返回 400",
+      "factorLevels": [
+        {
+          "factorId": "D1-F1",
+          "level": "整数 1"
+        }
+      ]
+    },
+    {
+      "id": "D1-S5",
+      "title": "容量高于上边界",
+      "requirementIds": [
+        "R1"
+      ],
+      "dimension": "边界",
+      "expected": "返回 400",
+      "factorLevels": [
+        {
+          "factorId": "D1-F1",
+          "level": "整数 9"
+        }
+      ]
+    },
+    {
+      "id": "D1-S6",
+      "title": "容量为其他范围外整数",
+      "requirementIds": [
+        "R1"
+      ],
+      "dimension": "等价类",
+      "expected": "返回 400",
+      "factorLevels": [
+        {
+          "factorId": "D1-F1",
+          "level": "整数小于 1 或大于 9"
+        }
+      ]
+    },
+    {
+      "id": "D1-S7",
+      "title": "容量为非整数",
+      "requirementIds": [
+        "R1"
+      ],
+      "dimension": "等价类",
+      "expected": "返回 400",
+      "factorLevels": [
+        {
+          "factorId": "D1-F1",
+          "level": "非整数"
+        }
+      ]
+    },
+    {
+      "id": "D1-S8",
+      "title": "owner 查询私有房间",
+      "requirementIds": [
+        "R2"
+      ],
+      "dimension": "权限",
+      "expected": "返回 200",
+      "factorLevels": [
+        {
+          "factorId": "D1-F2",
+          "level": "owner"
+        }
+      ]
+    },
+    {
+      "id": "D1-S9",
+      "title": "其他身份查询私有房间",
+      "requirementIds": [
+        "R2"
+      ],
+      "dimension": "权限",
+      "expected": "返回 403",
+      "factorLevels": [
+        {
+          "factorId": "D1-F2",
+          "level": "其他身份"
+        }
+      ]
+    }
+  ],
+  "gaps": [
+    "maxPlayers 缺失、空值和数字字符串的输入表示及校验规则是否有更具体约定？",
+    "私有房间查询中的“其他身份”是否明确包含未认证请求？"
+  ]
+}

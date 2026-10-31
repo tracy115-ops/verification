@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "at": "2026-10-31T02:04:34.991Z",
+  "source": "Maintainer-authored small requirement fixtures; real Codex CLI replies; no CodeAgent certification",
+  "probes": [
+    {
+      "case": "local-design",
+      "phase": "design",
+      "driver": "codex",
+      "requestedModel": "gpt-6.1-terra",
+      "cliVersion": "0.164.0",
+      "nativeTimeoutSeconds": 120,
+      "promptBytes": 3430,
+      "promptSha256": "4f5545e753a4e68e6e5161c909e744c28a976bf396d4ddc2cf35017c0f80fcbd",
+      "replySha256": "88a7c3557c50e6f9270a51d7fdd3780f6369a8a2699b2aa5804b7f7baedef3cd",
+      "elapsedMs": 21799,
+      "terminal": true,
+      "factors": 2,
+      "scenarios": 9,
+      "gaps": 2
+    },
+    {
+      "case": "candidate-link",
+      "phase": "cross-review",
+      "driver": "codex",
+      "requestedModel": "gpt-6.1-terra",
+      "cliVersion": "0.164.0",
+      "nativeTimeoutSeconds": 120,
+      "promptBytes": 3849,
+      "promptSha256": "f9639946b610a1095c4a0243baee4700c492e2c8cf442045854b276978b60552",
+      "replySha256": "d14bbf8bafb5749c83562cc533c8f3edefaaceb27d84b235be477878667149fc",
+      "elapsedMs": 23045,
+      "terminal": true,
+      "factors": 2,
+      "scenarios": 2,
+      "gaps": 2
+    },
+    {
+      "case": "explicit-isolation",
+      "phase": "cross-review",
+      "driver": "codex",
+      "requestedModel": "gpt-6.1-terra",
+      "cliVersion": "0.164.0",
+      "nativeTimeoutSeconds": 120,
+      "promptBytes": 3899,
+      "promptSha256": "653318a920ab3d920cb4877e76f1f40e73855111e7ef58a1c749675999d57d08",
+      "replySha256": "f7cc093563462d58b0326c735a4e1e9039c3373b2db75dde08124eed2f064cd9",
+      "elapsedMs": 15874,
+      "terminal": true,
+      "factors": 2,
+      "scenarios": 2,
+      "gaps": 0
+    },
+    {
+      "case": "no-declared-link",
+      "phase": "cross-review",
+      "driver": "codex",
+      "requestedModel": "gpt-6.1-terra",
+      "cliVersion": "0.164.0",
+      "nativeTimeoutSeconds": 120,
+      "promptBytes": 3824,
+      "promptSha256": "bfb2ba5680228e91962393377e752f87d34f148b45f0ba1d55cc1a1445ce3711",
+      "replySha256": "f0eb0f55a6a1231360cdd7d7be7f4447565991a6b25bba214e8143823ed522dd",
+      "elapsedMs": 13880,
+      "terminal": true,
+      "factors": 0,
+      "scenarios": 0,
+      "gaps": 0
+    }
+  ]
+}

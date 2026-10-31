@@ -1,0 +1,75 @@
+{
+  "strategy": "检查成功创建私有房间后，容量边界与查询身份的交互；不推断非法创建后房间的状态。",
+  "scenarios": [
+    {
+      "id": "S1",
+      "title": "容量下限的私有房间由 owner 查询",
+      "requirementIds": [
+        "R1",
+        "R2"
+      ],
+      "dimension": "边界、顺序、权限",
+      "expected": "创建时 maxPlayers 为 2，返回 201；owner 查询私有房间返回 200。",
+      "factorLevels": [
+        {
+          "factorId": "F1",
+          "level": "2"
+        },
+        {
+          "factorId": "F2",
+          "level": "owner"
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "title": "容量上限的私有房间由其他身份查询",
+      "requirementIds": [
+        "R1",
+        "R2"
+      ],
+      "dimension": "边界、顺序、权限",
+      "expected": "创建时 maxPlayers 为 8，返回 201；其他身份查询私有房间返回 403。",
+      "factorLevels": [
+        {
+          "factorId": "F1",
+          "level": "8"
+        },
+        {
+          "factorId": "F2",
+          "level": "其他身份"
+        }
+      ]
+    }
+  ],
+  "gaps": [
+    "未说明创建私有房间时如何指定私有属性及确定 owner。",
+    "未说明创建请求无效后是否会产生可查询的房间。"
+  ],
+  "factors": [
+    {
+      "id": "F1",
+      "name": "创建容量边界",
+      "requirementIds": [
+        "R1"
+      ],
+      "levels": [
+        "2",
+        "8"
+      ],
+      "sourceQuote": "创建房间：maxPlayers 必须为整数，范围为 2 到 8，合法返回 201，非法返回 400。"
+    },
+    {
+      "id": "F2",
+      "name": "私有房间查询身份",
+      "requirementIds": [
+        "R2"
+      ],
+      "levels": [
+        "owner",
+        "其他身份"
+      ],
+      "sourceQuote": "私有房间：只有 owner 可查询，返回 200；其他身份返回 403。"
+    }
+  ]
+}
