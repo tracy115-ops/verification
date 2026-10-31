@@ -31,13 +31,17 @@ for (const large of [false, true]) {
           __TAURI_INTERNALS__: {
             transformCallback: () => 1,
             unregisterCallback: () => {},
-            invoke: (command: string, args: { request: { prompt: string } }) => {
+            invoke: (
+              command: string,
+              args: { request: { prompt: string }; onEvent: { onmessage: (event: unknown) => void } },
+            ) => {
               if (command === 'cancel_cli_turn') return Promise.resolve();
               if (command !== 'send_cli_turn') return Promise.reject('offline_fixture');
               return new Promise((resolve) =>
                 Object.assign(globalThis, {
                   analysisVisibility: {
                     prompt: args.request.prompt,
+                    emit: (event: unknown) => args.onEvent.onmessage(event),
                     finish: () =>
                       resolve({
                         status: 'timed_out',
@@ -76,11 +80,42 @@ for (const large of [false, true]) {
       ),
     );
     expect(Boolean(request.analysisBatch)).toBe(large);
+    await page.evaluate(() => {
+      const fixture = (globalThis as unknown as { analysisVisibility: { emit: (event: unknown) => void } })
+        .analysisVisibility;
+      fixture.emit({
+        type: 'progress',
+        progress: {
+          elapsedMs: 30000,
+          inputWritten: true,
+          lastOutputAgeMs: 25000,
+          protocolRecords: 5,
+          publicTextBytes: 0,
+        },
+      });
+    });
+    const progress = card.locator('.session-cli-progress');
+    await expect(progress.locator('summary')).toContainText('已运行 30 秒');
+    await expect(progress.locator('summary')).toContainText('已收到 CLI 状态，尚无回复正文');
+    await progress.locator('summary').click();
+    await expect(progress).toContainText('已有 25 秒没有新 CLI 输出');
+    await page.evaluate(() =>
+      (
+        globalThis as unknown as { analysisVisibility: { emit: (event: unknown) => void } }
+      ).analysisVisibility.emit({ type: 'progress', progress: { elapsedMs: 99999, reason: 'private data' } }),
+    );
+    await expect(progress).not.toContainText('private data');
     await page.screenshot({ path: `.runtime/analysis-waiting-${large ? 'batch' : 'single'}.png` });
     await page.evaluate(() =>
       (globalThis as unknown as { analysisVisibility: { finish: () => void } }).analysisVisibility.finish(),
     );
     await expect(card.getByRole('status').filter({ hasText: 'Agent 正在回复' })).toHaveCount(0);
+    await expect(progress.locator('summary')).toContainText('CLI 最后状态');
+    if (large) {
+      await page.reload();
+      await expect(page.locator('.session-cli-progress summary')).toContainText('已运行 30 秒');
+      await expect(page.locator('.session-cli-progress summary')).toContainText('CLI 最后状态');
+    }
     if (!large) {
       await page
         .getByRole('complementary', { name: '流程进度' })

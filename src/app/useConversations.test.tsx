@@ -8,6 +8,7 @@ import { CONVERSATIONS_KEY } from '../services/conversation-repository';
 import { verificationPorts } from '../domain/execution/fixtures.test-support';
 import { exampleFramework } from '../domain/execution/presets';
 import { requirements } from '../domain/runtime/fixtures.test-support';
+import type { CliProgress } from '../domain/runtime/cli-progress';
 
 beforeEach(() => localStorage.clear());
 afterEach(cleanup);
@@ -55,7 +56,12 @@ it('runs two sessions concurrently and isolates streams, cancellation and final 
   const saved = savedDocument();
   const pending = new Map<
     string,
-    { emit: (text: string) => void; finish: () => void; signal: AbortSignal }
+    {
+      emit: (text: string) => void;
+      progress: (value: CliProgress) => void;
+      finish: () => void;
+      signal: AbortSignal;
+    }
   >();
   const port: AgentPort = {
     async cancel() {},
@@ -64,6 +70,7 @@ it('runs two sessions concurrently and isolates streams, cancellation and final 
         pending.set(request.sessionId, {
           signal,
           emit: (text) => emit({ type: 'text', text }),
+          progress: (progress) => emit({ type: 'progress', progress }),
           finish: () =>
             resolve({
               status: 'completed',
@@ -108,12 +115,28 @@ it('runs two sessions concurrently and isolates streams, cancellation and final 
   act(() => {
     pending.get(firstId)!.emit('first stream');
     pending.get(secondId)!.emit('second stream');
+    pending.get(firstId)!.progress({
+      elapsedMs: 30000,
+      inputWritten: true,
+      lastOutputAgeMs: 25000,
+      protocolRecords: 5,
+      publicTextBytes: 0,
+    });
+    pending.get(secondId)!.progress({
+      elapsedMs: 15000,
+      inputWritten: true,
+      lastOutputAgeMs: 0,
+      protocolRecords: 10,
+      publicTextBytes: 20,
+    });
   });
   expect(result.current.stream).toBe('second stream');
+  expect(result.current.progress?.elapsedMs).toBe(15000);
   act(() => {
     result.current.setActiveId(firstId);
   });
   expect(result.current.stream).toBe('first stream');
+  expect(result.current.progress?.elapsedMs).toBe(30000);
   await act(async () => {
     result.current.cancel();
     await first;
@@ -132,6 +155,7 @@ it('runs two sessions concurrently and isolates streams, cancellation and final 
     'cancelled first',
   );
   expect(result.current.anyBusy).toBe(false);
+  expect(result.current.progress).toBeUndefined();
 });
 
 it('saves clarification within the same run and preserves it after reload', async () => {

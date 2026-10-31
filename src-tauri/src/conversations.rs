@@ -30,7 +30,7 @@ pub async fn send_cli_turn(
     app: AppHandle,
     state: State<'_, ConversationRuntime>,
     request: TurnRequest,
-    on_event: Channel<AgentEvent>,
+    on_event: Channel<serde_json::Value>,
 ) -> Result<TurnOutcome, String> {
     let updates = app.state::<crate::updater::UpdateRuntime>();
     let _activity = updates.task()?;
@@ -92,9 +92,8 @@ pub async fn send_cli_turn(
                 },
                 details,
             );
-            return true;
         }
-        on_event.send(event).is_ok()
+        crate::cli_progress::frontend_event(&event).is_none_or(|value| on_event.send(value).is_ok())
     })
     .await;
     crate::diagnostics::record(

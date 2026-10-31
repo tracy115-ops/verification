@@ -55,6 +55,7 @@ pub fn run() -> tauri::Result<()> {
         ])
         .run(tauri::generate_context!())
 }
+mod cli_progress;
 mod collaboration;
 mod conversations;
 mod diagnostics;

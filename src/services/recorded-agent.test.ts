@@ -6,6 +6,35 @@ import type { AgentPort, TurnRequest } from '../domain/runtime/types';
 import { fixtureRun } from '../domain/runtime/fixtures.test-support';
 
 afterEach(() => vi.useRealTimers());
+
+it('preserves the final safe progress snapshot on timeout and restores it without inventing text', async () => {
+  const repository = memoryRepository();
+  const store = new TranscriptStore(repository);
+  const submitted = request();
+  const progress = {
+    elapsedMs: 600013,
+    inputWritten: true,
+    lastOutputAgeMs: 595393,
+    protocolRecords: 5,
+    publicTextBytes: 0,
+  };
+  const base: AgentPort = {
+    cancel: async () => {},
+    async send(_, emit) {
+      emit({ type: 'progress', progress });
+      return { status: 'timed_out', text: '', errorCode: 'cli_timeout_after_init', nativeSessionId: null };
+    },
+  };
+  await recordedAgent(base, undefined, store).send(submitted, () => {}, new AbortController().signal);
+  await store.flush();
+  const restored = new TranscriptStore(repository);
+  await restored.load(submitted.sessionId);
+  const record = restored.getSnapshot().records[0];
+  expect(record.progress).toEqual(progress);
+  expect(record.text).toBe('');
+  expect(record.status).toBe('timed_out');
+  expect(isCliTurnRecord({ ...record, progress: { ...progress, reason: 'private' } })).toBe(false);
+});
 function memoryRepository(): TranscriptRepository & { records: Map<string, CliTurnRecord> } {
   const records = new Map<string, CliTurnRecord>();
   return {

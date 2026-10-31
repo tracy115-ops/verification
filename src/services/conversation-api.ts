@@ -1,10 +1,12 @@
 import { Channel, invoke } from '@tauri-apps/api/core';
 import type { AgentEvent, AgentPort, TurnOutcome, TurnRequest } from '../domain/runtime/types';
 import { hasDesktopBridge } from './agent-api';
+import { isCliProgress } from '../domain/runtime/cli-progress';
 
 function isEvent(value: unknown): value is AgentEvent {
   if (typeof value !== 'object' || value === null || !('type' in value)) return false;
   if (value.type === 'heartbeat') return true;
+  if (value.type === 'progress') return 'progress' in value && isCliProgress(value.progress);
   if (value.type === 'text') return 'text' in value && typeof value.text === 'string';
   if (value.type === 'session') return 'id' in value && typeof value.id === 'string';
   return value.type === 'activity' && 'name' in value && typeof value.name === 'string';

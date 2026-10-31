@@ -60,6 +60,17 @@ test('shows pending and streamed Agent replies beside an existing task', async (
               Object.assign(globalThis, {
                 replyFixture: {
                   emit: (text: string) => args.onEvent.onmessage({ type: 'text', text }),
+                  progress: () =>
+                    args.onEvent.onmessage({
+                      type: 'progress',
+                      progress: {
+                        elapsedMs: 15000,
+                        inputWritten: true,
+                        lastOutputAgeMs: 10000,
+                        protocolRecords: 5,
+                        publicTextBytes: 0,
+                      },
+                    }),
                   finish: () =>
                     resolve({
                       status: 'completed',
@@ -82,6 +93,12 @@ test('shows pending and streamed Agent replies beside an existing task', async (
   const pending = page.locator('.session-pending-reply');
   await expect(pending.getByRole('status')).toHaveText('Agent 正在回复');
   await expect(pending).toHaveAttribute('aria-busy', 'true');
+  await page.evaluate(() =>
+    (globalThis as unknown as { replyFixture: { progress: () => void } }).replyFixture.progress(),
+  );
+  await expect(pending.locator('.session-cli-progress summary')).toContainText(
+    '已收到 CLI 状态，尚无回复正文',
+  );
   expect(
     await pending
       .locator('.session-reply-dots > span')
@@ -95,6 +112,7 @@ test('shows pending and streamed Agent replies beside an existing task', async (
     ),
   );
   await expect(pending).toContainText('你好，已收到你的消息。');
+  await expect(pending.locator('.session-cli-progress summary')).toContainText('已收到回复正文');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   expect(
     await pending

@@ -43,7 +43,7 @@ export function recordedAgent(
         const outcome = await base.send(
           request,
           (event) => {
-            if (event.type === 'text' || event.type === 'activity') {
+            if (event.type === 'text' || event.type === 'activity' || event.type === 'progress') {
               recordActivity(record, event);
               store.save(record);
             }

@@ -1,8 +1,10 @@
 import type { AgentProfile, DriverId, WorkbenchDocument, WorkflowNode } from '../workflow';
 import type { FrameworkProfile } from '../execution/types';
+import type { CliProgress } from './cli-progress';
 
 export interface AgentEvent {
-  type: 'text' | 'activity' | 'session' | 'heartbeat';
+  type: 'text' | 'activity' | 'session' | 'heartbeat' | 'progress';
+  progress?: CliProgress;
   text?: string;
   name?: string;
   id?: string;

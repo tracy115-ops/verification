@@ -8,6 +8,7 @@ import { AgentReplyStatus } from './AgentReplyStatus';
 import { useMemo } from 'react';
 import { analysisMetadata } from '../../domain/runtime/analysis-metadata';
 import { byteLength } from '../../domain/runtime/analysis-plan';
+import { CliProgressSummary } from './CliProgressSummary';
 
 export function WorkflowCallCard({
   turn,
@@ -97,6 +98,12 @@ export function WorkflowCallCard({
           </>
         ))}
       {turn.status === 'running' && <AgentReplyStatus />}
+      <CliProgressSummary
+        progress={turn.progress}
+        timeoutSeconds={turn.request.timeoutSeconds}
+        hasReply={!!turn.text}
+        finished={turn.status !== 'running'}
+      />
       {repaired && <p className="wb-muted">{t('quoteRepairApplied')}</p>}
       {error && !repaired && <p className="wb-error">{isMessageKey(error) ? t(error) : t('cli_failed')}</p>}
       {!!turn.activities.length && (

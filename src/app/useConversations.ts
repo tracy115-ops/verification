@@ -164,6 +164,7 @@ export function useConversations(
     busy: tasks.busy,
     anyBusy: tasks.anyBusy,
     stream: tasks.stream,
+    progress: tasks.progress,
     error: tasks.error ?? store.error,
     isSessionBusy: tasks.isSessionBusy,
     send,

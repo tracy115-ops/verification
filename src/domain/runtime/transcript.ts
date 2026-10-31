@@ -1,4 +1,5 @@
 import type { AgentEvent, TurnOutcome, TurnRequest } from './types';
+import { isCliProgress, type CliProgress } from './cli-progress';
 
 export interface CliTurnRecord {
   version: 1;
@@ -15,6 +16,7 @@ export interface CliTurnRecord {
   activities: { name: string; at: string }[];
   errorCode?: string;
   validationError?: string;
+  progress?: CliProgress;
 }
 
 export interface TranscriptRepository {
@@ -58,6 +60,7 @@ export function isCliTurnRecord(value: unknown): value is CliTurnRecord {
     request.timeoutSeconds <= 86400 &&
     (item.errorCode === undefined || typeof item.errorCode === 'string') &&
     (item.validationError === undefined || typeof item.validationError === 'string') &&
+    (item.progress === undefined || isCliProgress(item.progress)) &&
     Array.isArray(item.activities) &&
     item.activities.length <= 100 &&
     item.activities.every(
@@ -73,6 +76,7 @@ export function isCliTurnRecord(value: unknown): value is CliTurnRecord {
 }
 
 export function recordActivity(record: CliTurnRecord, event: AgentEvent) {
+  if (event.type === 'progress' && isCliProgress(event.progress)) record.progress = { ...event.progress };
   if (event.type === 'text' && event.text) record.text = (record.text + event.text).slice(0, 2097152);
   if (event.type === 'activity' && event.name && record.activities.length < 100)
     record.activities.push({ name: event.name.slice(0, 160), at: new Date().toISOString() });

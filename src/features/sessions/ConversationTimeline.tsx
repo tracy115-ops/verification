@@ -131,7 +131,7 @@ export function ConversationTimeline({
         />
       )}
       {actions.busy && (actions.session?.activeTurnId || !activeRun) && (
-        <PendingAgentReply text={actions.stream} />
+        <PendingAgentReply text={actions.stream} progress={actions.progress} />
       )}
       <div ref={anchor} />
     </>
