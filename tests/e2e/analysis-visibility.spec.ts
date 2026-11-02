@@ -33,7 +33,10 @@ for (const large of [false, true]) {
             unregisterCallback: () => {},
             invoke: (
               command: string,
-              args: { request: { prompt: string }; onEvent: { onmessage: (event: unknown) => void } },
+              args: {
+                request: { prompt: string; timeoutSeconds: number };
+                onEvent: { onmessage: (event: unknown) => void };
+              },
             ) => {
               if (command === 'cancel_cli_turn') return Promise.resolve();
               if (command !== 'send_cli_turn') return Promise.reject('offline_fixture');
@@ -41,6 +44,7 @@ for (const large of [false, true]) {
                 Object.assign(globalThis, {
                   analysisVisibility: {
                     prompt: args.request.prompt,
+                    timeoutSeconds: args.request.timeoutSeconds,
                     emit: (event: unknown) => args.onEvent.onmessage(event),
                     finish: () =>
                       resolve({
@@ -117,11 +121,19 @@ for (const large of [false, true]) {
       await expect(page.locator('.session-cli-progress summary')).toContainText('CLI 最后状态');
     }
     if (!large) {
+      await page.getByRole('combobox', { name: '本次重试的单次分析超时', exact: true }).selectOption('1200');
       await page
         .getByRole('complementary', { name: '流程进度' })
         .getByRole('button', { name: '改用分批分析重试', exact: true })
         .click();
       await expect(page.locator('.session-cli-title h3').last()).toContainText('分析批次 1 / 1');
+      expect(
+        await page.evaluate(
+          () =>
+            (globalThis as unknown as { analysisVisibility: { timeoutSeconds: number } }).analysisVisibility
+              .timeoutSeconds,
+        ),
+      ).toBe(1200);
       await page.evaluate(() =>
         (globalThis as unknown as { analysisVisibility: { finish: () => void } }).analysisVisibility.finish(),
       );

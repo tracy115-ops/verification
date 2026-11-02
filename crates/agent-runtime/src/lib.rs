@@ -1,3 +1,4 @@
+mod assistant_observation;
 mod codeagent;
 mod conversation;
 mod discovery;
@@ -8,6 +9,7 @@ mod proxy;
 mod search_paths;
 mod turn_types;
 
+pub use assistant_observation::AssistantObservation;
 pub use conversation::run_turn;
 pub use probe::{AgentProbe, probe_installed_agents};
 pub use turn_types::{AgentEvent, DriverId, TurnOutcome, TurnRequest};

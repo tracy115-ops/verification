@@ -1,4 +1,9 @@
 export const executionZh = {
+  retryAnalysisTimeout: '本次重试的单次分析超时',
+  retryAnalysisTimeoutHint:
+    '仅调整当前分析节点后续调用的时限，保留已完成批次；流程总时限仍生效。延长等待不保证内部服务会返回。',
+  retryTimeoutCurrent: '沿用当前设置（{seconds} 秒）',
+  retryTimeoutMinutes: '{minutes} 分钟',
   artifactRequirementsCount: '{count} 条需求',
   artifactDesignCount: '{factors} 个因子 · {scenarios} 个场景',
   artifactCasesCount: '{count} 条用例',
@@ -155,6 +160,11 @@ export const executionZh = {
   missing_request_evidence: '测试没有可归属的接口请求证据，不能认定为通过。',
 };
 export const executionEn: Record<keyof typeof executionZh, string> = {
+  retryAnalysisTimeout: 'Analysis timeout for this retry',
+  retryAnalysisTimeoutHint:
+    'Changes the timeout of subsequent calls for this analysis node while retaining completed batches. The workflow deadline still applies. Waiting longer does not guarantee a service response.',
+  retryTimeoutCurrent: 'Keep current setting ({seconds} seconds)',
+  retryTimeoutMinutes: '{minutes} minutes',
   artifactRequirementsCount: '{count} requirements',
   artifactDesignCount: '{factors} factors · {scenarios} scenarios',
   artifactCasesCount: '{count} cases',

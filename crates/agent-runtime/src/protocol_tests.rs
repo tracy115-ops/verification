@@ -4,6 +4,66 @@ use crate::{
 };
 
 #[test]
+fn codeagent_assistant_shapes_are_observed_without_exposing_thinking_or_tool_arguments() {
+    let mut state = ProtocolState::default();
+    let events = state.consume(DriverId::Codeagent, br#"{"type":"assistant","error":"private-error","message":{"stop_reason":"tool_use","content":[{"type":"thinking","thinking":"private-thought"},{"type":"tool_use","name":"private-tool","input":{"secret":"private-value"}},{"type":"private-block","text":"private-text"}]}}"#);
+    assert!(events.is_empty());
+    assert!(state.text.is_empty());
+    assert!(!state.terminal);
+    assert_eq!(state.assistant.records, 1);
+    assert_eq!(state.assistant.content_shape, "array");
+    assert_eq!(state.assistant.thinking_blocks, 1);
+    assert_eq!(state.assistant.tool_blocks, 1);
+    assert_eq!(state.assistant.other_blocks, 1);
+    assert_eq!(state.assistant.stop_reason, "tool_use");
+    assert!(state.assistant.error_present);
+    assert!(
+        !serde_json::to_string(&state.assistant)
+            .unwrap()
+            .contains("private")
+    );
+    state.consume(
+        DriverId::Codeagent,
+        br#"{"type":"assistant","message":{"stop_reason":"private-reason","content":null}}"#,
+    );
+    assert_eq!(state.assistant.records, 2);
+    assert_eq!(state.assistant.thinking_blocks, 0);
+    assert_eq!(state.assistant.content_shape, "absent");
+    assert_eq!(state.assistant.stop_reason, "other");
+}
+
+#[test]
+fn codeagent_public_string_content_is_read_but_assistant_is_never_a_terminal_event() {
+    let mut state = ProtocolState::default();
+    let events = state.consume(
+        DriverId::Codeagent,
+        br#"{"type":"assistant","message":{"stop_reason":"end_turn","content":"public answer"}}"#,
+    );
+    assert!(matches!(&events[0], AgentEvent::Text { text } if text == "public answer"));
+    assert_eq!(state.final_text.as_deref(), Some("public answer"));
+    assert_eq!(state.assistant.content_shape, "string");
+    assert!(!state.terminal);
+    state.consume(
+        DriverId::Codeagent,
+        br#"{"type":"result","is_error":false,"result":"public answer"}"#,
+    );
+    assert!(state.terminal && !state.failed);
+    assert_eq!(state.text, "public answer");
+}
+
+#[test]
+fn codeagent_standard_assistant_text_is_not_lost_among_private_blocks() {
+    let mut state = ProtocolState::default();
+    let events = state.consume(DriverId::Codeagent, br#"{"type":"assistant","message":{"content":[{"type":"thinking","thinking":"private-thought"},{"type":"text","text":"public answer"}],"stop_reason":"max_tokens"}}"#);
+    assert_eq!(state.text, "public answer");
+    assert!(matches!(&events[0], AgentEvent::Text { text } if text == "public answer"));
+    assert_eq!(state.assistant.text_blocks, 1);
+    assert_eq!(state.assistant.thinking_blocks, 1);
+    assert_eq!(state.assistant.stop_reason, "max_tokens");
+    assert!(!state.terminal);
+}
+
+#[test]
 fn initialization_trace_is_bounded_and_never_contains_untrusted_event_names() {
     let mut state = ProtocolState::default();
     for _ in 0..5 {

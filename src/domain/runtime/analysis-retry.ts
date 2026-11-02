@@ -9,12 +9,13 @@ export function retryNode(run: WorkflowRun) {
   );
 }
 
-export function canRetryAnalysisInBatches(run: WorkflowRun) {
+export function canRetryAnalysis(run: WorkflowRun) {
   if (!['failed', 'interrupted', 'cancelled'].includes(run.status)) return false;
   const node = retryNode(run);
-  return (
-    !!node &&
-    ['requirements.extract', 'scenarios.design'].includes(node.operation) &&
-    !run.steps[node.id].analysis
-  );
+  return !!node && ['requirements.extract', 'scenarios.design'].includes(node.operation);
+}
+
+export function canRetryAnalysisInBatches(run: WorkflowRun) {
+  const node = retryNode(run);
+  return canRetryAnalysis(run) && !!node && !run.steps[node.id].analysis;
 }

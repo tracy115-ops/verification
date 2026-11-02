@@ -27,7 +27,7 @@ it('allows a failed small analysis to opt into batches and persists that choice'
   const first = testPort(1);
   const failed = await advance(initial, first.port);
   expect(JSON.parse(first.requests[0].prompt).analysisBatch).toBeUndefined();
-  const retry = retryRun(failed, true);
+  const retry = retryRun(failed, true, 1800);
   const session = {
     id: retry.sessionId,
     title: 'retry',
@@ -42,6 +42,7 @@ it('allows a failed small analysis to opt into batches and persists that choice'
   const done = await advance(retryRun(restored), second.port);
   expect(done.errorCode).toBeUndefined();
   expect(JSON.parse(second.requests[0].prompt).analysisBatch).toBeTruthy();
+  expect(second.requests[0].timeoutSeconds).toBe(1800);
   expect(done.id).toBe(initial.id);
   expect(done.status).toBe('awaiting_review');
 });
@@ -181,7 +182,8 @@ describe('bounded design analysis', () => {
     saveConversations({ setItem: (key, value) => saved.set(key, value) }, [session]);
     const restored = decodeConversations(JSON.parse([...saved.values()][0]))[0].runs[0];
     const next = testPort();
-    const result = await advance(retryRun(restored), next.port);
+    const result = await advance(retryRun(restored, false, 1200), next.port);
+    expect(next.requests[0].timeoutSeconds).toBe(1200);
     expect(result.status).toBe('awaiting_review');
     expect(JSON.parse(next.requests[0].prompt).analysisBatch.index).toBe(2);
     expect(

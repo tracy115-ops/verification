@@ -44,6 +44,7 @@ export interface StepState {
   caseBatchAttempts?: number;
   analysis?: AnalysisCheckpoint;
   forceBatchAnalysis?: true;
+  analysisTimeoutSeconds?: number;
   errorCode?: string;
 }
 

@@ -5,6 +5,7 @@ use serde_json::Value;
 pub struct ProtocolState {
     pub records: usize,
     pub initialization_records: usize,
+    pub assistant: crate::AssistantObservation,
     recent_events: std::collections::VecDeque<&'static str>,
     pub last_event: &'static str,
     pub unknown_records: usize,
@@ -17,6 +18,9 @@ pub struct ProtocolState {
 }
 
 fn text_blocks(value: &Value) -> String {
+    if let Some(text) = value.as_str() {
+        return text.into();
+    }
     value
         .as_array()
         .map(|blocks| {
@@ -186,6 +190,7 @@ impl ProtocolState {
                 }
             }
             "assistant" => {
+                self.assistant.observe(value);
                 let text = text_blocks(&value["message"]["content"]);
                 if self.text.is_empty() {
                     self.append(&text, events);

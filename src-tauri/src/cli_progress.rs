@@ -41,6 +41,7 @@ mod tests {
     #[test]
     fn final_diagnostics_expose_only_counters_and_public_events_keep_their_shape() {
         let event = AgentEvent::Diagnostic {
+            assistant: agent_runtime::AssistantObservation::default(),
             elapsed_ms: 600_013,
             input_written: true,
             last_output_age_ms: Some(595_393),

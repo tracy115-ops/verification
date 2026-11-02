@@ -18,7 +18,7 @@ import { isCases, isRequirements } from './artifacts';
 import { ANALYSIS_PROMPT_LIMIT, byteLength } from './analysis-plan';
 import { extractRequirementBatches } from './requirement-batches';
 import { generateDesignBatches } from './design-batches';
-import { retryNode, canRetryAnalysisInBatches } from './analysis-retry';
+import { retryNode, canRetryAnalysis, canRetryAnalysisInBatches } from './analysis-retry';
 export { reviewDigest } from './approvals';
 
 async function storeOutput(run: WorkflowRun, node: WorkflowNode, value: unknown) {
@@ -195,13 +195,27 @@ export async function approveRun(
   return run;
 }
 
-export function retryRun(initial: WorkflowRun, forceBatchAnalysis = false): WorkflowRun {
+export function retryRun(
+  initial: WorkflowRun,
+  forceBatchAnalysis = false,
+  analysisTimeoutSeconds?: number,
+): WorkflowRun {
   if (!['failed', 'interrupted', 'cancelled'].includes(initial.status)) throw new Error('invalid_run');
   if (forceBatchAnalysis && !canRetryAnalysisInBatches(initial)) throw new Error('approval_invalid');
+  if (
+    analysisTimeoutSeconds !== undefined &&
+    (!canRetryAnalysis(initial) ||
+      !Number.isInteger(analysisTimeoutSeconds) ||
+      analysisTimeoutSeconds < 1 ||
+      analysisTimeoutSeconds > 86400)
+  )
+    throw new Error('invalid_run');
   const run = structuredClone(initial);
   const node = retryNode(run);
   if (!node) throw new Error('invalid_run');
   if (forceBatchAnalysis) run.steps[node.id].forceBatchAnalysis = true;
+  if (analysisTimeoutSeconds !== undefined)
+    run.steps[node.id].analysisTimeoutSeconds = analysisTimeoutSeconds;
   run.resumedAt = new Date().toISOString();
   run.steps[node.id].status = 'pending';
   delete run.steps[node.id].errorCode;

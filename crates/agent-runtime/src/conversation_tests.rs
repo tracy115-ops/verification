@@ -35,6 +35,51 @@ fn fixture(mode: &str, pid_file: Option<&Path>) -> tokio::process::Child {
 }
 
 #[tokio::test]
+async fn assistant_without_terminal_result_times_out_with_shape_evidence_and_preserves_public_text()
+{
+    for (mode, expected_code, expected_text) in [
+        ("codeagent-assistant-thinking", "cli_timeout_no_text", ""),
+        (
+            "codeagent-assistant-text",
+            "cli_timeout_no_completion",
+            "public fixture reply",
+        ),
+    ] {
+        let mut request = request();
+        request.driver = DriverId::Codeagent;
+        request.model.clear();
+        request.timeout_seconds = 1;
+        let (_sender, receiver) = oneshot::channel();
+        let observed = std::cell::RefCell::new(None);
+        let result = supervise(fixture(mode, None), &request, receiver, |event| {
+            if let crate::AgentEvent::Diagnostic {
+                assistant,
+                event_trace,
+                public_text_bytes,
+                ..
+            } = event
+            {
+                *observed.borrow_mut() = Some((assistant, event_trace, public_text_bytes));
+            }
+            true
+        })
+        .await;
+        assert_eq!(result.status, "timed_out");
+        assert_eq!(result.error_code.as_deref(), Some(expected_code));
+        assert_eq!(result.text, expected_text);
+        let (assistant, trace, bytes) = observed.into_inner().expect("final diagnostic");
+        assert_eq!(trace, "system.hook_progress:system.init:assistant");
+        assert_eq!(assistant.records, 1);
+        assert_eq!(bytes, expected_text.len());
+        assert!(
+            !serde_json::to_string(&assistant)
+                .unwrap()
+                .contains("private")
+        );
+    }
+}
+
+#[tokio::test]
 async fn streams_fragmented_json_and_preserves_prompt_as_data() {
     let (_sender, receiver) = oneshot::channel();
     let result = supervise(fixture("normal", None), &request(), receiver, |_| true).await;

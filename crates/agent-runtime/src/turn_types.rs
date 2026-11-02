@@ -87,6 +87,7 @@ pub enum AgentEvent {
         proxy_mode: &'static str,
     },
     Progress {
+        assistant: crate::AssistantObservation,
         input_written: bool,
         initialization_records: usize,
         event_trace: String,
@@ -101,6 +102,7 @@ pub enum AgentEvent {
         terminal: bool,
     },
     Diagnostic {
+        assistant: crate::AssistantObservation,
         initialization_records: usize,
         event_trace: String,
         protocol_records: usize,

@@ -9,6 +9,14 @@ process.stdin.on('end', () => {
   if (mode === 'oversized') { process.stdout.write('x'.repeat(300000)); return; }
   if (mode === 'wait') { setInterval(() => {}, 1000); return; }
   if (mode === 'partial-json') { process.stdout.write('{"type":"stream_event"'); setInterval(() => {}, 1000); return; }
+  if (mode.startsWith('codeagent-assistant-')) {
+    const content = mode.endsWith('thinking') ? [{ type: 'thinking', thinking: 'private-thought' }] : 'public fixture reply';
+    console.log(JSON.stringify({ type: 'system', subtype: 'hook_progress' }));
+    console.log(JSON.stringify({ type: 'system', subtype: 'init' }));
+    console.log(JSON.stringify({ type: 'assistant', message: { content, stop_reason: mode.endsWith('thinking') ? null : 'end_turn' } }));
+    setInterval(() => {}, 1000);
+    return;
+  }
   if (mode === 'codeagent-error' || mode === 'codeagent-init') {
     console.log(JSON.stringify(mode === 'codeagent-error' ? { type: 'error', error: { message: 'authentication failed: private-token' } } : { type: 'system', subtype: 'init', session_id: 'fixture-session' }));
     setInterval(() => {}, 1000);

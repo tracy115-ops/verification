@@ -119,7 +119,7 @@ export function useConversations(
     }, current.id);
     return accepted;
   }
-  async function retry(run: WorkflowRun, forceBatchAnalysis = false) {
+  async function retry(run: WorkflowRun, forceBatchAnalysis = false, analysisTimeoutSeconds?: number) {
     await perform(async (controller) => {
       if (
         session?.runs.some(
@@ -132,7 +132,10 @@ export function useConversations(
         .find((step) => ['failed', 'interrupted'].includes(step.status));
       if (previous?.turnId) await port.cancel(previous.turnId);
       if (previous?.executionId) await executionPort.cancel(previous.executionId);
-      await drive(retryRun(await recoverRequirementDraft(run), forceBatchAnalysis), controller);
+      await drive(
+        retryRun(await recoverRequirementDraft(run), forceBatchAnalysis, analysisTimeoutSeconds),
+        controller,
+      );
     });
   }
   async function stopRecovered() {

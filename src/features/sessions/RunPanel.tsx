@@ -13,7 +13,8 @@ import { ScriptQuestions } from './ScriptQuestions';
 import { RunReport } from './RunReport';
 import { RunReview } from './RunReview';
 import { RequirementQuoteRepair } from './RequirementQuoteRepair';
-import { canRetryAnalysisInBatches } from '../../domain/runtime/analysis-retry';
+import { canRetryAnalysis } from '../../domain/runtime/analysis-retry';
+import { AnalysisRetryControls } from './AnalysisRetryControls';
 
 export function RunPanel({
   run,
@@ -77,26 +78,19 @@ export function RunPanel({
         </h3>
         <RunSteps run={run} openArtifact={setSelectedArtifact} />
       </section>
-      {['failed', 'interrupted', 'cancelled'].includes(run.status) && !failedExecution && (
-        <button
-          className="workbench-btn wb-full"
-          disabled={!hasDesktopBridge() || actions.busy}
-          onClick={() => void actions.retry(run)}
-        >
-          <RefreshCw size={15} />
-          {t('retryStep')}
-        </button>
-      )}
-      {canRetryAnalysisInBatches(run) && (
-        <button
-          className="workbench-btn wb-full"
-          disabled={!hasDesktopBridge() || actions.busy}
-          title={t('retryAnalysisInBatchesHint')}
-          onClick={() => void actions.retry(run, true)}
-        >
-          {t('retryAnalysisInBatches')}
-        </button>
-      )}
+      {canRetryAnalysis(run) && <AnalysisRetryControls run={run} actions={actions} />}
+      {['failed', 'interrupted', 'cancelled'].includes(run.status) &&
+        !failedExecution &&
+        !canRetryAnalysis(run) && (
+          <button
+            className="workbench-btn wb-full"
+            disabled={!hasDesktopBridge() || actions.busy}
+            onClick={() => void actions.retry(run)}
+          >
+            <RefreshCw size={15} />
+            {t('retryStep')}
+          </button>
+        )}
       {failedExecution && (
         <div className="session-execution-recovery">
           <p>{t('noExecutionRetry')}</p>

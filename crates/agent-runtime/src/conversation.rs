@@ -168,6 +168,7 @@ async fn supervise(
             _ = heartbeat.tick() => { if !sink(AgentEvent::Heartbeat) { interrupted = Some(("cancelled", "client_disconnected")); break; } }
             _ = diagnostics.tick() => {
                 if !sink(AgentEvent::Progress {
+                    assistant: state.assistant.clone(),
                     input_written: written.load(std::sync::atomic::Ordering::Acquire),
                     initialization_records: state.initialization_records, event_trace: state.event_trace(),
                     elapsed_ms: started.elapsed().as_millis() as u64,
@@ -213,6 +214,7 @@ async fn supervise(
         Ok(Ok(Ok(())))
     );
     let _ = sink(AgentEvent::Diagnostic {
+        assistant: state.assistant.clone(),
         initialization_records: state.initialization_records,
         event_trace: state.event_trace(),
         protocol_records: state.records,
