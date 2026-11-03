@@ -1,0 +1,104 @@
+```json
+{
+  "requirements": [
+    {
+      "id": "REQ-API-Format",
+      "text": "API 端点为 POST /rooms，接收 JSON 请求体，包含字段 maxPlayers、mode、ranked。",
+      "quote": "POST /rooms 接收 JSON {maxPlayers,mode,ranked}",
+      "acceptanceCriteria": [
+        "请求方法为 POST，路径为 /rooms",
+        "请求体为 JSON 格式，包含 maxPlayers、mode、ranked 三个字段"
+      ]
+    },
+    {
+      "id": "REQ-Fixed-Inputs",
+      "text": "本轮四条测试中 mode 固定为 duel，ranked 固定为 false。",
+      "quote": "mode 固定 duel，ranked 固定 false",
+      "acceptanceCriteria": [
+        "所有四条测试的 mode 值均为 duel",
+        "所有四条测试的 ranked 值均为 false"
+      ]
+    },
+    {
+      "id": "REQ-MaxPlayers-Type-Range",
+      "text": "maxPlayers 为 JSON number 整数，允许范围为 2 到 8，包含两端。",
+      "quote": "maxPlayers 为 JSON number 整数，允许范围为 2 到 8，包含两端",
+      "acceptanceCriteria": [
+        "maxPlayers 为 JSON number 类型且为整数",
+        "允许范围下界为 2，包含 2",
+        "允许范围上界为 8，包含 8"
+      ]
+    },
+    {
+      "id": "REQ-Boundary-Min-Valid",
+      "text": "当 maxPlayers=2（下界有效值）时，接口返回 HTTP 201。",
+      "quote": "maxPlayers=2 返回 HTTP 201",
+      "acceptanceCriteria": [
+        "输入 maxPlayers=2 时，HTTP 响应状态码为 201"
+      ]
+    },
+    {
+      "id": "REQ-Boundary-Max-Valid",
+      "text": "当 maxPlayers=8（上界有效值）时，接口返回 HTTP 201。",
+      "quote": "maxPlayers=8 返回 HTTP 201",
+      "acceptanceCriteria": [
+        "输入 maxPlayers=8 时，HTTP 响应状态码为 201"
+      ]
+    },
+    {
+      "id": "REQ-Boundary-Below-Min-Invalid",
+      "text": "当 maxPlayers=1（低于下界）时，接口返回 HTTP 400。",
+      "quote": "maxPlayers=1 返回 HTTP 400",
+      "acceptanceCriteria": [
+        "输入 maxPlayers=1 时，HTTP 响应状态码为 400"
+      ]
+    },
+    {
+      "id": "REQ-Boundary-Above-Max-Invalid",
+      "text": "当 maxPlayers=9（高于上界）时，接口返回 HTTP 400。",
+      "quote": "maxPlayers=9 返回 HTTP 400",
+      "acceptanceCriteria": [
+        "输入 maxPlayers=9 时，HTTP 响应状态码为 400"
+      ]
+    },
+    {
+      "id": "REQ-Assertion-Scope",
+      "text": "本轮只断言 HTTP 状态码，不推断或验证响应体字段。",
+      "quote": "本轮只断言 HTTP 状态码，不推断响应体字段",
+      "acceptanceCriteria": [
+        "每条测试仅断言 HTTP 响应状态码",
+        "不推断、不断言响应体中的任何字段"
+      ]
+    },
+    {
+      "id": "REQ-Test-Isolation",
+      "text": "每条测试均从框架独立初始状态开始，不复用房间。",
+      "quote": "每条测试均从框架独立初始状态开始，不复用房间",
+      "acceptanceCriteria": [
+        "每条测试执行前处于独立的初始状态",
+        "测试之间不复用已创建的房间"
+      ]
+    },
+    {
+      "id": "REQ-Design-Scope",
+      "text": "本轮仅设计四条独立测试，maxPlayers 输入分别为 2、8、1、9；只完成需求、因子、场景和用例设计，不开发脚本、不执行测试。",
+      "quote": "本轮仅设计四条独立测试，输入 maxPlayers 分别为 2、8、1、9",
+      "acceptanceCriteria": [
+        "仅设计四条测试用例，maxPlayers 分别为 2、8、1、9",
+        "交付物仅包含需求、因子、场景和用例设计",
+        "不编写测试脚本，不执行测试"
+      ]
+    },
+    {
+      "id": "REQ-No-Source-Code",
+      "text": "仅有题目，无系统源码；本轮基于黑盒设计验收。",
+      "quote": "仅有题目，无系统源码",
+      "acceptanceCriteria": [
+        "设计依据仅为题目描述，不依赖系统源码",
+        "验收方式为黑盒设计"
+      ]
+    }
+  ],
+  "questions": []
+}
+```

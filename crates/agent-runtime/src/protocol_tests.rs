@@ -82,6 +82,23 @@ fn initialization_trace_is_bounded_and_never_contains_untrusted_event_names() {
 }
 
 #[test]
+fn public_reply_budget_is_bounded_independently_of_protocol_overhead() {
+    let mut state = ProtocolState::default();
+    let chunk = "x".repeat(65536);
+    let line = serde_json::to_vec(&serde_json::json!({"type":"stream_event","event":{"delta":{"type":"text_delta","text":chunk}}})).unwrap();
+    for _ in 0..32 {
+        state.consume(DriverId::Claude, &line);
+    }
+    assert!(!state.failed);
+    assert_eq!(state.text.len(), 2 * 1024 * 1024);
+    let events = state.consume(DriverId::Claude, &line);
+    assert!(events.is_empty());
+    assert!(state.failed);
+    assert_eq!(state.error_code, Some("output_limit"));
+    assert_eq!(state.text.len(), 2 * 1024 * 1024);
+}
+
+#[test]
 fn codex_requires_a_terminal_event_and_never_emits_reasoning() {
     let mut state = ProtocolState::default();
     assert!(

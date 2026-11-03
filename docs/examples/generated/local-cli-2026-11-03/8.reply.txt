@@ -1,0 +1,125 @@
+```json
+{
+  "requirements": [
+    {
+      "id": "REQ-01",
+      "text": "POST /rooms 接口接收 JSON 请求体，包含 maxPlayers、mode、ranked 三个字段。",
+      "quote": "POST /rooms 接收 JSON {maxPlayers,mode,ranked}",
+      "acceptanceCriteria": [
+        "请求方法为 POST，路径为 /rooms",
+        "请求体为 JSON 格式，包含字段 maxPlayers、mode、ranked"
+      ]
+    },
+    {
+      "id": "REQ-02",
+      "text": "mode 字段固定为 duel，ranked 字段固定为 false，本轮测试不改变这两个字段的值。",
+      "quote": "mode 固定 duel",
+      "acceptanceCriteria": [
+        "所有测试用例中 mode 取值为 duel",
+        "所有测试用例中 ranked 取值为 false"
+      ]
+    },
+    {
+      "id": "REQ-03",
+      "text": "maxPlayers 为 JSON number 类型且为整数，允许的有效范围为 2 到 8，包含两端值。",
+      "quote": "maxPlayers 为 JSON number 整数，允许范围为 2 到 8，包含两端。",
+      "acceptanceCriteria": [
+        "maxPlayers 为 JSON number 类型",
+        "maxPlayers 取整数",
+        "有效范围下界为 2，包含 2",
+        "有效范围上界为 8，包含 8"
+      ]
+    },
+    {
+      "id": "REQ-04",
+      "text": "当 maxPlayers 取有效范围下界值 2 时，接口应返回 HTTP 状态码 201。",
+      "quote": "maxPlayers=2 返回 HTTP 201",
+      "acceptanceCriteria": [
+        "maxPlayers=2、mode=duel、ranked=false 时，HTTP 响应状态码为 201"
+      ]
+    },
+    {
+      "id": "REQ-05",
+      "text": "当 maxPlayers 取有效范围上界值 8 时，接口应返回 HTTP 状态码 201。",
+      "quote": "maxPlayers=8 返回 HTTP 201",
+      "acceptanceCriteria": [
+        "maxPlayers=8、mode=duel、ranked=false 时，HTTP 响应状态码为 201"
+      ]
+    },
+    {
+      "id": "REQ-06",
+      "text": "当 maxPlayers 取低于有效范围下界的值 1 时，接口应返回 HTTP 状态码 400。",
+      "quote": "maxPlayers=1 返回 HTTP 400",
+      "acceptanceCriteria": [
+        "maxPlayers=1、mode=duel、ranked=false 时，HTTP 响应状态码为 400"
+      ]
+    },
+    {
+      "id": "REQ-07",
+      "text": "当 maxPlayers 取高于有效范围上界的值 9 时，接口应返回 HTTP 状态码 400。",
+      "quote": "maxPlayers=9 返回 HTTP 400",
+      "acceptanceCriteria": [
+        "maxPlayers=9、mode=duel、ranked=false 时，HTTP 响应状态码为 400"
+      ]
+    },
+    {
+      "id": "REQ-08",
+      "text": "每条测试用例均从框架的独立初始状态开始执行，不复用已创建的房间资源。",
+      "quote": "每条测试均从框架独立初始状态开始，不复用房间。",
+      "acceptanceCriteria": [
+        "四条测试用例之间相互独立，不共享房间状态",
+        "每条测试用例执行前框架处于初始状态"
+      ]
+    },
+    {
+      "id": "REQ-09",
+      "text": "本轮测试仅断言 HTTP 状态码，不对响应体字段做任何推断或验证。",
+      "quote": "本轮只断言 HTTP 状态码，不推断响应体字段。",
+      "acceptanceCriteria": [
+        "断言对象仅为 HTTP 响应状态码",
+        "不验证响应体中的任何字段"
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "text": "本轮设计四条独立测试用例，maxPlayers 输入值分别为 2、8、1、9。",
+      "quote": "设计四条独立测试，输入 maxPlayers 分别为 2、8、1、9",
+      "acceptanceCriteria": [
+        "测试用例数量为四条",
+        "四条用例的 maxPlayers 输入值依次为 2、8、1、9"
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "text": "其他输入组合、类型边界、缺字段、权限、并发和状态相关测试不在本轮范围内。",
+      "quote": "其他输入、类型、缺字段、权限、并发和状态测试不在本轮范围。",
+      "acceptanceCriteria": [
+        "本轮不覆盖 maxPlayers 以外字段的取值变化测试",
+        "本轮不覆盖字段缺失或类型错误的测试",
+        "本轮不覆盖权限控制相关测试",
+        "本轮不覆盖并发请求相关测试",
+        "本轮不覆盖多房间状态流转相关测试"
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "text": "本轮仅完成需求、因子、场景和用例设计，不开发测试脚本，不执行测试。",
+      "quote": "这里只完成需求、因子、四个场景和四条用例，不开发脚本、不执行测试。",
+      "acceptanceCriteria": [
+        "产出物为设计文档，不包含可执行测试脚本",
+        "不声称测试已执行"
+      ]
+    }
+  ],
+  "questions": [
+    "源规格未说明 HTTP 400 错误响应体的结构或错误码格式，本轮是否需要记录为待确认项？",
+    "源规格未说明是否需要认证或鉴权才能调用 POST /rooms，该前置条件对测试设计有何影响？",
+    "源规格未说明 maxPlayers 为非整数（如 2.5）或非 number 类型（如字符串 \"3\"）时的预期行为，这是否属于后续轮次范围？",
+    "源规格未说明 mode 或 ranked 字段取其他值时接口的行为，本轮固定值假设是否足够？",
+    "源规格未说明并发请求场景下接口的行为，本轮排除后是否存在覆盖率风险？",
+    "源规格未说明缺字段（如缺少 maxPlayers）时的预期 HTTP 状态码，是否需要在后续轮次补充？",
+    "源规格仅断言 HTTP 状态码，未提供响应体 schema，是否后续需要补充响应体验证？",
+    "源规格未说明 maxPlayers 的边界值 2 和 8 之间是否存在其他无效区间（如某些值被业务规则禁止），是否需要确认？"
+  ]
+}
+```

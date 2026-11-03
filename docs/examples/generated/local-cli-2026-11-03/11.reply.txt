@@ -1,0 +1,90 @@
+```json
+{
+  "strategy": "黑盒边界值与等价类设计，仅产出需求、因子、场景与用例设计，不开发脚本、不执行测试（REQ-Design-Scope、REQ-No-Source-Code）。被测接口为 POST /rooms，请求体为 JSON，包含 maxPlayers、mode、ranked 三个字段（REQ-API-Format）。本轮唯一变化的输入因子是 maxPlayers：JSON number 整数，允许范围 2 到 8 含两端（REQ-MaxPlayers-Type-Range）；mode 固定 duel、ranked 固定 false（REQ-Fixed-Inputs），故不为 mode/ranked 引入其他水平。等价类划分：整数区间 [2,8] 为有效等价类，本轮由两个端点 2 与 8 代表并分别断言 201（REQ-Boundary-Min-Valid、REQ-Boundary-Max-Valid）；小于 2 与大于 8 为无效等价类，本轮各取紧邻边界外侧的一个值 1 与 9 代表并分别断言 400（REQ-Boundary-Below-Min-Invalid、REQ-Boundary-Above-Max-Invalid）。四条用例与四个 maxPlayers 水平 2、8、1、9 一一对应，彼此独立、无组合叠加。断言收敛为仅校验 HTTP 状态码，不推断、不断言响应体任何字段（REQ-Assertion-Scope）。每条用例从框架独立初始状态开始且不复用房间（REQ-Test-Isolation），因此不设计顺序依赖、共享房间或并发交叠的场景。sourceSpec 已将其他输入、类型、缺字段、权限、并发和状态测试明确排除在本轮范围之外，本设计不为其追加需求或场景；四条用例的期望状态码均由需求原文直接给定，范围内不存在未决问题。",
+  "scenarios": [
+    {
+      "id": "SC-Boundary-Min-Valid-2",
+      "title": "有效下界：maxPlayers=2（mode=duel、ranked=false）期望 HTTP 201",
+      "requirementIds": ["REQ-API-Format", "REQ-Fixed-Inputs", "REQ-MaxPlayers-Type-Range", "REQ-Boundary-Min-Valid", "REQ-Assertion-Scope", "REQ-Test-Isolation"],
+      "dimension": "边界值分析/等价类：有效等价类下界端点（maxPlayers=2，允许范围含两端）",
+      "expected": "在框架独立初始状态下发送 POST /rooms，JSON 请求体含 maxPlayers=2（JSON number 整数）、mode=duel、ranked=false；HTTP 响应状态码为 201（由 REQ-Boundary-Min-Valid 给定），仅断言该状态码，不推断或断言响应体任何字段。",
+      "factorLevels": [
+        {"factorId": "F-Endpoint-Format", "level": "POST /rooms，JSON 请求体包含 maxPlayers、mode、ranked"},
+        {"factorId": "F-MaxPlayers", "level": "2"},
+        {"factorId": "F-Mode", "level": "duel"},
+        {"factorId": "F-Ranked", "level": "false"}
+      ]
+    },
+    {
+      "id": "SC-Boundary-Max-Valid-8",
+      "title": "有效上界：maxPlayers=8（mode=duel、ranked=false）期望 HTTP 201",
+      "requirementIds": ["REQ-API-Format", "REQ-Fixed-Inputs", "REQ-MaxPlayers-Type-Range", "REQ-Boundary-Max-Valid", "REQ-Assertion-Scope", "REQ-Test-Isolation"],
+      "dimension": "边界值分析/等价类：有效等价类上界端点（maxPlayers=8，允许范围含两端）",
+      "expected": "在框架独立初始状态下发送 POST /rooms，JSON 请求体含 maxPlayers=8（JSON number 整数）、mode=duel、ranked=false；HTTP 响应状态码为 201（由 REQ-Boundary-Max-Valid 给定），仅断言该状态码，不推断或断言响应体任何字段。",
+      "factorLevels": [
+        {"factorId": "F-Endpoint-Format", "level": "POST /rooms，JSON 请求体包含 maxPlayers、mode、ranked"},
+        {"factorId": "F-MaxPlayers", "level": "8"},
+        {"factorId": "F-Mode", "level": "duel"},
+        {"factorId": "F-Ranked", "level": "false"}
+      ]
+    },
+    {
+      "id": "SC-Boundary-Below-Min-Invalid-1",
+      "title": "低于下界：maxPlayers=1（mode=duel、ranked=false）期望 HTTP 400",
+      "requirementIds": ["REQ-API-Format", "REQ-Fixed-Inputs", "REQ-MaxPlayers-Type-Range", "REQ-Boundary-Below-Min-Invalid", "REQ-Assertion-Scope", "REQ-Test-Isolation"],
+      "dimension": "边界值分析/等价类：无效等价类低于下界（maxPlayers=1，紧邻边界外侧）",
+      "expected": "在框架独立初始状态下发送 POST /rooms，JSON 请求体含 maxPlayers=1（JSON number 整数）、mode=duel、ranked=false；HTTP 响应状态码为 400（由 REQ-Boundary-Below-Min-Invalid 给定），仅断言该状态码，不推断或断言响应体任何字段。",
+      "factorLevels": [
+        {"factorId": "F-Endpoint-Format", "level": "POST /rooms，JSON 请求体包含 maxPlayers、mode、ranked"},
+        {"factorId": "F-MaxPlayers", "level": "1"},
+        {"factorId": "F-Mode", "level": "duel"},
+        {"factorId": "F-Ranked", "level": "false"}
+      ]
+    },
+    {
+      "id": "SC-Boundary-Above-Max-Invalid-9",
+      "title": "高于上界：maxPlayers=9（mode=duel、ranked=false）期望 HTTP 400",
+      "requirementIds": ["REQ-API-Format", "REQ-Fixed-Inputs", "REQ-MaxPlayers-Type-Range", "REQ-Boundary-Above-Max-Invalid", "REQ-Assertion-Scope", "REQ-Test-Isolation"],
+      "dimension": "边界值分析/等价类：无效等价类高于上界（maxPlayers=9，紧邻边界外侧）",
+      "expected": "在框架独立初始状态下发送 POST /rooms，JSON 请求体含 maxPlayers=9（JSON number 整数）、mode=duel、ranked=false；HTTP 响应状态码为 400（由 REQ-Boundary-Above-Max-Invalid 给定），仅断言该状态码，不推断或断言响应体任何字段。",
+      "factorLevels": [
+        {"factorId": "F-Endpoint-Format", "level": "POST /rooms，JSON 请求体包含 maxPlayers、mode、ranked"},
+        {"factorId": "F-MaxPlayers", "level": "9"},
+        {"factorId": "F-Mode", "level": "duel"},
+        {"factorId": "F-Ranked", "level": "false"}
+      ]
+    }
+  ],
+  "gaps": [],
+  "factors": [
+    {
+      "id": "F-Endpoint-Format",
+      "name": "请求端点与请求体格式",
+      "requirementIds": ["REQ-API-Format"],
+      "levels": ["POST /rooms，JSON 请求体包含 maxPlayers、mode、ranked"],
+      "sourceQuote": "POST /rooms 接收 JSON {maxPlayers,mode,ranked}"
+    },
+    {
+      "id": "F-MaxPlayers",
+      "name": "maxPlayers 输入取值",
+      "requirementIds": ["REQ-MaxPlayers-Type-Range", "REQ-Boundary-Min-Valid", "REQ-Boundary-Max-Valid", "REQ-Boundary-Below-Min-Invalid", "REQ-Boundary-Above-Max-Invalid"],
+      "levels": ["2", "8", "1", "9"],
+      "sourceQuote": "maxPlayers 为 JSON number 整数，允许范围为 2 到 8，包含两端"
+    },
+    {
+      "id": "F-Mode",
+      "name": "mode 固定输入",
+      "requirementIds": ["REQ-Fixed-Inputs"],
+      "levels": ["duel"],
+      "sourceQuote": "mode 固定 duel，ranked 固定 false"
+    },
+    {
+      "id": "F-Ranked",
+      "name": "ranked 固定输入",
+      "requirementIds": ["REQ-Fixed-Inputs"],
+      "levels": ["false"],
+      "sourceQuote": "mode 固定 duel，ranked 固定 false"
+    }
+  ]
+}
+```

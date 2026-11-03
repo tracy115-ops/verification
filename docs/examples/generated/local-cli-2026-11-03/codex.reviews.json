@@ -1,0 +1,46 @@
+{
+  "status": "completed",
+  "approvals": [
+    {
+      "nodeId": "review_requirements",
+      "digest": "c4d29281abb7a98063c1c73e1693a166f2cfeb2947fb5dd208d01132ab1e9d03",
+      "approvedAt": "2026-11-03T07:34:46.241Z"
+    },
+    {
+      "nodeId": "review_coverage",
+      "digest": "eefdd424ccdc61721f3a8f04a4249fe1132a1c6170b6cf8baad97a26ac92e687",
+      "approvedAt": "2026-11-03T07:42:24.103Z"
+    },
+    {
+      "nodeId": "review_cases",
+      "digest": "271708e269e9cd5ab23c4da493c6843bc96d9fbf5ccc4e833d81c83ed77d2659",
+      "approvedAt": "2026-11-03T07:43:27.007Z"
+    }
+  ],
+  "reviewExclusions": [
+    {
+      "nodeId": "review_coverage",
+      "issue": "明确排除的覆盖范围：其他输入值、其他类型、缺字段、权限、并发和状态测试；不增加合法区间内部值或其他非法值用例。",
+      "reason": "人工核对：题目第一段明确限定四个容量值，其他输入是样例主动排除的范围，不计为已覆盖。",
+      "recordedAt": "2026-11-03T07:42:24.101Z"
+    },
+    {
+      "nodeId": "review_coverage",
+      "issue": "响应体字段、结构和字段值不在本轮断言范围，未推断其预期。",
+      "reason": "人工核对：题目明确只断言 HTTP 状态码；响应体不在本次范围，不补造字段预期。",
+      "recordedAt": "2026-11-03T07:42:24.101Z"
+    },
+    {
+      "nodeId": "review_coverage",
+      "issue": "框架独立初始状态的具体数据与重置机制未提供；设计仅采用已给定前置条件，不补充实现假设。",
+      "reason": "人工核对：仅做设计，题目明确给定独立初始状态；不开发或执行脚本，不宣称框架实现已验证。",
+      "recordedAt": "2026-11-03T07:42:24.101Z"
+    },
+    {
+      "nodeId": "review_coverage",
+      "issue": "四条指定用例的输入和预期 HTTP 状态码均已明确，无阻碍本轮设计的待澄清问题；尚无测试执行证据。",
+      "reason": "人工核对：这是设计/执行状态说明，不是遗漏的设计预期；本轮没有执行验证，不赋予执行绿灯。",
+      "recordedAt": "2026-11-03T07:42:24.101Z"
+    }
+  ]
+}

@@ -89,6 +89,38 @@ async fn streams_fragmented_json_and_preserves_prompt_as_data() {
 }
 
 #[tokio::test]
+async fn private_protocol_stream_can_exceed_two_mib_but_still_has_a_finite_raw_budget() {
+    let mut request = request();
+    request.driver = DriverId::Claude;
+    request.timeout_seconds = 15;
+    for (mode, expected) in [
+        ("claude-private-stream", "completed"),
+        ("claude-protocol-flood", "failed"),
+    ] {
+        let (_sender, receiver) = oneshot::channel();
+        let bytes = std::cell::Cell::new(0);
+        let result = supervise(fixture(mode, None), &request, receiver, |event| {
+            if let crate::AgentEvent::Diagnostic { stdout_bytes, .. } = event {
+                bytes.set(stdout_bytes);
+            }
+            if let crate::AgentEvent::Text { text } = event {
+                assert!(!text.contains("private"));
+            }
+            true
+        })
+        .await;
+        assert_eq!(result.status, expected);
+        assert!(bytes.get() > 2 * 1024 * 1024);
+        if expected == "completed" {
+            assert_eq!(result.text, "public answer");
+        } else {
+            assert_eq!(result.error_code.as_deref(), Some("output_limit"));
+            assert!(result.text.is_empty());
+        }
+    }
+}
+
+#[tokio::test]
 async fn nonzero_exit_overrides_a_success_protocol_record() {
     let (_sender, receiver) = oneshot::channel();
     let result = supervise(fixture("bad-exit", None), &request(), receiver, |_| true).await;
@@ -100,6 +132,12 @@ async fn nonzero_exit_overrides_a_success_protocol_record() {
 async fn output_limit_and_timeout_stop_the_managed_process() {
     let (_sender, receiver) = oneshot::channel();
     let result = supervise(fixture("oversized", None), &request(), receiver, |_| true).await;
+    assert_eq!(result.error_code.as_deref(), Some("output_limit"));
+    let (_sender, receiver) = oneshot::channel();
+    let result = supervise(fixture("stderr-flood", None), &request(), receiver, |_| {
+        true
+    })
+    .await;
     assert_eq!(result.error_code.as_deref(), Some("output_limit"));
     let mut request = request();
     request.timeout_seconds = 1;

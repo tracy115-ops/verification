@@ -6,6 +6,7 @@
 
 | 文档 | 解决的问题 |
 | --- | --- |
+| [2026-11-03 真实 CLI 验证](research/local-cli-live-validation-2026-11-03.md) | Codex / Claude 实际设计链路、流式协议预算故障与 Pi 模型歧义 |
 | [需求引用校验与恢复](design/requirement-quote-recovery.md) | 格式匹配、问题引用定位、旧任务草稿恢复及修复审计 |
 | [对话上下文预算](design/conversation-context-budget.md) | 历史窗口、仅本条消息、完整输入与流程 Spec 去重 |
 | [受监督更新交接](design/supervised-desktop-update.md) | 独立更新进程、等待退出、安装退出码和重启记录 |

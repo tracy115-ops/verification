@@ -1,0 +1,27 @@
+{
+  "assistant": {
+    "content_shape": "array",
+    "error_present": false,
+    "other_blocks": 0,
+    "records": 2,
+    "stop_reason": "absent",
+    "text_blocks": 1,
+    "thinking_blocks": 0,
+    "tool_blocks": 0
+  },
+  "elapsed_ms": 123971,
+  "event_trace": "stream_event:stream_event:result",
+  "exit_code": 0,
+  "initialization_records": 1,
+  "input_written": true,
+  "last_event": "result",
+  "last_output_age_ms": 407,
+  "protocol_records": 18460,
+  "public_text_bytes": 6822,
+  "reason": null,
+  "stderr_bytes": 74,
+  "stdout_bytes": 4917476,
+  "terminal": true,
+  "type": "diagnostic",
+  "unknown_records": 0
+}

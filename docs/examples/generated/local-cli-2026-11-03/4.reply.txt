@@ -1,0 +1,76 @@
+{
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "text": "本轮仅设计四条独立测试，maxPlayers 分别取 2、8、1、9；其余输入、类型、缺字段、权限、并发和状态测试明确排除在本轮范围之外。",
+      "quote": "本轮仅设计四条独立测试，输入 maxPlayers 分别为 2、8、1、9；其他输入、类型、缺字段、权限、并发和状态测试不在本轮范围。",
+      "acceptanceCriteria": [
+        "恰好设计四条测试，maxPlayers 分别为 2、8、1、9，每个值对应一条测试。",
+        "四条测试相互独立。",
+        "不扩展其他输入、类型、缺字段、权限、并发和状态测试；这些维度属于本轮明确排除的覆盖范围。"
+      ]
+    },
+    {
+      "id": "REQ-002",
+      "text": "所有测试均向 POST /rooms 发送 JSON，请求包含 maxPlayers、mode 和 ranked，mode 固定为字符串 duel，ranked 固定为布尔值 false。",
+      "quote": "POST /rooms 接收 JSON {maxPlayers,mode,ranked}，mode 固定 duel，ranked 固定 false。",
+      "acceptanceCriteria": [
+        "四条用例均使用 POST 方法和 /rooms 路径。",
+        "四条用例的 JSON 请求均包含 maxPlayers、mode 和 ranked。",
+        "四条用例中 mode 均为 \"duel\"，ranked 均为 false。"
+      ]
+    },
+    {
+      "id": "REQ-003",
+      "text": "maxPlayers 的输入类型为 JSON number 整数，合法区间为闭区间 [2,8]；本轮以 2、8 覆盖合法下界和上界，以 1、9 覆盖下界外和上界外的相邻整数。",
+      "quote": "maxPlayers 为 JSON number 整数，允许范围为 2 到 8，包含两端。",
+      "acceptanceCriteria": [
+        "四条用例的 maxPlayers 均为 JSON number 整数。",
+        "将 2 和 8 标识为合法输入等价类中的边界值。",
+        "将 1 标识为小于合法下界的非法输入，将 9 标识为大于合法上界的非法输入。",
+        "不增加合法区间内部值或其他非法值的测试。"
+      ]
+    },
+    {
+      "id": "REQ-004",
+      "text": "四个指定输入的预期 HTTP 状态码分别为：2 对应 201，8 对应 201，1 对应 400，9 对应 400。",
+      "quote": "maxPlayers=2 返回 HTTP 201；maxPlayers=8 返回 HTTP 201；maxPlayers=1 返回 HTTP 400；maxPlayers=9 返回 HTTP 400。",
+      "acceptanceCriteria": [
+        "maxPlayers=2 的用例预期 HTTP 状态码为 201。",
+        "maxPlayers=8 的用例预期 HTTP 状态码为 201。",
+        "maxPlayers=1 的用例预期 HTTP 状态码为 400。",
+        "maxPlayers=9 的用例预期 HTTP 状态码为 400。"
+      ]
+    },
+    {
+      "id": "REQ-005",
+      "text": "本轮用例仅断言 HTTP 状态码，不为响应体字段设定预期或断言。",
+      "quote": "本轮只断言 HTTP 状态码，不推断响应体字段。",
+      "acceptanceCriteria": [
+        "四条用例的结果断言均仅针对 HTTP 状态码。",
+        "不添加响应体字段、结构或字段值的预期。"
+      ]
+    },
+    {
+      "id": "REQ-006",
+      "text": "每条测试均从框架独立初始状态开始，不复用其他测试的房间。",
+      "quote": "每条测试均从框架独立初始状态开始，不复用房间。",
+      "acceptanceCriteria": [
+        "每条用例均注明从框架独立初始状态开始。",
+        "用例之间不存在房间复用或执行顺序依赖。",
+        "不推断框架初始状态的具体数据或重置机制。"
+      ]
+    },
+    {
+      "id": "REQ-007",
+      "text": "完整设计交付范围为需求、因子、四个场景和四条用例，不开发脚本，不执行测试。",
+      "quote": "这里只完成需求、因子、四个场景和四条用例，不开发脚本、不执行测试。",
+      "acceptanceCriteria": [
+        "完整设计交付包含需求、因子、恰好四个场景和恰好四条用例。",
+        "交付内容不包含测试脚本开发。",
+        "不执行测试，不宣称测试已执行、通过或失败。"
+      ]
+    }
+  ],
+  "questions": []
+}

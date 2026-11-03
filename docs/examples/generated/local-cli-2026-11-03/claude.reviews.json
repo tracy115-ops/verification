@@ -1,0 +1,46 @@
+{
+  "status": "completed",
+  "approvals": [
+    {
+      "nodeId": "review_requirements",
+      "digest": "ed32c39904ac2bbf022e765b1b3192b7df94d1bbb8ec30ec4e093f612b0015d2",
+      "approvedAt": "2026-11-03T07:53:49.683Z"
+    },
+    {
+      "nodeId": "review_coverage",
+      "digest": "802f452f5267121d93c31c5f7768ecbc4d7e4abde351035fa02bef1574a046ab",
+      "approvedAt": "2026-11-03T07:57:30.974Z"
+    },
+    {
+      "nodeId": "review_cases",
+      "digest": "7eb619a9b78afc64e1f63398797feb08d0d6eb286b78c718a182ceeae071265b",
+      "approvedAt": "2026-11-03T07:58:40.173Z"
+    }
+  ],
+  "reviewExclusions": [
+    {
+      "nodeId": "review_coverage",
+      "issue": "REQ-Design-Scope",
+      "reason": "人工核对原文：这是本次设计工作的交付范围，不是被测接口行为；保留原需求记录，不伪造接口场景，也不将排除项计为脚本覆盖。",
+      "recordedAt": "2026-11-03T07:57:30.971Z"
+    },
+    {
+      "nodeId": "review_coverage",
+      "issue": "REQ-No-Source-Code",
+      "reason": "人工核对原文：无源码是黑盒设计约束，不是接口可观测输出；保留引用记录，仅排除本轮接口用例覆盖判定。",
+      "recordedAt": "2026-11-03T07:57:30.971Z"
+    },
+    {
+      "nodeId": "review_cases",
+      "issue": "REQ-Design-Scope",
+      "reason": "人工核对原文：这是本次设计工作的交付范围，不是被测接口行为；保留原需求记录，不伪造接口场景，也不将排除项计为脚本覆盖。",
+      "recordedAt": "2026-11-03T07:58:40.170Z"
+    },
+    {
+      "nodeId": "review_cases",
+      "issue": "REQ-No-Source-Code",
+      "reason": "人工核对原文：无源码是黑盒设计约束，不是接口可观测输出；保留引用记录，仅排除本轮接口用例覆盖判定。",
+      "recordedAt": "2026-11-03T07:58:40.170Z"
+    }
+  ]
+}

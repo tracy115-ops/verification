@@ -1,0 +1,82 @@
+{
+  "strategy": "依据 REQ-001 至 REQ-007 进行黑盒设计，沿用输入需求及其验收标准。采用输入等价类划分和边界值分析：2、8 为合法整数等价类的下界和上界，1、9 分别为低于下界和高于上界的相邻非法整数。严格限定四个场景，每个场景内包含一条对应的独立用例，共四条用例。所有请求均使用 POST /rooms，JSON 包含 maxPlayers、mode、ranked，mode 固定为字符串 \"duel\"，ranked 固定为布尔值 false。每条用例从框架独立初始状态开始，不复用房间，无执行顺序依赖，不推断具体初始数据或重置机制。仅设计 HTTP 状态码断言。其他输入、类型、缺字段、权限、并发和状态测试明确排除；独立初始状态仅作为用例前置条件。本交付为设计，不包含脚本，未执行测试。",
+  "scenarios": [
+    {
+      "id": "SCN-001",
+      "title": "合法下界：maxPlayers 为 2",
+      "requirementIds": ["REQ-001", "REQ-002", "REQ-003", "REQ-004", "REQ-005", "REQ-006", "REQ-007"],
+      "dimension": "输入等价类与边界值：合法整数等价类，下界 2。对应独立用例 TC-001：前置条件为框架独立初始状态，不复用其他用例的房间；发送 POST /rooms，JSON 请求体为 {\"maxPlayers\":2,\"mode\":\"duel\",\"ranked\":false}；检查 HTTP 状态码。与其他用例无执行顺序依赖。",
+      "expected": "仅断言 HTTP 状态码为 201，不设定响应体字段、结构或字段值的预期。",
+      "factorLevels": [
+        {"factorId": "F-001", "level": "2"},
+        {"factorId": "F-002", "level": "POST /rooms；JSON 包含 maxPlayers、mode、ranked；mode=\"duel\"；ranked=false"},
+        {"factorId": "F-003", "level": "从框架独立初始状态开始，不复用房间"}
+      ]
+    },
+    {
+      "id": "SCN-002",
+      "title": "合法上界：maxPlayers 为 8",
+      "requirementIds": ["REQ-001", "REQ-002", "REQ-003", "REQ-004", "REQ-005", "REQ-006", "REQ-007"],
+      "dimension": "输入等价类与边界值：合法整数等价类，上界 8。对应独立用例 TC-002：前置条件为框架独立初始状态，不复用其他用例的房间；发送 POST /rooms，JSON 请求体为 {\"maxPlayers\":8,\"mode\":\"duel\",\"ranked\":false}；检查 HTTP 状态码。与其他用例无执行顺序依赖。",
+      "expected": "仅断言 HTTP 状态码为 201，不设定响应体字段、结构或字段值的预期。",
+      "factorLevels": [
+        {"factorId": "F-001", "level": "8"},
+        {"factorId": "F-002", "level": "POST /rooms；JSON 包含 maxPlayers、mode、ranked；mode=\"duel\"；ranked=false"},
+        {"factorId": "F-003", "level": "从框架独立初始状态开始，不复用房间"}
+      ]
+    },
+    {
+      "id": "SCN-003",
+      "title": "下界外相邻非法整数：maxPlayers 为 1",
+      "requirementIds": ["REQ-001", "REQ-002", "REQ-003", "REQ-004", "REQ-005", "REQ-006", "REQ-007"],
+      "dimension": "输入等价类与边界值：小于合法下界的非法整数等价类，下界外相邻整数 1。对应独立用例 TC-003：前置条件为框架独立初始状态，不复用其他用例的房间；发送 POST /rooms，JSON 请求体为 {\"maxPlayers\":1,\"mode\":\"duel\",\"ranked\":false}；检查 HTTP 状态码。与其他用例无执行顺序依赖。",
+      "expected": "仅断言 HTTP 状态码为 400，不设定响应体字段、结构或字段值的预期。",
+      "factorLevels": [
+        {"factorId": "F-001", "level": "1"},
+        {"factorId": "F-002", "level": "POST /rooms；JSON 包含 maxPlayers、mode、ranked；mode=\"duel\"；ranked=false"},
+        {"factorId": "F-003", "level": "从框架独立初始状态开始，不复用房间"}
+      ]
+    },
+    {
+      "id": "SCN-004",
+      "title": "上界外相邻非法整数：maxPlayers 为 9",
+      "requirementIds": ["REQ-001", "REQ-002", "REQ-003", "REQ-004", "REQ-005", "REQ-006", "REQ-007"],
+      "dimension": "输入等价类与边界值：大于合法上界的非法整数等价类，上界外相邻整数 9。对应独立用例 TC-004：前置条件为框架独立初始状态，不复用其他用例的房间；发送 POST /rooms，JSON 请求体为 {\"maxPlayers\":9,\"mode\":\"duel\",\"ranked\":false}；检查 HTTP 状态码。与其他用例无执行顺序依赖。",
+      "expected": "仅断言 HTTP 状态码为 400，不设定响应体字段、结构或字段值的预期。",
+      "factorLevels": [
+        {"factorId": "F-001", "level": "9"},
+        {"factorId": "F-002", "level": "POST /rooms；JSON 包含 maxPlayers、mode、ranked；mode=\"duel\"；ranked=false"},
+        {"factorId": "F-003", "level": "从框架独立初始状态开始，不复用房间"}
+      ]
+    }
+  ],
+  "gaps": [
+    "明确排除的覆盖范围：其他输入值、其他类型、缺字段、权限、并发和状态测试；不增加合法区间内部值或其他非法值用例。",
+    "响应体字段、结构和字段值不在本轮断言范围，未推断其预期。",
+    "框架独立初始状态的具体数据与重置机制未提供；设计仅采用已给定前置条件，不补充实现假设。",
+    "四条指定用例的输入和预期 HTTP 状态码均已明确，无阻碍本轮设计的待澄清问题；尚无测试执行证据。"
+  ],
+  "factors": [
+    {
+      "id": "F-001",
+      "name": "maxPlayers 指定整数取值",
+      "requirementIds": ["REQ-001"],
+      "levels": ["2", "8", "1", "9"],
+      "sourceQuote": "本轮仅设计四条独立测试，输入 maxPlayers 分别为 2、8、1、9；其他输入、类型、缺字段、权限、并发和状态测试不在本轮范围。"
+    },
+    {
+      "id": "F-002",
+      "name": "固定请求配置",
+      "requirementIds": ["REQ-002"],
+      "levels": ["POST /rooms；JSON 包含 maxPlayers、mode、ranked；mode=\"duel\"；ranked=false"],
+      "sourceQuote": "POST /rooms 接收 JSON {maxPlayers,mode,ranked}，mode 固定 duel，ranked 固定 false。"
+    },
+    {
+      "id": "F-003",
+      "name": "独立初始状态前置条件",
+      "requirementIds": ["REQ-006"],
+      "levels": ["从框架独立初始状态开始，不复用房间"],
+      "sourceQuote": "每条测试均从框架独立初始状态开始，不复用房间。"
+    }
+  ]
+}

@@ -1,6 +1,8 @@
 use crate::turn_types::{AgentEvent, DriverId};
 use serde_json::Value;
 
+const MAX_PUBLIC_TEXT: usize = 2 * 1024 * 1024;
+
 #[derive(Default)]
 pub struct ProtocolState {
     pub records: usize,
@@ -110,6 +112,11 @@ impl ProtocolState {
 
     fn append(&mut self, text: &str, events: &mut Vec<AgentEvent>) {
         if text.is_empty() {
+            return;
+        }
+        if self.text.len().saturating_add(text.len()) > MAX_PUBLIC_TEXT {
+            self.failed = true;
+            self.error_code = Some("output_limit");
             return;
         }
         self.text.push_str(text);

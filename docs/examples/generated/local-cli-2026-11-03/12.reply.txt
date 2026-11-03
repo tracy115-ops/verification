@@ -1,0 +1,69 @@
+```json
+{
+  "cases": [
+    {
+      "id": "CASE-Boundary-Min-Valid-2",
+      "title": "有效下界：maxPlayers=2（mode=duel、ranked=false）期望 HTTP 201",
+      "scenarioIds": ["SC-Boundary-Min-Valid-2"],
+      "requirementIds": ["REQ-API-Format", "REQ-Fixed-Inputs", "REQ-MaxPlayers-Type-Range", "REQ-Boundary-Min-Valid", "REQ-Assertion-Scope", "REQ-Test-Isolation"],
+      "preconditions": [
+        "框架处于独立初始状态，不复用已有房间（sourceSpec：「每条测试均从框架独立初始状态开始，不复用房间。」）",
+        "被测接口为 POST /rooms，请求体为 JSON，包含 maxPlayers、mode、ranked 三个字段（sourceSpec：「POST /rooms 接收 JSON {maxPlayers,mode,ranked}」）",
+        "mode 固定为 duel、ranked 固定为 false（sourceSpec：「mode 固定 duel，ranked 固定 false」）",
+        "maxPlayers 为 JSON number 整数，允许范围为 2 到 8，包含两端（sourceSpec：「maxPlayers 为 JSON number 整数，允许范围为 2 到 8，包含两端。」）"
+      ],
+      "steps": [
+        "在框架独立初始状态下，向 POST /rooms 发送 JSON 请求体，其中 maxPlayers=2（JSON number 整数）、mode=duel、ranked=false",
+        "接收 HTTP 响应，仅校验响应状态码，不读取或推断响应体任何字段"
+      ],
+      "expected": "HTTP 响应状态码为 201（sourceSpec：「maxPlayers=2 返回 HTTP 201」）。本轮只断言 HTTP 状态码，不推断响应体字段（sourceSpec：「本轮只断言 HTTP 状态码，不推断响应体字段。」）。",
+      "assertions": [
+        "HTTP 响应状态码等于 201",
+        "不断言、不推断响应体任何字段"
+      ]
+    },
+    {
+      "id": "CASE-Boundary-Max-Valid-8",
+      "title": "有效上界：maxPlayers=8（mode=duel、ranked=false）期望 HTTP 201",
+      "scenarioIds": ["SC-Boundary-Max-Valid-8"],
+      "requirementIds": ["REQ-API-Format", "REQ-Fixed-Inputs", "REQ-MaxPlayers-Type-Range", "REQ-Boundary-Max-Valid", "REQ-Assertion-Scope", "REQ-Test-Isolation"],
+      "preconditions": [
+        "框架处于独立初始状态，不复用已有房间（sourceSpec：「每条测试均从框架独立初始状态开始，不复用房间。」）",
+        "被测接口为 POST /rooms，请求体为 JSON，包含 maxPlayers、mode、ranked 三个字段（sourceSpec：「POST /rooms 接收 JSON {maxPlayers,mode,ranked}」）",
+        "mode 固定为 duel、ranked 固定为 false（sourceSpec：「mode 固定 duel，ranked 固定 false」）",
+        "maxPlayers 为 JSON number 整数，允许范围为 2 到 8，包含两端（sourceSpec：「maxPlayers 为 JSON number 整数，允许范围为 2 到 8，包含两端。」）"
+      ],
+      "steps": [
+        "在框架独立初始状态下，向 POST /rooms 发送 JSON 请求体，其中 maxPlayers=8（JSON number 整数）、mode=duel、ranked=false",
+        "接收 HTTP 响应，仅校验响应状态码，不读取或推断响应体任何字段"
+      ],
+      "expected": "HTTP 响应状态码为 201（sourceSpec：「maxPlayers=8 返回 HTTP 201」）。本轮只断言 HTTP 状态码，不推断响应体字段（sourceSpec：「本轮只断言 HTTP 状态码，不推断响应体字段。」）。",
+      "assertions": [
+        "HTTP 响应状态码等于 201",
+        "不断言、不推断响应体任何字段"
+      ]
+    },
+    {
+      "id": "CASE-Boundary-Below-Min-Invalid-1",
+      "title": "低于下界：maxPlayers=1（mode=duel、ranked=false）期望 HTTP 400",
+      "scenarioIds": ["SC-Boundary-Below-Min-Invalid-1"],
+      "requirementIds": ["REQ-API-Format", "REQ-Fixed-Inputs", "REQ-MaxPlayers-Type-Range", "REQ-Boundary-Below-Min-Invalid", "REQ-Assertion-Scope", "REQ-Test-Isolation"],
+      "preconditions": [
+        "框架处于独立初始状态，不复用已有房间（sourceSpec：「每条测试均从框架独立初始状态开始，不复用房间。」）",
+        "被测接口为 POST /rooms，请求体为 JSON，包含 maxPlayers、mode、ranked 三个字段（sourceSpec：「POST /rooms 接收 JSON {maxPlayers,mode,ranked}」）",
+        "mode 固定为 duel、ranked 固定为 false（sourceSpec：「mode 固定 duel，ranked 固定 false」）",
+        "maxPlayers 为 JSON number 整数，允许范围为 2 到 8，包含两端（sourceSpec：「maxPlayers 为 JSON number 整数，允许范围为 2 到 8，包含两端。」）"
+      ],
+      "steps": [
+        "在框架独立初始状态下，向 POST /rooms 发送 JSON 请求体，其中 maxPlayers=1（JSON number 整数）、mode=duel、ranked=false",
+        "接收 HTTP 响应，仅校验响应状态码，不读取或推断响应体任何字段"
+      ],
+      "expected": "HTTP 响应状态码为 400（sourceSpec：「maxPlayers=1 返回 HTTP 400」）。本轮只断言 HTTP 状态码，不推断响应体字段（sourceSpec：「本轮只断言 HTTP 状态码，不推断响应体字段。」）。",
+      "assertions": [
+        "HTTP 响应状态码等于 400",
+        "不断言、不推断响应体任何字段"
+      ]
+    }
+  ]
+}
+```

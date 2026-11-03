@@ -155,6 +155,8 @@ export const conversationZh = {
   cli_not_found: '未找到所选 CLI，请在设置中检查安装。',
   cli_network_failed: 'CLI 无法连接模型服务，请检查本机网络、代理及 CLI 原生服务地址；已完成的产物已保留。',
   cli_auth_failed: 'CLI 身份认证失败，请在本机 CLI 中恢复登录后重试。',
+  cli_model_ambiguous:
+    '模型名匹配多个 Provider。请在设置中使用 provider/model 格式，并确认对应 Provider 已登录。',
   cli_rate_limited: '模型服务限流或额度不足，请检查 CLI 账户状态后重试。',
   cli_model_unavailable: '当前 CLI 无法使用所选模型，请在设置中核对模型 ID 和访问权限。',
   cli_exit_failed: 'CLI 进程异常退出，未取得有效结果。已完成的产物已保留。',
@@ -375,6 +377,8 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
   cli_network_failed:
     'CLI could not reach the model service. Check local networking, proxy and native CLI endpoint. Completed artifacts are retained.',
   cli_auth_failed: 'CLI authentication failed. Sign in through the local CLI and retry.',
+  cli_model_ambiguous:
+    'The model matches multiple providers. Use provider/model in settings and ensure that provider is authenticated.',
   cli_rate_limited: 'Model service rate limit or quota reached. Check the CLI account before retrying.',
   cli_model_unavailable:
     'The CLI cannot use the selected model. Check the model ID and account access in settings.',

@@ -12,7 +12,9 @@ use tokio::{
     time::{Instant, interval, sleep_until},
 };
 
-const MAX_OUTPUT: usize = 2_097_152;
+// JSON envelopes and private deltas must not consume the public-reply budget.
+const MAX_PROTOCOL_OUTPUT: usize = 16 * 1024 * 1024;
+const MAX_STDERR: usize = 128 * 1024;
 const MAX_LINE: usize = 262_144;
 
 fn arguments(driver: DriverId) -> Vec<&'static str> {
@@ -187,7 +189,7 @@ async fn supervise(
                         last_output = Some(Instant::now());
                         received += count;
                         if !stdout { stderr_bytes += count; }
-                        if received > MAX_OUTPUT { interrupted = Some(("failed", "output_limit")); break; }
+                        if received.saturating_sub(stderr_bytes) > MAX_PROTOCOL_OUTPUT || stderr_bytes > MAX_STDERR { interrupted = Some(("failed", "output_limit")); break; }
                     }
                     Some(OutputFrame::Line { stdout, line }) => {
                         if !stdout {

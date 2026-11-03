@@ -1,0 +1,27 @@
+{
+  "assistant": {
+    "content_shape": "",
+    "error_present": false,
+    "other_blocks": 0,
+    "records": 0,
+    "stop_reason": "",
+    "text_blocks": 0,
+    "thinking_blocks": 0,
+    "tool_blocks": 0
+  },
+  "elapsed_ms": 16564,
+  "event_trace": "unknown:item.completed:turn.completed",
+  "exit_code": 0,
+  "initialization_records": 0,
+  "input_written": true,
+  "last_event": "turn.completed",
+  "last_output_age_ms": 7136,
+  "protocol_records": 6,
+  "public_text_bytes": 2,
+  "reason": null,
+  "stderr_bytes": 324,
+  "stdout_bytes": 1227,
+  "terminal": true,
+  "type": "diagnostic",
+  "unknown_records": 1
+}

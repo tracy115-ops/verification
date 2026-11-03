@@ -15,6 +15,8 @@ pub fn classify(message: &str) -> Option<&'static str> {
         && (text.contains("invalid") || text.contains("parse") || text.contains("json error"))
     {
         Some("cli_mcp_invalid")
+    } else if text.contains("model") && text.contains("ambiguous across providers") {
+        Some("cli_model_ambiguous")
     } else if [
         "401 unauthorized",
         "authentication failed",
@@ -76,6 +78,12 @@ mod tests {
             Some("cli_network_failed")
         );
         assert_eq!(classify("model not found"), Some("cli_model_unavailable"));
+        assert_eq!(
+            classify(
+                "Error: Model \"fixture\" is ambiguous across providers: private-provider/fixture. No matching provider is authenticated. Use --provider or provider/model."
+            ),
+            Some("cli_model_ambiguous")
+        );
         assert_eq!(classify("unknown native failure"), None);
     }
 }
