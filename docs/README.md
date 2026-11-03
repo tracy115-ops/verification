@@ -6,6 +6,8 @@
 
 | 文档 | 解决的问题 |
 | --- | --- |
+| [深层黑盒调查规划](design/deep-blackbox-discovery.md) | 分期能力、状态序列、关系判定、缩减复现与真实证据标准 |
+| [深层黑盒调查验证](research/deep-blackbox-validation.md) | 真实 CLI 生成脚本、六个独立变体、参考对照及原生执行重放 |
 | [2026-11-03 真实 CLI 验证](research/local-cli-live-validation-2026-11-03.md) | Codex / Claude 实际设计链路、流式协议预算故障与 Pi 模型歧义 |
 | [需求引用校验与恢复](design/requirement-quote-recovery.md) | 格式匹配、问题引用定位、旧任务草稿恢复及修复审计 |
 | [对话上下文预算](design/conversation-context-budget.md) | 历史窗口、仅本条消息、完整输入与流程 Spec 去重 |

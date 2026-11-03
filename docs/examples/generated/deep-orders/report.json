@@ -1,0 +1,2339 @@
+{
+  "benchmark": "order-journeys-v1",
+  "scope": "real_cli_generated_script_controlled_single_mutants",
+  "verified": true,
+  "generatedAt": "2026-11-03T12:38:58.044Z",
+  "requestedModel": "gpt-6.1-sol",
+  "driver": "codex",
+  "verifiedAt": "2026-11-03T12:51:39.737Z",
+  "scriptSha256": "187eecddc441692245b39d72b2ed35ad44a1a4944bd61205cfb0a0bde273446f",
+  "baseline": [
+    {
+      "variant": "reference",
+      "passed": true,
+      "paths": [
+        "reserve-query",
+        "pay-once",
+        "cancel-once"
+      ],
+      "evidence": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders",
+            "body": {
+              "quantity": 1,
+              "requestId": "normal-pay"
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/orders/order-1"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders/order-1/pay",
+            "body": {
+              "paymentToken": "ok"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "paid"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/wallet"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "balance": 90,
+              "charges": 1
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders",
+            "body": {
+              "quantity": 1,
+              "requestId": "normal-cancel"
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "id": "order-2",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders/order-2/cancel",
+            "body": {}
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-2",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "cancelled"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/inventory"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "available": 3
+            }
+          }
+        }
+      ]
+    },
+    {
+      "variant": "cancel_replay_stock",
+      "passed": true,
+      "paths": [
+        "reserve-query",
+        "pay-once",
+        "cancel-once"
+      ],
+      "evidence": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders",
+            "body": {
+              "quantity": 1,
+              "requestId": "normal-pay"
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/orders/order-1"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders/order-1/pay",
+            "body": {
+              "paymentToken": "ok"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "paid"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/wallet"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "balance": 90,
+              "charges": 1
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders",
+            "body": {
+              "quantity": 1,
+              "requestId": "normal-cancel"
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "id": "order-2",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders/order-2/cancel",
+            "body": {}
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-2",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "cancelled"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/inventory"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "available": 3
+            }
+          }
+        }
+      ]
+    },
+    {
+      "variant": "declined_payment_commit",
+      "passed": true,
+      "paths": [
+        "reserve-query",
+        "pay-once",
+        "cancel-once"
+      ],
+      "evidence": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders",
+            "body": {
+              "quantity": 1,
+              "requestId": "normal-pay"
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/orders/order-1"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders/order-1/pay",
+            "body": {
+              "paymentToken": "ok"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "paid"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/wallet"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "balance": 90,
+              "charges": 1
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders",
+            "body": {
+              "quantity": 1,
+              "requestId": "normal-cancel"
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "id": "order-2",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders/order-2/cancel",
+            "body": {}
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-2",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "cancelled"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/inventory"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "available": 3
+            }
+          }
+        }
+      ]
+    },
+    {
+      "variant": "payment_replay_debit",
+      "passed": true,
+      "paths": [
+        "reserve-query",
+        "pay-once",
+        "cancel-once"
+      ],
+      "evidence": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders",
+            "body": {
+              "quantity": 1,
+              "requestId": "normal-pay"
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/orders/order-1"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders/order-1/pay",
+            "body": {
+              "paymentToken": "ok"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "paid"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/wallet"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "balance": 90,
+              "charges": 1
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders",
+            "body": {
+              "quantity": 1,
+              "requestId": "normal-cancel"
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "id": "order-2",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders/order-2/cancel",
+            "body": {}
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-2",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "cancelled"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/inventory"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "available": 3
+            }
+          }
+        }
+      ]
+    },
+    {
+      "variant": "idempotency_identity_scope",
+      "passed": true,
+      "paths": [
+        "reserve-query",
+        "pay-once",
+        "cancel-once"
+      ],
+      "evidence": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders",
+            "body": {
+              "quantity": 1,
+              "requestId": "normal-pay"
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/orders/order-1"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders/order-1/pay",
+            "body": {
+              "paymentToken": "ok"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "paid"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/wallet"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "balance": 90,
+              "charges": 1
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders",
+            "body": {
+              "quantity": 1,
+              "requestId": "normal-cancel"
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "id": "order-2",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders/order-2/cancel",
+            "body": {}
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-2",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "cancelled"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/inventory"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "available": 3
+            }
+          }
+        }
+      ]
+    },
+    {
+      "variant": "rejected_cancel_mutation",
+      "passed": true,
+      "paths": [
+        "reserve-query",
+        "pay-once",
+        "cancel-once"
+      ],
+      "evidence": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders",
+            "body": {
+              "quantity": 1,
+              "requestId": "normal-pay"
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/orders/order-1"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders/order-1/pay",
+            "body": {
+              "paymentToken": "ok"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "paid"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/wallet"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "balance": 90,
+              "charges": 1
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders",
+            "body": {
+              "quantity": 1,
+              "requestId": "normal-cancel"
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "id": "order-2",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders/order-2/cancel",
+            "body": {}
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-2",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "cancelled"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/inventory"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "available": 3
+            }
+          }
+        }
+      ]
+    },
+    {
+      "variant": "concurrent_payment_debit",
+      "passed": true,
+      "paths": [
+        "reserve-query",
+        "pay-once",
+        "cancel-once"
+      ],
+      "evidence": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders",
+            "body": {
+              "quantity": 1,
+              "requestId": "normal-pay"
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/orders/order-1"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders/order-1/pay",
+            "body": {
+              "paymentToken": "ok"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-1",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "paid"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/wallet"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "balance": 90,
+              "charges": 1
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders",
+            "body": {
+              "quantity": 1,
+              "requestId": "normal-cancel"
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "id": "order-2",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "reserved"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/orders/order-2/cancel",
+            "body": {}
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "id": "order-2",
+              "owner": "user-a",
+              "quantity": 1,
+              "state": "cancelled"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/inventory"
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "available": 3
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "reference": {
+    "total": 15,
+    "tests": [
+      "test_cancel_replay_releases_stock_once",
+      "test_cancelled_payment_and_creation_replays",
+      "test_declined_payment_preserves_state_then_recovers",
+      "test_foreign_mutations_preserve_reserved_and_paid_states",
+      "test_foreign_query_preserves_order_and_resources",
+      "test_insufficient_inventory_then_release_and_reserve",
+      "test_invalid_creation_preserves_existing_state",
+      "test_missing_identity_is_rejected_without_effects",
+      "test_multiple_orders_keep_stock_and_wallets_consistent",
+      "test_paid_cancel_rejection_is_atomic",
+      "test_paid_payment_and_creation_replays",
+      "test_parallel_payments_charge_once",
+      "test_reserve_full_capacity",
+      "test_reserved_replay_and_payload_conflict",
+      "test_same_key_is_independent_across_users"
+    ],
+    "failures": [],
+    "errors": [],
+    "skipped": 0,
+    "evidenceFile": "reference.evidence.jsonl",
+    "scriptSha256": "187eecddc441692245b39d72b2ed35ad44a1a4944bd61205cfb0a0bde273446f",
+    "planDigest": "6201e691d9d278fbbf8e82753fbfe8935f5ea84476d3491d69938c635c157a6c",
+    "rawEvidenceSha256": "12b8577ab7111e7c7fbca2e9f061103a030ba1feb00b61ecf35ee23ee4f88c8b"
+  },
+  "variants": [
+    {
+      "variant": "cancel_replay_stock",
+      "total": 15,
+      "tests": [
+        "test_cancel_replay_releases_stock_once",
+        "test_cancelled_payment_and_creation_replays",
+        "test_declined_payment_preserves_state_then_recovers",
+        "test_foreign_mutations_preserve_reserved_and_paid_states",
+        "test_foreign_query_preserves_order_and_resources",
+        "test_insufficient_inventory_then_release_and_reserve",
+        "test_invalid_creation_preserves_existing_state",
+        "test_missing_identity_is_rejected_without_effects",
+        "test_multiple_orders_keep_stock_and_wallets_consistent",
+        "test_paid_cancel_rejection_is_atomic",
+        "test_paid_payment_and_creation_replays",
+        "test_parallel_payments_charge_once",
+        "test_reserve_full_capacity",
+        "test_reserved_replay_and_payload_conflict",
+        "test_same_key_is_independent_across_users"
+      ],
+      "failures": [
+        {
+          "test": "test_cancel_replay_releases_stock_once",
+          "trace": "Traceback (most recent call last):\n  File \"[validation]/case.py\", line 57, in testPartExecutor\n    yield\n  File \"[validation]/case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"[validation]/case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"[validation]/test_generated.py\", line 105, in test_cancel_replay_releases_stock_once\n    self.assertEqual(inventory.body, {'available': 4})\nAssertionError: {'available': 7} != {'available': 4}\n- {'available': 7}\n?               ^\n\n+ {'available': 4}\n?               ^\n\n"
+        }
+      ],
+      "errors": [],
+      "skipped": 0,
+      "evidenceFile": "cancel_replay_stock.evidence.jsonl",
+      "scriptSha256": "187eecddc441692245b39d72b2ed35ad44a1a4944bd61205cfb0a0bde273446f",
+      "planDigest": "b8cc59b655cb5927ab13a4042ee61338fd9104d7bcb567121a39fe4304443310",
+      "rawEvidenceSha256": "7ec9141fc4968f7cdb17b2597e062ea86a2aa260b00128ff3fe8e98e1ce9667f",
+      "detected": true,
+      "reproductions": [
+        {
+          "test": "test_cancel_replay_releases_stock_once",
+          "trace": "Traceback (most recent call last):\n  File \"[validation]/case.py\", line 57, in testPartExecutor\n    yield\n  File \"[validation]/case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"[validation]/case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"[validation]/test_generated.py\", line 105, in test_cancel_replay_releases_stock_once\n    self.assertEqual(inventory.body, {'available': 4})\nAssertionError: {'available': 7} != {'available': 4}\n- {'available': 7}\n?               ^\n\n+ {'available': 4}\n?               ^\n\n",
+          "exchanges": [
+            {
+              "request": {
+                "body": {},
+                "headers": null,
+                "method": "POST",
+                "path": "/__fixture/reset",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "reset": true
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_cancel_replay_releases_stock_once"
+            },
+            {
+              "request": {
+                "body": {
+                  "quantity": 3,
+                  "requestId": "cancel"
+                },
+                "headers": null,
+                "method": "POST",
+                "path": "/orders",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 3,
+                  "state": "reserved"
+                },
+                "status": 201
+              },
+              "test": "test_generated.OrderInventoryTests.test_cancel_replay_releases_stock_once"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/inventory",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "available": 1
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_cancel_replay_releases_stock_once"
+            },
+            {
+              "request": {
+                "body": {},
+                "headers": null,
+                "method": "POST",
+                "path": "/orders/order-1/cancel",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 3,
+                  "state": "cancelled"
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_cancel_replay_releases_stock_once"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/orders/order-1",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 3,
+                  "state": "cancelled"
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_cancel_replay_releases_stock_once"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/inventory",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "available": 4
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_cancel_replay_releases_stock_once"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/wallet",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "balance": 100,
+                  "charges": 0
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_cancel_replay_releases_stock_once"
+            },
+            {
+              "request": {
+                "body": {},
+                "headers": null,
+                "method": "POST",
+                "path": "/orders/order-1/cancel",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 3,
+                  "state": "cancelled"
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_cancel_replay_releases_stock_once"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/orders/order-1",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 3,
+                  "state": "cancelled"
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_cancel_replay_releases_stock_once"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/inventory",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "available": 7
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_cancel_replay_releases_stock_once"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "declined_payment_commit",
+      "total": 15,
+      "tests": [
+        "test_cancel_replay_releases_stock_once",
+        "test_cancelled_payment_and_creation_replays",
+        "test_declined_payment_preserves_state_then_recovers",
+        "test_foreign_mutations_preserve_reserved_and_paid_states",
+        "test_foreign_query_preserves_order_and_resources",
+        "test_insufficient_inventory_then_release_and_reserve",
+        "test_invalid_creation_preserves_existing_state",
+        "test_missing_identity_is_rejected_without_effects",
+        "test_multiple_orders_keep_stock_and_wallets_consistent",
+        "test_paid_cancel_rejection_is_atomic",
+        "test_paid_payment_and_creation_replays",
+        "test_parallel_payments_charge_once",
+        "test_reserve_full_capacity",
+        "test_reserved_replay_and_payload_conflict",
+        "test_same_key_is_independent_across_users"
+      ],
+      "failures": [
+        {
+          "test": "test_declined_payment_preserves_state_then_recovers",
+          "trace": "Traceback (most recent call last):\n  File \"[validation]/case.py\", line 57, in testPartExecutor\n    yield\n  File \"[validation]/case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"[validation]/case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"[validation]/test_generated.py\", line 148, in test_declined_payment_preserves_state_then_recovers\n    self.assertEqual(fetched.body, created.body)\nAssertionError: {'id': 'order-1', 'owner': 'user-a', 'quantity': 3, 'state': 'paid'} != {'id': 'order-1', 'owner': 'user-a', 'quantity': 3, 'state': 'reserved'}\n- {'id': 'order-1', 'owner': 'user-a', 'quantity': 3, 'state': 'paid'}\n?                                                               ^^^\n\n+ {'id': 'order-1', 'owner': 'user-a', 'quantity': 3, 'state': 'reserved'}\n?                                                               ^^^^^^^\n\n"
+        }
+      ],
+      "errors": [],
+      "skipped": 0,
+      "evidenceFile": "declined_payment_commit.evidence.jsonl",
+      "scriptSha256": "187eecddc441692245b39d72b2ed35ad44a1a4944bd61205cfb0a0bde273446f",
+      "planDigest": "bbacdf0d65f84fa416edb3c3e6be774eb583c5bbbbc2cbd0eed9151d73b236ab",
+      "rawEvidenceSha256": "5d19c9dfebc3d1bc1cc58aafd231a71d85e520afd82600e4a075b9ea0469f898",
+      "detected": true,
+      "reproductions": [
+        {
+          "test": "test_declined_payment_preserves_state_then_recovers",
+          "trace": "Traceback (most recent call last):\n  File \"[validation]/case.py\", line 57, in testPartExecutor\n    yield\n  File \"[validation]/case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"[validation]/case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"[validation]/test_generated.py\", line 148, in test_declined_payment_preserves_state_then_recovers\n    self.assertEqual(fetched.body, created.body)\nAssertionError: {'id': 'order-1', 'owner': 'user-a', 'quantity': 3, 'state': 'paid'} != {'id': 'order-1', 'owner': 'user-a', 'quantity': 3, 'state': 'reserved'}\n- {'id': 'order-1', 'owner': 'user-a', 'quantity': 3, 'state': 'paid'}\n?                                                               ^^^\n\n+ {'id': 'order-1', 'owner': 'user-a', 'quantity': 3, 'state': 'reserved'}\n?                                                               ^^^^^^^\n\n",
+          "exchanges": [
+            {
+              "request": {
+                "body": {},
+                "headers": null,
+                "method": "POST",
+                "path": "/__fixture/reset",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "reset": true
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_declined_payment_preserves_state_then_recovers"
+            },
+            {
+              "request": {
+                "body": {
+                  "quantity": 3,
+                  "requestId": "recover"
+                },
+                "headers": null,
+                "method": "POST",
+                "path": "/orders",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 3,
+                  "state": "reserved"
+                },
+                "status": 201
+              },
+              "test": "test_generated.OrderInventoryTests.test_declined_payment_preserves_state_then_recovers"
+            },
+            {
+              "request": {
+                "body": {
+                  "paymentToken": "[redacted]"
+                },
+                "headers": null,
+                "method": "POST",
+                "path": "/orders/order-1/pay",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "error": "declined"
+                },
+                "status": 402
+              },
+              "test": "test_generated.OrderInventoryTests.test_declined_payment_preserves_state_then_recovers"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/orders/order-1",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 3,
+                  "state": "paid"
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_declined_payment_preserves_state_then_recovers"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/inventory",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "available": 1
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_declined_payment_preserves_state_then_recovers"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/wallet",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "balance": 70,
+                  "charges": 1
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_declined_payment_preserves_state_then_recovers"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "payment_replay_debit",
+      "total": 15,
+      "tests": [
+        "test_cancel_replay_releases_stock_once",
+        "test_cancelled_payment_and_creation_replays",
+        "test_declined_payment_preserves_state_then_recovers",
+        "test_foreign_mutations_preserve_reserved_and_paid_states",
+        "test_foreign_query_preserves_order_and_resources",
+        "test_insufficient_inventory_then_release_and_reserve",
+        "test_invalid_creation_preserves_existing_state",
+        "test_missing_identity_is_rejected_without_effects",
+        "test_multiple_orders_keep_stock_and_wallets_consistent",
+        "test_paid_cancel_rejection_is_atomic",
+        "test_paid_payment_and_creation_replays",
+        "test_parallel_payments_charge_once",
+        "test_reserve_full_capacity",
+        "test_reserved_replay_and_payload_conflict",
+        "test_same_key_is_independent_across_users"
+      ],
+      "failures": [
+        {
+          "test": "test_paid_payment_and_creation_replays",
+          "trace": "Traceback (most recent call last):\n  File \"[validation]/case.py\", line 57, in testPartExecutor\n    yield\n  File \"[validation]/case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"[validation]/case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"[validation]/test_generated.py\", line 192, in test_paid_payment_and_creation_replays\n    self.assertEqual(wallet.body, {'balance': 90, 'charges': 1})\nAssertionError: {'balance': 80, 'charges': 2} != {'balance': 90, 'charges': 1}\n- {'balance': 80, 'charges': 2}\n?             ^              ^\n\n+ {'balance': 90, 'charges': 1}\n?             ^              ^\n\n"
+        },
+        {
+          "test": "test_parallel_payments_charge_once",
+          "trace": "Traceback (most recent call last):\n  File \"[validation]/case.py\", line 57, in testPartExecutor\n    yield\n  File \"[validation]/case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"[validation]/case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"[validation]/test_generated.py\", line 278, in test_parallel_payments_charge_once\n    self.assertEqual(wallet.body, {'balance': before_wallet.body['balance'] - 40, 'charges': before_wallet.body['charges'] + 1})\nAssertionError: {'balance': 20, 'charges': 2} != {'balance': 60, 'charges': 1}\n- {'balance': 20, 'charges': 2}\n?             ^              ^\n\n+ {'balance': 60, 'charges': 1}\n?             ^              ^\n\n"
+        }
+      ],
+      "errors": [],
+      "skipped": 0,
+      "evidenceFile": "payment_replay_debit.evidence.jsonl",
+      "scriptSha256": "187eecddc441692245b39d72b2ed35ad44a1a4944bd61205cfb0a0bde273446f",
+      "planDigest": "df3cba2c0b3e241ef57649f1f4eed4babe525251b87121033d2afce2f9eb6b24",
+      "rawEvidenceSha256": "6b4de31c19f3f53fb59542721c8e0838138106584de2973e2edf665a99e8ffa3",
+      "detected": true,
+      "reproductions": [
+        {
+          "test": "test_paid_payment_and_creation_replays",
+          "trace": "Traceback (most recent call last):\n  File \"[validation]/case.py\", line 57, in testPartExecutor\n    yield\n  File \"[validation]/case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"[validation]/case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"[validation]/test_generated.py\", line 192, in test_paid_payment_and_creation_replays\n    self.assertEqual(wallet.body, {'balance': 90, 'charges': 1})\nAssertionError: {'balance': 80, 'charges': 2} != {'balance': 90, 'charges': 1}\n- {'balance': 80, 'charges': 2}\n?             ^              ^\n\n+ {'balance': 90, 'charges': 1}\n?             ^              ^\n\n",
+          "exchanges": [
+            {
+              "request": {
+                "body": {},
+                "headers": null,
+                "method": "POST",
+                "path": "/__fixture/reset",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "reset": true
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_paid_payment_and_creation_replays"
+            },
+            {
+              "request": {
+                "body": {
+                  "quantity": 1,
+                  "requestId": "paid-replay"
+                },
+                "headers": null,
+                "method": "POST",
+                "path": "/orders",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 1,
+                  "state": "reserved"
+                },
+                "status": 201
+              },
+              "test": "test_generated.OrderInventoryTests.test_paid_payment_and_creation_replays"
+            },
+            {
+              "request": {
+                "body": {
+                  "paymentToken": "[redacted]"
+                },
+                "headers": null,
+                "method": "POST",
+                "path": "/orders/order-1/pay",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 1,
+                  "state": "paid"
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_paid_payment_and_creation_replays"
+            },
+            {
+              "request": {
+                "body": {
+                  "paymentToken": "[redacted]"
+                },
+                "headers": null,
+                "method": "POST",
+                "path": "/orders/order-1/pay",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 1,
+                  "state": "paid"
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_paid_payment_and_creation_replays"
+            },
+            {
+              "request": {
+                "body": {
+                  "quantity": 1,
+                  "requestId": "paid-replay"
+                },
+                "headers": null,
+                "method": "POST",
+                "path": "/orders",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 1,
+                  "state": "paid"
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_paid_payment_and_creation_replays"
+            },
+            {
+              "request": {
+                "body": {
+                  "quantity": 2,
+                  "requestId": "paid-replay"
+                },
+                "headers": null,
+                "method": "POST",
+                "path": "/orders",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "error": "payload_conflict"
+                },
+                "status": 409
+              },
+              "test": "test_generated.OrderInventoryTests.test_paid_payment_and_creation_replays"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/orders/order-1",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 1,
+                  "state": "paid"
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_paid_payment_and_creation_replays"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/inventory",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "available": 3
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_paid_payment_and_creation_replays"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/wallet",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "balance": 80,
+                  "charges": 2
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_paid_payment_and_creation_replays"
+            }
+          ]
+        },
+        {
+          "test": "test_parallel_payments_charge_once",
+          "trace": "Traceback (most recent call last):\n  File \"[validation]/case.py\", line 57, in testPartExecutor\n    yield\n  File \"[validation]/case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"[validation]/case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"[validation]/test_generated.py\", line 278, in test_parallel_payments_charge_once\n    self.assertEqual(wallet.body, {'balance': before_wallet.body['balance'] - 40, 'charges': before_wallet.body['charges'] + 1})\nAssertionError: {'balance': 20, 'charges': 2} != {'balance': 60, 'charges': 1}\n- {'balance': 20, 'charges': 2}\n?             ^              ^\n\n+ {'balance': 60, 'charges': 1}\n?             ^              ^\n\n",
+          "exchanges": [
+            {
+              "request": {
+                "body": {},
+                "headers": null,
+                "method": "POST",
+                "path": "/__fixture/reset",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "reset": true
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_parallel_payments_charge_once"
+            },
+            {
+              "request": {
+                "body": {
+                  "quantity": 4,
+                  "requestId": "parallel"
+                },
+                "headers": null,
+                "method": "POST",
+                "path": "/orders",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 4,
+                  "state": "reserved"
+                },
+                "status": 201
+              },
+              "test": "test_generated.OrderInventoryTests.test_parallel_payments_charge_once"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/inventory",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "available": 0
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_parallel_payments_charge_once"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/wallet",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "balance": 100,
+                  "charges": 0
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_parallel_payments_charge_once"
+            },
+            {
+              "request": {
+                "body": {
+                  "paymentToken": "[redacted]"
+                },
+                "headers": null,
+                "method": "POST",
+                "path": "/orders/order-1/pay",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 4,
+                  "state": "paid"
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_parallel_payments_charge_once"
+            },
+            {
+              "request": {
+                "body": {
+                  "paymentToken": "[redacted]"
+                },
+                "headers": null,
+                "method": "POST",
+                "path": "/orders/order-1/pay",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 4,
+                  "state": "paid"
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_parallel_payments_charge_once"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/orders/order-1",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 4,
+                  "state": "paid"
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_parallel_payments_charge_once"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/inventory",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "available": 0
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_parallel_payments_charge_once"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/wallet",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "balance": 20,
+                  "charges": 2
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_parallel_payments_charge_once"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "idempotency_identity_scope",
+      "total": 15,
+      "tests": [
+        "test_cancel_replay_releases_stock_once",
+        "test_cancelled_payment_and_creation_replays",
+        "test_declined_payment_preserves_state_then_recovers",
+        "test_foreign_mutations_preserve_reserved_and_paid_states",
+        "test_foreign_query_preserves_order_and_resources",
+        "test_insufficient_inventory_then_release_and_reserve",
+        "test_invalid_creation_preserves_existing_state",
+        "test_missing_identity_is_rejected_without_effects",
+        "test_multiple_orders_keep_stock_and_wallets_consistent",
+        "test_paid_cancel_rejection_is_atomic",
+        "test_paid_payment_and_creation_replays",
+        "test_parallel_payments_charge_once",
+        "test_reserve_full_capacity",
+        "test_reserved_replay_and_payload_conflict",
+        "test_same_key_is_independent_across_users"
+      ],
+      "failures": [
+        {
+          "test": "test_same_key_is_independent_across_users",
+          "trace": "Traceback (most recent call last):\n  File \"[validation]/case.py\", line 57, in testPartExecutor\n    yield\n  File \"[validation]/case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"[validation]/case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"[validation]/test_generated.py\", line 55, in test_same_key_is_independent_across_users\n    self.assertEqual(second.status, 201)\nAssertionError: 409 != 201\n"
+        }
+      ],
+      "errors": [],
+      "skipped": 0,
+      "evidenceFile": "idempotency_identity_scope.evidence.jsonl",
+      "scriptSha256": "187eecddc441692245b39d72b2ed35ad44a1a4944bd61205cfb0a0bde273446f",
+      "planDigest": "a820537104f24f71e5f7cd69ea3fbfcc15683602dae2a51b6b5cd999b7892238",
+      "rawEvidenceSha256": "bb89663f74e84b200d3a444d2541e4360327ef032a7462f988411478d4404282",
+      "detected": true,
+      "reproductions": [
+        {
+          "test": "test_same_key_is_independent_across_users",
+          "trace": "Traceback (most recent call last):\n  File \"[validation]/case.py\", line 57, in testPartExecutor\n    yield\n  File \"[validation]/case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"[validation]/case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"[validation]/test_generated.py\", line 55, in test_same_key_is_independent_across_users\n    self.assertEqual(second.status, 201)\nAssertionError: 409 != 201\n",
+          "exchanges": [
+            {
+              "request": {
+                "body": {},
+                "headers": null,
+                "method": "POST",
+                "path": "/__fixture/reset",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "reset": true
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_same_key_is_independent_across_users"
+            },
+            {
+              "request": {
+                "body": {
+                  "quantity": 1,
+                  "requestId": "shared"
+                },
+                "headers": null,
+                "method": "POST",
+                "path": "/orders",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 1,
+                  "state": "reserved"
+                },
+                "status": 201
+              },
+              "test": "test_generated.OrderInventoryTests.test_same_key_is_independent_across_users"
+            },
+            {
+              "request": {
+                "body": {
+                  "quantity": 3,
+                  "requestId": "shared"
+                },
+                "headers": null,
+                "method": "POST",
+                "path": "/orders",
+                "user": "user-b"
+              },
+              "response": {
+                "body": {
+                  "error": "payload_conflict"
+                },
+                "status": 409
+              },
+              "test": "test_generated.OrderInventoryTests.test_same_key_is_independent_across_users"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "rejected_cancel_mutation",
+      "total": 15,
+      "tests": [
+        "test_cancel_replay_releases_stock_once",
+        "test_cancelled_payment_and_creation_replays",
+        "test_declined_payment_preserves_state_then_recovers",
+        "test_foreign_mutations_preserve_reserved_and_paid_states",
+        "test_foreign_query_preserves_order_and_resources",
+        "test_insufficient_inventory_then_release_and_reserve",
+        "test_invalid_creation_preserves_existing_state",
+        "test_missing_identity_is_rejected_without_effects",
+        "test_multiple_orders_keep_stock_and_wallets_consistent",
+        "test_paid_cancel_rejection_is_atomic",
+        "test_paid_payment_and_creation_replays",
+        "test_parallel_payments_charge_once",
+        "test_reserve_full_capacity",
+        "test_reserved_replay_and_payload_conflict",
+        "test_same_key_is_independent_across_users"
+      ],
+      "failures": [
+        {
+          "test": "test_paid_cancel_rejection_is_atomic",
+          "trace": "Traceback (most recent call last):\n  File \"[validation]/case.py\", line 57, in testPartExecutor\n    yield\n  File \"[validation]/case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"[validation]/case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"[validation]/test_generated.py\", line 130, in test_paid_cancel_rejection_is_atomic\n    self.assertEqual(fetched.body, paid.body)\nAssertionError: {'id': 'order-1', 'owner': 'user-a', 'quantity': 2, 'state': 'cancelled'} != {'id': 'order-1', 'owner': 'user-a', 'quantity': 2, 'state': 'paid'}\n- {'id': 'order-1', 'owner': 'user-a', 'quantity': 2, 'state': 'cancelled'}\n?                                                               ^ ^^^^^^\n\n+ {'id': 'order-1', 'owner': 'user-a', 'quantity': 2, 'state': 'paid'}\n?                                                               ^ ^\n\n"
+        }
+      ],
+      "errors": [],
+      "skipped": 0,
+      "evidenceFile": "rejected_cancel_mutation.evidence.jsonl",
+      "scriptSha256": "187eecddc441692245b39d72b2ed35ad44a1a4944bd61205cfb0a0bde273446f",
+      "planDigest": "d33784fe3b786273206c33d6d78e1e9ae8ee88c62fbee716e0d2351b8da7554b",
+      "rawEvidenceSha256": "b0e5c1ecc07a0c71c2f2dda98a671b3f75951b4ceeb527b129fa6264b6a3fbdd",
+      "detected": true,
+      "reproductions": [
+        {
+          "test": "test_paid_cancel_rejection_is_atomic",
+          "trace": "Traceback (most recent call last):\n  File \"[validation]/case.py\", line 57, in testPartExecutor\n    yield\n  File \"[validation]/case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"[validation]/case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"[validation]/test_generated.py\", line 130, in test_paid_cancel_rejection_is_atomic\n    self.assertEqual(fetched.body, paid.body)\nAssertionError: {'id': 'order-1', 'owner': 'user-a', 'quantity': 2, 'state': 'cancelled'} != {'id': 'order-1', 'owner': 'user-a', 'quantity': 2, 'state': 'paid'}\n- {'id': 'order-1', 'owner': 'user-a', 'quantity': 2, 'state': 'cancelled'}\n?                                                               ^ ^^^^^^\n\n+ {'id': 'order-1', 'owner': 'user-a', 'quantity': 2, 'state': 'paid'}\n?                                                               ^ ^\n\n",
+          "exchanges": [
+            {
+              "request": {
+                "body": {},
+                "headers": null,
+                "method": "POST",
+                "path": "/__fixture/reset",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "reset": true
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_paid_cancel_rejection_is_atomic"
+            },
+            {
+              "request": {
+                "body": {
+                  "quantity": 2,
+                  "requestId": "paid-cancel"
+                },
+                "headers": null,
+                "method": "POST",
+                "path": "/orders",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 2,
+                  "state": "reserved"
+                },
+                "status": 201
+              },
+              "test": "test_generated.OrderInventoryTests.test_paid_cancel_rejection_is_atomic"
+            },
+            {
+              "request": {
+                "body": {
+                  "paymentToken": "[redacted]"
+                },
+                "headers": null,
+                "method": "POST",
+                "path": "/orders/order-1/pay",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 2,
+                  "state": "paid"
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_paid_cancel_rejection_is_atomic"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/inventory",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "available": 2
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_paid_cancel_rejection_is_atomic"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/wallet",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "balance": 80,
+                  "charges": 1
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_paid_cancel_rejection_is_atomic"
+            },
+            {
+              "request": {
+                "body": {},
+                "headers": null,
+                "method": "POST",
+                "path": "/orders/order-1/cancel",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "error": "paid_order"
+                },
+                "status": 409
+              },
+              "test": "test_generated.OrderInventoryTests.test_paid_cancel_rejection_is_atomic"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/orders/order-1",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 2,
+                  "state": "cancelled"
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_paid_cancel_rejection_is_atomic"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/inventory",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "available": 4
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_paid_cancel_rejection_is_atomic"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/wallet",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "balance": 80,
+                  "charges": 1
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_paid_cancel_rejection_is_atomic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "concurrent_payment_debit",
+      "total": 15,
+      "tests": [
+        "test_cancel_replay_releases_stock_once",
+        "test_cancelled_payment_and_creation_replays",
+        "test_declined_payment_preserves_state_then_recovers",
+        "test_foreign_mutations_preserve_reserved_and_paid_states",
+        "test_foreign_query_preserves_order_and_resources",
+        "test_insufficient_inventory_then_release_and_reserve",
+        "test_invalid_creation_preserves_existing_state",
+        "test_missing_identity_is_rejected_without_effects",
+        "test_multiple_orders_keep_stock_and_wallets_consistent",
+        "test_paid_cancel_rejection_is_atomic",
+        "test_paid_payment_and_creation_replays",
+        "test_parallel_payments_charge_once",
+        "test_reserve_full_capacity",
+        "test_reserved_replay_and_payload_conflict",
+        "test_same_key_is_independent_across_users"
+      ],
+      "failures": [
+        {
+          "test": "test_parallel_payments_charge_once",
+          "trace": "Traceback (most recent call last):\n  File \"[validation]/case.py\", line 57, in testPartExecutor\n    yield\n  File \"[validation]/case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"[validation]/case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"[validation]/test_generated.py\", line 278, in test_parallel_payments_charge_once\n    self.assertEqual(wallet.body, {'balance': before_wallet.body['balance'] - 40, 'charges': before_wallet.body['charges'] + 1})\nAssertionError: {'balance': 20, 'charges': 2} != {'balance': 60, 'charges': 1}\n- {'balance': 20, 'charges': 2}\n?             ^              ^\n\n+ {'balance': 60, 'charges': 1}\n?             ^              ^\n\n"
+        }
+      ],
+      "errors": [],
+      "skipped": 0,
+      "evidenceFile": "concurrent_payment_debit.evidence.jsonl",
+      "scriptSha256": "187eecddc441692245b39d72b2ed35ad44a1a4944bd61205cfb0a0bde273446f",
+      "planDigest": "c3ee3c0edd99866a9d32477b1a122fc923714acdadcffc11a7fc5e0a9d962098",
+      "rawEvidenceSha256": "ec2c6f114403b909eda7fe6b3b18a3e8b79ea6637efec194e566f19d9a1745bd",
+      "detected": true,
+      "reproductions": [
+        {
+          "test": "test_parallel_payments_charge_once",
+          "trace": "Traceback (most recent call last):\n  File \"[validation]/case.py\", line 57, in testPartExecutor\n    yield\n  File \"[validation]/case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"[validation]/case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"[validation]/test_generated.py\", line 278, in test_parallel_payments_charge_once\n    self.assertEqual(wallet.body, {'balance': before_wallet.body['balance'] - 40, 'charges': before_wallet.body['charges'] + 1})\nAssertionError: {'balance': 20, 'charges': 2} != {'balance': 60, 'charges': 1}\n- {'balance': 20, 'charges': 2}\n?             ^              ^\n\n+ {'balance': 60, 'charges': 1}\n?             ^              ^\n\n",
+          "exchanges": [
+            {
+              "request": {
+                "body": {},
+                "headers": null,
+                "method": "POST",
+                "path": "/__fixture/reset",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "reset": true
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_parallel_payments_charge_once"
+            },
+            {
+              "request": {
+                "body": {
+                  "quantity": 4,
+                  "requestId": "parallel"
+                },
+                "headers": null,
+                "method": "POST",
+                "path": "/orders",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 4,
+                  "state": "reserved"
+                },
+                "status": 201
+              },
+              "test": "test_generated.OrderInventoryTests.test_parallel_payments_charge_once"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/inventory",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "available": 0
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_parallel_payments_charge_once"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/wallet",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "balance": 100,
+                  "charges": 0
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_parallel_payments_charge_once"
+            },
+            {
+              "request": {
+                "body": {
+                  "paymentToken": "[redacted]"
+                },
+                "headers": null,
+                "method": "POST",
+                "path": "/orders/order-1/pay",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 4,
+                  "state": "paid"
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_parallel_payments_charge_once"
+            },
+            {
+              "request": {
+                "body": {
+                  "paymentToken": "[redacted]"
+                },
+                "headers": null,
+                "method": "POST",
+                "path": "/orders/order-1/pay",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 4,
+                  "state": "paid"
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_parallel_payments_charge_once"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/orders/order-1",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "id": "order-1",
+                  "owner": "user-a",
+                  "quantity": 4,
+                  "state": "paid"
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_parallel_payments_charge_once"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/inventory",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "available": 0
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_parallel_payments_charge_once"
+            },
+            {
+              "request": {
+                "body": null,
+                "headers": null,
+                "method": "GET",
+                "path": "/wallet",
+                "user": "user-a"
+              },
+              "response": {
+                "body": {
+                  "balance": 20,
+                  "charges": 2
+                },
+                "status": 200
+              },
+              "test": "test_generated.OrderInventoryTests.test_parallel_payments_charge_once"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "requirementIds": [
+        "R1",
+        "R2"
+      ],
+      "method": "conservation; transition-sequence: reserve all four units, query the runtime order and inventory through both identities, and verify reservation consumes stock without changing either wallet. Generated assertions only; not executed.",
+      "testNames": [
+        "test_reserve_full_capacity"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2"
+      ],
+      "method": "replay-and-scope; conservation: reserve two units, replay the identical key and payload, then change quantity; verify original order identity, 409 conflict, unchanged stock and wallet.",
+      "testNames": [
+        "test_reserved_replay_and_payload_conflict"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2"
+      ],
+      "method": "replay-and-scope; relational-oracle: use the same requestId with different valid quantities under two identities, retain distinct runtime IDs, replay each identity's request, and verify independent ownership with combined stock consumption.",
+      "testNames": [
+        "test_same_key_is_independent_across_users"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2"
+      ],
+      "method": "transition-sequence; conservation: create as user-b, query the known ID as user-a, require 403, then verify the owner's order, shared inventory and both wallets remain unchanged.",
+      "testNames": [
+        "test_foreign_query_preserves_order_and_resources"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "method": "transition-sequence; conservation: reserve three units, cancel twice, and observe cancelled state, exactly four available units and unchanged wallet after each cancellation.",
+      "testNames": [
+        "test_cancel_replay_releases_stock_once"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "method": "transition-sequence; conservation: reserve, pay successfully, snapshot paid resources, attempt cancellation, and require 409 with identical order, inventory and wallet.",
+      "testNames": [
+        "test_paid_cancel_rejection_is_atomic"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R4"
+      ],
+      "method": "dependency-recovery; conservation: decline payment twice while checking reserved order and unchanged resources after each 402, then pay with ok and verify paid state, one charge and the exact quantity-based debit.",
+      "testNames": [
+        "test_declined_payment_preserves_state_then_recovers"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R4"
+      ],
+      "method": "replay-and-scope; transition-sequence: pay a reservation, repeat ok payment, replay creation and submit a changed quantity under its key; verify response identities, 409 conflict and final paid state with one debit and no extra stock consumption.",
+      "testNames": [
+        "test_paid_payment_and_creation_replays"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "method": "replay-and-scope; transition-sequence: cancel a reservation, replay creation, conflict its quantity and attempt payment; require original identity, 409 rejections, persistent cancelled state, fully restored inventory and unchanged wallet.",
+      "testNames": [
+        "test_cancelled_payment_and_creation_replays"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R4"
+      ],
+      "method": "transition-sequence; conservation: attempt foreign pay and cancel while the owner's order is reserved and again after owner payment; require every foreign mutation to return 403 and preserve the order, inventory and both wallets.",
+      "testNames": [
+        "test_foreign_mutations_preserve_reserved_and_paid_states"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R4",
+        "R5"
+      ],
+      "method": "concurrent-history; conservation: reserve four units and submit two ok payments using framework parallel; check both individual 200 paid responses and final persisted order, exactly one debit, one charge and unchanged reserved inventory.",
+      "testNames": [
+        "test_parallel_payments_charge_once"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2"
+      ],
+      "method": "transition-sequence; conservation: retain a valid reservation while sending bounded invalid quantity and requestId cases, including missing fields; after each 400 verify the existing order, inventory and both wallets are unchanged.",
+      "testNames": [
+        "test_invalid_creation_preserves_existing_state"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "method": "transition-sequence; conservation: reserve three units, reject another identity's two-unit request for insufficient inventory, verify immediate atomicity, cancel the reservation and use a fresh key to reserve all released inventory.",
+      "testNames": [
+        "test_insufficient_inventory_then_release_and_reserve"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "method": "transition-sequence; conservation: create a known reservation, omit identity separately on every documented endpoint, require 401 for each call, and verify the owner's order, inventory and both wallets after every rejection.",
+      "testNames": [
+        "test_missing_identity_is_rejected_without_effects"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "method": "transition-sequence; conservation; relational-oracle: fill inventory with two owners' reservations, pay one, cancel the other, reserve and pay part of the released stock, then verify all three runtime orders and the resulting inventory and isolated wallet totals.",
+      "testNames": [
+        "test_multiple_orders_keep_stock_and_wallets_consistent"
+      ]
+    }
+  ],
+  "questions": []
+}

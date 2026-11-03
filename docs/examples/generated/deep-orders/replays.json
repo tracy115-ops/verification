@@ -1,0 +1,92 @@
+[
+  {
+    "verifiedAt": "2026-11-03T12:47:39.666Z",
+    "verified": true,
+    "scriptSha256": "187eecddc441692245b39d72b2ed35ad44a1a4944bd61205cfb0a0bde273446f",
+    "referenceFailures": 0,
+    "referenceErrors": 0,
+    "variants": [
+      {
+        "id": "cancel_replay_stock",
+        "failures": 1,
+        "errors": 0,
+        "detected": true
+      },
+      {
+        "id": "declined_payment_commit",
+        "failures": 1,
+        "errors": 0,
+        "detected": true
+      },
+      {
+        "id": "payment_replay_debit",
+        "failures": 2,
+        "errors": 0,
+        "detected": true
+      },
+      {
+        "id": "idempotency_identity_scope",
+        "failures": 1,
+        "errors": 0,
+        "detected": true
+      },
+      {
+        "id": "rejected_cancel_mutation",
+        "failures": 1,
+        "errors": 0,
+        "detected": true
+      },
+      {
+        "id": "concurrent_payment_debit",
+        "failures": 1,
+        "errors": 0,
+        "detected": true
+      }
+    ]
+  },
+  {
+    "verifiedAt": "2026-11-03T12:47:54.612Z",
+    "verified": true,
+    "scriptSha256": "187eecddc441692245b39d72b2ed35ad44a1a4944bd61205cfb0a0bde273446f",
+    "referenceFailures": 0,
+    "referenceErrors": 0,
+    "variants": [
+      {
+        "id": "cancel_replay_stock",
+        "failures": 1,
+        "errors": 0,
+        "detected": true
+      },
+      {
+        "id": "declined_payment_commit",
+        "failures": 1,
+        "errors": 0,
+        "detected": true
+      },
+      {
+        "id": "payment_replay_debit",
+        "failures": 2,
+        "errors": 0,
+        "detected": true
+      },
+      {
+        "id": "idempotency_identity_scope",
+        "failures": 1,
+        "errors": 0,
+        "detected": true
+      },
+      {
+        "id": "rejected_cancel_mutation",
+        "failures": 1,
+        "errors": 0,
+        "detected": true
+      },
+      {
+        "id": "concurrent_payment_debit",
+        "failures": 1,
+        "errors": 0,
+        "detected": true
+      }
+    ]
+  }
+]

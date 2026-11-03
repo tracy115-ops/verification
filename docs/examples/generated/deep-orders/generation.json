@@ -1,0 +1,40 @@
+{
+  "driver": "codex",
+  "requestedModel": "gpt-6.1-sol",
+  "elapsedMs": 128949,
+  "at": "2026-11-03T12:38:58.044Z",
+  "status": "completed",
+  "errorCode": null,
+  "diagnostic": {
+    "assistant": {
+      "content_shape": "",
+      "error_present": false,
+      "other_blocks": 0,
+      "records": 0,
+      "stop_reason": "",
+      "text_blocks": 0,
+      "thinking_blocks": 0,
+      "tool_blocks": 0
+    },
+    "elapsed_ms": 128554,
+    "event_trace": "unknown:item.completed:turn.completed",
+    "exit_code": 0,
+    "initialization_records": 0,
+    "input_written": true,
+    "last_event": "turn.completed",
+    "last_output_age_ms": 7010,
+    "protocol_records": 6,
+    "public_text_bytes": 30388,
+    "reason": null,
+    "stderr_bytes": 162,
+    "stdout_bytes": 32362,
+    "terminal": true,
+    "type": "diagnostic",
+    "unknown_records": 1
+  },
+  "scriptSha256": "187eecddc441692245b39d72b2ed35ad44a1a4944bd61205cfb0a0bde273446f",
+  "promptSha256": "d77244ba6f3cd0f736a2ce22c204824ec3841ae741c816bab1b4e8b5f127968c",
+  "frameworkSha256": "01258ab754a83e72c32f706881bce0eeedc27d5e0dcba77d91018c788c9757c9",
+  "topicSha256": "c2b5db62572db2726e52d8224c7afe97158e81c962163dd55963de861ed77d26",
+  "artifactSha256": "452ec4aad8837b80b23b1e9645a8135e93369621989a226e0de0106cb60bac42"
+}

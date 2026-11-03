@@ -43,3 +43,4 @@ jobs:
       - run: cargo check -p verification-desktop --locked
       - run: cargo test -p verification-desktop --lib --locked
       - run: npm.cmd run verify:workflow
+      - run: npm.cmd run verify:deep-agent -- --reuse-script

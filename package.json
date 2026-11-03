@@ -1,7 +1,7 @@
 {
   "name": "verification-workbench",
   "private": true,
-  "version": "0.6.4",
+  "version": "0.7.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
@@ -16,6 +16,7 @@
     "serve:game-fixture": "node scripts/serve-game-fixture.mjs",
     "verify:blackbox": "node scripts/verify-blackbox.mjs",
     "verify:game-agent": "node scripts/verify-game-agent.mjs",
+    "verify:deep-agent": "node scripts/verify-deep-agent.mjs",
     "verify:workflow": "cargo build -p execution-runtime --example local --locked && vitest run --config vitest.workflow.config.ts",
     "format:check": "prettier --check src server scripts tests/e2e tests/runtime *.ts package.json tsconfig.json",
     "format": "prettier --write src server scripts tests/e2e tests/runtime *.ts package.json tsconfig.json",

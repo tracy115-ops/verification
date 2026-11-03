@@ -1,0 +1,18 @@
+{
+  "agent-artifact.json": "5606e0ad673bc13aa63a40098ba7258d510ee139bdc1f0cd08596c6b4de9403a",
+  "cancel_replay_stock.evidence.jsonl": "1eaee093a516c761c724a9a136eaf096b52dedcf4a089883d4512a1a1b621786",
+  "concurrent_payment_debit.evidence.jsonl": "3346e642f1446a34709905fd83e26512ce1b8b7103239b10f68c389d9c1a4e7b",
+  "declined_payment_commit.evidence.jsonl": "b1a6a199b30caf815e62b762aaf206ff295318760f3d597efcc59bce74eeff47",
+  "framework.py": "01258ab754a83e72c32f706881bce0eeedc27d5e0dcba77d91018c788c9757c9",
+  "generation.json": "4588087f9234aa69519634b40dd9612fb6507711489e083a5a3f2f59751a8013",
+  "idempotency_identity_scope.evidence.jsonl": "eb24124cd872507f405b3bba6c64abded7cb8831c2f0b1c78e932258390a0104",
+  "payment_replay_debit.evidence.jsonl": "a1ea798eea512c3c9c419a843e762e8156af5ee23367993c8926c2c57c3eac8d",
+  "prompt.json": "d77244ba6f3cd0f736a2ce22c204824ec3841ae741c816bab1b4e8b5f127968c",
+  "reference.evidence.jsonl": "e8f4a51c33027506dcd1aae5b7f7f5afccd83890b34560b5d09d517338add844",
+  "rejected_cancel_mutation.evidence.jsonl": "e3a5ff70d1e463b6281825dac9c6c60b352bfa73bb575ae463af8b7a7ca71c4e",
+  "replays.json": "26938defe5d4f97c0ea212275fe98ab02093cc84a9a2b45d5fb5b42ba4621b9c",
+  "reply.txt": "0fd3e6d0107575e447729645feef73663ba9020f5b0a615637f74a5a3810d665",
+  "report.json": "640e5e0bf90240516197f9356aaafb23368be1233aa99a022e5f9685e5f60c76",
+  "report.md": "0fa2b54828bdec34c95de632d343e605a3e6b809696ce00789656d884befb6fb",
+  "test_orders.py": "187eecddc441692245b39d72b2ed35ad44a1a4944bd61205cfb0a0bde273446f"
+}

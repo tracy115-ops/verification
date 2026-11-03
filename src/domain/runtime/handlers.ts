@@ -16,6 +16,7 @@ import { decodePlan } from '../execution/validation';
 import { canonicalJson } from '../execution/canonical';
 import { scopedCases } from './case-scope';
 import { quoteIssues } from './source-quotes';
+import { deepTestingGuidance } from './deep-testing';
 
 export function taskFor(run: WorkflowRun, node: WorkflowNode, inputs: Record<string, unknown>) {
   if (['tests.implement', 'verdicts.evaluate'].includes(node.operation))
@@ -57,6 +58,7 @@ export function taskFor(run: WorkflowRun, node: WorkflowNode, inputs: Record<str
     clarifications: run.clarifications ?? [],
     reviewExclusions: run.reviewExclusions ?? [],
     outputSchema: schema,
+    ...(['scenarios.design', 'cases.generate'].includes(node.operation) ? { deepTestingGuidance } : {}),
     ...(issues.length && isRequirements(previous)
       ? {
           validationFeedback: {

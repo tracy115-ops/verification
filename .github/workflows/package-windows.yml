@@ -119,6 +119,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           npm run verify:game-agent -- --reuse-script
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo build -p execution-runtime --example local --locked
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run verify:deep-agent -- --reuse-script
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Upload Windows installer
         id: upload

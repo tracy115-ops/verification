@@ -1,0 +1,171 @@
+{
+  "script": "import unittest\nimport framework\n\n\nclass OrderInventoryTests(framework.BlackBoxCase):\n    def test_reserve_full_capacity(self):\n        inventory = self.client.call('GET', '/inventory')\n        self.assertEqual(inventory.status, 200)\n        self.assertEqual(inventory.body, {'available': 4})\n        created = self.client.call('POST', '/orders', {'quantity': 4, 'requestId': 'full'})\n        self.assertEqual(created.status, 201)\n        order_id = created.body['id']\n        expected = {'id': order_id, 'owner': 'user-a', 'quantity': 4, 'state': 'reserved'}\n        self.assertEqual(created.body, expected)\n        fetched = self.client.call('GET', f'/orders/{order_id}')\n        self.assertEqual(fetched.status, 200)\n        self.assertEqual(fetched.body, expected)\n        inventory = self.client.call('GET', '/inventory', user='user-b')\n        self.assertEqual(inventory.status, 200)\n        self.assertEqual(inventory.body, {'available': 0})\n        for user in ['user-a', 'user-b']:\n            wallet = self.client.call('GET', '/wallet', user=user)\n            self.assertEqual(wallet.status, 200)\n            self.assertEqual(wallet.body, {'balance': 100, 'charges': 0})\n\n    def test_reserved_replay_and_payload_conflict(self):\n        created = self.client.call('POST', '/orders', {'quantity': 2, 'requestId': 'replay'})\n        self.assertEqual(created.status, 201)\n        order_id = created.body['id']\n        self.assertEqual(created.body['state'], 'reserved')\n        before = self.client.call('GET', '/inventory')\n        self.assertEqual(before.status, 200)\n        self.assertEqual(before.body, {'available': 2})\n        replay = self.client.call('POST', '/orders', {'quantity': 2, 'requestId': 'replay'})\n        self.assertEqual(replay.status, 200)\n        self.assertEqual(replay.body, created.body)\n        conflict = self.client.call('POST', '/orders', {'quantity': 3, 'requestId': 'replay'})\n        self.assertEqual(conflict.status, 409)\n        fetched = self.client.call('GET', f'/orders/{order_id}')\n        self.assertEqual(fetched.status, 200)\n        self.assertEqual(fetched.body, created.body)\n        after = self.client.call('GET', '/inventory')\n        self.assertEqual(after.status, 200)\n        self.assertEqual(after.body, before.body)\n        wallet = self.client.call('GET', '/wallet')\n        self.assertEqual(wallet.status, 200)\n        self.assertEqual(wallet.body, {'balance': 100, 'charges': 0})\n\n    def test_same_key_is_independent_across_users(self):\n        first = self.client.call('POST', '/orders', {'quantity': 1, 'requestId': 'shared'})\n        self.assertEqual(first.status, 201)\n        first_id = first.body['id']\n        self.assertEqual(first.body, {'id': first_id, 'owner': 'user-a', 'quantity': 1, 'state': 'reserved'})\n        second = self.client.call('POST', '/orders', {'quantity': 3, 'requestId': 'shared'}, user='user-b')\n        self.assertEqual(second.status, 201)\n        second_id = second.body['id']\n        self.assertNotEqual(first_id, second_id)\n        self.assertEqual(second.body, {'id': second_id, 'owner': 'user-b', 'quantity': 3, 'state': 'reserved'})\n        for user, quantity, expected in [('user-a', 1, first.body), ('user-b', 3, second.body)]:\n            replay = self.client.call('POST', '/orders', {'quantity': quantity, 'requestId': 'shared'}, user=user)\n            self.assertEqual(replay.status, 200)\n            self.assertEqual(replay.body, expected)\n            inventory = self.client.call('GET', '/inventory', user=user)\n            self.assertEqual(inventory.status, 200)\n            self.assertEqual(inventory.body, {'available': 0})\n            wallet = self.client.call('GET', '/wallet', user=user)\n            self.assertEqual(wallet.status, 200)\n            self.assertEqual(wallet.body, {'balance': 100, 'charges': 0})\n\n    def test_foreign_query_preserves_order_and_resources(self):\n        created = self.client.call('POST', '/orders', {'quantity': 2, 'requestId': 'private'}, user='user-b')\n        self.assertEqual(created.status, 201)\n        order_id = created.body['id']\n        self.assertEqual(created.body['owner'], 'user-b')\n        self.assertEqual(created.body['state'], 'reserved')\n        denied = self.client.call('GET', f'/orders/{order_id}', user='user-a')\n        self.assertEqual(denied.status, 403)\n        fetched = self.client.call('GET', f'/orders/{order_id}', user='user-b')\n        self.assertEqual(fetched.status, 200)\n        self.assertEqual(fetched.body, created.body)\n        inventory = self.client.call('GET', '/inventory')\n        self.assertEqual(inventory.status, 200)\n        self.assertEqual(inventory.body, {'available': 2})\n        for user in ['user-a', 'user-b']:\n            wallet = self.client.call('GET', '/wallet', user=user)\n            self.assertEqual(wallet.status, 200)\n            self.assertEqual(wallet.body, {'balance': 100, 'charges': 0})\n\n    def test_cancel_replay_releases_stock_once(self):\n        created = self.client.call('POST', '/orders', {'quantity': 3, 'requestId': 'cancel'})\n        self.assertEqual(created.status, 201)\n        order_id = created.body['id']\n        self.assertEqual(created.body['state'], 'reserved')\n        inventory = self.client.call('GET', '/inventory')\n        self.assertEqual(inventory.status, 200)\n        self.assertEqual(inventory.body, {'available': 1})\n        for attempt in range(2):\n            cancelled = self.client.call('POST', f'/orders/{order_id}/cancel', {})\n            self.assertEqual(cancelled.status, 200)\n            fetched = self.client.call('GET', f'/orders/{order_id}')\n            self.assertEqual(fetched.status, 200)\n            self.assertEqual(fetched.body, {'id': order_id, 'owner': 'user-a', 'quantity': 3, 'state': 'cancelled'})\n            inventory = self.client.call('GET', '/inventory')\n            self.assertEqual(inventory.status, 200)\n            self.assertEqual(inventory.body, {'available': 4})\n            wallet = self.client.call('GET', '/wallet')\n            self.assertEqual(wallet.status, 200)\n            self.assertEqual(wallet.body, {'balance': 100, 'charges': 0})\n\n    def test_paid_cancel_rejection_is_atomic(self):\n        created = self.client.call('POST', '/orders', {'quantity': 2, 'requestId': 'paid-cancel'})\n        self.assertEqual(created.status, 201)\n        order_id = created.body['id']\n        self.assertEqual(created.body['state'], 'reserved')\n        paid = self.client.call('POST', f'/orders/{order_id}/pay', {'paymentToken': 'ok'})\n        self.assertEqual(paid.status, 200)\n        self.assertEqual(paid.body, {'id': order_id, 'owner': 'user-a', 'quantity': 2, 'state': 'paid'})\n        before_inventory = self.client.call('GET', '/inventory')\n        before_wallet = self.client.call('GET', '/wallet')\n        self.assertEqual(before_inventory.status, 200)\n        self.assertEqual(before_inventory.body, {'available': 2})\n        self.assertEqual(before_wallet.status, 200)\n        self.assertEqual(before_wallet.body, {'balance': 80, 'charges': 1})\n        rejected = self.client.call('POST', f'/orders/{order_id}/cancel', {})\n        self.assertEqual(rejected.status, 409)\n        fetched = self.client.call('GET', f'/orders/{order_id}')\n        inventory = self.client.call('GET', '/inventory')\n        wallet = self.client.call('GET', '/wallet')\n        self.assertEqual(fetched.status, 200)\n        self.assertEqual(fetched.body, paid.body)\n        self.assertEqual(inventory.status, 200)\n        self.assertEqual(inventory.body, before_inventory.body)\n        self.assertEqual(wallet.status, 200)\n        self.assertEqual(wallet.body, before_wallet.body)\n\n    def test_declined_payment_preserves_state_then_recovers(self):\n        created = self.client.call('POST', '/orders', {'quantity': 3, 'requestId': 'recover'})\n        self.assertEqual(created.status, 201)\n        order_id = created.body['id']\n        self.assertEqual(created.body['state'], 'reserved')\n        for attempt in range(2):\n            declined = self.client.call('POST', f'/orders/{order_id}/pay', {'paymentToken': 'declined'})\n            self.assertEqual(declined.status, 402)\n            fetched = self.client.call('GET', f'/orders/{order_id}')\n            inventory = self.client.call('GET', '/inventory')\n            wallet = self.client.call('GET', '/wallet')\n            self.assertEqual(fetched.status, 200)\n            self.assertEqual(fetched.body, created.body)\n            self.assertEqual(inventory.status, 200)\n            self.assertEqual(inventory.body, {'available': 1})\n            self.assertEqual(wallet.status, 200)\n            self.assertEqual(wallet.body, {'balance': 100, 'charges': 0})\n        paid = self.client.call('POST', f'/orders/{order_id}/pay', {'paymentToken': 'ok'})\n        self.assertEqual(paid.status, 200)\n        self.assertEqual(paid.body, {'id': order_id, 'owner': 'user-a', 'quantity': 3, 'state': 'paid'})\n        fetched = self.client.call('GET', f'/orders/{order_id}')\n        inventory = self.client.call('GET', '/inventory')\n        wallet = self.client.call('GET', '/wallet')\n        self.assertEqual(fetched.status, 200)\n        self.assertEqual(fetched.body, paid.body)\n        self.assertEqual(inventory.status, 200)\n        self.assertEqual(inventory.body, {'available': 1})\n        self.assertEqual(wallet.status, 200)\n        self.assertEqual(wallet.body, {'balance': 70, 'charges': 1})\n\n    def test_paid_payment_and_creation_replays(self):\n        created = self.client.call('POST', '/orders', {'quantity': 1, 'requestId': 'paid-replay'})\n        self.assertEqual(created.status, 201)\n        order_id = created.body['id']\n        self.assertEqual(created.body['state'], 'reserved')\n        paid = self.client.call('POST', f'/orders/{order_id}/pay', {'paymentToken': 'ok'})\n        self.assertEqual(paid.status, 200)\n        self.assertEqual(paid.body, {'id': order_id, 'owner': 'user-a', 'quantity': 1, 'state': 'paid'})\n        repeated = self.client.call('POST', f'/orders/{order_id}/pay', {'paymentToken': 'ok'})\n        self.assertEqual(repeated.status, 200)\n        self.assertEqual(repeated.body, paid.body)\n        replay = self.client.call('POST', '/orders', {'quantity': 1, 'requestId': 'paid-replay'})\n        self.assertEqual(replay.status, 200)\n        self.assertEqual(replay.body['id'], order_id)\n        self.assertEqual(replay.body['owner'], 'user-a')\n        self.assertEqual(replay.body['quantity'], 1)\n        conflict = self.client.call('POST', '/orders', {'quantity': 2, 'requestId': 'paid-replay'})\n        self.assertEqual(conflict.status, 409)\n        fetched = self.client.call('GET', f'/orders/{order_id}')\n        inventory = self.client.call('GET', '/inventory')\n        wallet = self.client.call('GET', '/wallet')\n        self.assertEqual(fetched.status, 200)\n        self.assertEqual(fetched.body, paid.body)\n        self.assertEqual(inventory.status, 200)\n        self.assertEqual(inventory.body, {'available': 3})\n        self.assertEqual(wallet.status, 200)\n        self.assertEqual(wallet.body, {'balance': 90, 'charges': 1})\n\n    def test_cancelled_payment_and_creation_replays(self):\n        created = self.client.call('POST', '/orders', {'quantity': 2, 'requestId': 'cancelled-replay'})\n        self.assertEqual(created.status, 201)\n        order_id = created.body['id']\n        self.assertEqual(created.body['state'], 'reserved')\n        cancelled = self.client.call('POST', f'/orders/{order_id}/cancel', {})\n        self.assertEqual(cancelled.status, 200)\n        intermediate = self.client.call('GET', f'/orders/{order_id}')\n        self.assertEqual(intermediate.status, 200)\n        self.assertEqual(intermediate.body, {'id': order_id, 'owner': 'user-a', 'quantity': 2, 'state': 'cancelled'})\n        replay = self.client.call('POST', '/orders', {'quantity': 2, 'requestId': 'cancelled-replay'})\n        self.assertEqual(replay.status, 200)\n        self.assertEqual(replay.body['id'], order_id)\n        self.assertEqual(replay.body['owner'], 'user-a')\n        self.assertEqual(replay.body['quantity'], 2)\n        conflict = self.client.call('POST', '/orders', {'quantity': 1, 'requestId': 'cancelled-replay'})\n        self.assertEqual(conflict.status, 409)\n        rejected = self.client.call('POST', f'/orders/{order_id}/pay', {'paymentToken': 'ok'})\n        self.assertEqual(rejected.status, 409)\n        fetched = self.client.call('GET', f'/orders/{order_id}')\n        inventory = self.client.call('GET', '/inventory')\n        wallet = self.client.call('GET', '/wallet')\n        self.assertEqual(fetched.status, 200)\n        self.assertEqual(fetched.body, intermediate.body)\n        self.assertEqual(inventory.status, 200)\n        self.assertEqual(inventory.body, {'available': 4})\n        self.assertEqual(wallet.status, 200)\n        self.assertEqual(wallet.body, {'balance': 100, 'charges': 0})\n\n    def test_foreign_mutations_preserve_reserved_and_paid_states(self):\n        created = self.client.call('POST', '/orders', {'quantity': 2, 'requestId': 'foreign'})\n        self.assertEqual(created.status, 201)\n        order_id = created.body['id']\n        self.assertEqual(created.body['state'], 'reserved')\n        expected = created.body\n        for state in ['reserved', 'paid']:\n            if state == 'paid':\n                paid = self.client.call('POST', f'/orders/{order_id}/pay', {'paymentToken': 'ok'})\n                self.assertEqual(paid.status, 200)\n                expected = {'id': order_id, 'owner': 'user-a', 'quantity': 2, 'state': 'paid'}\n                self.assertEqual(paid.body, expected)\n            for action, body in [('pay', {'paymentToken': 'ok'}), ('cancel', {})]:\n                denied = self.client.call('POST', f'/orders/{order_id}/{action}', body, user='user-b')\n                self.assertEqual(denied.status, 403)\n                fetched = self.client.call('GET', f'/orders/{order_id}')\n                inventory = self.client.call('GET', '/inventory')\n                self.assertEqual(fetched.status, 200)\n                self.assertEqual(fetched.body, expected)\n                self.assertEqual(inventory.status, 200)\n                self.assertEqual(inventory.body, {'available': 2})\n                for user in ['user-a', 'user-b']:\n                    wallet = self.client.call('GET', '/wallet', user=user)\n                    self.assertEqual(wallet.status, 200)\n                    expected_wallet = {'balance': 80, 'charges': 1} if state == 'paid' and user == 'user-a' else {'balance': 100, 'charges': 0}\n                    self.assertEqual(wallet.body, expected_wallet)\n\n    def test_parallel_payments_charge_once(self):\n        created = self.client.call('POST', '/orders', {'quantity': 4, 'requestId': 'parallel'})\n        self.assertEqual(created.status, 201)\n        order_id = created.body['id']\n        self.assertEqual(created.body['state'], 'reserved')\n        before_inventory = self.client.call('GET', '/inventory')\n        before_wallet = self.client.call('GET', '/wallet')\n        self.assertEqual(before_inventory.status, 200)\n        self.assertEqual(before_inventory.body, {'available': 0})\n        self.assertEqual(before_wallet.status, 200)\n        self.assertEqual(before_wallet.body, {'balance': 100, 'charges': 0})\n        responses = self.client.parallel([\n            {'method': 'POST', 'path': f'/orders/{order_id}/pay', 'body': {'paymentToken': 'ok'}, 'user': 'user-a'},\n            {'method': 'POST', 'path': f'/orders/{order_id}/pay', 'body': {'paymentToken': 'ok'}, 'user': 'user-a'}\n        ])\n        self.assertEqual(len(responses), 2)\n        expected = {'id': order_id, 'owner': 'user-a', 'quantity': 4, 'state': 'paid'}\n        for response in responses:\n            self.assertEqual(response.status, 200)\n            self.assertEqual(response.body, expected)\n        fetched = self.client.call('GET', f'/orders/{order_id}')\n        inventory = self.client.call('GET', '/inventory')\n        wallet = self.client.call('GET', '/wallet')\n        self.assertEqual(fetched.status, 200)\n        self.assertEqual(fetched.body, expected)\n        self.assertEqual(inventory.status, 200)\n        self.assertEqual(inventory.body, before_inventory.body)\n        self.assertEqual(wallet.status, 200)\n        self.assertEqual(wallet.body, {'balance': before_wallet.body['balance'] - 40, 'charges': before_wallet.body['charges'] + 1})\n\n    def test_invalid_creation_preserves_existing_state(self):\n        created = self.client.call('POST', '/orders', {'quantity': 1, 'requestId': 'valid'})\n        self.assertEqual(created.status, 201)\n        order_id = created.body['id']\n        self.assertEqual(created.body['state'], 'reserved')\n        invalid_bodies = [\n            {'quantity': 0, 'requestId': 'zero'},\n            {'quantity': 5, 'requestId': 'large'},\n            {'quantity': 1.5, 'requestId': 'fraction'},\n            {'quantity': '1', 'requestId': 'text'},\n            {'quantity': 1, 'requestId': ''},\n            {'quantity': 1, 'requestId': None},\n            {'quantity': 1, 'requestId': 7},\n            {'requestId': 'missing-quantity'},\n            {'quantity': 1}\n        ]\n        for body in invalid_bodies:\n            rejected = self.client.call('POST', '/orders', body)\n            self.assertEqual(rejected.status, 400)\n            fetched = self.client.call('GET', f'/orders/{order_id}')\n            inventory = self.client.call('GET', '/inventory')\n            self.assertEqual(fetched.status, 200)\n            self.assertEqual(fetched.body, created.body)\n            self.assertEqual(inventory.status, 200)\n            self.assertEqual(inventory.body, {'available': 3})\n            for user in ['user-a', 'user-b']:\n                wallet = self.client.call('GET', '/wallet', user=user)\n                self.assertEqual(wallet.status, 200)\n                self.assertEqual(wallet.body, {'balance': 100, 'charges': 0})\n\n    def test_insufficient_inventory_then_release_and_reserve(self):\n        created = self.client.call('POST', '/orders', {'quantity': 3, 'requestId': 'occupy'})\n        self.assertEqual(created.status, 201)\n        order_id = created.body['id']\n        self.assertEqual(created.body['state'], 'reserved')\n        rejected = self.client.call('POST', '/orders', {'quantity': 2, 'requestId': 'insufficient'}, user='user-b')\n        self.assertEqual(rejected.status, 409)\n        fetched = self.client.call('GET', f'/orders/{order_id}')\n        inventory = self.client.call('GET', '/inventory')\n        self.assertEqual(fetched.status, 200)\n        self.assertEqual(fetched.body, created.body)\n        self.assertEqual(inventory.status, 200)\n        self.assertEqual(inventory.body, {'available': 1})\n        for user in ['user-a', 'user-b']:\n            wallet = self.client.call('GET', '/wallet', user=user)\n            self.assertEqual(wallet.status, 200)\n            self.assertEqual(wallet.body, {'balance': 100, 'charges': 0})\n        cancelled = self.client.call('POST', f'/orders/{order_id}/cancel', {})\n        self.assertEqual(cancelled.status, 200)\n        inventory = self.client.call('GET', '/inventory')\n        self.assertEqual(inventory.status, 200)\n        self.assertEqual(inventory.body, {'available': 4})\n        replacement = self.client.call('POST', '/orders', {'quantity': 4, 'requestId': 'replacement'}, user='user-b')\n        self.assertEqual(replacement.status, 201)\n        replacement_id = replacement.body['id']\n        self.assertNotEqual(replacement_id, order_id)\n        self.assertEqual(replacement.body, {'id': replacement_id, 'owner': 'user-b', 'quantity': 4, 'state': 'reserved'})\n        fetched = self.client.call('GET', f'/orders/{order_id}')\n        inventory = self.client.call('GET', '/inventory')\n        self.assertEqual(fetched.status, 200)\n        self.assertEqual(fetched.body, {'id': order_id, 'owner': 'user-a', 'quantity': 3, 'state': 'cancelled'})\n        self.assertEqual(inventory.status, 200)\n        self.assertEqual(inventory.body, {'available': 0})\n        for user in ['user-a', 'user-b']:\n            wallet = self.client.call('GET', '/wallet', user=user)\n            self.assertEqual(wallet.status, 200)\n            self.assertEqual(wallet.body, {'balance': 100, 'charges': 0})\n\n    def test_missing_identity_is_rejected_without_effects(self):\n        created = self.client.call('POST', '/orders', {'quantity': 2, 'requestId': 'authenticated'})\n        self.assertEqual(created.status, 201)\n        order_id = created.body['id']\n        self.assertEqual(created.body['state'], 'reserved')\n        requests = [\n            ('GET', '/inventory', None),\n            ('GET', '/wallet', None),\n            ('GET', f'/orders/{order_id}', None),\n            ('POST', '/orders', {'quantity': 1, 'requestId': 'anonymous'}),\n            ('POST', f'/orders/{order_id}/pay', {'paymentToken': 'ok'}),\n            ('POST', f'/orders/{order_id}/cancel', {})\n        ]\n        for method, path, body in requests:\n            rejected = self.client.call(method, path, body, user=None)\n            self.assertEqual(rejected.status, 401)\n            fetched = self.client.call('GET', f'/orders/{order_id}')\n            inventory = self.client.call('GET', '/inventory')\n            self.assertEqual(fetched.status, 200)\n            self.assertEqual(fetched.body, created.body)\n            self.assertEqual(inventory.status, 200)\n            self.assertEqual(inventory.body, {'available': 2})\n            for user in ['user-a', 'user-b']:\n                wallet = self.client.call('GET', '/wallet', user=user)\n                self.assertEqual(wallet.status, 200)\n                self.assertEqual(wallet.body, {'balance': 100, 'charges': 0})\n\n    def test_multiple_orders_keep_stock_and_wallets_consistent(self):\n        first = self.client.call('POST', '/orders', {'quantity': 2, 'requestId': 'first'})\n        second = self.client.call('POST', '/orders', {'quantity': 2, 'requestId': 'second'}, user='user-b')\n        self.assertEqual(first.status, 201)\n        self.assertEqual(second.status, 201)\n        first_id = first.body['id']\n        second_id = second.body['id']\n        self.assertNotEqual(first_id, second_id)\n        self.assertEqual(first.body['state'], 'reserved')\n        self.assertEqual(second.body['state'], 'reserved')\n        inventory = self.client.call('GET', '/inventory')\n        self.assertEqual(inventory.status, 200)\n        self.assertEqual(inventory.body, {'available': 0})\n        paid = self.client.call('POST', f'/orders/{first_id}/pay', {'paymentToken': 'ok'})\n        self.assertEqual(paid.status, 200)\n        self.assertEqual(paid.body, {'id': first_id, 'owner': 'user-a', 'quantity': 2, 'state': 'paid'})\n        cancelled = self.client.call('POST', f'/orders/{second_id}/cancel', {}, user='user-b')\n        self.assertEqual(cancelled.status, 200)\n        inventory = self.client.call('GET', '/inventory')\n        self.assertEqual(inventory.status, 200)\n        self.assertEqual(inventory.body, {'available': 2})\n        third = self.client.call('POST', '/orders', {'quantity': 1, 'requestId': 'third'})\n        self.assertEqual(third.status, 201)\n        third_id = third.body['id']\n        self.assertNotIn(third_id, [first_id, second_id])\n        self.assertEqual(third.body['state'], 'reserved')\n        third_paid = self.client.call('POST', f'/orders/{third_id}/pay', {'paymentToken': 'ok'})\n        self.assertEqual(third_paid.status, 200)\n        self.assertEqual(third_paid.body, {'id': third_id, 'owner': 'user-a', 'quantity': 1, 'state': 'paid'})\n        for order_id, user, quantity, state in [(first_id, 'user-a', 2, 'paid'), (second_id, 'user-b', 2, 'cancelled'), (third_id, 'user-a', 1, 'paid')]:\n            fetched = self.client.call('GET', f'/orders/{order_id}', user=user)\n            self.assertEqual(fetched.status, 200)\n            self.assertEqual(fetched.body, {'id': order_id, 'owner': user, 'quantity': quantity, 'state': state})\n        inventory = self.client.call('GET', '/inventory')\n        self.assertEqual(inventory.status, 200)\n        self.assertEqual(inventory.body, {'available': 1})\n        first_wallet = self.client.call('GET', '/wallet')\n        second_wallet = self.client.call('GET', '/wallet', user='user-b')\n        self.assertEqual(first_wallet.status, 200)\n        self.assertEqual(first_wallet.body, {'balance': 70, 'charges': 2})\n        self.assertEqual(second_wallet.status, 200)\n        self.assertEqual(second_wallet.body, {'balance': 100, 'charges': 0})\n",
+  "coverage": [
+    {
+      "requirementIds": [
+        "R1",
+        "R2"
+      ],
+      "method": "conservation; transition-sequence: reserve all four units, query the runtime order and inventory through both identities, and verify reservation consumes stock without changing either wallet. Generated assertions only; not executed.",
+      "testNames": [
+        "test_reserve_full_capacity"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2"
+      ],
+      "method": "replay-and-scope; conservation: reserve two units, replay the identical key and payload, then change quantity; verify original order identity, 409 conflict, unchanged stock and wallet.",
+      "testNames": [
+        "test_reserved_replay_and_payload_conflict"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2"
+      ],
+      "method": "replay-and-scope; relational-oracle: use the same requestId with different valid quantities under two identities, retain distinct runtime IDs, replay each identity's request, and verify independent ownership with combined stock consumption.",
+      "testNames": [
+        "test_same_key_is_independent_across_users"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2"
+      ],
+      "method": "transition-sequence; conservation: create as user-b, query the known ID as user-a, require 403, then verify the owner's order, shared inventory and both wallets remain unchanged.",
+      "testNames": [
+        "test_foreign_query_preserves_order_and_resources"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "method": "transition-sequence; conservation: reserve three units, cancel twice, and observe cancelled state, exactly four available units and unchanged wallet after each cancellation.",
+      "testNames": [
+        "test_cancel_replay_releases_stock_once"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "method": "transition-sequence; conservation: reserve, pay successfully, snapshot paid resources, attempt cancellation, and require 409 with identical order, inventory and wallet.",
+      "testNames": [
+        "test_paid_cancel_rejection_is_atomic"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R4"
+      ],
+      "method": "dependency-recovery; conservation: decline payment twice while checking reserved order and unchanged resources after each 402, then pay with ok and verify paid state, one charge and the exact quantity-based debit.",
+      "testNames": [
+        "test_declined_payment_preserves_state_then_recovers"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R4"
+      ],
+      "method": "replay-and-scope; transition-sequence: pay a reservation, repeat ok payment, replay creation and submit a changed quantity under its key; verify response identities, 409 conflict and final paid state with one debit and no extra stock consumption.",
+      "testNames": [
+        "test_paid_payment_and_creation_replays"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "method": "replay-and-scope; transition-sequence: cancel a reservation, replay creation, conflict its quantity and attempt payment; require original identity, 409 rejections, persistent cancelled state, fully restored inventory and unchanged wallet.",
+      "testNames": [
+        "test_cancelled_payment_and_creation_replays"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R4"
+      ],
+      "method": "transition-sequence; conservation: attempt foreign pay and cancel while the owner's order is reserved and again after owner payment; require every foreign mutation to return 403 and preserve the order, inventory and both wallets.",
+      "testNames": [
+        "test_foreign_mutations_preserve_reserved_and_paid_states"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R4",
+        "R5"
+      ],
+      "method": "concurrent-history; conservation: reserve four units and submit two ok payments using framework parallel; check both individual 200 paid responses and final persisted order, exactly one debit, one charge and unchanged reserved inventory.",
+      "testNames": [
+        "test_parallel_payments_charge_once"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2"
+      ],
+      "method": "transition-sequence; conservation: retain a valid reservation while sending bounded invalid quantity and requestId cases, including missing fields; after each 400 verify the existing order, inventory and both wallets are unchanged.",
+      "testNames": [
+        "test_invalid_creation_preserves_existing_state"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "method": "transition-sequence; conservation: reserve three units, reject another identity's two-unit request for insufficient inventory, verify immediate atomicity, cancel the reservation and use a fresh key to reserve all released inventory.",
+      "testNames": [
+        "test_insufficient_inventory_then_release_and_reserve"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "method": "transition-sequence; conservation: create a known reservation, omit identity separately on every documented endpoint, require 401 for each call, and verify the owner's order, inventory and both wallets after every rejection.",
+      "testNames": [
+        "test_missing_identity_is_rejected_without_effects"
+      ]
+    },
+    {
+      "requirementIds": [
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "method": "transition-sequence; conservation; relational-oracle: fill inventory with two owners' reservations, pay one, cancel the other, reserve and pay part of the released stock, then verify all three runtime orders and the resulting inventory and isolated wallet totals.",
+      "testNames": [
+        "test_multiple_orders_keep_stock_and_wallets_consistent"
+      ]
+    }
+  ],
+  "questions": []
+}
