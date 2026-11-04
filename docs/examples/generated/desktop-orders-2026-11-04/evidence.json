@@ -1,0 +1,488 @@
+{
+  "executionId": "e412a1de-d4e7-4bc9-b821-53ab1473b073",
+  "planDigest": "4dafe2b6ce3b8c9b0744311616d54f8109d1317302cd34a74a9c566bae2c6522",
+  "results": [
+    {
+      "testName": "test_c01_first_payment_updates_order_wallet_and_inventory",
+      "status": "passed",
+      "details": []
+    },
+    {
+      "testName": "test_c02_sequential_payment_replay_preserves_paid_order_and_resources",
+      "status": "failed",
+      "details": [
+        "Traceback (most recent call last):\n  File \"[validation]/case.py\", line 57, in testPartExecutor\n    yield\n  File \"[validation]/case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"[validation]/case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"[validation]/test_generated.py\", line 166, in test_c02_sequential_payment_replay_preserves_paid_order_and_resources\n    self.assertEqual(response.body.get(field), value, evidence)\nAssertionError: 60 != 80 : ('GET after replay', '/wallet', 200, {'balance': 60, 'charges': 2}, 'before replay', 200, {'balance': 80, 'charges': 1})\n"
+      ]
+    }
+  ],
+  "requests": [
+    {
+      "request": {
+        "body": {},
+        "headers": null,
+        "method": "POST",
+        "path": "/__fixture/reset",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "reset": true
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c01_first_payment_updates_order_wallet_and_inventory"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/wallet",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "balance": 100,
+          "charges": 0
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c01_first_payment_updates_order_wallet_and_inventory"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/inventory",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "available": 4
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c01_first_payment_updates_order_wallet_and_inventory"
+    },
+    {
+      "request": {
+        "body": {
+          "quantity": 2,
+          "requestId": "C01-create"
+        },
+        "headers": null,
+        "method": "POST",
+        "path": "/orders",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "id": "order-1",
+          "owner": "user-a",
+          "quantity": 2,
+          "state": "reserved"
+        },
+        "status": 201
+      },
+      "test": "test_generated.OrderPaymentTests.test_c01_first_payment_updates_order_wallet_and_inventory"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/wallet",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "balance": 100,
+          "charges": 0
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c01_first_payment_updates_order_wallet_and_inventory"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/inventory",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "available": 2
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c01_first_payment_updates_order_wallet_and_inventory"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/orders/order-1",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "id": "order-1",
+          "owner": "user-a",
+          "quantity": 2,
+          "state": "reserved"
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c01_first_payment_updates_order_wallet_and_inventory"
+    },
+    {
+      "request": {
+        "body": {
+          "paymentToken": "[redacted]"
+        },
+        "headers": null,
+        "method": "POST",
+        "path": "/orders/order-1/pay",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "id": "order-1",
+          "owner": "user-a",
+          "quantity": 2,
+          "state": "paid"
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c01_first_payment_updates_order_wallet_and_inventory"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/wallet",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "balance": 80,
+          "charges": 1
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c01_first_payment_updates_order_wallet_and_inventory"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/inventory",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "available": 2
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c01_first_payment_updates_order_wallet_and_inventory"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/orders/order-1",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "id": "order-1",
+          "owner": "user-a",
+          "quantity": 2,
+          "state": "paid"
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c01_first_payment_updates_order_wallet_and_inventory"
+    },
+    {
+      "request": {
+        "body": {},
+        "headers": null,
+        "method": "POST",
+        "path": "/__fixture/reset",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "reset": true
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c02_sequential_payment_replay_preserves_paid_order_and_resources"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/wallet",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "balance": 100,
+          "charges": 0
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c02_sequential_payment_replay_preserves_paid_order_and_resources"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/inventory",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "available": 4
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c02_sequential_payment_replay_preserves_paid_order_and_resources"
+    },
+    {
+      "request": {
+        "body": {
+          "quantity": 2,
+          "requestId": "C02-create"
+        },
+        "headers": null,
+        "method": "POST",
+        "path": "/orders",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "id": "order-1",
+          "owner": "user-a",
+          "quantity": 2,
+          "state": "reserved"
+        },
+        "status": 201
+      },
+      "test": "test_generated.OrderPaymentTests.test_c02_sequential_payment_replay_preserves_paid_order_and_resources"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/wallet",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "balance": 100,
+          "charges": 0
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c02_sequential_payment_replay_preserves_paid_order_and_resources"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/inventory",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "available": 2
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c02_sequential_payment_replay_preserves_paid_order_and_resources"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/orders/order-1",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "id": "order-1",
+          "owner": "user-a",
+          "quantity": 2,
+          "state": "reserved"
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c02_sequential_payment_replay_preserves_paid_order_and_resources"
+    },
+    {
+      "request": {
+        "body": {
+          "paymentToken": "[redacted]"
+        },
+        "headers": null,
+        "method": "POST",
+        "path": "/orders/order-1/pay",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "id": "order-1",
+          "owner": "user-a",
+          "quantity": 2,
+          "state": "paid"
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c02_sequential_payment_replay_preserves_paid_order_and_resources"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/wallet",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "balance": 80,
+          "charges": 1
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c02_sequential_payment_replay_preserves_paid_order_and_resources"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/inventory",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "available": 2
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c02_sequential_payment_replay_preserves_paid_order_and_resources"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/orders/order-1",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "id": "order-1",
+          "owner": "user-a",
+          "quantity": 2,
+          "state": "paid"
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c02_sequential_payment_replay_preserves_paid_order_and_resources"
+    },
+    {
+      "request": {
+        "body": {
+          "paymentToken": "[redacted]"
+        },
+        "headers": null,
+        "method": "POST",
+        "path": "/orders/order-1/pay",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "id": "order-1",
+          "owner": "user-a",
+          "quantity": 2,
+          "state": "paid"
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c02_sequential_payment_replay_preserves_paid_order_and_resources"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/wallet",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "balance": 60,
+          "charges": 2
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c02_sequential_payment_replay_preserves_paid_order_and_resources"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/inventory",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "available": 2
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c02_sequential_payment_replay_preserves_paid_order_and_resources"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/orders/order-1",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "id": "order-1",
+          "owner": "user-a",
+          "quantity": 2,
+          "state": "paid"
+        },
+        "status": 200
+      },
+      "test": "test_generated.OrderPaymentTests.test_c02_sequential_payment_replay_preserves_paid_order_and_resources"
+    }
+  ],
+  "rawEvidenceSha256": "d10d66230bc77e562bf9111df118f129cb6feb4a34f6a6504df49862cfba5d4a",
+  "resultSha256": "8ce133348fe104f5e2076ba53498961bb9893e7aad2a04df176801341012231f",
+  "workspaceId": "e412a1de-d4e7-4bc9-b821-53ab1473b073-execute"
+}

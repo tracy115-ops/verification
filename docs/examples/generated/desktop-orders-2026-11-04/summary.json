@@ -1,0 +1,39 @@
+{
+  "verifiedAt": "2026-11-04T06:24:37.749Z",
+  "method": "actual_tauri_webview_ui_real_codex",
+  "sourceBase": "8ebcbfa",
+  "sourceFix": "scenario_factor_mapping_diagnostics",
+  "requestedModel": "gpt-6.1-sol",
+  "driver": "codex",
+  "runStatus": "completed",
+  "steps": 13,
+  "approvals": 4,
+  "requirements": 11,
+  "factors": 4,
+  "scenarios": 2,
+  "cases": 2,
+  "scriptSha256": "71897014b57fa8a03c6a3641557338c817b28cfd88ba8207e897d220c948d782",
+  "frameworkSha256": "01258ab754a83e72c32f706881bce0eeedc27d5e0dcba77d91018c788c9757c9",
+  "counts": {
+    "passed": 1,
+    "failed": 1,
+    "error": 0,
+    "skipped": 0
+  },
+  "candidates": 1,
+  "requests": 26,
+  "referenceCounts": {
+    "passed": 2,
+    "failed": 0,
+    "error": 0,
+    "skipped": 0
+  },
+  "referenceRequests": 26,
+  "validationFailures": [
+    {
+      "operation": "scenarios.design",
+      "code": "artifact_invalid"
+    }
+  ],
+  "redaction": "Native session IDs omitted; Python traceback paths replaced. Embedded native evidence digests describe original records, not redacted files."
+}

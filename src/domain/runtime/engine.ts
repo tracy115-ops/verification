@@ -19,6 +19,7 @@ import { ANALYSIS_PROMPT_LIMIT, byteLength } from './analysis-plan';
 import { extractRequirementBatches } from './requirement-batches';
 import { generateDesignBatches } from './design-batches';
 import { retryNode, canRetryAnalysis, canRetryAnalysisInBatches } from './analysis-retry';
+import { designMappingIssues } from './design-mapping';
 export { reviewDigest } from './approvals';
 
 async function storeOutput(run: WorkflowRun, node: WorkflowNode, value: unknown) {
@@ -128,7 +129,9 @@ export async function advanceRun(
         const parsed = parseArtifact(result.text);
         try {
           await storeOutput(run, node, validateTaskArtifact(run, node, parsed));
+          delete step.designMappingIssues;
         } catch (error) {
+          if (node.operation === 'scenarios.design') step.designMappingIssues = designMappingIssues(parsed);
           if (
             node.operation === 'requirements.extract' &&
             isRequirements(parsed) &&

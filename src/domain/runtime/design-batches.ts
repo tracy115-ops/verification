@@ -5,6 +5,7 @@ import { analysisCheckpoint, saveAnalysisBatch } from './analysis-checkpoint';
 import { callAnalysis, scopedTask, type AnalysisContext } from './analysis-call';
 import { mergeDesigns, prefixDesign } from './analysis-merge';
 import { latestArtifact } from './bindings';
+import { designMappingIssues } from './design-mapping';
 
 function validateBatch(
   value: unknown,
@@ -68,7 +69,14 @@ export async function generateDesignBatches(
         ' Review interactions BETWEEN the left and right requirement groups: permissions, shared state, ordering, resources and conflicting constraints. Return only additional cross-group factors/scenarios and genuine unresolved gaps. Each scenario must cite requirements from BOTH groups. If no interaction is supported by the requirements, return empty factors and scenarios; never invent one to fill the arrays.';
     }
     const parsed = await callAnalysis(context, task, group.cross);
-    const value = prefixDesign(validateBatch(parsed, baseline, group), index);
+    let value: DesignArtifact;
+    try {
+      value = prefixDesign(validateBatch(parsed, baseline, group), index);
+      delete run.steps[node.id].designMappingIssues;
+    } catch (error) {
+      run.steps[node.id].designMappingIssues = designMappingIssues(parsed);
+      throw error;
+    }
     validateBatch(value, baseline, group);
     await saveAnalysisBatch(checkpoint, index, value);
     onUpdate(structuredClone(run));

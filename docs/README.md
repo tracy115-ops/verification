@@ -6,6 +6,7 @@
 
 | 文档 | 解决的问题 |
 | --- | --- |
+| [2026-11-04 真实桌面验收](research/desktop-live-validation-2026-11-04.md) | 实际界面完整 13 节点、支付重放候选、参考对照与映射失败恢复 |
 | [深层黑盒调查规划](design/deep-blackbox-discovery.md) | 分期能力、状态序列、关系判定、缩减复现与真实证据标准 |
 | [深层黑盒调查验证](research/deep-blackbox-validation.md) | 真实 CLI 生成脚本、六个独立变体、参考对照及原生执行重放 |
 | [2026-11-03 真实 CLI 验证](research/local-cli-live-validation-2026-11-03.md) | Codex / Claude 实际设计链路、流式协议预算故障与 Pi 模型歧义 |

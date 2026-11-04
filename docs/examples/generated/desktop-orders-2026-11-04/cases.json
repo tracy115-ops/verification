@@ -1,0 +1,91 @@
+{
+  "cases": [
+    {
+      "id": "C01",
+      "title": "首次成功支付：预留订单变为 paid，余额减少 20 且仅扣款一次",
+      "scenarioIds": [
+        "S01"
+      ],
+      "requirementIds": [
+        "R01",
+        "R02",
+        "R03",
+        "R04",
+        "R05",
+        "R06",
+        "R09",
+        "R10",
+        "R11"
+      ],
+      "preconditions": [
+        "本用例实现为 Python 单文件中继承 framework.BlackBoxCase 的一个独立 test_ 方法；由框架 setUp 恢复初始状态，不复用其他用例的订单，不修改框架。",
+        "原文依据：身份固定 user-a，钱包初始 balance=100、charges=0，库存 available=4。",
+        "所有请求使用 self.client.call(method,path,body=None,user=\"user-a\")，从返回对象读取 status 和 body，无需额外鉴权。仅断言已定义字段，失败断言关联实际请求和响应。"
+      ],
+      "steps": [
+        "调用 GET /wallet 和 GET /inventory，将实际响应保存在本方法的局部变量中，核对初始资源状态。",
+        "调用 POST /orders，body 为 {\"quantity\":2,\"requestId\":\"C01-create\"}；断言创建响应后，将其实际返回的 id 保存为 order_id。",
+        "调用 GET /wallet、GET /inventory 和 GET /orders/{order_id}，保存创建后的实际响应，核对钱包、库存和预留订单。",
+        "调用 POST /orders/{order_id}/pay，body 为 {\"paymentToken\":\"ok\"}，保存首次支付响应。",
+        "调用 GET /wallet、GET /inventory 和 GET /orders/{order_id}，保存首次支付后的实际响应，核对最终状态并与此前快照比较。"
+      ],
+      "expected": "创建订单返回 201，订单为 reserved；库存从 4 减为 2，钱包保持 balance=100、charges=0。首次支付返回 200，同一订单变为 paid；钱包变为 balance=80、charges=1，库存保持 available=2。只读接口返回 200，并反映各阶段规定的状态。",
+      "assertions": [
+        "初始 GET /wallet 的 status=200，body.balance 和 body.charges 均为整数，分别为 100 和 0；初始 GET /inventory 的 status=200，body.available 为整数且等于 4。",
+        "创建响应 status=201；body.id 为非空字符串，body.owner=\"user-a\"、body.quantity=2、body.state=\"reserved\"；后续所有订单路径使用保存的 order_id。",
+        "创建后 GET /wallet 的 status=200，balance、charges 为整数且分别为 100、0；GET /inventory 的 status=200，available 为整数且等于 2。",
+        "创建后 GET /orders/{order_id} 的 status=200，id=order_id、owner=\"user-a\"、quantity=2、state=\"reserved\"。",
+        "首次支付响应 status=200，id=order_id、owner=\"user-a\"、quantity=2、state=\"paid\"。",
+        "首次支付后 GET /wallet 的 status=200，balance、charges 为整数且分别为 80、1；GET /inventory 的 status=200，available 为整数且等于 2。",
+        "首次支付后 GET /orders/{order_id} 的 status=200，id=order_id、owner=\"user-a\"、quantity=2、state=\"paid\"。",
+        "比较实际快照：创建后库存比初始值减少 2，余额和扣款次数不变；首次支付后余额比创建后减少 20，扣款次数增加 1，库存不变。"
+      ]
+    },
+    {
+      "id": "C02",
+      "title": "已支付订单顺序重放：返回同一 paid 订单且不重复扣款",
+      "scenarioIds": [
+        "S02"
+      ],
+      "requirementIds": [
+        "R01",
+        "R02",
+        "R03",
+        "R04",
+        "R05",
+        "R06",
+        "R07",
+        "R08",
+        "R09",
+        "R10",
+        "R11"
+      ],
+      "preconditions": [
+        "本用例实现为 Python 单文件中继承 framework.BlackBoxCase 的另一个独立 test_ 方法；由框架 setUp 恢复初始状态，在本方法内完成创建、首次支付及顺序重放，不复用其他用例订单，不修改框架。",
+        "原文依据：同一用例中首次成功支付后，再顺序提交相同 POST /orders/{id}/pay 和 {\"paymentToken\":\"ok\"}。返回仍为 200、同一订单 state=\"paid\"。",
+        "固定身份 user-a，无需额外鉴权；所有请求通过 self.client.call(method,path,body=None,user=\"user-a\") 调用，从返回对象读取 status 和 body。仅断言已定义字段，失败断言关联实际请求和响应。"
+      ],
+      "steps": [
+        "调用 GET /wallet 和 GET /inventory，保存并核对独立初始状态：balance=100、charges=0、available=4。",
+        "调用 POST /orders，body 为 {\"quantity\":2,\"requestId\":\"C02-create\"}；断言创建响应并将实际返回的 id 保存为 order_id。",
+        "调用 GET /wallet、GET /inventory 和 GET /orders/{order_id}，保存创建后的实际响应，核对钱包未变、库存为 2、订单为 reserved。",
+        "将支付路径 /orders/{order_id}/pay 和 body {\"paymentToken\":\"ok\"} 保存为局部变量，提交首次支付并断言成功。",
+        "调用 GET /wallet、GET /inventory 和 GET /orders/{order_id}，保存首次支付后的实际快照，核对 balance=80、charges=1、available=2、state=\"paid\"。",
+        "在首次支付成功且上述观察完成后，使用保存的相同支付路径和相同 body 顺序重放一次，保存重放响应。",
+        "再次调用 GET /wallet、GET /inventory 和 GET /orders/{order_id}，保存重放后的实际快照；核对规定值，并逐项与首次支付后的快照比较。"
+      ],
+      "expected": "首次支付成功后，同一订单的顺序重放仍返回 200 和同一 paid 订单。重放后的实际钱包保持 balance=80、charges=1，实际库存保持 available=2，查询订单仍为 paid；与首次支付后的实际观察值相比，余额、扣款次数、库存及订单字段均保持不变。",
+      "assertions": [
+        "初始 GET /wallet 的 status=200，balance、charges 为整数且分别为 100、0；初始 GET /inventory 的 status=200，available 为整数且等于 4。",
+        "创建响应 status=201，id 为非空字符串，owner=\"user-a\"、quantity=2、state=\"reserved\"；所有后续订单路径均使用该真实 id。",
+        "创建后 GET /wallet 的 status=200，整数 balance=100、charges=0；GET /inventory 的 status=200，整数 available=2；GET /orders/{order_id} 的 status=200，id=order_id、owner=\"user-a\"、quantity=2、state=\"reserved\"。",
+        "首次支付响应 status=200，id=order_id、owner=\"user-a\"、quantity=2、state=\"paid\"。",
+        "首次支付后 GET /wallet 的 status=200，整数 balance=80、charges=1；GET /inventory 的 status=200，整数 available=2；GET /orders/{order_id} 的 status=200，id=order_id、owner=\"user-a\"、quantity=2、state=\"paid\"。",
+        "顺序重放使用与首次支付相同的路径和 body；重放响应 status=200，id=order_id、owner=\"user-a\"、quantity=2、state=\"paid\"。",
+        "重放后 GET /wallet 的 status=200，balance、charges 为整数且分别为 80、1，并分别等于首次支付后保存的实际值，扣款次数未再次增加。",
+        "重放后 GET /inventory 的 status=200，available 为整数且等于 2，并等于首次支付后保存的实际库存值。",
+        "重放后 GET /orders/{order_id} 的 status=200，id=order_id、owner=\"user-a\"、quantity=2、state=\"paid\"；这四个字段分别等于首次支付后保存的订单字段。"
+      ]
+    }
+  ]
+}

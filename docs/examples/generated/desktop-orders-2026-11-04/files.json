@@ -1,0 +1,70 @@
+[
+  {
+    "name": "requirements.json",
+    "sha256": "4d40f14ddcaaa4396bdfc675c686a23ce5043c0b93407fb12fa5ee4d9abf58bf"
+  },
+  {
+    "name": "design.json",
+    "sha256": "677a934a3365586829e9f064cf8fcdf79eeba2be7c32a76ad6e7acfc35675064"
+  },
+  {
+    "name": "cases.json",
+    "sha256": "dbbde9dbfcb5323436475e7a3e68b694dc654feec7b82094e7cf7ba2b287691b"
+  },
+  {
+    "name": "implementation.json",
+    "sha256": "02b7346f564a193a354a0d5a1b729b4ae0cd12c07a0fab5310d6fa75ecfba7c5"
+  },
+  {
+    "name": "test_orders.py",
+    "sha256": "71897014b57fa8a03c6a3641557338c817b28cfd88ba8207e897d220c948d782"
+  },
+  {
+    "name": "framework.py",
+    "sha256": "01258ab754a83e72c32f706881bce0eeedc27d5e0dcba77d91018c788c9757c9"
+  },
+  {
+    "name": "spec.md",
+    "sha256": "8be3d1be1481a99fc30ffaadde3f54e7842c42a85a55ec6b0aac29a89dd98df0"
+  },
+  {
+    "name": "evidence.json",
+    "sha256": "8c2500e62184c9d4f69ae0d46af84078e312a33996aed153ce18e646bd4d4905"
+  },
+  {
+    "name": "verdict.json",
+    "sha256": "ab55a3b0d7c266f3975f82cf1d16baacd900629008cad0fa26c22d9d42ccc8f6"
+  },
+  {
+    "name": "report.json",
+    "sha256": "5bd72560fbd50c0dc490ea9efc08cefac2981167d08daca9602a8992ce0f67e1"
+  },
+  {
+    "name": "approvals.json",
+    "sha256": "19f046292c5ff1446f3b7c4e15a79e27c23d53417998b9be7d79d1f7b1bebe6a"
+  },
+  {
+    "name": "turns.json",
+    "sha256": "6e732b8593b000e73c9585346e4fe2dea351f386d367b1eb803519a8a0c6efb8"
+  },
+  {
+    "name": "reference-evidence.json",
+    "sha256": "4ce64b60b4b7422a1d10af17b30cfba085acfc78c1e3b183b609b760eb3dcf22"
+  },
+  {
+    "name": "summary.json",
+    "sha256": "972f37967baf6e8d596290a5ac2e2bb69e496437be0d42bddf4fe5c1f98a4a48"
+  },
+  {
+    "name": "report.png",
+    "sha256": "7e2eb7cf3a7f066ea49bf18bb70de00e8b65b01df40f4624886cf4915cc45108"
+  },
+  {
+    "name": "factors.png",
+    "sha256": "a2a41cca08d865b524b39999bbbbda997dbdc313cd9c74459167875f6d0a430b"
+  },
+  {
+    "name": "matrix.png",
+    "sha256": "82257470f3e736f2406135476e6f9f3774ed0b810e5920ec73d539225888e334"
+  }
+]

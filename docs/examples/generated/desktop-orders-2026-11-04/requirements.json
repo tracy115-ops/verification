@@ -1,0 +1,106 @@
+{
+  "requirements": [
+    {
+      "id": "R01",
+      "text": "支付验证的初始状态为固定身份 user-a，钱包 balance=100、charges=0，库存 available=4。",
+      "quote": "身份固定 user-a，钱包初始 balance=100、charges=0，库存 available=4。",
+      "acceptanceCriteria": [
+        "每条用例从独立初始状态开始，身份为 user-a。",
+        "初始钱包 balance=100、charges=0，库存 available=4。"
+      ]
+    },
+    {
+      "id": "R02",
+      "text": "给定接口调用不需要额外鉴权。",
+      "quote": "不需要额外鉴权。",
+      "acceptanceCriteria": [
+        "以固定身份 user-a 调用本轮接口时，无需提供额外鉴权信息。"
+      ]
+    },
+    {
+      "id": "R03",
+      "text": "使用固定数量和本用例内非空 requestId 创建支付前置订单，接口返回已预留订单。",
+      "quote": "POST /orders 输入 {\"quantity\":2,\"requestId\":\"本用例内非空字符串\"} 返回 201，JSON 含 id（非空字符串）、owner=\"user-a\"、quantity=2、state=\"reserved\"。",
+      "acceptanceCriteria": [
+        "POST /orders 的 quantity 为 2，requestId 为本用例内非空字符串，返回 HTTP 201。",
+        "响应 JSON 的 id 为非空字符串，owner=\"user-a\"、quantity=2、state=\"reserved\"。"
+      ]
+    },
+    {
+      "id": "R04",
+      "text": "前置订单创建后，库存减少至 2，钱包保持初始值。",
+      "quote": "创建后库存 available=2，钱包仍为 balance=100、charges=0。",
+      "acceptanceCriteria": [
+        "创建成功后，GET /inventory 的实际响应中 available=2。",
+        "创建成功后，GET /wallet 的实际响应中 balance=100、charges=0。"
+      ]
+    },
+    {
+      "id": "R05",
+      "text": "对前置订单首次使用 paymentToken=\"ok\" 支付成功，响应保留订单标识、归属和数量，并将状态置为 paid。",
+      "quote": "POST /orders/{id}/pay 输入 {\"paymentToken\":\"ok\"} 返回 200，JSON 含同一 id、owner=\"user-a\"、quantity=2、state=\"paid\"。",
+      "acceptanceCriteria": [
+        "使用创建响应中的订单 id，向 POST /orders/{id}/pay 提交 {\"paymentToken\":\"ok\"}，返回 HTTP 200。",
+        "支付响应 JSON 的 id 与创建响应一致，owner=\"user-a\"、quantity=2、state=\"paid\"。"
+      ]
+    },
+    {
+      "id": "R06",
+      "text": "首次成功支付扣款一次，钱包余额变为 80，库存保持 2，订单最终处于 paid 状态。",
+      "quote": "首次成功支付后钱包 balance=80、charges=1；库存仍为 available=2；订单最终为 paid。",
+      "acceptanceCriteria": [
+        "首次支付成功后，GET /wallet 的实际响应中 balance=80、charges=1。",
+        "首次支付成功后，GET /inventory 的实际响应中 available=2。",
+        "GET /orders/{id} 返回该订单的 state=\"paid\"。"
+      ]
+    },
+    {
+      "id": "R07",
+      "text": "同一用例中，在首次支付成功后顺序重放相同支付请求，仍返回成功及同一已支付订单。",
+      "quote": "同一用例中首次成功支付后，再顺序提交相同 POST /orders/{id}/pay 和 {\"paymentToken\":\"ok\"}。返回仍为 200、同一订单 state=\"paid\"。",
+      "acceptanceCriteria": [
+        "首次支付成功后，对同一订单顺序再次提交 {\"paymentToken\":\"ok\"}。",
+        "重放响应的 HTTP 状态为 200，返回同一订单，state=\"paid\"。"
+      ]
+    },
+    {
+      "id": "R08",
+      "text": "顺序重放不得再次扣款，也不得改变库存和订单的已支付状态。",
+      "quote": "不得再次扣款：钱包必须保持 balance=80、charges=1；库存保持 available=2；订单状态仍为 paid。",
+      "acceptanceCriteria": [
+        "顺序重放后，GET /wallet 的实际响应中 balance=80、charges=1。",
+        "顺序重放后，GET /inventory 的实际响应中 available=2。",
+        "顺序重放后，GET /orders/{id} 的实际响应中 state=\"paid\"。"
+      ]
+    },
+    {
+      "id": "R09",
+      "text": "钱包只读接口返回当前 user-a 的余额和扣款次数，两个字段均为整数。",
+      "quote": "GET /wallet 返回 200 和 {\"balance\":整数,\"charges\":整数}，属于当前 user-a。",
+      "acceptanceCriteria": [
+        "GET /wallet 返回 HTTP 200。",
+        "响应 JSON 包含整数类型的 balance 和 charges，其数据属于当前 user-a。"
+      ]
+    },
+    {
+      "id": "R10",
+      "text": "库存只读接口返回整数类型的可用库存。",
+      "quote": "GET /inventory 返回 200 和 {\"available\":整数}。",
+      "acceptanceCriteria": [
+        "GET /inventory 返回 HTTP 200。",
+        "响应 JSON 包含整数类型的 available。"
+      ]
+    },
+    {
+      "id": "R11",
+      "text": "订单只读接口返回指定订单的标识、归属、数量和当前状态。",
+      "quote": "GET /orders/{id} 返回 200 及同一订单 id、owner、quantity、state。",
+      "acceptanceCriteria": [
+        "使用创建响应中的真实 id 调用 GET /orders/{id}，返回 HTTP 200。",
+        "响应包含同一订单的 id、owner、quantity、state；id 与创建响应一致，owner=\"user-a\"、quantity=2。",
+        "创建完成后查询 state=\"reserved\"；首次支付成功后及顺序重放后查询 state=\"paid\"。"
+      ]
+    }
+  ],
+  "questions": []
+}

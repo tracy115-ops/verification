@@ -17,6 +17,7 @@ import { canonicalJson } from '../execution/canonical';
 import { scopedCases } from './case-scope';
 import { quoteIssues } from './source-quotes';
 import { deepTestingGuidance } from './deep-testing';
+import { designMappingInstruction } from './design-mapping';
 
 export function taskFor(run: WorkflowRun, node: WorkflowNode, inputs: Record<string, unknown>) {
   if (['tests.implement', 'verdicts.evaluate'].includes(node.operation))
@@ -34,6 +35,7 @@ export function taskFor(run: WorkflowRun, node: WorkflowNode, inputs: Record<str
       ? quoteIssues(previous.requirements, run.spec)
       : [];
   const taskInputs = { ...inputs };
+  const mappingIssues = run.steps[node.id].designMappingIssues ?? [];
   for (const [key, contract] of Object.entries(node.inputs)) {
     const value = taskInputs[key];
     if (
@@ -58,6 +60,25 @@ export function taskFor(run: WorkflowRun, node: WorkflowNode, inputs: Record<str
     clarifications: run.clarifications ?? [],
     reviewExclusions: run.reviewExclusions ?? [],
     outputSchema: schema,
+    ...(node.operation === 'scenarios.design'
+      ? {
+          mappingInstruction: designMappingInstruction,
+          ...(mappingIssues.length
+            ? {
+                validationFeedback: {
+                  code: 'design_factor_mapping_invalid',
+                  issues: mappingIssues.slice(0, 5).map((item) => ({
+                    scenarioId: item.scenarioId,
+                    factorId: item.factorId,
+                    requirementIdsPreview: item.requirementIds.slice(0, 8),
+                    requirementCount: item.requirementIds.length,
+                  })),
+                  instruction: designMappingInstruction,
+                },
+              }
+            : {}),
+        }
+      : {}),
     ...(['scenarios.design', 'cases.generate'].includes(node.operation) ? { deepTestingGuidance } : {}),
     ...(issues.length && isRequirements(previous)
       ? {

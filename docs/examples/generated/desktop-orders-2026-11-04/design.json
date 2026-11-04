@@ -1,0 +1,120 @@
+{
+  "strategy": "设计两个独立的黑盒状态旅程：首次成功支付、同一已支付订单的顺序重放。每个旅程对应一个独立 test_ 方法，由框架 setUp 恢复初始状态，使用固定身份 user-a，无需额外鉴权。创建订单时固定 quantity=2，requestId 使用本用例内非空字符串，后续路径保存并使用创建响应的真实 id。通过 GET /wallet、GET /inventory 和 GET /orders/{id} 观察创建、首次支付及重放后的状态，结合响应字段验证扣款与库存变化。输入等价类仅取已指定的合法固定输入；状态边界为 reserved 到 paid，以及 paid 状态下的顺序重放。身份和权限仅验证固定 user-a 无需额外鉴权的调用路径。依照本轮范围，不扩展其他参数、身份或并发组合。仅断言已定义字段。本设计未执行测试。",
+  "scenarios": [
+    {
+      "id": "S01",
+      "title": "首次成功支付将预留订单置为 paid，并仅扣款一次",
+      "requirementIds": [
+        "R01",
+        "R02",
+        "R03",
+        "R04",
+        "R05",
+        "R06",
+        "R09",
+        "R10",
+        "R11"
+      ],
+      "dimension": "transition-sequence、conservation：从独立初始状态出发，依次观察初始资源、创建前置订单、查询预留状态、首次成功支付及支付后的资源与订单状态。",
+      "expected": "使用 user-a，通过框架调用接口，不提供额外鉴权信息。首先 GET /wallet 返回 200，balance=100、charges=0，两个字段均为整数；GET /inventory 返回 200，available=4 且为整数。POST /orders 提交 quantity=2 和本用例内非空 requestId，返回 201，JSON 含非空字符串 id、owner=\"user-a\"、quantity=2、state=\"reserved\"；保存该真实 id。创建后 GET /wallet 返回 200，整数 balance=100、charges=0；GET /inventory 返回 200，整数 available=2；GET /orders/{id} 返回 200，id 与创建响应一致、owner=\"user-a\"、quantity=2、state=\"reserved\"。随后对该 id 提交 POST /orders/{id}/pay，body 为 {\"paymentToken\":\"ok\"}，返回 200，同一 id、owner=\"user-a\"、quantity=2、state=\"paid\"。支付后 GET /wallet 返回 200，整数 balance=80、charges=1；GET /inventory 返回 200，整数 available=2；GET /orders/{id} 返回 200，同一 id、owner=\"user-a\"、quantity=2、state=\"paid\"。比较实际观察值：创建使库存由 4 变为 2，钱包不变；首次支付使余额由 100 变为 80、扣款次数由 0 变为 1，库存保持 2。",
+      "factorLevels": [
+        {
+          "factorId": "F01",
+          "level": "user-a；初始 balance=100、charges=0、available=4"
+        },
+        {
+          "factorId": "F02",
+          "level": "quantity=2；requestId 为本用例内非空字符串"
+        },
+        {
+          "factorId": "F03",
+          "level": "首次支付提交 paymentToken=\"ok\""
+        }
+      ]
+    },
+    {
+      "id": "S02",
+      "title": "同一订单首次成功支付后顺序重放，不重复扣款",
+      "requirementIds": [
+        "R01",
+        "R02",
+        "R03",
+        "R04",
+        "R05",
+        "R06",
+        "R07",
+        "R08",
+        "R09",
+        "R10",
+        "R11"
+      ],
+      "dimension": "transition-sequence、replay-and-scope、conservation、relational-oracle：在同一独立用例内完成创建和首次成功支付，保存首次支付后的实际观察值，再顺序重放完全相同的支付请求并比较响应及最终状态。",
+      "expected": "从独立初始状态开始，以 user-a 调用接口，无需额外鉴权。GET /wallet 返回 200，整数 balance=100、charges=0；GET /inventory 返回 200，整数 available=4。POST /orders 提交 quantity=2 和本用例内非空 requestId，返回 201，id 为非空字符串、owner=\"user-a\"、quantity=2、state=\"reserved\"，保存真实 id。创建后 GET /wallet 返回 200，整数 balance=100、charges=0；GET /inventory 返回 200，整数 available=2；GET /orders/{id} 返回 200，同一 id、owner=\"user-a\"、quantity=2、state=\"reserved\"。对该 id 首次提交 POST /orders/{id}/pay 和 {\"paymentToken\":\"ok\"}，返回 200，同一 id、owner=\"user-a\"、quantity=2、state=\"paid\"。读取并保存首次支付后的实际响应：GET /wallet 返回 200，整数 balance=80、charges=1；GET /inventory 返回 200，整数 available=2；GET /orders/{id} 返回 200，同一 id、owner=\"user-a\"、quantity=2、state=\"paid\"。待首次支付成功后，再顺序提交相同路径和相同 body 的支付请求，返回仍为 200，返回同一订单且 state=\"paid\"。重放后再次读取实际响应：GET /wallet 返回 200，整数 balance=80、charges=1；GET /inventory 返回 200，整数 available=2；GET /orders/{id} 返回 200，同一 id、owner=\"user-a\"、quantity=2、state=\"paid\"。与首次支付后的观察值比较，余额、扣款次数、库存及订单状态均保持指定值，证明此顺序重放没有再次扣款。",
+      "factorLevels": [
+        {
+          "factorId": "F01",
+          "level": "user-a；初始 balance=100、charges=0、available=4"
+        },
+        {
+          "factorId": "F02",
+          "level": "quantity=2；requestId 为本用例内非空字符串"
+        },
+        {
+          "factorId": "F03",
+          "level": "首次支付提交 paymentToken=\"ok\""
+        },
+        {
+          "factorId": "F04",
+          "level": "首次支付成功后，对同一订单顺序重放相同支付请求一次"
+        }
+      ]
+    }
+  ],
+  "gaps": [],
+  "factors": [
+    {
+      "id": "F01",
+      "name": "固定身份与初始资源状态",
+      "requirementIds": [
+        "R01"
+      ],
+      "levels": [
+        "user-a；初始 balance=100、charges=0、available=4"
+      ],
+      "sourceQuote": "身份固定 user-a，钱包初始 balance=100、charges=0，库存 available=4。"
+    },
+    {
+      "id": "F02",
+      "name": "前置订单固定输入",
+      "requirementIds": [
+        "R03"
+      ],
+      "levels": [
+        "quantity=2；requestId 为本用例内非空字符串"
+      ],
+      "sourceQuote": "POST /orders 输入 {\"quantity\":2,\"requestId\":\"本用例内非空字符串\"} 返回 201，JSON 含 id（非空字符串）、owner=\"user-a\"、quantity=2、state=\"reserved\"。"
+    },
+    {
+      "id": "F03",
+      "name": "首次支付输入",
+      "requirementIds": [
+        "R05"
+      ],
+      "levels": [
+        "首次支付提交 paymentToken=\"ok\""
+      ],
+      "sourceQuote": "POST /orders/{id}/pay 输入 {\"paymentToken\":\"ok\"} 返回 200，JSON 含同一 id、owner=\"user-a\"、quantity=2、state=\"paid\"。"
+    },
+    {
+      "id": "F04",
+      "name": "已支付订单的顺序重放",
+      "requirementIds": [
+        "R07"
+      ],
+      "levels": [
+        "首次支付成功后，对同一订单顺序重放相同支付请求一次"
+      ],
+      "sourceQuote": "同一用例中首次成功支付后，再顺序提交相同 POST /orders/{id}/pay 和 {\"paymentToken\":\"ok\"}。返回仍为 200、同一订单 state=\"paid\"。"
+    }
+  ]
+}

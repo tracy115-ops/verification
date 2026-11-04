@@ -46,6 +46,7 @@ export interface StepState {
   forceBatchAnalysis?: true;
   analysisTimeoutSeconds?: number;
   errorCode?: string;
+  designMappingIssues?: { scenarioId: string; factorId: string; requirementIds: string[] }[];
 }
 
 export interface AnalysisCheckpoint {

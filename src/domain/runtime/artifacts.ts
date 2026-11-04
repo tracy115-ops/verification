@@ -146,10 +146,10 @@ export function decodeDesign(
     fail(unique(combinations.map((item) => JSON.stringify([item.factorId, item.level]))));
     for (const item of combinations) {
       const factor = design.factors?.find((factor) => factor.id === item.factorId);
+      fail(!!factor && factor.levels.includes(item.level));
       fail(
-        !!factor &&
-          factor.levels.includes(item.level) &&
-          factor.requirementIds.some((id) => scenario.requirementIds.includes(id)),
+        factor!.requirementIds.some((id) => scenario.requirementIds.includes(id)),
+        'design_factor_mapping_invalid',
       );
     }
   }

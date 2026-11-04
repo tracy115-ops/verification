@@ -182,6 +182,8 @@ export const conversationZh = {
   unsupported_workflow: '当前支持单条需求、场景与用例设计链及人工复核；该流程暂不支持此运行范围。',
   run_in_progress: '本会话已有待确认或运行中的调用，请先完成或取消。',
   artifact_invalid: 'Agent 产物不符合结构或引用约束，已停止推进。',
+  design_factor_mapping_invalid:
+    '场景引用的因子与需求关联不一致。重试将附带待修复关联；原有需求和评审记录已保留。',
   artifact_reference_invalid: '流程产物引用缺失或类型错误。',
   source_quote_invalid: '需求引用未在原文中找到。',
   source_quote_ambiguous: '原文引用重复，无法唯一定位。',
@@ -411,6 +413,8 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
     'This scope supports one requirements/scenarios/cases chain and human reviews. This workflow is not supported in that scope.',
   run_in_progress: 'Complete or cancel the current invocation first.',
   artifact_invalid: 'Agent output failed structure or reference validation. Progression stopped.',
+  design_factor_mapping_invalid:
+    'A scenario references a factor without a shared requirement. Retry includes the invalid links; existing requirements and reviews are preserved.',
   artifact_reference_invalid: 'Missing or incompatible artifact reference.',
   source_quote_invalid: 'Requirement quote not found in the source.',
   source_quote_ambiguous: 'The source quote is ambiguous.',

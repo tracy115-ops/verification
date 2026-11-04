@@ -68,6 +68,20 @@ const step = {
       },
     },
     ...optionalStrings,
+    designMappingIssues: {
+      type: 'array',
+      maxItems: 20,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['scenarioId', 'factorId', 'requirementIds'],
+        properties: {
+          scenarioId: { type: 'string', maxLength: 80 },
+          factorId: { type: 'string', maxLength: 80 },
+          requirementIds: { type: 'array', maxItems: 200, items: { type: 'string', maxLength: 80 } },
+        },
+      },
+    },
   },
 };
 const run = {
@@ -205,6 +219,8 @@ export function decodeConversations(value: unknown): ConversationSession[] {
         throw new Error('session_storage_invalid');
       if (run.plan.some((node) => !run.steps[node.id])) throw new Error('session_storage_invalid');
       for (const node of run.plan) {
+        if (run.steps[node.id].designMappingIssues && node.operation !== 'scenarios.design')
+          throw new Error('session_storage_invalid');
         if (
           (run.steps[node.id].forceBatchAnalysis ||
             run.steps[node.id].analysisTimeoutSeconds !== undefined) &&
