@@ -124,8 +124,10 @@ export function useConversations(
   }
   async function retry(run: WorkflowRun, forceBatchAnalysis = false, analysisTimeoutSeconds?: number) {
     await perform(async (controller) => {
+      const current = store.getSession(run.sessionId);
+      if (current?.runs.find((item) => item.id === run.id) !== run) throw new Error('approval_stale');
       if (
-        session?.runs.some(
+        current.runs.some(
           (other) => other.id !== run.id && ['ready', 'running', 'awaiting_review'].includes(other.status),
         )
       )
@@ -135,11 +137,12 @@ export function useConversations(
         .find((step) => ['failed', 'interrupted'].includes(step.status));
       if (previous?.turnId) await port.cancel(previous.turnId);
       if (previous?.executionId) await executionPort.cancel(previous.executionId);
-      await drive(
-        retryRun(await recoverRequirementDraft(run), forceBatchAnalysis, analysisTimeoutSeconds),
-        controller,
-      );
-    });
+      const recovered = await recoverRequirementDraft(run);
+      if (controller.signal.aborted) throw new Error('execution_cancelled');
+      if (store.getSession(run.sessionId)?.runs.find((item) => item.id === run.id) !== run)
+        throw new Error('approval_stale');
+      await drive(retryRun(recovered, forceBatchAnalysis, analysisTimeoutSeconds), controller);
+    }, run.sessionId);
   }
   async function stopRecovered() {
     if (!session?.activeTurnId) return;
@@ -152,10 +155,14 @@ export function useConversations(
   }
   async function closeExecution(run: WorkflowRun) {
     await perform(async () => {
+      if (store.getSession(run.sessionId)?.runs.find((item) => item.id === run.id) !== run)
+        throw new Error('approval_stale');
       for (const step of Object.values(run.steps))
         if (step.executionId) await executionPort.cancel(step.executionId);
+      if (store.getSession(run.sessionId)?.runs.find((item) => item.id === run.id) !== run)
+        throw new Error('approval_stale');
       updateRun(run.sessionId, { ...run, status: 'cancelled' });
-    });
+    }, run.sessionId);
   }
   function cancel(run?: WorkflowRun) {
     if (tasks.isSessionBusy(run?.sessionId ?? store.activeId)) {
@@ -182,7 +189,12 @@ export function useConversations(
     closeExecution,
     selectedRunId,
     setSelectedRunId,
-    ...runReviewActions({ perform, updateRun, drive }),
+    ...runReviewActions({
+      perform,
+      updateRun,
+      drive,
+      getRun: (sessionId, runId) => store.getSession(sessionId)?.runs.find((item) => item.id === runId),
+    }),
     ...sessionActions(
       store,
       (id) => tasks.isSessionBusy(id),

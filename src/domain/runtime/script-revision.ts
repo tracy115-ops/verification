@@ -2,6 +2,7 @@ import { latestArtifact } from './bindings';
 import { digest } from './plan';
 import { isImplementation } from '../execution/schema';
 import type { WorkflowRun } from './types';
+import { renewRunBudget } from './deadline';
 
 export async function resolveScriptQuestions(
   initial: WorkflowRun,
@@ -37,7 +38,6 @@ export async function resolveScriptQuestions(
   const revisionCount = Object.values(run.artifacts).filter(
     (item) => item.type === 'ImplementationRevision',
   ).length;
-  if (revisionCount >= 2) throw new Error('retry_limit');
   const history = {
     artifact: structuredClone(artifact),
     answers: questions.map((question) => ({ question, answer: answers[question].trim() })),
@@ -61,6 +61,7 @@ export async function resolveScriptQuestions(
   run.steps[implementation.id] = { status: 'pending', attempts: 0 };
   run.steps[preflight.id] = { status: 'pending', attempts: 0 };
   run.status = 'ready';
+  renewRunBudget(run);
   delete run.errorCode;
   return run;
 }

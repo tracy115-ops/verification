@@ -1,0 +1,22 @@
+[
+  {
+    "name": "verification.json",
+    "sha256": "3bfc6dc2fdfc056754eeaa2ace1f902330e5a19641cff27bbf55d9c40214f41c"
+  },
+  {
+    "name": "cases.json",
+    "sha256": "b3ffe6b041b82aa28ab537c0ffb8ccbfd0de2b2f8bddd497d7a75a67137f964d"
+  },
+  {
+    "name": "turn.json",
+    "sha256": "9dc00dfe79036e26df354f1e96b1c3ea054cdcf3d69aeea2d7bc2a44f57bd649"
+  },
+  {
+    "name": "review.png",
+    "sha256": "4ee338dfe09c840e24b6c8a0aec6f9abc87a2b9f3bf25c0d1a302528e0f2683a"
+  },
+  {
+    "name": "resumed.png",
+    "sha256": "1bf83d90e91ddb6e410521d1727d1743fabf7d6bbcd3529823a5200dd160dc4b"
+  }
+]

@@ -6,6 +6,9 @@
 
 | 文档 | 解决的问题 |
 | --- | --- |
+| [企业化验收清单](roadmap/enterprise-readiness.md) | 可靠性、数据迁移、评审、协作及 1.0.0 发布门槛 |
+| [评审与恢复预算](design/review-recovery-budget.md) | 人工等待暂停计时、确认版本检查及跨会话操作隔离 |
+| [0.8.1 可靠性验收](research/reliability-0.8.1-validation.md) | 隔夜评审回归及真实桌面旧任务恢复 |
 | [对话设计增量提议](design/conversational-design-proposals.md) | 个人因子/场景的对话修改、差异确认、版本校验和只读修订历史 |
 | [0.8.0 提议验收](research/design-proposal-0.8.0-validation.md) | 真实 CLI 新增合入、标题修改拒绝、审批失效及旧报告保留 |
 | [2026-11-04 操作易用性复盘](design/workflow-usability-review-2026-11-04.md) | P0 与个人设计提议已实现；常规评审、共享提议及协作闭环继续完善 |

@@ -12,7 +12,13 @@ import { decodePlan } from '../execution/validation';
 import { latestArtifact } from './bindings';
 import { reviewDigest } from './approvals';
 import { generateCaseBatches } from './case-batches';
-import { remainingNodeSeconds, runDeadline } from './deadline';
+import {
+  remainingNodeSeconds,
+  runDeadline,
+  pauseForReview,
+  resumeFromReview,
+  renewRunBudget,
+} from './deadline';
 import { scopedCases } from './case-scope';
 import { isCases, isRequirements } from './artifacts';
 import { ANALYSIS_PROMPT_LIMIT, byteLength } from './analysis-plan';
@@ -65,6 +71,7 @@ export async function advanceRun(
         step.reviewDigest = await reviewDigest(run, node);
         if (signal.aborted) throw new Error('execution_cancelled');
         run.status = 'awaiting_review';
+        pauseForReview(run);
         onUpdate(structuredClone(run));
         return run;
       }
@@ -194,6 +201,7 @@ export async function approveRun(
   );
   run.steps[nodeId].status = 'succeeded';
   run.approvals.push({ nodeId, digest: expectedDigest, approvedAt: new Date().toISOString() });
+  resumeFromReview(run);
   run.status = 'ready';
   return run;
 }
@@ -219,7 +227,7 @@ export function retryRun(
   if (forceBatchAnalysis) run.steps[node.id].forceBatchAnalysis = true;
   if (analysisTimeoutSeconds !== undefined)
     run.steps[node.id].analysisTimeoutSeconds = analysisTimeoutSeconds;
-  run.resumedAt = new Date().toISOString();
+  renewRunBudget(run);
   run.steps[node.id].status = 'pending';
   delete run.steps[node.id].errorCode;
   delete run.errorCode;

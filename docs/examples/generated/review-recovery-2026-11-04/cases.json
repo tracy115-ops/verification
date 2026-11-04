@@ -1,0 +1,94 @@
+{
+  "cases": [
+    {
+      "id": "TC01",
+      "title": "首次成功支付：订单由 reserved 变为 paid，余额扣减 20，库存保持 2",
+      "scenarioIds": [
+        "S01"
+      ],
+      "requirementIds": [
+        "R01",
+        "R02",
+        "R03",
+        "R04",
+        "R05",
+        "R06",
+        "R09",
+        "R10",
+        "R11"
+      ],
+      "preconditions": [
+        "交付为 Python 单文件 unittest，继承 framework.BlackBoxCase；本旅程置于独立的 test_ 方法中，不修改框架。",
+        "由框架 setUp 调用 POST /__fixture/reset 恢复独立状态，不复用其他用例订单。",
+        "所有请求使用 self.client.call(method,path,body=None,user=\"user-a\")，从返回对象的 status 和 body 读取实际结果，不提供额外鉴权信息。",
+        "源文依据：身份固定 user-a，钱包初始 balance=100、charges=0，库存 available=4。"
+      ],
+      "steps": [
+        "调用 GET /wallet 和 GET /inventory，保存初始实际响应，断言 HTTP 状态、声明字段的整数类型及初始值。",
+        "调用 POST /orders，body 为 {\"quantity\":2,\"requestId\":\"TC01-create\"}；断言状态为 201，检查 id 为非空字符串、owner=\"user-a\"、quantity=2、state=\"reserved\"，将实际返回的 id 保存为 order_id。",
+        "调用 GET /wallet、GET /inventory 和 GET /orders/{order_id}，保存创建后的实际响应并验证钱包、库存及订单的预留状态。",
+        "调用 POST /orders/{order_id}/pay，body 为 {\"paymentToken\":\"ok\"}；断言状态为 200，返回 id 等于 order_id、owner=\"user-a\"、quantity=2、state=\"paid\"。",
+        "调用 GET /wallet、GET /inventory 和 GET /orders/{order_id}，保存支付后的实际响应；断言声明字段并与初始及创建后的实际观察值比较。"
+      ],
+      "expected": "初始钱包 balance=100、charges=0，库存 available=4。创建返回 201 和实际订单 id，订单为 reserved；创建后钱包不变，库存降至 2。首次支付返回 200，同一订单变为 paid；支付后钱包 balance=80、charges=1，库存保持 2，查询订单为同一订单且 state=\"paid\"。所有只读观察请求返回 200。",
+      "assertions": [
+        "初始、创建后和支付后的 GET /wallet 均返回 200；balance、charges 均为 JSON 整数，不能以布尔值代替整数；对应值依次为 (100,0)、(100,0)、(80,1)。",
+        "初始、创建后和支付后的 GET /inventory 均返回 200；available 为 JSON 整数，不能以布尔值代替整数；对应值依次为 4、2、2。",
+        "创建响应返回 201，id 为非空字符串，owner=\"user-a\"、quantity=2、state=\"reserved\"；后续路径均使用该实际 id。",
+        "创建后的 GET /orders/{order_id} 返回 200，id 等于 order_id，owner=\"user-a\"、quantity=2、state=\"reserved\"。",
+        "首次支付响应及支付后的订单查询分别返回 200，均包含同一 id、owner=\"user-a\"、quantity=2、state=\"paid\"。",
+        "使用实际快照比较：创建后余额和扣款次数与初始值相等，库存减少 2；首次支付后余额比创建后减少 20，charges 增加 1，库存与创建后相等。",
+        "源文依据：首次成功支付后钱包 balance=80、charges=1；库存仍为 available=2；订单最终为 paid。",
+        "所有调用均通过框架，以实际请求、响应和失败断言作为证据；仅断言已定义字段。"
+      ]
+    },
+    {
+      "id": "TC02",
+      "title": "已支付订单顺序重放：返回同一 paid 订单，钱包和库存实际值保持不变",
+      "scenarioIds": [
+        "S02",
+        "S03"
+      ],
+      "requirementIds": [
+        "R01",
+        "R02",
+        "R03",
+        "R04",
+        "R05",
+        "R06",
+        "R07",
+        "R08",
+        "R09",
+        "R10",
+        "R11"
+      ],
+      "preconditions": [
+        "在同一 Python 单文件 unittest 中继承 framework.BlackBoxCase，将本旅程置于另一个独立的 test_ 方法中，不修改框架。",
+        "由框架 setUp 恢复独立初始状态；本用例自行创建订单并完成首次支付。",
+        "所有请求使用 self.client.call(method,path,body=None,user=\"user-a\")，从返回对象的 status 和 body 读取实际结果，不提供额外鉴权信息。",
+        "源文依据：每条用例从独立状态开始，不复用其他用例订单。"
+      ],
+      "steps": [
+        "调用 GET /wallet 和 GET /inventory，断言均返回 200，实际 balance=100、charges=0、available=4，且这些字段均为 JSON 整数。",
+        "调用 POST /orders，body 为 {\"quantity\":2,\"requestId\":\"TC02-create\"}；断言返回 201，id 为非空字符串、owner=\"user-a\"、quantity=2、state=\"reserved\"，保存实际 id 为 order_id。",
+        "调用 GET /wallet、GET /inventory 和 GET /orders/{order_id}；断言均返回 200，实际钱包为 balance=100、charges=0，库存 available=2，订单 id 等于 order_id、owner=\"user-a\"、quantity=2、state=\"reserved\"。",
+        "将支付路径保存为 /orders/{order_id}/pay，将支付 body 保存为 {\"paymentToken\":\"ok\"}；提交首次支付并等待其成功返回。断言返回 200，同一 id、owner=\"user-a\"、quantity=2、state=\"paid\"。",
+        "调用 GET /wallet、GET /inventory 和 GET /orders/{order_id}，保存首次支付后的实际响应及 balance、charges、available、订单状态；断言均返回 200，值分别为 80、1、2、paid，并验证订单身份字段。",
+        "在首次支付成功后，顺序再次提交保存的相同支付路径和相同 body 一次；断言返回 200，id 等于 order_id、state=\"paid\"。",
+        "重放完成后，再次调用 GET /wallet、GET /inventory 和 GET /orders/{order_id}；保存实际响应，验证声明字段，并逐项与首次支付后保存的实际值比较。"
+      ],
+      "expected": "首次支付后实际钱包为 balance=80、charges=1，库存 available=2，同一订单为 paid。顺序重放相同支付请求返回 200 和同一 paid 订单。重放后的实际钱包仍为 balance=80、charges=1，库存仍为 2，订单仍为 paid；这些值与首次支付后的实际观察值相等。",
+      "assertions": [
+        "创建、首次支付及其前后状态均满足步骤中声明的 HTTP 状态和字段值，使用本用例创建响应的真实订单 id。",
+        "首次支付后和重放后的 GET /wallet 均返回 200，balance、charges 均为 JSON 整数，不能以布尔值代替整数；两次实际值均为 balance=80、charges=1。",
+        "分别比较两次 GET /wallet 的实际字段：重放后的 balance 等于首次支付后的 balance，重放后的 charges 等于首次支付后的 charges。",
+        "重放支付响应返回 200，返回 id 等于 order_id，state=\"paid\"。",
+        "首次支付后和重放后的 GET /inventory 均返回 200，available 为 JSON 整数且为 2；重放前后实际 available 相等。",
+        "首次支付后和重放后的 GET /orders/{order_id} 均返回 200，id 等于 order_id、owner=\"user-a\"、quantity=2、state=\"paid\"；两次实际订单状态相等。",
+        "源文依据：不得再次扣款：钱包必须保持 balance=80、charges=1；库存保持 available=2；订单状态仍为 paid。",
+        "源文依据：必须检查钱包与库存的实际响应，不能只检查支付返回成功。",
+        "所有调用均通过框架，以实际请求、响应和失败断言作为证据；仅断言已定义字段。"
+      ]
+    }
+  ]
+}

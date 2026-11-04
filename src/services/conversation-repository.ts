@@ -109,6 +109,8 @@ const run = {
     sessionId: string,
     createdAt: string,
     resumedAt: string,
+    reviewPausedAt: string,
+    reviewWaitMs: { type: 'integer', minimum: 0, maximum: Number.MAX_SAFE_INTEGER },
     scope: { enum: ['design', 'verification'] },
     executionProfile: frameworkSchema,
     snapshot: { type: 'object' },
@@ -207,8 +209,23 @@ const validate = new Ajv2020({ strict: false }).compile<ConversationSession[]>({
   items: sessionSchema,
 });
 
+function validateOwnership(sessions: ConversationSession[]) {
+  const sessionIds = new Set<string>();
+  const runIds = new Set<string>();
+  for (const session of sessions) {
+    if (!session.id || sessionIds.has(session.id)) throw new Error('session_storage_invalid');
+    sessionIds.add(session.id);
+    for (const run of session.runs) {
+      if (!run.id || run.sessionId !== session.id || runIds.has(run.id))
+        throw new Error('session_storage_invalid');
+      runIds.add(run.id);
+    }
+  }
+}
+
 export function decodeConversations(value: unknown): ConversationSession[] {
   if (!validate(value)) throw new Error('session_storage_invalid');
+  validateOwnership(value);
   const sessions = structuredClone(value);
   for (const session of sessions) {
     for (const run of session.runs) {
@@ -224,6 +241,13 @@ export function decodeConversations(value: unknown): ConversationSession[] {
       if (run.scope === 'verification') decodeFramework(run.executionProfile);
       if (!Number.isFinite(Date.parse(run.createdAt))) throw new Error('session_storage_invalid');
       if (run.resumedAt !== undefined && !Number.isFinite(Date.parse(run.resumedAt)))
+        throw new Error('session_storage_invalid');
+      if (
+        run.reviewPausedAt !== undefined &&
+        (!Number.isFinite(Date.parse(run.reviewPausedAt)) ||
+          Date.parse(run.reviewPausedAt) < Date.parse(run.resumedAt ?? run.createdAt) ||
+          !['awaiting_review', 'cancelled'].includes(run.status))
+      )
         throw new Error('session_storage_invalid');
       decodeDocument(run.snapshot);
       decodeDocument({ ...run.snapshot, profiles: run.profiles });
@@ -294,6 +318,7 @@ export function loadConversations(storage: Pick<Storage, 'getItem'>): Conversati
 
 export function saveConversations(storage: Pick<Storage, 'setItem'>, sessions: ConversationSession[]): void {
   if (!validate(sessions)) throw new Error('session_storage_invalid');
+  validateOwnership(sessions);
   const text = JSON.stringify(sessions);
   if (text.length > 2_000_000) throw new Error('session_storage_full');
   storage.setItem(CONVERSATIONS_KEY, text);

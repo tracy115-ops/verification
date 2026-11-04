@@ -3,6 +3,7 @@ import { latestArtifact } from './bindings';
 import { reviewDigest } from './approvals';
 import { digest } from './plan';
 import type { DesignArtifact, WorkflowRun } from './types';
+import { pauseForReview } from './deadline';
 
 /** Reopen the coverage gate; never reuse downstream approvals or execution evidence. */
 export async function reviseDesign(
@@ -59,7 +60,9 @@ export async function reviseDesign(
   run.reviewExclusions = run.reviewExclusions?.filter((item) => !affected.has(item.nodeId));
   run.createdAt = archive.at;
   delete run.resumedAt;
+  delete run.reviewWaitMs;
   run.status = 'awaiting_review';
+  pauseForReview(run);
   delete run.errorCode;
   run.steps[review.id] = {
     status: 'awaiting_review',

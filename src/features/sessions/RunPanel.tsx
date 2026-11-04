@@ -49,6 +49,7 @@ export function RunPanel({
           {t('scopeNodes')}: {run.plan.length} / {run.snapshot.definition.nodes.length}
         </small>
         {!executed && <p>{t('testsNotExecuted')}</p>}
+        {run.status === 'awaiting_review' && <small>{t('runReviewBudgetPaused')}</small>}
       </div>
       <RunSummary value={report} />
       <RunReport artifact={Object.values(run.artifacts).find((item) => isReport(item.value))} />

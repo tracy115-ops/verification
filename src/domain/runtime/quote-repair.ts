@@ -3,6 +3,7 @@ import { decodeRequirements, isRequirements } from './artifacts';
 import { digest } from './plan';
 import { sourceWindows } from './analysis-plan';
 import { saveAnalysisBatch } from './analysis-checkpoint';
+import { renewRunBudget } from './deadline';
 
 export async function repairRequirementQuotes(initial: WorkflowRun, quotes: Record<string, string>) {
   const run = structuredClone(initial);
@@ -76,7 +77,7 @@ export async function repairRequirementQuotes(initial: WorkflowRun, quotes: Reco
   run.steps[node.id].status = checkpoint ? 'pending' : 'succeeded';
   delete run.steps[node.id].errorCode;
   delete run.errorCode;
-  run.resumedAt = new Date().toISOString();
+  renewRunBudget(run);
   run.status = 'ready';
   return run;
 }

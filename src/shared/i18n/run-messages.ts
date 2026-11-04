@@ -1,4 +1,5 @@
 export const runZh = {
+  runReviewBudgetPaused: '等待人工评审期间暂停流程计时，确认后继续。',
   runAwaitingReport: '已有执行证据，最终报告尚未生成；可打开执行节点产物查看原始结果。',
   runPurpose: '跨会话查看流程进度、待处理步骤与产物；流程完成不等于测试通过。',
   runSearch: '搜索会话、流程名称或运行 ID',
@@ -13,6 +14,7 @@ export const runZh = {
   runDesignOnly: '本次仅进行测试设计；未执行测试。产物可逐节点打开核对。',
 };
 export const runEn = {
+  runReviewBudgetPaused: 'The workflow timer is paused for human review and resumes after approval.',
   runAwaitingReport:
     'Execution evidence is available; the final report has not been generated. Open the execution artifact to inspect results.',
   runPurpose:

@@ -1,0 +1,23 @@
+{
+  "oldCreatedAt": "2026-11-04T07:49:50.068Z",
+  "oldBudgetSeconds": 14400,
+  "approvedAt": "2026-11-04T12:08:49.166Z",
+  "expiredByMs": 1139098,
+  "hadPauseTimestamp": false,
+  "before": {
+    "status": "awaiting_review",
+    "approvals": 1
+  },
+  "after": {
+    "status": "awaiting_review",
+    "approvals": 2,
+    "resumedAt": "2026-11-04T12:08:49.166Z",
+    "reviewPausedAt": "2026-11-04T12:09:48.198Z"
+  },
+  "currentGate": "review.cases",
+  "generatedCaseCount": 2,
+  "includesS03": true,
+  "historyUnchanged": true,
+  "restoredAfterReload": true,
+  "executionsAfterResume": 0
+}
