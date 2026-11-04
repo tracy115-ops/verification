@@ -5,7 +5,12 @@ import { digest } from './plan';
 import type { DesignArtifact, WorkflowRun } from './types';
 
 /** Reopen the coverage gate; never reuse downstream approvals or execution evidence. */
-export async function reviseDesign(initial: WorkflowRun, value: DesignArtifact, reason: string) {
+export async function reviseDesign(
+  initial: WorkflowRun,
+  value: DesignArtifact,
+  reason: string,
+  attribution?: { proposalId: string; turnId: string },
+) {
   if (['ready', 'running'].includes(initial.status) || !reason.trim()) throw new Error('approval_invalid');
   const requirements = decodeRequirements(latestArtifact(initial, 'RequirementBaseline'), initial.spec);
   decodeDesign(value, requirements);
@@ -14,13 +19,13 @@ export async function reviseDesign(initial: WorkflowRun, value: DesignArtifact, 
   if (!review || !producer || initial.steps[producer.id]?.status !== 'succeeded')
     throw new Error('approval_invalid');
   const revisions = Object.values(initial.artifacts).filter((item) => item.type === 'DesignRevision');
-  if (revisions.length >= 10) throw new Error('retry_limit');
   const run = structuredClone(initial);
   const affected = new Set([review.id]);
   for (const node of run.plan) if (node.dependsOn.some((id) => affected.has(id))) affected.add(node.id);
   const archive = {
     version: 1,
-    source: 'human',
+    source: attribution ? 'agent_approved' : 'human',
+    ...(attribution ? { attribution } : {}),
     reason: reason.trim(),
     at: new Date().toISOString(),
     createdAt: initial.createdAt,
@@ -53,6 +58,7 @@ export async function reviseDesign(initial: WorkflowRun, value: DesignArtifact, 
   run.approvals = run.approvals.filter((item) => !affected.has(item.nodeId));
   run.reviewExclusions = run.reviewExclusions?.filter((item) => !affected.has(item.nodeId));
   run.createdAt = archive.at;
+  delete run.resumedAt;
   run.status = 'awaiting_review';
   delete run.errorCode;
   run.steps[review.id] = {

@@ -1,0 +1,24 @@
+{
+  "verifiedAt": "2026-11-04T07:51:00.248Z",
+  "driver": "codex",
+  "requestedModel": "gpt-6.1-sol",
+  "beforeScenarios": 2,
+  "afterScenarios": 3,
+  "changedExistingScenarios": 0,
+  "changedFactors": 0,
+  "approvalsBefore": 4,
+  "approvalsAfter": 1,
+  "currentStatus": "awaiting_review",
+  "downstreamInvalidated": true,
+  "historyReportCounts": {
+    "passed": 1,
+    "failed": 1,
+    "error": 0,
+    "skipped": 0
+  },
+  "refreshPreserved": true,
+  "source": "real desktop UI and native CLI; no new Python execution",
+  "updateProposalDismissed": true,
+  "totalRealProposalCalls": 2,
+  "designPreservedOnDismiss": true
+}

@@ -1,28 +1,31 @@
 import { useRef } from 'react';
 import { useI18n } from '../../shared/i18n/context';
+import type { MessageKey } from '../../shared/i18n/messages';
 
 export function ComposerInput({
   value,
   disabled,
   change,
   send,
+  placeholderKey = 'composerPlaceholder',
 }: {
   value: string;
   disabled: boolean;
   change: (value: string) => void;
   send: () => Promise<void>;
+  placeholderKey?: MessageKey;
 }) {
   const { t } = useI18n();
   const composing = useRef(false);
   return (
     <label className="wb-field">
-      <span className="wb-sr-only">{t('composerPlaceholder')}</span>
+      <span className="wb-sr-only">{t(placeholderKey)}</span>
       <textarea
         className="workbench-textarea"
         value={value}
         maxLength={40000}
         disabled={disabled}
-        placeholder={t('composerPlaceholder')}
+        placeholder={t(placeholderKey)}
         title={t('composerKeyboardHint')}
         onChange={(event) => change(event.target.value)}
         onCompositionStart={() => {

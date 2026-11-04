@@ -17,7 +17,15 @@ export function changedFields(before: unknown, after: unknown) {
     )
     .map((key) => ({ key, before: previous[key], after: next[key] }));
 }
-export function FieldChanges({ before, after }: { before: unknown; after: unknown }) {
+export function FieldChanges({
+  before,
+  after,
+  hideBefore = false,
+}: {
+  before: unknown;
+  after: unknown;
+  hideBefore?: boolean;
+}) {
   const { t } = useI18n();
   const labels = {
     title: 'diffTitle',
@@ -32,6 +40,9 @@ export function FieldChanges({ before, after }: { before: unknown; after: unknow
     levels: 'diffLevels',
     sourceQuote: 'diffQuote',
     oracle: 'diffOracle',
+    dimension: 'coverageDimension',
+    factorLevels: 'factorLevels',
+    id: 'designProposalItemId',
   } as const;
   const changes = changedFields(before, after);
   const display = (value: unknown) =>
@@ -41,7 +52,16 @@ export function FieldChanges({ before, after }: { before: unknown; after: unknow
         ? value
         : Array.isArray(value) && value.every((item) => typeof item === 'string')
           ? value.join('\n')
-          : JSON.stringify(value, null, 2);
+          : Array.isArray(value) &&
+              value.every(
+                (item) =>
+                  item &&
+                  typeof item === 'object' &&
+                  typeof item.factorId === 'string' &&
+                  typeof item.level === 'string',
+              )
+            ? value.map((item) => `${item.factorId} · ${item.level}`).join('\n')
+            : JSON.stringify(value, null, 2);
   return (
     <section className="field-changes" aria-label={t('diffFields')}>
       <h4>
@@ -53,7 +73,7 @@ export function FieldChanges({ before, after }: { before: unknown; after: unknow
             <thead>
               <tr>
                 <th scope="col">{t('diffField')}</th>
-                <th scope="col">{t('collab_before')}</th>
+                {!hideBefore && <th scope="col">{t('collab_before')}</th>}
                 <th scope="col">{t('collab_after')}</th>
               </tr>
             </thead>
@@ -67,9 +87,11 @@ export function FieldChanges({ before, after }: { before: unknown; after: unknow
                       <code>{change.key}</code>
                     )}
                   </th>
-                  <td>
-                    <pre>{display(change.before)}</pre>
-                  </td>
+                  {!hideBefore && (
+                    <td>
+                      <pre>{display(change.before)}</pre>
+                    </td>
+                  )}
                   <td>
                     <pre>{display(change.after)}</pre>
                   </td>

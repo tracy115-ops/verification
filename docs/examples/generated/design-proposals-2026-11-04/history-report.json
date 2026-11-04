@@ -1,0 +1,29 @@
+{
+  "status": "candidates_found",
+  "counts": {
+    "passed": 1,
+    "failed": 1,
+    "error": 0,
+    "skipped": 0
+  },
+  "candidates": [
+    {
+      "id": "D01",
+      "title": "已支付订单顺序重放后钱包再次扣款",
+      "explanation": "C02 在首次支付后观察到 balance=80、charges=1；对同一订单顺序重放支付请求后，GET /wallet 返回 balance=60、charges=2。失败断言为 balance 实际值 60 不等于期望值 80，违反 R08 要求的重放不得再次扣款。请求记录同时显示重放返回 200、订单仍为 paid、库存仍为 2。这些证据支持重复扣款候选缺陷，但未确认内部根因。",
+      "testNames": [
+        "test_c02_sequential_payment_replay_preserves_paid_order_and_resources"
+      ],
+      "caseIds": [
+        "C02"
+      ]
+    }
+  ],
+  "notes": [
+    "执行结果为 1 项通过、1 项失败；C01 通过，不作为候选缺陷依据。",
+    "C02 在重放后余额断言处停止，后续断言未完成；扣款次数、库存及订单状态的描述来自已记录响应。结论仅限本次执行证据，不代表完整覆盖。"
+  ],
+  "action": "review_candidates",
+  "policy": "report_only",
+  "evidenceDigest": "8ce133348fe104f5e2076ba53498961bb9893e7aad2a04df176801341012231f"
+}

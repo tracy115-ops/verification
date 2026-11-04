@@ -8,6 +8,7 @@ import {
 } from '../../domain/runtime/artifacts';
 import { isImplementation, isVerdict } from '../../domain/execution/schema';
 import { useI18n } from '../../shared/i18n/context';
+import { isDesignPatch } from '../../domain/runtime/design-proposal-schema';
 
 export function CliReplyPreview({ text, batch = false }: { text: string; batch?: boolean }) {
   const { t, locale } = useI18n();
@@ -33,6 +34,22 @@ export function CliReplyPreview({ text, batch = false }: { text: string; batch?:
         <p>{value.strategy}</p>
         {value.gaps.map((item, index) => (
           <p key={index}>{item}</p>
+        ))}
+      </div>
+    );
+  if (isDesignPatch(value))
+    return (
+      <div className="session-cli-preview">
+        <p>{value.summary}</p>
+        <ul>
+          {[...value.factors, ...value.scenarios].map((item) => (
+            <li key={item.value.id}>
+              {t(item.action === 'add' ? 'designProposalAdd' : 'designProposalUpdate')} · {item.value.id}
+            </li>
+          ))}
+        </ul>
+        {value.questions.map((question, index) => (
+          <p key={index}>{question}</p>
         ))}
       </div>
     );

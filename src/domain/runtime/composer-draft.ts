@@ -1,6 +1,7 @@
 import type { ChatContextMode } from './chat-context';
 
 export interface ComposerDraft {
+  editDesign?: boolean;
   text: string;
   invoke: boolean;
   profileId: string;
@@ -25,6 +26,7 @@ export const composerDraftSchema = {
   additionalProperties: false,
   required: ['text', 'invoke', 'profileId', 'frameworkId', 'useNodeBindings', 'contextMode'],
   properties: {
+    editDesign: { type: 'boolean' },
     text: { type: 'string', maxLength: 40000 },
     invoke: { type: 'boolean' },
     profileId: { type: 'string', maxLength: 200 },

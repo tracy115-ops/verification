@@ -130,9 +130,11 @@ export function ConversationTimeline({
           close={() => setViewing(null)}
         />
       )}
-      {actions.busy && (actions.session?.activeTurnId || !activeRun) && (
-        <PendingAgentReply text={actions.stream} progress={actions.progress} />
-      )}
+      {actions.busy &&
+        (actions.session?.activeTurnId || !activeRun) &&
+        !turns.some((turn) => turn.id === actions.session?.activeTurnId && turn.runId) && (
+          <PendingAgentReply text={actions.stream} progress={actions.progress} />
+        )}
       <div ref={anchor} />
     </>
   );
@@ -156,7 +158,9 @@ function DecisionEntry({
             entry.kind === 'approval'
               ? 'recordedApproval'
               : entry.kind === 'revision'
-                ? 'scriptRevisions'
+                ? entry.run.artifacts[entry.artifactKey]?.type === 'DesignRevision'
+                  ? 'designRevisionHistory'
+                  : 'scriptRevisions'
                 : entry.kind === 'clarifications'
                   ? 'savedClarifications'
                   : 'savedExclusions',
@@ -185,7 +189,11 @@ function DecisionEntry({
       )}
       {entry.kind === 'revision' && (
         <button className="workbench-btn wb-text" onClick={() => openArtifact(entry.run, entry.artifactKey)}>
-          {t('artifactPreviousScript')}
+          {t(
+            entry.run.artifacts[entry.artifactKey]?.type === 'DesignRevision'
+              ? 'designRevisionSnapshot'
+              : 'artifactPreviousScript',
+          )}
         </button>
       )}
     </article>

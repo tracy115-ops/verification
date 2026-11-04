@@ -1,0 +1,104 @@
+[
+  {
+    "version": 1,
+    "id": "f120ca90-6b2d-4756-a336-a8ef3e1e939d",
+    "runId": "17f28a0a-efa1-4435-961f-079a0ed600cc",
+    "turnId": "f120ca90-6b2d-4756-a336-a8ef3e1e939d",
+    "baseDigest": "0a071d04dfcbba99f9a5419d37230f63b3317d7cd754a35953fb03a7c759df45",
+    "instruction": "新增一个独立场景，单独检查已支付订单顺序重放前后的钱包幂等性：第一次支付后 GET /wallet 为 balance=80、charges=1，顺序重放同一支付请求后，两字段仍为80和1。关联已有需求 R07、R08、R09 和适用因子 F04 的已有水平。不要修改已有 S01、S02 或任何因子，不新增需求，不扩展到并发或其他身份，只增加这一个聚焦钱包实际响应的场景。",
+    "createdAt": "2026-11-04T07:44:42.743Z",
+    "status": "applied",
+    "patch": {
+      "summary": "仅新增独立场景 S03，聚焦同一已支付订单顺序重放前后 GET /wallet 实际响应的幂等性，关联 R07、R08、R09 及 F04 已有水平。未修改其他记录，未执行测试。",
+      "factors": [],
+      "scenarios": [
+        {
+          "action": "add",
+          "value": {
+            "id": "S03",
+            "title": "顺序重放同一支付请求前后，钱包余额和扣款次数保持不变",
+            "requirementIds": [
+              "R07",
+              "R08",
+              "R09"
+            ],
+            "dimension": "钱包幂等性：在独立用例中，对同一订单首次成功支付后和顺序重放相同支付请求后分别读取 GET /wallet，比较实际响应中的余额与扣款次数。",
+            "expected": "独立用例沿用既有固定 user-a 和订单创建、首次成功支付前置流程，保存真实订单 id。首次成功支付后调用 GET /wallet，断言 HTTP 200，实际响应中的 balance 和 charges 均为整数，分别为 80 和 1，并保存这两个实际值。随后对同一订单顺序再次提交相同 POST /orders/{id}/pay 和 {\"paymentToken\":\"ok\"}。重放完成后再次调用 GET /wallet，断言 HTTP 200，实际响应中的 balance 和 charges 均为整数，仍分别为 80 和 1，且与首次支付后保存的对应实际值相等。钱包断言均使用 GET /wallet 的实际响应。",
+            "factorLevels": [
+              {
+                "factorId": "F04",
+                "level": "首次支付成功后，对同一订单顺序重放相同支付请求一次"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": []
+    },
+    "before": {
+      "factors": [],
+      "scenarios": []
+    },
+    "decidedAt": "2026-11-04T07:49:50.070Z"
+  },
+  {
+    "version": 1,
+    "id": "097d0c1a-c06e-420d-91a1-f2b653b6b8cf",
+    "runId": "17f28a0a-efa1-4435-961f-079a0ed600cc",
+    "turnId": "097d0c1a-c06e-420d-91a1-f2b653b6b8cf",
+    "baseDigest": "5cbd7fe043ecc8f0da87a0457bca070927e5afc91f663f96fb4b4f5fa37c4a7a",
+    "instruction": "仅修改当前 S03 的标题为“钱包顺序重放幂等性独立复核”，其他所有字段完整保持，不新增因子或场景，不修改其他条目。",
+    "createdAt": "2026-11-04T07:51:24.197Z",
+    "status": "dismissed",
+    "patch": {
+      "summary": "仅将 S03 标题修改为“钱包顺序重放幂等性独立复核”，其余字段保持原样，不修改其他条目。",
+      "factors": [],
+      "scenarios": [
+        {
+          "action": "update",
+          "value": {
+            "id": "S03",
+            "title": "钱包顺序重放幂等性独立复核",
+            "requirementIds": [
+              "R07",
+              "R08",
+              "R09"
+            ],
+            "dimension": "钱包幂等性：在独立用例中，对同一订单首次成功支付后和顺序重放相同支付请求后分别读取 GET /wallet，比较实际响应中的余额与扣款次数。",
+            "expected": "独立用例沿用既有固定 user-a 和订单创建、首次成功支付前置流程，保存真实订单 id。首次成功支付后调用 GET /wallet，断言 HTTP 200，实际响应中的 balance 和 charges 均为整数，分别为 80 和 1，并保存这两个实际值。随后对同一订单顺序再次提交相同 POST /orders/{id}/pay 和 {\"paymentToken\":\"ok\"}。重放完成后再次调用 GET /wallet，断言 HTTP 200，实际响应中的 balance 和 charges 均为整数，仍分别为 80 和 1，且与首次支付后保存的对应实际值相等。钱包断言均使用 GET /wallet 的实际响应。",
+            "factorLevels": [
+              {
+                "factorId": "F04",
+                "level": "首次支付成功后，对同一订单顺序重放相同支付请求一次"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": []
+    },
+    "before": {
+      "factors": [],
+      "scenarios": [
+        {
+          "id": "S03",
+          "title": "顺序重放同一支付请求前后，钱包余额和扣款次数保持不变",
+          "requirementIds": [
+            "R07",
+            "R08",
+            "R09"
+          ],
+          "dimension": "钱包幂等性：在独立用例中，对同一订单首次成功支付后和顺序重放相同支付请求后分别读取 GET /wallet，比较实际响应中的余额与扣款次数。",
+          "expected": "独立用例沿用既有固定 user-a 和订单创建、首次成功支付前置流程，保存真实订单 id。首次成功支付后调用 GET /wallet，断言 HTTP 200，实际响应中的 balance 和 charges 均为整数，分别为 80 和 1，并保存这两个实际值。随后对同一订单顺序再次提交相同 POST /orders/{id}/pay 和 {\"paymentToken\":\"ok\"}。重放完成后再次调用 GET /wallet，断言 HTTP 200，实际响应中的 balance 和 charges 均为整数，仍分别为 80 和 1，且与首次支付后保存的对应实际值相等。钱包断言均使用 GET /wallet 的实际响应。",
+          "factorLevels": [
+            {
+              "factorId": "F04",
+              "level": "首次支付成功后，对同一订单顺序重放相同支付请求一次"
+            }
+          ]
+        }
+      ]
+    },
+    "decidedAt": "2026-11-04T07:52:23.947Z"
+  }
+]

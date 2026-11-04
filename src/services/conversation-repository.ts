@@ -6,6 +6,7 @@ import { frameworkSchema } from '../domain/execution/schema';
 import { decodeFramework } from '../domain/execution/validation';
 import { caseSchema, requirementIncrementSchema, designIncrementSchema } from '../domain/runtime/artifacts';
 import { composerDraftSchema } from '../domain/runtime/composer-draft';
+import { isDesignProposal } from '../domain/runtime/design-proposal-schema';
 
 export const CONVERSATIONS_KEY = 'verification-workbench.conversations.v1';
 const string = { type: 'string' };
@@ -211,6 +212,15 @@ export function decodeConversations(value: unknown): ConversationSession[] {
   const sessions = structuredClone(value);
   for (const session of sessions) {
     for (const run of session.runs) {
+      for (const [key, artifact] of Object.entries(run.artifacts)) {
+        if (
+          artifact.type === 'DesignChangeProposal' &&
+          (!isDesignProposal(artifact.value) ||
+            artifact.value.runId !== run.id ||
+            key !== `proposal.design.${artifact.value.id}`)
+        )
+          throw new Error('session_storage_invalid');
+      }
       if (run.scope === 'verification') decodeFramework(run.executionProfile);
       if (!Number.isFinite(Date.parse(run.createdAt))) throw new Error('session_storage_invalid');
       if (run.resumedAt !== undefined && !Number.isFinite(Date.parse(run.resumedAt)))

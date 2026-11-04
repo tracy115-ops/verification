@@ -15,6 +15,7 @@ import { RunReview } from './RunReview';
 import { RequirementQuoteRepair } from './RequirementQuoteRepair';
 import { canRetryAnalysis } from '../../domain/runtime/analysis-retry';
 import { AnalysisRetryControls } from './AnalysisRetryControls';
+import { DesignProposalPanel } from './DesignProposalPanel';
 
 export function RunPanel({
   run,
@@ -52,6 +53,7 @@ export function RunPanel({
       <RunSummary value={report} />
       <RunReport artifact={Object.values(run.artifacts).find((item) => isReport(item.value))} />
       <CurrentStep run={run} />
+      <DesignProposalPanel run={run} actions={actions} />
       {run.status === 'failed' &&
         ['source_quote_invalid', 'source_quote_ambiguous'].includes(run.errorCode ?? '') && (
           <RequirementQuoteRepair key={run.id} run={run} actions={actions} />

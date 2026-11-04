@@ -13,8 +13,8 @@ export function RunDecisions({
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<'clarifications' | 'exclusions' | 'revisions'>('exclusions');
-  const revisions = Object.entries(run.artifacts).filter(
-    ([, item]) => item.type === 'ImplementationRevision',
+  const revisions = Object.entries(run.artifacts).filter(([, item]) =>
+    ['ImplementationRevision', 'DesignRevision'].includes(item.type),
   );
   const count = (run.clarifications?.length ?? 0) + (run.reviewExclusions?.length ?? 0) + revisions.length;
   if (!count) return null;
@@ -37,7 +37,7 @@ export function RunDecisions({
                   ? 'savedClarifications'
                   : kind === 'exclusions'
                     ? 'savedExclusions'
-                    : 'scriptRevisions',
+                    : 'revisionHistory',
               )}
             </button>
           ))}
@@ -58,7 +58,7 @@ export function RunDecisions({
               </article>
             ))}
           {tab === 'revisions' &&
-            revisions.map(([key], index) => (
+            revisions.map(([key, item], index) => (
               <button
                 className="workbench-btn"
                 key={key}
@@ -67,7 +67,8 @@ export function RunDecisions({
                   openArtifact(key);
                 }}
               >
-                {t('artifactPreviousScript')} · {index + 1}
+                {t(item.type === 'DesignRevision' ? 'designRevisionSnapshot' : 'artifactPreviousScript')} ·{' '}
+                {index + 1}
               </button>
             ))}
         </div>

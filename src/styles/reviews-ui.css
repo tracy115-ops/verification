@@ -1,6 +1,63 @@
 .review-shell {
   padding: 20px;
 }
+.design-proposal-panel {
+  padding: 16px;
+  border-bottom: 1px solid var(--wb-border);
+  display: grid;
+  gap: 10px;
+}
+.design-proposal-panel header,
+.design-proposal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.design-proposal-panel h3,
+.design-proposal-panel p {
+  margin: 0;
+}
+.design-proposal-review {
+  padding: 20px;
+}
+.design-proposal-layout {
+  display: grid;
+  grid-template-columns: minmax(170px, 0.3fr) minmax(0, 1fr);
+  gap: 20px;
+  max-height: 55vh;
+  min-height: 220px;
+  margin-block: 16px;
+}
+.design-proposal-layout > * {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+.design-proposal-layout nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.design-proposal-layout nav button {
+  display: grid;
+  gap: 6px;
+  text-align: left;
+  white-space: normal;
+}
+.design-proposal-layout nav small {
+  color: var(--wb-muted);
+}
+@media (max-width: 700px) {
+  .design-proposal-layout {
+    grid-template-columns: 1fr;
+    max-height: none;
+  }
+  .design-proposal-layout nav {
+    max-height: 140px;
+  }
+}
 .coverage-matrix {
   padding: 16px 20px;
   min-width: 0;

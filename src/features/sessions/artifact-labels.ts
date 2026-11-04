@@ -25,6 +25,8 @@ export function artifactLabel(artifact: Artifact, t: (key: MessageKey) => string
     ExecutionAuthorization: 'artifactAuthorization',
     VerdictBundle: 'artifactVerdict',
     ImplementationRevision: 'artifactPreviousScript',
+    DesignRevision: 'designRevisionSnapshot',
+    DesignChangeProposal: 'designProposalTitle',
     ImplementationClarifications: 'scriptQuestions',
   };
   return t(keys[artifact.type] ?? 'artifactTitle');

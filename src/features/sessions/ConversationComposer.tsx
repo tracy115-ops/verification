@@ -8,6 +8,7 @@ import type { FrameworkProfile } from '../../domain/execution/types';
 import { emptyComposerDraft, type ComposerDraft } from '../../domain/runtime/composer-draft';
 import { ChatContextControl } from './ChatContextControl';
 import { ComposerInput } from './ComposerInput';
+import { ComposerSelectors } from './ComposerSelectors';
 
 export function ConversationComposer({
   actions,
@@ -31,8 +32,20 @@ export function ConversationComposer({
   const changeDraft = (patch: Partial<ComposerDraft>) => actions.updateComposerDraft(patch, fallbackProfile);
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
   const file = useRef<HTMLInputElement>(null);
+  const run =
+    actions.session?.runs.find((item) => item.id === actions.selectedRunId) ?? actions.session?.runs.at(-1);
+  const canPropose =
+    run && Object.values(run.artifacts).some((item) => ['TestDesign', 'TestDesignDraft'].includes(item.type));
   async function send() {
     if (actions.busy || !hasDesktopBridge() || !text.trim()) return;
+    if (draft.editDesign) {
+      if (!run || !canPropose) {
+        actions.setError('design_proposal_unavailable');
+        return;
+      }
+      await actions.proposeDesign(run, text, profileId);
+      return;
+    }
     const framework = invoke && frameworkId ? frameworks.find((item) => item.id === frameworkId) : undefined;
     if (invoke && frameworkId && !framework) {
       actions.setError('execution_invalid');
@@ -68,63 +81,15 @@ export function ConversationComposer({
   }
   return (
     <div className="session-composer">
-      <div className="session-composer-controls">
-        <label className="wb-field">
-          <span className="wb-sr-only">{t('sessionAgent')}</span>
-          <select
-            className="workbench-select"
-            value={profileId}
-            onChange={(event) => changeDraft({ profileId: event.target.value })}
-          >
-            {!profiles.some((item) => item.id === profileId) && (
-              <option value={profileId} disabled>
-                {t('composerMissingProfile')}
-              </option>
-            )}
-            {profiles.map((profile) => (
-              <option key={profile.id} value={profile.id}>
-                {profile.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="wb-field">
-          <span className="wb-sr-only">{t('savedWorkflow')}</span>
-          <select
-            className="workbench-select"
-            value={invoke ? 'workflow' : 'chat'}
-            onChange={(event) => changeDraft({ invoke: event.target.value === 'workflow' })}
-          >
-            <option value="chat">{t('chatMode')}</option>
-            <option value="workflow" disabled={!saved}>
-              {saved ? `${saved.definition.name} · r${saved.revision}` : t('noSavedWorkflow')}
-            </option>
-          </select>
-        </label>
-        {invoke && (
-          <label className="wb-field">
-            <span className="wb-sr-only">{t('executionScope')}</span>
-            <select
-              className="workbench-select"
-              value={frameworkId}
-              onChange={(event) => changeDraft({ frameworkId: event.target.value })}
-            >
-              <option value="">{t('designScopeCompact')}</option>
-              {frameworkId && !frameworks.some((item) => item.id === frameworkId) && (
-                <option value={frameworkId} disabled>
-                  {t('composerMissingFramework')}
-                </option>
-              )}
-              {frameworks.map((profile) => (
-                <option key={profile.id} value={profile.id}>
-                  {t('verificationScope')} · {profile.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-      </div>
-      {!invoke && (
+      <ComposerSelectors
+        draft={draft}
+        profiles={profiles}
+        saved={saved}
+        frameworks={frameworks}
+        canPropose={!!canPropose}
+        change={changeDraft}
+      />
+      {!invoke && !draft.editDesign && (
         <ChatContextControl
           messages={actions.session?.messages ?? []}
           draft={text}
@@ -149,7 +114,14 @@ export function ConversationComposer({
           {t('chooseFlowFirst')}
         </button>
       )}
-      <ComposerInput value={text} disabled={false} change={(text) => changeDraft({ text })} send={send} />
+      <ComposerInput
+        value={text}
+        disabled={false}
+        change={(text) => changeDraft({ text })}
+        send={send}
+        placeholderKey={draft.editDesign ? 'designProposalPlaceholder' : 'composerPlaceholder'}
+      />
+      {draft.editDesign && <small className="wb-muted">{t('designProposalModeHint')}</small>}
       {actions.busy && <small className="wb-muted">{t('composerDraftWhileRunning')}</small>}
       {attachmentError === actions.activeId && (
         <p className="wb-error" role="alert">
@@ -184,7 +156,7 @@ export function ConversationComposer({
             onClick={() => void send()}
           >
             <Send size={15} />
-            {t(invoke ? 'invokeWorkflow' : 'sendMessage')}
+            {t(draft.editDesign ? 'designProposalGenerate' : invoke ? 'invokeWorkflow' : 'sendMessage')}
           </button>
         )}
       </div>

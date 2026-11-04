@@ -54,6 +54,12 @@ export function useConversationStore() {
         : [...current, value],
     );
   }
+  function getSession(id: string) {
+    return latestSessions.current.find((item) => item.id === id);
+  }
+  function patchSession(id: string, update: (current: ConversationSession) => ConversationSession) {
+    setSessions((current) => current.map((item) => (item.id === id ? update(item) : item)));
+  }
   function updateComposerDraft(patch: Partial<ComposerDraft>, defaultProfileId: string, id = activeId) {
     const existing = latestSessions.current.find((item) => item.id === id);
     if (id && !existing) return null;
@@ -119,6 +125,8 @@ export function useConversationStore() {
     error,
     setError,
     changeSession,
+    getSession,
+    patchSession,
     updateComposerDraft,
     getComposerDraft,
     acceptComposerDraft,

@@ -1,0 +1,62 @@
+[
+  {
+    "name": "requirements.json",
+    "sha256": "4d40f14ddcaaa4396bdfc675c686a23ce5043c0b93407fb12fa5ee4d9abf58bf"
+  },
+  {
+    "name": "design-before.json",
+    "sha256": "677a934a3365586829e9f064cf8fcdf79eeba2be7c32a76ad6e7acfc35675064"
+  },
+  {
+    "name": "design-after.json",
+    "sha256": "a310b31483d1832da45f6e4d37a33291ff6739079397779076d1bcc4abe4bffc"
+  },
+  {
+    "name": "proposals.json",
+    "sha256": "9605dab388add00db1c40cb5bff1468052b5f45b5bfad40b63893da8cda87802"
+  },
+  {
+    "name": "turns.json",
+    "sha256": "82b587f18c70172d87fe523aa3fdc467ca8ec2942424e6b61b7cfb443eb137a6"
+  },
+  {
+    "name": "approvals-before.json",
+    "sha256": "19f046292c5ff1446f3b7c4e15a79e27c23d53417998b9be7d79d1f7b1bebe6a"
+  },
+  {
+    "name": "approvals-after.json",
+    "sha256": "002efdf9a8c9f2431b04f30a6fe16f1fe6d6f80634c88acddb73f0fc55d47bdf"
+  },
+  {
+    "name": "history-report.json",
+    "sha256": "5bd72560fbd50c0dc490ea9efc08cefac2981167d08daca9602a8992ce0f67e1"
+  },
+  {
+    "name": "history-metadata.json",
+    "sha256": "b70561263885c2ba2a75f356f46ce90cc713b57a11af3e49b6a877d5f484ee3f"
+  },
+  {
+    "name": "verification.json",
+    "sha256": "3ef38d9cb4445786066614a46506e836e12861d8ddb5bd164fd5f42b57293e92"
+  },
+  {
+    "name": "add-diff.png",
+    "sha256": "5f0cac7b1ce61198b69f6d66cc953118403e89745146a5b8fb89fea3023780f8"
+  },
+  {
+    "name": "applied.png",
+    "sha256": "b36d35957c52beb5115690b2f12f04339464b08625cf6489b632447c2404a6f1"
+  },
+  {
+    "name": "history.png",
+    "sha256": "1f16ff12645fd0f3b3d1df0b6749f7527c340416314c1cf3bda0f3717ff8bcca"
+  },
+  {
+    "name": "update-diff.png",
+    "sha256": "feeebb726cac1746b9b4c51460bfa4fa2a59fd5ccedc4a69158dd98c375ad562"
+  },
+  {
+    "name": "final.png",
+    "sha256": "b47386ca3d09cca36a3e8eaa3c16b4828315406f24439eae594d339bbc20ba0e"
+  }
+]

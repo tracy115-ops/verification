@@ -20,7 +20,7 @@ export const requirementIncrementSchema = {
   },
 };
 const scenarioBase = record({ id, title: text, requirementIds: list(id), dimension: text, expected: text });
-const scenarioSchema = {
+export const scenarioSchema = {
   ...scenarioBase,
   properties: { ...scenarioBase.properties, factorLevels: list(record({ factorId: id, level: text }), 0) },
 };
@@ -29,14 +29,18 @@ const designBaseSchema = record({
   scenarios: list(scenarioSchema),
   gaps: list(text, 0),
 });
+export const factorSchema = record({
+  id,
+  name: text,
+  requirementIds: list(id),
+  levels: list(text),
+  sourceQuote: text,
+});
 export const designSchema = {
   ...designBaseSchema,
   properties: {
     ...designBaseSchema.properties,
-    factors: list(
-      record({ id, name: text, requirementIds: list(id), levels: list(text), sourceQuote: text }),
-      0,
-    ),
+    factors: list(factorSchema, 0),
   },
 };
 export const generatedDesignSchema = {

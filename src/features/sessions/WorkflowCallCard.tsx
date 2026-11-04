@@ -61,7 +61,11 @@ export function WorkflowCallCard({
       </header>
       <div className="session-cli-title">
         <h3>
-          {node ? nodeLabel(node, run.snapshot, t) : turn.operation}
+          {node
+            ? nodeLabel(node, run.snapshot, t)
+            : turn.operation === 'design.propose'
+              ? t('designProposalTitle')
+              : turn.operation}
           {batch && (
             <small>
               {' '}

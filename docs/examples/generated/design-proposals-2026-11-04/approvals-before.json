@@ -1,0 +1,22 @@
+[
+  {
+    "nodeId": "review_requirements",
+    "digest": "1df3b4a40eb89b0420d0fef6d4d984be3c6384ed08f8497d538b6842a5f8fadd",
+    "approvedAt": "2026-11-04T06:13:20.208Z"
+  },
+  {
+    "nodeId": "review_coverage",
+    "digest": "62915779daa09d87f8e5fcbc8eac5e1d790fa527bf11a5c173d234887b20f043",
+    "approvedAt": "2026-11-04T06:18:29.463Z"
+  },
+  {
+    "nodeId": "review_cases",
+    "digest": "c86174d80bf35bf3c1e5b75dc58db4cd94484afa2e0169b74a8fa9482ce4c20d",
+    "approvedAt": "2026-11-04T06:19:53.603Z"
+  },
+  {
+    "nodeId": "review_execution",
+    "digest": "86033813406cb5332b1d011a9c188fe15283666e1d45feba3f6ee294786f1d5a",
+    "approvedAt": "2026-11-04T06:21:18.833Z"
+  }
+]

@@ -11,6 +11,7 @@ import { EvidenceViewer } from './EvidenceViewer';
 import { ExecutionArtifact } from './ExecutionArtifact';
 import type { UpdateRun } from '../reviews/PersonalCaseCoverage';
 import type { MessageKey } from '../../shared/i18n/messages';
+import { DesignRevisionViewer } from './DesignRevisionViewer';
 
 export function RunArtifactViewer({
   run,
@@ -99,6 +100,7 @@ function ArtifactDetail({
 }) {
   const { t } = useI18n();
   const value = artifact.value;
+  if (artifact.type === 'DesignRevision') return <DesignRevisionViewer run={run} artifact={artifact} />;
   if (isRequirements(value) || isDesign(value) || isCases(value))
     return <ArtifactCollection run={run} artifact={artifact} updateRun={updateRun} />;
   if (isEvidence(value)) return <EvidenceViewer evidence={value} run={run} />;

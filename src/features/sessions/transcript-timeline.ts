@@ -50,22 +50,33 @@ export function transcriptTimeline(session: ConversationSession, turns: CliTurnR
     entries.push(...decisions.values());
     for (const [key, artifact] of Object.entries(run.artifacts)) {
       const value = artifact.value;
+      const at =
+        value && typeof value === 'object'
+          ? 'recordedAt' in value
+            ? value.recordedAt
+            : 'at' in value
+              ? value.at
+              : undefined
+          : undefined;
       if (
-        artifact.type === 'ImplementationRevision' &&
+        ['ImplementationRevision', 'DesignRevision'].includes(artifact.type) &&
         value &&
         typeof value === 'object' &&
-        'recordedAt' in value &&
-        typeof value.recordedAt === 'string' &&
-        Number.isFinite(Date.parse(value.recordedAt))
+        typeof at === 'string' &&
+        Number.isFinite(Date.parse(at))
       )
         entries.push({
           id: `${run.id}:${key}`,
-          at: value.recordedAt,
+          at,
           kind: 'revision',
           run,
           artifactKey: key,
         });
     }
   }
-  return entries.sort((a, b) => a.at.localeCompare(b.at) || a.id.localeCompare(b.id));
+  const priority = (entry: TimelineEntry) =>
+    entry.kind === 'message' && entry.message.role === 'user' ? 0 : entry.kind === 'turn' ? 1 : 2;
+  return entries.sort(
+    (a, b) => a.at.localeCompare(b.at) || priority(a) - priority(b) || a.id.localeCompare(b.id),
+  );
 }

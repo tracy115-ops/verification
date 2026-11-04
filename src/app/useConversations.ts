@@ -15,6 +15,7 @@ import { recordedAgent } from '../services/recorded-agent';
 import { transcriptStore } from '../services/transcript-store';
 import type { ChatContextMode } from '../domain/runtime/chat-context';
 import { recoverRequirementDraft } from '../services/requirement-recovery';
+import { designProposalActions } from './design-proposal-actions';
 
 export function useConversations(
   profiles: AgentProfile[],
@@ -165,6 +166,7 @@ export function useConversations(
   }
   return {
     ...store,
+    ...designProposalActions(store, tasks, port, profiles),
     setActiveId: selectSession,
     busy: tasks.busy,
     anyBusy: tasks.anyBusy,
