@@ -34,7 +34,6 @@ export function SessionWorkspace({
     actions.session?.runs.find((run) => run.id === actions.selectedRunId) ?? actions.session?.runs.at(-1);
   const composer = (
     <ConversationComposer
-      key={actions.activeId}
       actions={actions}
       profiles={profiles}
       saved={saved}

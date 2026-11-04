@@ -98,6 +98,7 @@ export function useConversations(
         changeSession(value);
         store.setActiveId(value.id);
         accepted = true;
+        store.acceptComposerDraft(value.id, text);
         onAccepted?.();
         await drive(run, controller);
       } else {
@@ -106,6 +107,7 @@ export function useConversations(
         changeSession(value);
         store.setActiveId(value.id);
         accepted = true;
+        store.acceptComposerDraft(value.id, text);
         onAccepted?.();
         const result = await recordedAgent(port).send(
           request,

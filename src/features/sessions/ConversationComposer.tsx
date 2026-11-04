@@ -5,7 +5,7 @@ import type { AgentProfile, WorkbenchDocument } from '../../domain/workflow';
 import { hasDesktopBridge } from '../../services/agent-api';
 import { useI18n } from '../../shared/i18n/context';
 import type { FrameworkProfile } from '../../domain/execution/types';
-import type { ChatContextMode } from '../../domain/runtime/chat-context';
+import { emptyComposerDraft, type ComposerDraft } from '../../domain/runtime/composer-draft';
 import { ChatContextControl } from './ChatContextControl';
 import { ComposerInput } from './ComposerInput';
 
@@ -25,13 +25,11 @@ export function ConversationComposer({
   frameworks: FrameworkProfile[];
 }) {
   const { t } = useI18n();
-  const [text, setText] = useState('');
-  const [invoke, setInvoke] = useState(false);
-  const [profileId, setProfileId] = useState(actions.session?.profileId ?? profiles[0]?.id ?? '');
-  const [attachmentError, setAttachmentError] = useState(false);
-  const [frameworkId, setFrameworkId] = useState('');
-  const [useNodeBindings, setUseNodeBindings] = useState(false);
-  const [contextMode, setContextMode] = useState<ChatContextMode>('recent');
+  const fallbackProfile = actions.session?.profileId ?? profiles[0]?.id ?? '';
+  const draft = actions.session?.draft ?? emptyComposerDraft(fallbackProfile);
+  const { text, invoke, profileId, frameworkId, useNodeBindings, contextMode } = draft;
+  const changeDraft = (patch: Partial<ComposerDraft>) => actions.updateComposerDraft(patch, fallbackProfile);
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
   const file = useRef<HTMLInputElement>(null);
   async function send() {
     if (actions.busy || !hasDesktopBridge() || !text.trim()) return;
@@ -40,39 +38,32 @@ export function ConversationComposer({
       actions.setError('execution_invalid');
       return;
     }
-    const submitted = text;
-    let acknowledged = false;
-    const clearAccepted = () => {
-      acknowledged = true;
-      setText((current) => (current === submitted ? '' : current));
-    };
-    const accepted = await actions.send(
-      submitted,
-      invoke,
-      profileId,
-      framework,
-      useNodeBindings,
-      contextMode,
-      clearAccepted,
-    );
-    if (accepted && !acknowledged) clearAccepted();
+    await actions.send(text, invoke, profileId, framework, useNodeBindings, contextMode);
   }
   async function attach(input?: File) {
     if (!input) return;
+    const sessionId = actions.updateComposerDraft({}, fallbackProfile);
+    if (!sessionId) return;
     try {
       if (input.size > 131072) {
-        setAttachmentError(true);
+        setAttachmentError(sessionId);
         return;
       }
       const content = await input.text();
-      if (content.length + text.length > 39998) {
-        setAttachmentError(true);
+      const latest = actions.getComposerDraft(sessionId);
+      if (!latest) return;
+      if (content.length + latest.text.length > 39998) {
+        setAttachmentError(sessionId);
         return;
       }
-      setText((current) => (current ? `${current}\n\n${content}` : content));
-      setAttachmentError(false);
+      actions.updateComposerDraft(
+        { text: latest.text ? `${latest.text}\n\n${content}` : content },
+        fallbackProfile,
+        sessionId,
+      );
+      setAttachmentError(null);
     } catch {
-      setAttachmentError(true);
+      setAttachmentError(sessionId);
     }
   }
   return (
@@ -82,10 +73,14 @@ export function ConversationComposer({
           <span className="wb-sr-only">{t('sessionAgent')}</span>
           <select
             className="workbench-select"
-            disabled={actions.busy}
             value={profileId}
-            onChange={(event) => setProfileId(event.target.value)}
+            onChange={(event) => changeDraft({ profileId: event.target.value })}
           >
+            {!profiles.some((item) => item.id === profileId) && (
+              <option value={profileId} disabled>
+                {t('composerMissingProfile')}
+              </option>
+            )}
             {profiles.map((profile) => (
               <option key={profile.id} value={profile.id}>
                 {profile.name}
@@ -97,9 +92,8 @@ export function ConversationComposer({
           <span className="wb-sr-only">{t('savedWorkflow')}</span>
           <select
             className="workbench-select"
-            disabled={actions.busy}
             value={invoke ? 'workflow' : 'chat'}
-            onChange={(event) => setInvoke(event.target.value === 'workflow')}
+            onChange={(event) => changeDraft({ invoke: event.target.value === 'workflow' })}
           >
             <option value="chat">{t('chatMode')}</option>
             <option value="workflow" disabled={!saved}>
@@ -112,11 +106,15 @@ export function ConversationComposer({
             <span className="wb-sr-only">{t('executionScope')}</span>
             <select
               className="workbench-select"
-              disabled={actions.busy}
               value={frameworkId}
-              onChange={(event) => setFrameworkId(event.target.value)}
+              onChange={(event) => changeDraft({ frameworkId: event.target.value })}
             >
               <option value="">{t('designScopeCompact')}</option>
+              {frameworkId && !frameworks.some((item) => item.id === frameworkId) && (
+                <option value={frameworkId} disabled>
+                  {t('composerMissingFramework')}
+                </option>
+              )}
               {frameworks.map((profile) => (
                 <option key={profile.id} value={profile.id}>
                   {t('verificationScope')} · {profile.name}
@@ -131,8 +129,8 @@ export function ConversationComposer({
           messages={actions.session?.messages ?? []}
           draft={text}
           mode={contextMode}
-          change={setContextMode}
-          disabled={actions.busy}
+          change={(contextMode) => changeDraft({ contextMode })}
+          disabled={false}
         />
       )}
       {invoke && (
@@ -140,8 +138,7 @@ export function ConversationComposer({
           <input
             type="checkbox"
             checked={useNodeBindings}
-            disabled={actions.busy}
-            onChange={(event) => setUseNodeBindings(event.target.checked)}
+            onChange={(event) => changeDraft({ useNodeBindings: event.target.checked })}
           />{' '}
           {t('useNodeBindings')}
         </label>
@@ -152,18 +149,15 @@ export function ConversationComposer({
           {t('chooseFlowFirst')}
         </button>
       )}
-      <ComposerInput value={text} disabled={actions.busy} change={setText} send={send} />
-      {attachmentError && (
+      <ComposerInput value={text} disabled={false} change={(text) => changeDraft({ text })} send={send} />
+      {actions.busy && <small className="wb-muted">{t('composerDraftWhileRunning')}</small>}
+      {attachmentError === actions.activeId && (
         <p className="wb-error" role="alert">
           {t('prompt_too_large')}
         </p>
       )}
       <div className="session-composer-actions">
-        <button
-          className="workbench-btn wb-text"
-          disabled={actions.busy}
-          onClick={() => file.current?.click()}
-        >
+        <button className="workbench-btn wb-text" onClick={() => file.current?.click()}>
           <Paperclip size={16} />
           {t('attachSpec')}
         </button>

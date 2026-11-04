@@ -6,6 +6,8 @@
 
 | 文档 | 解决的问题 |
 | --- | --- |
+| [2026-11-04 操作易用性复盘](design/workflow-usability-review-2026-11-04.md) | 草稿恢复、覆盖语义、对话增量操作、条目评审与协作闭环优先级；P0 已实现，P1/P2 待实施 |
+| [0.7.2 易用性验收](research/usability-0.7.2-validation.md) | 真实桌面草稿恢复、后台回复隔离、附件及覆盖语义回归 |
 | [2026-11-04 真实桌面验收](research/desktop-live-validation-2026-11-04.md) | 实际界面完整 13 节点、支付重放候选、参考对照与映射失败恢复 |
 | [深层黑盒调查规划](design/deep-blackbox-discovery.md) | 分期能力、状态序列、关系判定、缩减复现与真实证据标准 |
 | [深层黑盒调查验证](research/deep-blackbox-validation.md) | 真实 CLI 生成脚本、六个独立变体、参考对照及原生执行重放 |

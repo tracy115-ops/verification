@@ -59,10 +59,15 @@ test('supports Enter and IME without retaining accepted text until the CLI finis
   await input.press('Enter');
   await expect(input).toHaveValue('');
   await expect(page.locator('.session-pending-reply')).toBeVisible();
+  await expect(input).toBeEnabled();
+  await input.fill('后台执行时起草下一条');
+  await input.press('Enter');
+  await expect(input).toHaveValue('后台执行时起草下一条');
   await page.evaluate(() =>
     (globalThis as unknown as { composerFixture: { finish: () => void } }).composerFixture.finish(),
   );
   await expect(page.locator('.session-pending-reply')).toHaveCount(0);
+  await expect(input).toHaveValue('后台执行时起草下一条');
   await input.fill('按钮发送');
   await page.getByRole('button', { name: '发送消息', exact: true }).click();
   await expect(input).toHaveValue('');

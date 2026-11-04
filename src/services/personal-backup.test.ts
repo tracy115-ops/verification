@@ -5,6 +5,7 @@ import { IndexedDbTranscripts } from './transcript-repository';
 import { DOCUMENT_KEY } from './repository';
 import { CONVERSATIONS_KEY } from './conversation-repository';
 import { createSession } from '../domain/runtime/chat';
+import { emptyComposerDraft } from '../domain/runtime/composer-draft';
 
 it('rejects unsupported formats, auth storage and malformed business records before restoration', () => {
   const value = emptyPersonalData();
@@ -18,9 +19,16 @@ it('rejects unsupported formats, auth storage and malformed business records bef
 });
 it('validates conversations and rejects orphaned or duplicate CLI records', () => {
   const session = createSession('codeagent-native');
+  session.draft = {
+    ...emptyComposerDraft('codeagent-native'),
+    text: '尚未发送的需求',
+    invoke: true,
+    frameworkId: 'orders',
+  };
   const value = emptyPersonalData();
   value.storage[CONVERSATIONS_KEY] = JSON.stringify([session]);
   expect(validateBackup(value).storage[CONVERSATIONS_KEY]).toContain(session.id);
+  expect(JSON.parse(validateBackup(value).storage[CONVERSATIONS_KEY]!)[0].draft).toEqual(session.draft);
   expect(() => validateBackup({ ...value, transcripts: [{ version: 1, id: 'orphan' }] })).toThrow();
 });
 

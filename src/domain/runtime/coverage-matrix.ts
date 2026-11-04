@@ -19,9 +19,12 @@ export function coverageMatrix(run: WorkflowRun) {
       : [];
     const scenarioIds = new Set(scenarios.map((item) => item.id));
     const linked = isCases(cases)
+      ? cases.cases.filter((item) => item.requirementIds.includes(requirement.id))
+      : [];
+    const indirectCases = isCases(cases)
       ? cases.cases.filter(
           (item) =>
-            item.requirementIds.includes(requirement.id) ||
+            !item.requirementIds.includes(requirement.id) &&
             item.scenarioIds.some((id) => scenarioIds.has(id)),
         )
       : [];
@@ -30,7 +33,22 @@ export function coverageMatrix(run: WorkflowRun) {
     const mapped = states.filter((item) => item.status === 'mapped').length;
     const passed = states.filter((item) => item.execution === 'passed').length;
     const failed = states.filter((item) => item.execution === 'failed').length;
-    const gap = !factors.length || !scenarios.length || !linked.length || mapped !== linked.length;
-    return { requirement, factors, scenarios, cases: linked, declared, mapped, passed, failed, gap };
+    const notRun = states.filter((item) => item.execution === 'not_run').length;
+    const skipped = states.filter((item) => item.execution === 'skipped').length;
+    const gap = !scenarios.length || !linked.length || mapped !== linked.length;
+    return {
+      requirement,
+      factors,
+      scenarios,
+      cases: linked,
+      indirectCases,
+      declared,
+      mapped,
+      passed,
+      failed,
+      notRun,
+      skipped,
+      gap,
+    };
   });
 }

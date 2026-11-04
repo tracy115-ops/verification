@@ -1,4 +1,7 @@
 export const conversationZh = {
+  composerMissingProfile: '原 Agent 配置不可用，请重新选择',
+  composerMissingFramework: '原框架配置不可用，请重新选择',
+  composerDraftWhileRunning: '可起草下一条消息；当前任务结束后才能发送，草稿不会改变正在运行的任务。',
   cli_trust_required: 'CodeAgent 的项目安全确认阻止了非交互调用。请查看设置中的诊断日志。',
   cli_option_unsupported: 'CLI 不支持当前启动参数，请查看诊断日志并核对版本。',
   cli_mcp_invalid: 'CLI 拒绝了 MCP 配置，请查看诊断日志。',
@@ -204,6 +207,10 @@ export const conversationZh = {
 };
 
 export const conversationEn: Record<keyof typeof conversationZh, string> = {
+  composerMissingProfile: 'Previous Agent unavailable; select another',
+  composerMissingFramework: 'Previous framework unavailable; select another',
+  composerDraftWhileRunning:
+    'You can draft the next message. Send it after this task finishes; drafting does not change the running task.',
   cli_trust_required:
     'CodeAgent project trust confirmation blocked noninteractive execution. Review diagnostics in settings.',
   cli_option_unsupported: 'The CLI rejected a launch option. Review diagnostics and verify its version.',

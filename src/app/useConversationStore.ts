@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ConversationSession, WorkflowRun } from '../domain/runtime/types';
 import { loadConversations, saveConversations } from '../services/conversation-repository';
+import { emptyComposerDraft, type ComposerDraft } from '../domain/runtime/composer-draft';
+import { createSession } from '../domain/runtime/chat';
 
 const activeSessionKey = 'verification-workbench.active-conversation';
 
@@ -25,6 +27,8 @@ function initialState() {
 export function useConversationStore() {
   const [initial] = useState(initialState);
   const [sessions, setSessions] = useState(initial.sessions);
+  const latestSessions = useRef(sessions);
+  latestSessions.current = sessions;
   const [activeId, setActiveId] = useState(() => restoredSelection(initial.sessions));
   const [error, setError] = useState<string | null>(initial.error);
   useEffect(() => {
@@ -46,8 +50,36 @@ export function useConversationStore() {
   function changeSession(value: ConversationSession) {
     setSessions((current) =>
       current.some((item) => item.id === value.id)
-        ? current.map((item) => (item.id === value.id ? value : item))
+        ? current.map((item) => (item.id === value.id ? { ...value, draft: item.draft } : item))
         : [...current, value],
+    );
+  }
+  function updateComposerDraft(patch: Partial<ComposerDraft>, defaultProfileId: string, id = activeId) {
+    const existing = latestSessions.current.find((item) => item.id === id);
+    if (id && !existing) return null;
+    const session = existing ?? createSession(defaultProfileId);
+    setSessions((current) => {
+      const found = current.find((item) => item.id === session.id);
+      if (existing && !found) return current;
+      const latest = found ?? session;
+      const value = {
+        ...latest,
+        draft: { ...(latest.draft ?? emptyComposerDraft(latest.profileId)), ...patch },
+      };
+      return existing ? current.map((item) => (item.id === value.id ? value : item)) : [...current, value];
+    });
+    if (!existing) setActiveId(session.id);
+    return session.id;
+  }
+  function getComposerDraft(id: string) {
+    const session = latestSessions.current.find((item) => item.id === id);
+    return session ? (session.draft ?? emptyComposerDraft(session.profileId)) : undefined;
+  }
+  function acceptComposerDraft(id: string, text: string) {
+    setSessions((current) =>
+      current.map((item) =>
+        item.id === id && item.draft?.text === text ? { ...item, draft: { ...item.draft, text: '' } } : item,
+      ),
     );
   }
   function updateRun(sessionId: string, run: WorkflowRun) {
@@ -87,6 +119,9 @@ export function useConversationStore() {
     error,
     setError,
     changeSession,
+    updateComposerDraft,
+    getComposerDraft,
+    acceptComposerDraft,
     updateRun,
     renameSession,
     deleteSession,

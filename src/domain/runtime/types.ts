@@ -1,6 +1,7 @@
 import type { AgentProfile, DriverId, WorkbenchDocument, WorkflowNode } from '../workflow';
 import type { FrameworkProfile } from '../execution/types';
 import type { CliProgress } from './cli-progress';
+import type { ComposerDraft } from './composer-draft';
 
 export interface AgentEvent {
   type: 'text' | 'activity' | 'session' | 'heartbeat' | 'progress';
@@ -88,6 +89,7 @@ export interface ConversationMessage {
   nativeSessionId?: string;
 }
 export interface ConversationSession {
+  draft?: ComposerDraft;
   id: string;
   title: string;
   profileId: string;

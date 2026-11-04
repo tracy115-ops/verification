@@ -1,0 +1,14 @@
+{
+  "verifiedAt": "2026-11-04T06:52:04.169Z",
+  "nativeBridge": true,
+  "backendBaseline": "0.7.0",
+  "frontend": "0.7.2",
+  "actualCodexReply": "草稿隔离验证通过。",
+  "sentMessages": 1,
+  "unsentDraftPreservedAfterReplyAndReload": true,
+  "rows": 11,
+  "falseFactorGaps": 0,
+  "scope": "real desktop UI drafts and existing real-generated order workflow coverage; no new full workflow run",
+  "attachmentControlVerified": true,
+  "finalReloadAt": "2026-11-04T06:56:54.696Z"
+}

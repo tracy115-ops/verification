@@ -5,6 +5,7 @@ import type { ConversationSession } from '../domain/runtime/types';
 import { frameworkSchema } from '../domain/execution/schema';
 import { decodeFramework } from '../domain/execution/validation';
 import { caseSchema, requirementIncrementSchema, designIncrementSchema } from '../domain/runtime/artifacts';
+import { composerDraftSchema } from '../domain/runtime/composer-draft';
 
 export const CONVERSATIONS_KEY = 'verification-workbench.conversations.v1';
 const string = { type: 'string' };
@@ -178,6 +179,7 @@ const sessionSchema = {
     title: string,
     profileId: string,
     activeTurnId: string,
+    draft: composerDraftSchema,
     messages: {
       type: 'array',
       maxItems: 200,

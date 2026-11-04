@@ -82,7 +82,25 @@ export function CoverageMatrix({
                         ))}
                       </div>
                     ) : (
-                      <span className="wb-muted">{t('matrixMissing')}</span>
+                      <span className="wb-muted">
+                        {t(kind === 'factors' ? 'matrixNoFactor' : 'matrixMissing')}
+                      </span>
+                    )}
+                    {kind === 'cases' && row.indirectCases.length > 0 && (
+                      <details>
+                        <summary>
+                          {t('matrixIndirectCases')} · {row.indirectCases.length}
+                        </summary>
+                        {row.indirectCases.map((item) => (
+                          <button
+                            key={item.id}
+                            className="workbench-btn wb-text"
+                            onClick={() => navigate('cases', item.id)}
+                          >
+                            {item.id}
+                          </button>
+                        ))}
+                      </details>
                     )}
                   </td>
                 ))}
@@ -99,6 +117,16 @@ export function CoverageMatrix({
                   {row.failed > 0 && (
                     <p className="wb-error">
                       {t('matrixFailed')}: {row.failed}
+                    </p>
+                  )}
+                  {row.notRun > 0 && (
+                    <p className="wb-muted">
+                      {t('matrixNotRun')}: {row.notRun}
+                    </p>
+                  )}
+                  {row.skipped > 0 && (
+                    <p className="wb-muted">
+                      {t('matrixSkipped')}: {row.skipped}
                     </p>
                   )}
                 </td>
