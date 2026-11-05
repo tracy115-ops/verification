@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { AgentProfile } from '../../domain/workflow';
 import { useI18n } from '../../shared/i18n/context';
 import { NativeLaunchEditor } from './NativeLaunchEditor';
+import { AgentConnectionCheck } from './AgentConnectionCheck';
 
 export function NativeModels({
   profiles,
@@ -19,6 +20,7 @@ export function NativeModels({
         .filter((profile) => profile.protocol === 'native')
         .map((profile) => (
           <div key={profile.id}>
+            <AgentConnectionCheck key={`connection-${JSON.stringify(profile)}`} profile={profile} />
             <NativeLaunchEditor key={JSON.stringify(profile)} profile={profile} save={saveProfile} />
             {profile.driver === 'codeagent' ? (
               <div className="settings-model-row" key={profile.id}>

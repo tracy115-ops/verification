@@ -5,6 +5,8 @@ import { useI18n } from '../../shared/i18n/context';
 import type { MessageKey } from '../../shared/i18n/messages';
 import { Bot } from 'lucide-react';
 import { supportsInference } from '../../domain/agent-capabilities';
+import { useSyncExternalStore } from 'react';
+import { connectionFor, connectionSnapshot, subscribeConnections } from '../../services/agent-connection';
 
 function profileStatus(
   profile: AgentProfile,
@@ -28,7 +30,22 @@ function profileStatus(
 export function ProfileProbeStatus({ profile, probe }: { profile: AgentProfile; probe?: AgentProbe }) {
   const { t } = useI18n();
   const status = profileStatus(profile, probe);
-  return <Status tone={status.tone}>{t(status.label)}</Status>;
+  const result = connectionFor(profile, useSyncExternalStore(subscribeConnections, connectionSnapshot));
+  return (
+    <Status
+      tone={result?.status === 'passed' ? 'success' : result?.status === 'failed' ? 'warning' : status.tone}
+    >
+      {t(
+        result
+          ? result.status === 'passed'
+            ? 'connectionPassed'
+            : result.status === 'failed'
+              ? 'connectionFailed'
+              : 'connectionChecking'
+          : status.label,
+      )}
+    </Status>
+  );
 }
 
 export function AgentProfileRow({ profile, probe }: { profile: AgentProfile; probe?: AgentProbe }) {

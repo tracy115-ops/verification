@@ -1,4 +1,5 @@
 import Ajv2020 from 'ajv/dist/2020.js';
+import { invalidateConnections } from './agent-connection';
 import { profileSchema } from '../domain/document';
 import { profileIsCompatible, type AgentProfile } from '../domain/workflow';
 
@@ -29,4 +30,5 @@ export function loadProfiles(storage: Pick<Storage, 'getItem'>, fallback: AgentP
 
 export function saveProfiles(storage: Pick<Storage, 'setItem'>, profiles: AgentProfile[]): void {
   storage.setItem(KEY, JSON.stringify(decode(profiles)));
+  invalidateConnections(profiles);
 }

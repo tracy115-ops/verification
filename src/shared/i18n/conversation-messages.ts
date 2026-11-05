@@ -49,6 +49,14 @@ export const conversationZh = {
   transcript_delete_failed: '部分 CLI 对话原始记录未能清理。',
   nativeModels: 'CLI 模型配置',
   cliInstance: 'CLI 实例',
+  connectionCheck: '连通检查',
+  connectionCheckSend: '发送短测试',
+  connectionCheckHint:
+    '主动调用当前已保存实例与模型，可能产生费用，最长 60 秒。仅验证短对话；结果在本次应用内保留，配置改变后失效。',
+  connectionChecking: '正在测试回复…',
+  connectionPassed: '短对话已验证',
+  connectionFailed: '连通测试未通过',
+  cli_test_reply_invalid: 'CLI 已结束，但未返回测试要求的有效回复。请核对当前实例、模型或协议兼容性。',
   analysisBudgetTitle: '设计分析预算',
   analysisInitialBudget: '首次设计分析的批次预算',
   analysisInitialBudgetHint:
@@ -308,6 +316,15 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
   transcript_delete_failed: 'Some original CLI transcript records could not be removed.',
   nativeModels: 'CLI model configuration',
   cliInstance: 'CLI instance',
+  connectionCheck: 'Connection check',
+  connectionCheckSend: 'Send short test',
+  connectionCheckHint:
+    'Calls the saved instance and model on request; fees may apply. Timeout: 60 seconds. Verifies short chat only. Results last for this app session and invalidate when configuration changes.',
+  connectionChecking: 'Checking reply…',
+  connectionPassed: 'Short chat verified',
+  connectionFailed: 'Connection check failed',
+  cli_test_reply_invalid:
+    'The CLI finished without the expected test reply. Check the selected instance, model, or protocol compatibility.',
   analysisBudgetTitle: 'Design analysis budget',
   analysisInitialBudget: 'Initial design analysis batch budget',
   analysisInitialBudgetHint:
