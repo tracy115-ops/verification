@@ -40,7 +40,7 @@ export function AnalysisRetryControls({ run, actions }: { run: WorkflowRun; acti
       </label>
       <button className="workbench-btn wb-full" disabled={disabled} onClick={() => retry(false)}>
         <RefreshCw size={15} />
-        {t('retryStep')}
+        {t(run.errorCode === 'analysis_budget_paused' ? 'analysisContinueBudget' : 'retryStep')}
       </button>
       {canRetryAnalysisInBatches(run) && (
         <button

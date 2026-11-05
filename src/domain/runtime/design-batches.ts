@@ -6,6 +6,7 @@ import { callAnalysis, scopedTask, type AnalysisContext } from './analysis-call'
 import { mergeDesigns, prefixDesign } from './analysis-merge';
 import { latestArtifact } from './bindings';
 import { designMappingIssues } from './design-mapping';
+import { DESIGN_ATTEMPT_BATCH_LIMIT } from './analysis-budget';
 
 function validateBatch(
   value: unknown,
@@ -46,8 +47,11 @@ export async function generateDesignBatches(
   for (const saved of checkpoint.completed) validateBatch(saved.value, baseline, groups[saved.index]);
   const inputKey = Object.keys(node.inputs).find((key) => node.inputs[key].type === 'RequirementBaseline');
   if (!inputKey) throw new Error('unsupported_workflow');
+  let attempted = 0;
   for (let index = 0; index < groups.length; index++) {
     if (checkpoint.completed.some((item) => item.index === index)) continue;
+    if (attempted >= DESIGN_ATTEMPT_BATCH_LIMIT) throw new Error('analysis_budget_paused');
+    attempted++;
     const group = groups[index];
     const scoped = { requirements: group.requirements, questions: [] };
     const task = scopedTask(run, node, { ...inputs, [inputKey]: scoped }, '');

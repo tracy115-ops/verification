@@ -97,7 +97,7 @@ export function ConversationTimeline({
             }
             onClick={() => void actions.retry(activeRun)}
           >
-            {t('retryStep')}
+            {t(activeRun.errorCode === 'analysis_budget_paused' ? 'analysisContinueBudget' : 'retryStep')}
           </button>
         </section>
       )}

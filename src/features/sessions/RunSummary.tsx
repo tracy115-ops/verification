@@ -23,7 +23,7 @@ export function RunState({ run }: { run: WorkflowRun }) {
                 : 'pendingStep';
   return (
     <Status tone={run.status === 'completed' ? 'success' : run.status === 'failed' ? 'danger' : 'accent'}>
-      {t(key)}
+      {t(run.errorCode === 'analysis_budget_paused' ? 'analysisBudgetPausedLabel' : key)}
     </Status>
   );
 }

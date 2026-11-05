@@ -16,6 +16,7 @@ import { RequirementQuoteRepair } from './RequirementQuoteRepair';
 import { canRetryAnalysis } from '../../domain/runtime/analysis-retry';
 import { AnalysisRetryControls } from './AnalysisRetryControls';
 import { DesignProposalPanel } from './DesignProposalPanel';
+import { AnalysisBudgetSummary } from './AnalysisBudgetSummary';
 
 export function RunPanel({
   run,
@@ -54,6 +55,7 @@ export function RunPanel({
       <RunSummary value={report} />
       <RunReport artifact={Object.values(run.artifacts).find((item) => isReport(item.value))} />
       <CurrentStep run={run} />
+      <AnalysisBudgetSummary run={run} />
       <DesignProposalPanel run={run} actions={actions} />
       {run.status === 'failed' &&
         ['source_quote_invalid', 'source_quote_ambiguous'].includes(run.errorCode ?? '') && (
@@ -71,7 +73,9 @@ export function RunPanel({
         </button>
       )}
       {run.errorCode && (
-        <p className="wb-error">{isMessageKey(run.errorCode) ? t(run.errorCode) : t('cli_failed')}</p>
+        <p className={run.errorCode === 'analysis_budget_paused' ? 'wb-muted' : 'wb-error'}>
+          {isMessageKey(run.errorCode) ? t(run.errorCode) : t('cli_failed')}
+        </p>
       )}
       <RunReview run={run} actions={actions} openAssets={openAssets} />
       <section className="session-flow-overview">

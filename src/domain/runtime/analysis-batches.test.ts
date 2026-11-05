@@ -54,6 +54,42 @@ const advance = (run: WorkflowRun, port: AgentPort, signal = new AbortController
     () => {},
     () => {},
   );
+
+it('pauses a large design at its budget and resumes all pending relationships without replay', async () => {
+  let run = await advance(runForSpec(), testPort().port);
+  const review = run.plan.find((node) => run.steps[node.id].status === 'awaiting_review')!;
+  run = await approveRun(run, review.id, run.steps[review.id].reviewDigest!);
+  const key = Object.keys(run.artifacts).find((key) => run.artifacts[key].type === 'RequirementBaseline')!;
+  const baseline = decodeRequirements(run.artifacts[key].value, largeSpec);
+  for (const requirement of baseline.requirements) requirement.text += 'a'.repeat(5800);
+  run.artifacts[key].value = baseline;
+  const total = designGroups(baseline).length;
+  expect(total).toBeGreaterThan(16);
+  const node = run.plan.find((item) => item.operation === 'scenarios.design')!;
+  const indexes: number[] = [];
+  for (let attempt = 0; attempt < Math.ceil(total / 16); attempt++) {
+    const port = testPort();
+    run = await advance(attempt ? retryRun(run) : run, port.port);
+    expect(port.requests.length).toBeLessThanOrEqual(16);
+    indexes.push(...port.requests.map((item) => JSON.parse(item.prompt).analysisBatch.index));
+    if (indexes.length < total) {
+      expect(run.status).toBe('interrupted');
+      expect(run.errorCode).toBe('analysis_budget_paused');
+      expect(Object.values(run.artifacts).some((item) => item.type === 'TestDesignDraft')).toBe(false);
+      const session = {
+        id: run.sessionId,
+        title: 'Budget pause',
+        profileId: 'codeagent-native',
+        messages: [],
+        runs: [run],
+      };
+      run = decodeConversations(JSON.parse(JSON.stringify([session])))[0].runs[0];
+    }
+  }
+  expect(run.status).toBe('awaiting_review');
+  expect(indexes).toEqual(Array.from({ length: total }, (_, index) => index + 1));
+  expect(run.steps[node.id].analysis!.completed).toHaveLength(total);
+});
 function runForSpec() {
   const doc = savedDocument();
   return createRun(doc, crypto.randomUUID(), largeSpec, doc.profiles, 'codeagent-native');

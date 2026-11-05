@@ -151,9 +151,10 @@ export async function advanceRun(
       step.status = 'succeeded';
       onUpdate(structuredClone(run));
     } catch (error) {
-      step.status = signal.aborted ? 'interrupted' : 'failed';
+      const budgetPaused = error instanceof Error && error.message === 'analysis_budget_paused';
+      step.status = signal.aborted || budgetPaused ? 'interrupted' : 'failed';
       step.errorCode = error instanceof Error ? error.message : 'cli_failed';
-      run.status = signal.aborted ? 'cancelled' : 'failed';
+      run.status = signal.aborted ? 'cancelled' : budgetPaused ? 'interrupted' : 'failed';
       run.errorCode = step.errorCode;
       break;
     }
