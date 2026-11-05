@@ -43,6 +43,7 @@ it.each([false, true])(
             actions={actions}
             activeRun={actions.session?.runs[0]}
             openAssets={() => {}}
+            openSettings={() => {}}
           />
         </>
       );
@@ -78,7 +79,7 @@ it.each(['failed', 'cancelled', 'timed_out'] as const)(
       return (
         <>
           <button onClick={() => void actions.send('你好', false, 'codex-native')}>Send</button>
-          <ConversationTimeline actions={actions} openAssets={() => {}} />
+          <ConversationTimeline actions={actions} openAssets={() => {}} openSettings={() => {}} />
         </>
       );
     }

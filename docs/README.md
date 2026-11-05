@@ -6,6 +6,7 @@
 
 | 文档 | 解决的问题 |
 | --- | --- |
+| [0.8.2 CLI 失败提示验收](research/cli-failures-0.8.2-validation.md) | 未登录分类、消息级恢复、原调用标识及设置跳转 |
 | [企业化验收清单](roadmap/enterprise-readiness.md) | 可靠性、数据迁移、评审、协作及 1.0.0 发布门槛 |
 | [评审与恢复预算](design/review-recovery-budget.md) | 人工等待暂停计时、确认版本检查及跨会话操作隔离 |
 | [0.8.1 可靠性验收](research/reliability-0.8.1-validation.md) | 隔夜评审回归及真实桌面旧任务恢复 |

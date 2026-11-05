@@ -4,6 +4,27 @@ use crate::{
 };
 
 #[test]
+fn login_errors_remain_auth_failures_after_public_error_text() {
+    for driver in [DriverId::Claude, DriverId::Codeagent] {
+        let mut state = ProtocolState::default();
+        state.consume(driver, br#"{"type":"assistant","message":{"content":[{"type":"text","text":"Not logged in. Please run /login"}]}}"#);
+        state.consume(
+            driver,
+            br#"{"type":"result","is_error":true,"result":"Not logged in. Please run /login"}"#,
+        );
+        assert!(state.failed && state.terminal);
+        assert_eq!(state.error_code, Some("cli_auth_failed"));
+    }
+    let mut codex = ProtocolState::default();
+    codex.consume(
+        DriverId::Codex,
+        br#"{"type":"turn.failed","error":{"message":"Not logged in. Please run /login"}}"#,
+    );
+    assert!(codex.failed && codex.terminal);
+    assert_eq!(codex.error_code, Some("cli_auth_failed"));
+}
+
+#[test]
 fn codeagent_assistant_shapes_are_observed_without_exposing_thinking_or_tool_arguments() {
     let mut state = ProtocolState::default();
     let events = state.consume(DriverId::Codeagent, br#"{"type":"assistant","error":"private-error","message":{"stop_reason":"tool_use","content":[{"type":"thinking","thinking":"private-thought"},{"type":"tool_use","name":"private-tool","input":{"secret":"private-value"}},{"type":"private-block","text":"private-text"}]}}"#);

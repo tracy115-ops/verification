@@ -12,9 +12,10 @@ export function message(role: ConversationMessage['role'], text: string): Conver
   return { id: newId(), role, text, createdAt: new Date().toISOString(), status: 'complete' };
 }
 
-export function replyMessage(result: TurnOutcome): ConversationMessage {
+export function replyMessage(result: TurnOutcome, request?: TurnRequest): ConversationMessage {
   return {
     ...message('assistant', result.text),
+    ...(request ? { cli: { driver: request.driver, model: request.model, turnId: request.turnId } } : {}),
     status: result.status === 'completed' ? 'complete' : 'failed',
     errorCode: result.errorCode ?? undefined,
     nativeSessionId: result.nativeSessionId ?? undefined,

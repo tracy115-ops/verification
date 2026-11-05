@@ -6,7 +6,7 @@ import { useI18n, isMessageKey } from '../../shared/i18n/context';
 import { useTranscript } from './useTranscript';
 import { transcriptTimeline, type TimelineEntry } from './transcript-timeline';
 import { WorkflowCallCard } from './WorkflowCallCard';
-import { SourceMessage } from './SourceMessage';
+import { ChatMessage } from './ChatMessage';
 import { RunArtifactViewer } from './RunArtifactViewer';
 import { RunReview } from './RunReview';
 import { RunSummary } from './RunSummary';
@@ -19,10 +19,12 @@ export function ConversationTimeline({
   actions,
   activeRun,
   openAssets,
+  openSettings,
 }: {
   actions: Conversations;
   activeRun?: WorkflowRun;
   openAssets: (cases: boolean) => void;
+  openSettings: () => void;
 }) {
   const { t } = useI18n();
   const { turns, error, loading } = useTranscript(actions.session?.id);
@@ -56,30 +58,17 @@ export function ConversationTimeline({
           {t('earlierConversation')}
         </button>
       )}
-      {entries.slice(-visible).map((entry) =>
-        entry.kind === 'message' ? (
-          <article key={entry.id} className={`session-message role-${entry.message.role}`}>
-            <div className="session-message-author">
-              {t(entry.message.role === 'user' ? 'userMessage' : 'assistantMessage')}
-            </div>
-            {entry.message.text &&
-              (entry.message.role === 'user' ? (
-                <SourceMessage text={entry.message.text} />
-              ) : (
-                <div className="session-message-text">{entry.message.text}</div>
-              ))}
-            {entry.message.errorCode && (
-              <p className="wb-error">
-                {isMessageKey(entry.message.errorCode) ? t(entry.message.errorCode) : t('cli_failed')}
-              </p>
-            )}
-          </article>
-        ) : entry.kind === 'turn' ? (
-          <WorkflowCallCard key={entry.id} turn={entry.turn} run={entry.run} openArtifact={openArtifact} />
-        ) : (
-          <DecisionEntry key={entry.id} entry={entry} openArtifact={openArtifact} />
-        ),
-      )}
+      {entries
+        .slice(-visible)
+        .map((entry) =>
+          entry.kind === 'message' ? (
+            <ChatMessage key={entry.id} message={entry.message} openSettings={openSettings} />
+          ) : entry.kind === 'turn' ? (
+            <WorkflowCallCard key={entry.id} turn={entry.turn} run={entry.run} openArtifact={openArtifact} />
+          ) : (
+            <DecisionEntry key={entry.id} entry={entry} openArtifact={openArtifact} />
+          ),
+        )}
       {missingHistory && <p className="session-transcript-notice">{t('legacyTranscriptMissing')}</p>}
       {activeRun?.status === 'awaiting_review' && (
         <section className="session-current-interaction">

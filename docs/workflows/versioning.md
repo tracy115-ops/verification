@@ -2,7 +2,7 @@
 
 ## 应用版本
 
-采用 `MAJOR.MINOR.PATCH`：不兼容升级递增 MAJOR，兼容功能递增 MINOR，修复递增 PATCH。当前基线为 **0.8.1**；0.x 阶段的不兼容变更递增 MINOR，并在发布说明中列出迁移影响。完成[企业化验收](../roadmap/enterprise-readiness.md)后再规划 1.0.0。
+采用 `MAJOR.MINOR.PATCH`：不兼容升级递增 MAJOR，兼容功能递增 MINOR，修复递增 PATCH。当前为 **0.8.x** 系列，具体版本以 `package.json` 为准；0.x 阶段的不兼容变更递增 MINOR，并在发布说明中列出迁移影响。完成[企业化验收](../roadmap/enterprise-readiness.md)后再规划 1.0.0。
 
 - `0.8.x`：设计增量提议、任务恢复及可靠性修复。
 - 后续 MINOR：按企业化清单交付兼容功能；不预先标记尚未完成的范围。
@@ -12,7 +12,7 @@
 `package.json` 为版本入口，必须同步 npm 锁文件、Tauri 配置、Cargo workspace 和四个本地 crate 的锁文件版本。版本不是工作流修订号、项目协作 revision 或产物 schemaVersion。
 
 ```powershell
-npm.cmd run version:set -- 0.8.2
+npm.cmd run version:set -- 0.8.3
 npm.cmd run version:check
 ```
 
@@ -25,10 +25,10 @@ npm.cmd run version:check
 Rust 工具链由根目录 `rust-toolchain.toml` 固定为本地已验证的 1.97.0；升级工具链单独验证，不随 CI 的 stable 渠道自动漂移。`v0.1.0` 与 `v0.1.1` 的远端构建失败且没有发布附件；修复并发目录冲突后使用 `v0.1.2`，不覆盖原标签。
 
 ```powershell
-# 以下以尚未发布的下一 PATCH 为例，先提交版本及 docs/releases/0.8.2.md：
+# 以下以尚未发布的下一 PATCH 为例，先提交版本及 docs/releases/0.8.3.md：
 git push origin main
-git tag -a v0.8.2 -m 'Release 0.8.2'
-git push origin v0.8.2
+git tag -a v0.8.3 -m 'Release 0.8.3'
+git push origin v0.8.3
 ```
 
 标签与已发布附件不覆盖；发布后修复使用新 PATCH 版本。未发布成功时可以在原标签重跑工作流；已存在 Release 时创建操作会失败，不静默替换附件。

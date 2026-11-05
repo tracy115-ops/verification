@@ -82,6 +82,7 @@ export interface WorkflowRun {
   errorCode?: string;
 }
 export interface ConversationMessage {
+  cli?: { driver: DriverId; model: string; turnId: string };
   id: string;
   role: 'user' | 'assistant';
   text: string;

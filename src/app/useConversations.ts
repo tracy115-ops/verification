@@ -115,7 +115,7 @@ export function useConversations(
           (event) => tasks.onEvent(value.id, event),
           controller.signal,
         );
-        const settled = { ...value, messages: [...value.messages, replyMessage(result)] };
+        const settled = { ...value, messages: [...value.messages, replyMessage(result, request)] };
         delete settled.activeTurnId;
         changeSession(settled);
       }

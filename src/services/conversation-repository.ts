@@ -196,6 +196,16 @@ const sessionSchema = {
           text: { type: 'string', maxLength: 2097152 },
           createdAt: string,
           status: { enum: ['complete', 'failed', 'interrupted'] },
+          cli: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['driver', 'model', 'turnId'],
+            properties: {
+              driver: { enum: ['codex', 'claude', 'codeagent', 'pi'] },
+              model: { type: 'string', maxLength: 200 },
+              turnId: { type: 'string', minLength: 1, maxLength: 200 },
+            },
+          },
           ...optionalStrings,
         },
       },

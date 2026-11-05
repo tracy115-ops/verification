@@ -22,6 +22,8 @@ pub fn classify(message: &str) -> Option<&'static str> {
         "authentication failed",
         "invalid api key",
         "please log in",
+        "not logged in",
+        "please run /login",
         "token expired",
     ]
     .iter()
@@ -85,5 +87,16 @@ mod tests {
             Some("cli_model_ambiguous")
         );
         assert_eq!(classify("unknown native failure"), None);
+    }
+
+    #[test]
+    fn interactive_login_prompts_are_auth_failures() {
+        for message in [
+            "Not logged in · Please run /login",
+            "Not logged in. Please run /login to authenticate the model provider",
+            "Please run /login",
+        ] {
+            assert_eq!(classify(message), Some("cli_auth_failed"));
+        }
     }
 }

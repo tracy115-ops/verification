@@ -97,6 +97,7 @@ export function SessionWorkspace({
             actions={actions}
             activeRun={activeRun}
             openAssets={openAssets}
+            openSettings={openSettings}
           />
         </div>
         {actions.error && (

@@ -1,4 +1,12 @@
 export const conversationZh = {
+  chatCallFailed: '本条消息发送失败。请查看调用信息，处理后重新发送。',
+  chatSignInRecovery:
+    '请先在系统终端启动本条回复所示的 CLI 并完成登录。终端能正常回复后，回到此会话重新发送。',
+  chatModelRecovery:
+    '请在 Agent 设置中核对本条回复所示的模型，并确认对应 CLI 账户有访问权限。修复后重新发送即可。',
+  chatInternalModelRecovery:
+    'CodeAgent 使用 CLI 内置模型配置，请先在其原生终端修复模型访问，无需在本应用填写模型 ID。',
+  chatFailureDetails: '调用信息',
   composerMissingProfile: '原 Agent 配置不可用，请重新选择',
   composerMissingFramework: '原框架配置不可用，请重新选择',
   composerDraftWhileRunning: '可起草下一条消息；当前任务结束后才能发送，草稿不会改变正在运行的任务。',
@@ -207,6 +215,14 @@ export const conversationZh = {
 };
 
 export const conversationEn: Record<keyof typeof conversationZh, string> = {
+  chatCallFailed: 'This message failed. Inspect the call details, resolve the issue, then send it again.',
+  chatSignInRecovery:
+    'Open the CLI shown on this reply in your system terminal and sign in. Once it replies successfully there, return to this conversation and send again.',
+  chatModelRecovery:
+    'Check the model shown on this reply in Agent settings and confirm that the CLI account can access it. Send again after resolving the issue.',
+  chatInternalModelRecovery:
+    'CodeAgent uses its internal CLI model configuration. Restore model access in its native terminal; no model ID is needed in this app.',
+  chatFailureDetails: 'Call details',
   composerMissingProfile: 'Previous Agent unavailable; select another',
   composerMissingFramework: 'Previous framework unavailable; select another',
   composerDraftWhileRunning:

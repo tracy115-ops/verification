@@ -1,3 +1,15 @@
+.session-chat-failure {
+  display: grid;
+  gap: calc(var(--wb-space) / 2);
+  margin-top: calc(var(--wb-space) / 2);
+  color: var(--wb-muted);
+}
+.session-chat-failure p {
+  margin: 0;
+}
+.session-chat-failure > button {
+  justify-self: start;
+}
 .session-workspace {
   position: relative;
   display: grid;
