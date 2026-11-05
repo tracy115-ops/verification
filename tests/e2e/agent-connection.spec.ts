@@ -12,6 +12,11 @@ test('checks the saved model on request, invalidates success after edits and rep
         transformCallback: () => 1,
         unregisterCallback: () => {},
         invoke: async (command: string, payload: { request?: unknown }) => {
+          if (command === 'read_cli_model_hints')
+            return {
+              status: 'found',
+              candidates: [{ model: 'fixture-model', source: 'D:\\Claude Config\\settings.json' }],
+            };
           if (command === 'send_cli_turn') {
             sessionStorage.setItem('connection.request', JSON.stringify(payload.request));
             calls++;
@@ -40,7 +45,10 @@ test('checks the saved model on request, invalidates success after edits and rep
     .filter({ has: page.getByRole('textbox') })
     .filter({ hasText: 'claude / native' });
   await expect(check.getByRole('button', { name: '发送短测试' })).toBeDisabled();
-  await model.getByRole('textbox').fill('fixture-model');
+  await page.getByRole('button', { name: '读取已有模型配置', exact: true }).click();
+  await expect(page.locator('.settings-model-hints')).toContainText('D:\\Claude Config\\settings.json');
+  await page.getByRole('button', { name: '采用此模型', exact: true }).click();
+  await expect(model.getByRole('textbox')).toHaveValue('fixture-model');
   await expect(check.getByRole('button', { name: '发送短测试' })).toBeDisabled();
   await page.getByLabel('要配置的 Agent').selectOption('codex-native');
   await page.getByLabel('要配置的 Agent').selectOption('claude-native');

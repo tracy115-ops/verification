@@ -246,6 +246,18 @@
   display: block;
   margin-top: 8px;
 }
+.settings-model-hints {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+.settings-model-hints .settings-instance-choice {
+  width: 100%;
+}
+.settings-model-hints small {
+  display: block;
+  margin-top: 4px;
+}
 .settings-frameworks {
   max-width: 1100px;
   margin: 24px auto;

@@ -34,6 +34,7 @@ pub fn run() -> tauri::Result<()> {
             probe_agents,
             cli_settings::discover_cli_instances,
             cli_settings::pick_cli_path,
+            cli_settings::read_cli_model_hints,
             conversations::send_cli_turn,
             conversations::cancel_cli_turn,
             executions::preflight_python,

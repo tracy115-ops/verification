@@ -1,6 +1,18 @@
 use tauri_plugin_dialog::DialogExt;
 
 #[tauri::command]
+pub async fn read_cli_model_hints(
+    driver: agent_runtime::DriverId,
+    config_directory: Option<std::path::PathBuf>,
+) -> Result<agent_runtime::ModelHints, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        agent_runtime::read_model_hints(driver, config_directory).map_err(str::to_string)
+    })
+    .await
+    .map_err(|_| "cliModelReadFailed".to_string())?
+}
+
+#[tauri::command]
 pub async fn discover_cli_instances() -> Result<Vec<agent_runtime::CliInstance>, String> {
     tauri::async_runtime::spawn_blocking(agent_runtime::discover_cli_instances)
         .await

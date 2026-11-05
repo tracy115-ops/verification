@@ -2,6 +2,7 @@ import type { AgentProfile } from '../../domain/workflow';
 import { useI18n } from '../../shared/i18n/context';
 import { NativeLaunchEditor } from './NativeLaunchEditor';
 import { AgentConnectionCheck } from './AgentConnectionCheck';
+import { ModelHintsPicker } from './ModelHintsPicker';
 
 export function NativeAgentSetup({
   profile,
@@ -25,6 +26,13 @@ export function NativeAgentSetup({
       </header>
       <section>
         <h4>{t('agentSetupModelStep')}</h4>
+        {!internal && (
+          <ModelHintsPicker
+            key={`${profile.driver}-${JSON.stringify(profile.launch)}`}
+            profile={profile}
+            adopt={changeModel}
+          />
+        )}
         {internal ? (
           <p>{t('codeagentManagedModel')}</p>
         ) : (

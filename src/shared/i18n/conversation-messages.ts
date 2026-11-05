@@ -49,6 +49,13 @@ export const conversationZh = {
   transcript_delete_failed: '部分 CLI 对话原始记录未能清理。',
   nativeModels: 'CLI 模型配置',
   cliInstance: 'CLI 实例',
+  cliModelRead: '读取已有模型配置',
+  cliModelAdopt: '采用此模型',
+  cliModelReadFailed: '无法读取模型配置，请重试或手动填写模型 ID。',
+  cliModelNotFound: '未找到可读取的模型字段。请从 CLI 或服务提供方确认模型 ID；不会猜测或覆盖你的输入。',
+  cliModelCandidatesHint:
+    '以下是配置中的候选模型。只读模型字段，不返回密钥；启动脚本、项目或组织配置可能覆盖它。采用后请保存并测试。',
+  cliModelInvalidFile: '配置文件过大、格式不受支持或无法解析；未解析内容不会显示。',
   agentSetupTitle: '配置并测试 Agent',
   agentSetupIntro: '选择一个 Agent，按下面两步完成配置。路径通常保持自动发现即可。',
   agentSetupChoose: '要配置的 Agent',
@@ -327,6 +334,15 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
   transcript_delete_failed: 'Some original CLI transcript records could not be removed.',
   nativeModels: 'CLI model configuration',
   cliInstance: 'CLI instance',
+  cliModelRead: 'Read existing model configuration',
+  cliModelAdopt: 'Use this model',
+  cliModelReadFailed: 'Unable to read model configuration. Retry or enter the model ID manually.',
+  cliModelNotFound:
+    'No readable model field found. Confirm the ID in the CLI or with your Provider. Your input is never guessed or overwritten.',
+  cliModelCandidatesHint:
+    'Model candidates from configuration only; no credentials are returned. Launchers, project settings or organization policy may override these values. Save and test after adopting.',
+  cliModelInvalidFile:
+    'Configuration is oversized, unsupported or invalid. Unparsed contents are never displayed.',
   agentSetupTitle: 'Configure and test an Agent',
   agentSetupIntro:
     'Choose one Agent and follow the two steps below. Automatic CLI discovery is usually sufficient.',
