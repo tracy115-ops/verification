@@ -24,6 +24,7 @@ semver = "1"
 sha2 = "0.10"
 tauri = { version = "2", features = [] }
 tokio = { version = "1", features = ["sync", "fs", "process", "net", "time", "io-util"] }
+tauri-plugin-dialog = "2"
 
 [dev-dependencies]
 tempfile = "3"

@@ -240,9 +240,31 @@
 .settings-native-instance summary {
   cursor: pointer;
 }
-.settings-native-instance .settings-fields {
+.settings-instance-form {
+  display: grid;
+  gap: 16px;
   margin-block: 12px;
   align-items: start;
+}
+.settings-instance-choice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+  min-width: 0;
+}
+.settings-instance-choice > label,
+.settings-instance-path {
+  flex: 1;
+  min-width: min(260px, 100%);
+  overflow-wrap: anywhere;
+}
+.settings-instance-choice select {
+  width: 100%;
+  min-width: 0;
+}
+.settings-instance-advanced .wb-field {
+  margin-top: 12px;
 }
 .settings-native-instance button {
   justify-self: start;

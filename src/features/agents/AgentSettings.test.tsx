@@ -5,6 +5,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { probeAgents } from '../../services/agent-api';
 import { AgentSettings } from './AgentSettings';
 import { NativeModels } from './NativeModels';
+import { NativeLaunchEditor } from './NativeLaunchEditor';
 import type { AgentProfile } from '../../domain/workflow';
 
 vi.mock('@tauri-apps/api/core', () => ({ isTauri: () => true, invoke: vi.fn() }));
@@ -33,6 +34,7 @@ const found = {
 
 it('edits a Claude launcher and config directory independently from the model', () => {
   const save = vi.fn();
+  vi.mocked(invoke).mockImplementation(async (command) => (command === 'pick_cli_path' ? null : []));
   const profile: AgentProfile = { ...native, driver: 'claude', model: 'example-model' };
   render(<NativeModels profiles={[profile]} saveProfile={save} />);
   fireEvent.click(screen.getByText(/CLI 实例/, { selector: 'summary' }));
@@ -75,6 +77,29 @@ it('synchronizes native profile installation and version without implying Provid
   expect(row(codex.name).getByText('CLI 已发现 · 模型未配置')).toBeTruthy();
   expect(row(provider.name).getByText('Provider 配置 · 接口未检测')).toBeTruthy();
   expect(row(provider.name).queryByText(found.version)).toBeNull();
+});
+
+it('preserves a bound instance on scan failure and can restore automatic selection without typing', async () => {
+  const save = vi.fn();
+  const profile: AgentProfile = {
+    ...native,
+    driver: 'claude',
+    model: 'example',
+    launch: {
+      executablePath: 'D:\\Tools\\claude.cmd',
+      configDirectory: 'D:\\Config',
+    },
+  };
+  vi.mocked(invoke).mockRejectedValue(new Error('offline_fixture'));
+  render(<NativeLaunchEditor profile={profile} save={save} />);
+  fireEvent.click(screen.getByText('重新扫描'));
+  await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy());
+  expect((screen.getByLabelText('选择本机实例') as HTMLSelectElement).value).toBe('D:\\Tools\\claude.cmd');
+  fireEvent.change(screen.getByLabelText('选择本机实例'), { target: { value: '' } });
+  fireEvent.click(screen.getByText('恢复自动继承'));
+  fireEvent.click(screen.getByText('保存实例绑定'));
+  const { launch: _previous, ...automatic } = profile;
+  expect(save).toHaveBeenCalledWith(automatic);
 });
 
 it.each(['missing', 'failed'] as const)(

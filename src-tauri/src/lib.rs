@@ -16,6 +16,7 @@ pub fn run() -> tauri::Result<()> {
         std::process::exit(code);
     }
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .manage(conversations::ConversationRuntime::default())
         .manage(executions::ExecutionRuntime::default())
         .manage(collaboration::CollaborationRuntime::default())
@@ -31,6 +32,8 @@ pub fn run() -> tauri::Result<()> {
         })
         .invoke_handler(tauri::generate_handler![
             probe_agents,
+            cli_settings::discover_cli_instances,
+            cli_settings::pick_cli_path,
             conversations::send_cli_turn,
             conversations::cancel_cli_turn,
             executions::preflight_python,
@@ -56,6 +59,7 @@ pub fn run() -> tauri::Result<()> {
         .run(tauri::generate_context!())
 }
 mod cli_progress;
+mod cli_settings;
 mod collaboration;
 mod conversations;
 mod diagnostics;

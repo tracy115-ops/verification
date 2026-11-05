@@ -2,6 +2,8 @@ import { useState } from 'react';
 import type { AgentProfile } from '../../domain/workflow';
 import { validCliLaunch } from '../../domain/cli-launch';
 import { useI18n } from '../../shared/i18n/context';
+import { hasDesktopBridge } from '../../services/agent-api';
+import { useCliInstances } from './useCliInstances';
 
 export function NativeLaunchEditor({
   profile,
@@ -13,18 +15,28 @@ export function NativeLaunchEditor({
   const { t } = useI18n();
   const [executable, setExecutable] = useState(profile.launch?.executablePath ?? '');
   const [directory, setDirectory] = useState(profile.launch?.configDirectory ?? '');
+  const chooser = useCliInstances(profile.driver);
+  const desktop = hasDesktopBridge();
+  const choices = chooser.instances.map((item) => item.executablePath);
+  if (executable && !choices.includes(executable)) choices.unshift(executable);
   const launch = {
     ...(executable.trim() ? { executablePath: executable.trim() } : {}),
     ...(directory.trim() ? { configDirectory: directory.trim() } : {}),
   };
   return (
-    <details className="settings-native-instance">
+    <details
+      className="settings-native-instance"
+      onToggle={(event) => {
+        if (event.currentTarget.open && desktop && !chooser.scanned && !chooser.busy && !chooser.error)
+          void chooser.scan();
+      }}
+    >
       <summary>
         {profile.name} · {t('cliInstance')}
       </summary>
       <p className="wb-muted">{t('cliInstanceHint')}</p>
       <form
-        className="settings-fields"
+        className="settings-instance-form"
         onSubmit={(event) => {
           event.preventDefault();
           if (!validCliLaunch(launch, profile.driver)) return;
@@ -34,30 +46,92 @@ export function NativeLaunchEditor({
           save(next);
         }}
       >
-        <label className="wb-field">
-          {t('cliExecutablePath')}
-          <input
-            className="workbench-input"
-            value={executable}
-            maxLength={4096}
-            placeholder={t('cliPathAutomatic')}
-            onChange={(event) => setExecutable(event.target.value)}
-          />
-        </label>
-        {profile.driver === 'claude' && (
+        <div className="settings-instance-choice">
           <label className="wb-field">
-            {t('cliConfigDirectory')}
+            {t('cliChooseInstance')}
+            <select
+              className="workbench-select"
+              value={executable}
+              onChange={(event) => setExecutable(event.target.value)}
+            >
+              <option value="">{t('cliPathAutomatic')}</option>
+              {choices.map((path) => (
+                <option key={path} value={path}>
+                  {path}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            className="workbench-btn"
+            type="button"
+            disabled={!desktop || chooser.busy}
+            onClick={() => void chooser.scan()}
+          >
+            {t(chooser.busy ? 'detecting' : 'cliScanInstances')}
+          </button>
+          <button
+            className="workbench-btn"
+            type="button"
+            disabled={!desktop || chooser.busy}
+            onClick={() => void chooser.browse('executable', setExecutable)}
+          >
+            {t('cliBrowseExecutable')}
+          </button>
+        </div>
+        {chooser.scanned && !chooser.instances.length && <p className="wb-muted">{t('cliNoInstances')}</p>}
+        {chooser.error && (
+          <p className="wb-error" role="alert">
+            {t(chooser.error)}
+          </p>
+        )}
+        {!desktop && <p className="wb-muted">{t('browserOnly')}</p>}
+        {profile.driver === 'claude' && (
+          <div className="wb-field">
+            <span>{t('cliConfigDirectory')}</span>
+            <div className="settings-instance-choice">
+              <span className="wb-muted settings-instance-path">{directory || t('cliConfigInherited')}</span>
+              <button
+                className="workbench-btn"
+                type="button"
+                disabled={!desktop || chooser.busy}
+                onClick={() => void chooser.browse('configuration', setDirectory)}
+              >
+                {t('cliBrowseDirectory')}
+              </button>
+              {directory && (
+                <button className="workbench-btn" type="button" onClick={() => setDirectory('')}>
+                  {t('cliUseInherited')}
+                </button>
+              )}
+            </div>
+            <small className="wb-muted">{t('claudeInstanceAuthHint')}</small>
+          </div>
+        )}
+        <details className="settings-instance-advanced">
+          <summary>{t('cliAdvancedPaths')}</summary>
+          <label className="wb-field">
+            {t('cliExecutablePath')}
             <input
               className="workbench-input"
-              value={directory}
+              value={executable}
               maxLength={4096}
-              placeholder={t('cliConfigInherited')}
-              onChange={(event) => setDirectory(event.target.value)}
+              onChange={(event) => setExecutable(event.target.value)}
             />
-            <small className="wb-muted">{t('claudeInstanceAuthHint')}</small>
           </label>
-        )}
-        <button className="workbench-btn" disabled={!validCliLaunch(launch, profile.driver)}>
+          {profile.driver === 'claude' && (
+            <label className="wb-field">
+              {t('cliConfigDirectory')}
+              <input
+                className="workbench-input"
+                value={directory}
+                maxLength={4096}
+                onChange={(event) => setDirectory(event.target.value)}
+              />
+            </label>
+          )}
+        </details>
+        <button className="workbench-btn" disabled={chooser.busy || !validCliLaunch(launch, profile.driver)}>
           {t('saveCliInstance')}
         </button>
       </form>
