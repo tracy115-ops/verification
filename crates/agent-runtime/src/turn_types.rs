@@ -25,13 +25,18 @@ impl DriverId {
 pub struct CliLaunch {
     pub executable_path: Option<String>,
     pub config_directory: Option<String>,
+    pub settings_file: Option<String>,
 }
 
 impl CliLaunch {
     fn validate(&self, driver: DriverId) -> Result<(), &'static str> {
-        for path in [&self.executable_path, &self.config_directory]
-            .into_iter()
-            .flatten()
+        for path in [
+            &self.executable_path,
+            &self.config_directory,
+            &self.settings_file,
+        ]
+        .into_iter()
+        .flatten()
         {
             if path.len() > 4096
                 || path.chars().any(char::is_control)
@@ -40,7 +45,9 @@ impl CliLaunch {
                 return Err("cli_path_invalid");
             }
         }
-        if self.config_directory.is_some() && !matches!(driver, DriverId::Claude) {
+        if (self.config_directory.is_some() || self.settings_file.is_some())
+            && !matches!(driver, DriverId::Claude)
+        {
             return Err("cli_config_invalid");
         }
         Ok(())

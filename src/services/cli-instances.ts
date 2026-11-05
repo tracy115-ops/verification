@@ -25,7 +25,7 @@ export async function discoverCliInstances(): Promise<CliInstance[]> {
   return value;
 }
 
-export async function pickCliPath(kind: 'executable' | 'configuration'): Promise<string | null> {
+export async function pickCliPath(kind: 'executable' | 'configuration' | 'settings'): Promise<string | null> {
   const value: unknown = await invoke('pick_cli_path', { kind });
   if (value === null) return null;
   if (typeof value !== 'string' || !validCliLaunch({ executablePath: value }, 'claude'))

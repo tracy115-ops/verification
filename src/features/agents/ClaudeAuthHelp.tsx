@@ -9,7 +9,7 @@ export function ClaudeAuthHelp({ profile }: { profile: AgentProfile }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => {
     let active = true;
-    void inspectClaudeSetup(profile.launch?.configDirectory)
+    void inspectClaudeSetup(profile.launch?.configDirectory, profile.launch?.settingsFile)
       .then((value) => {
         if (active) setSetup(value);
       })
@@ -19,7 +19,7 @@ export function ClaudeAuthHelp({ profile }: { profile: AgentProfile }) {
     return () => {
       active = false;
     };
-  }, [profile.launch?.configDirectory]);
+  }, [profile.launch?.configDirectory, profile.launch?.settingsFile]);
   if (failed) return <p className="wb-muted">{t('cliSetupInspectFailed')}</p>;
   if (!setup) return <p className="wb-muted">{t('claudeInspectingAuth')}</p>;
   const found =
@@ -32,6 +32,11 @@ export function ClaudeAuthHelp({ profile }: { profile: AgentProfile }) {
         {t('claudeConfigUsed')} <code>{setup.configDirectory}</code>
       </p>
       <ul>
+        {setup.settingsFile && (
+          <li>
+            {t('claudeSettingsFile')} <code>{setup.settingsFile}</code>
+          </li>
+        )}
         <li>{t(setup.environmentAuth ? 'claudeEnvAuthPresent' : 'claudeEnvAuthMissing')}</li>
         <li>
           {t(

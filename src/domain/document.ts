@@ -15,6 +15,7 @@ export const profileSchema = {
       properties: {
         executablePath: { type: 'string', minLength: 1, maxLength: 4096 },
         configDirectory: { type: 'string', minLength: 1, maxLength: 4096 },
+        settingsFile: { type: 'string', minLength: 1, maxLength: 4096 },
       },
     },
     id: { type: 'string', minLength: 1 },

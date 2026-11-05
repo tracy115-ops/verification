@@ -3,9 +3,10 @@ use tauri_plugin_dialog::DialogExt;
 #[tauri::command]
 pub async fn inspect_claude_setup(
     config_directory: Option<std::path::PathBuf>,
+    settings_file: Option<std::path::PathBuf>,
 ) -> Result<agent_runtime::ClaudeSetup, String> {
     tauri::async_runtime::spawn_blocking(move || {
-        agent_runtime::inspect_claude_setup(config_directory).map_err(str::to_string)
+        agent_runtime::inspect_claude_setup(config_directory, settings_file).map_err(str::to_string)
     })
     .await
     .map_err(|_| "cliSetupInspectFailed".to_string())?
@@ -15,8 +16,15 @@ pub async fn inspect_claude_setup(
 pub async fn read_cli_model_hints(
     driver: agent_runtime::DriverId,
     config_directory: Option<std::path::PathBuf>,
+    settings_file: Option<std::path::PathBuf>,
 ) -> Result<agent_runtime::ModelHints, String> {
     tauri::async_runtime::spawn_blocking(move || {
+        if let Some(file) = settings_file {
+            if !matches!(driver, agent_runtime::DriverId::Claude) {
+                return Err("cli_config_invalid".into());
+            }
+            return agent_runtime::read_claude_model_file(file).map_err(str::to_string);
+        }
         agent_runtime::read_model_hints(driver, config_directory).map_err(str::to_string)
     })
     .await
@@ -35,6 +43,7 @@ pub async fn discover_cli_instances() -> Result<Vec<agent_runtime::CliInstance>,
 pub enum CliPathKind {
     Executable,
     Configuration,
+    Settings,
 }
 
 #[tauri::command]
@@ -52,6 +61,9 @@ pub async fn pick_cli_path(
                 picker.blocking_pick_file()
             }
             CliPathKind::Configuration => picker.blocking_pick_folder(),
+            CliPathKind::Settings => picker
+                .add_filter("JSON", &["json", "bak"])
+                .blocking_pick_file(),
         };
         selected
             .map(|file| {

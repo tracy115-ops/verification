@@ -62,7 +62,7 @@ export const conversationZh = {
   claudeEndpointPresent: '服务地址：发现自定义配置（不显示地址）',
   claudeEndpointMissing: '服务地址：未发现自定义配置；官方登录可使用默认地址',
   claudeAuthRecovery:
-    'GLM 等第三方模型需要在该 Claude 的原生配置中设置服务地址与认证，或在下方 CLI 实例中选择已有配置目录。官方 Claude 账户需先在终端登录。终端临时变量不会自动进入从桌面启动的应用；本工具不会复制临时凭据。修复后再测试，请勿把密钥发到聊天中。',
+    '终端可用时，请在下方 CLI 实例中选择相同的启动文件、配置目录或 --settings 独立设置文件，保存后重试。GLM 等第三方模型复用其中的服务地址与认证。官方 Claude 账户使用原生登录。请勿把密钥发到聊天中。',
   cliModelRead: '读取已有模型配置',
   cliModelAdopt: '采用此模型',
   cliModelReadFailed: '无法读取模型配置，请重试或手动填写模型 ID。',
@@ -117,6 +117,10 @@ export const conversationZh = {
     '默认自动发现，也可从扫描结果选择或浏览启动文件。绑定用于新调用和新流程，已有流程保留原快照。扫描仅发现入口，不代表登录可用。',
   cliExecutablePath: 'CLI 启动文件的绝对路径',
   cliPathAutomatic: '自动发现（PATH）',
+  claudeSettingsFile: 'Claude 独立设置文件（--settings，可选）',
+  claudeBrowseSettings: '选择设置文件…',
+  claudeSettingsFileHint:
+    '终端使用 --settings 时，选择同一个可信文件。保存后读取已有模型，再发送短测试。仅保存路径，不复制凭据或覆盖默认配置。',
   cliConfigDirectory: 'Claude 配置目录（CLAUDE_CONFIG_DIR）',
   cliConfigInherited: '继承当前 CLI 配置',
   claudeInstanceAuthHint:
@@ -365,7 +369,7 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
   claudeEndpointPresent: 'Endpoint: custom configuration found (address hidden)',
   claudeEndpointMissing: 'Endpoint: no custom configuration found; official sign-in may use the default',
   claudeAuthRecovery:
-    'Third-party models such as GLM require endpoint and authentication in this Claude instance, or an existing configuration directory selected below. Official Claude accounts require terminal sign-in. Temporary terminal variables do not automatically reach desktop-launched apps. Temporary credentials are never copied. Retry after fixing; never send keys in chat.',
+    'If your terminal works, select the same launcher, configuration directory or --settings file in the CLI instance below, save and retry. Third-party models such as GLM reuse its endpoint and authentication. Official Claude accounts use native sign-in. Never send keys in chat.',
   cliModelRead: 'Read existing model configuration',
   cliModelAdopt: 'Use this model',
   cliModelReadFailed: 'Unable to read model configuration. Retry or enter the model ID manually.',
@@ -428,6 +432,10 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
     'Use automatic discovery, choose a scanned instance, or browse for its launcher. New calls and runs use the binding; existing runs keep their snapshot. Discovery does not verify sign-in.',
   cliExecutablePath: 'Absolute CLI launcher path',
   cliPathAutomatic: 'Automatic discovery (PATH)',
+  claudeSettingsFile: 'Claude settings file (--settings, optional)',
+  claudeBrowseSettings: 'Choose settings file…',
+  claudeSettingsFileHint:
+    'If your terminal uses --settings, select the same trusted file. Save, read the existing model, then send a short test. Only the path is saved; credentials are not copied and defaults are not overwritten.',
   cliConfigDirectory: 'Claude configuration directory (CLAUDE_CONFIG_DIR)',
   cliConfigInherited: 'Inherit current CLI configuration',
   claudeInstanceAuthHint:

@@ -4,6 +4,7 @@ import { validCliLaunch } from '../../domain/cli-launch';
 import { useI18n } from '../../shared/i18n/context';
 import { hasDesktopBridge } from '../../services/agent-api';
 import { useCliInstances } from './useCliInstances';
+import { ClaudeSettingsFile } from './ClaudeSettingsFile';
 
 export function NativeLaunchEditor({
   profile,
@@ -15,6 +16,7 @@ export function NativeLaunchEditor({
   const { t } = useI18n();
   const [executable, setExecutable] = useState(profile.launch?.executablePath ?? '');
   const [directory, setDirectory] = useState(profile.launch?.configDirectory ?? '');
+  const [settingsFile, setSettingsFile] = useState(profile.launch?.settingsFile ?? '');
   const chooser = useCliInstances(profile.driver);
   const desktop = hasDesktopBridge();
   const choices = chooser.instances.map((item) => item.executablePath);
@@ -22,6 +24,7 @@ export function NativeLaunchEditor({
   const launch = {
     ...(executable.trim() ? { executablePath: executable.trim() } : {}),
     ...(directory.trim() ? { configDirectory: directory.trim() } : {}),
+    ...(settingsFile ? { settingsFile } : {}),
   };
   return (
     <details
@@ -107,6 +110,14 @@ export function NativeLaunchEditor({
             </div>
             <small className="wb-muted">{t('claudeInstanceAuthHint')}</small>
           </div>
+        )}
+        {profile.driver === 'claude' && (
+          <ClaudeSettingsFile
+            path={settingsFile}
+            change={setSettingsFile}
+            browse={() => void chooser.browse('settings', setSettingsFile)}
+            disabled={!desktop || chooser.busy}
+          />
         )}
         <details className="settings-instance-advanced">
           <summary>{t('cliAdvancedPaths')}</summary>

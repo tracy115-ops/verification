@@ -6,7 +6,11 @@ afterEach(() => invalidateConnections([]));
 const profile = {
   ...createDocument().profiles.find((item) => item.driver === 'claude')!,
   model: 'fixture-model',
-  launch: { executablePath: 'D:\\Claude One\\claude.cmd', configDirectory: 'D:\\Config One' },
+  launch: {
+    executablePath: 'D:\\Claude One\\claude.cmd',
+    configDirectory: 'D:\\Config One',
+    settingsFile: 'D:\\Config One\\custom.json',
+  },
 };
 const result: TurnOutcome = {
   status: 'completed',
@@ -29,7 +33,7 @@ it('uses the saved instance, isolated session and model and invalidates changed 
   expect(request?.model).toBe(profile.model);
   expect(request?.timeoutSeconds).toBe(60);
   expect(connectionFor(profile)?.status).toBe('passed');
-  invalidateConnections([{ ...profile, model: 'changed' }]);
+  invalidateConnections([{ ...profile, launch: { ...profile.launch, settingsFile: 'D:\\Other.json' } }]);
   expect(connectionFor(profile)).toBeUndefined();
 });
 

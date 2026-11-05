@@ -21,7 +21,7 @@ export function useCliInstances(driver: DriverId) {
       setBusy(false);
     }
   }
-  async function browse(kind: 'executable' | 'configuration', accept: (path: string) => void) {
+  async function browse(kind: 'executable' | 'configuration' | 'settings', accept: (path: string) => void) {
     if (busy) return;
     setBusy(true);
     setError(undefined);

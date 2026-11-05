@@ -120,20 +120,22 @@ async fn explicit_claude_instances_preserve_wrappers_and_isolate_config_director
         r#"
 process.stdin.resume();
 process.stdin.on('end', () => console.log(JSON.stringify({type:'result', is_error:false,
-result:process.env.INSTANCE_MARKER+'|'+process.env.CLAUDE_CONFIG_DIR})));
+result:process.env.INSTANCE_MARKER+'|'+process.env.CLAUDE_CONFIG_DIR+'|'+process.argv[process.argv.indexOf('--settings')+1]})));
 "#,
     )
     .unwrap();
     for instance in ["first", "second"] {
         let config = fixture.0.join(format!("config {instance}"));
         fs::create_dir(&config).unwrap();
+        let settings = config.join("custom settings.json.bak");
+        fs::write(&settings, "{}").unwrap();
         let wrapper = fixture.0.join(format!("claude {instance}.cmd"));
         fs::write(&wrapper, format!("@echo off\r\nset INSTANCE_MARKER={instance}\r\n\"{}\" \"%~dp0instance.cjs\" %*\r\n", node.display())).unwrap();
         let request = serde_json::from_value(serde_json::json!({
             "turnId":"12345678-1234-1234-1234-123456789abc",
             "sessionId":"12345678-1234-1234-1234-123456789abc",
             "driver":"claude", "model":"fixture-model", "prompt":"hello", "timeoutSeconds":5,
-            "launch":{"executablePath":wrapper, "configDirectory":config}
+            "launch":{"executablePath":wrapper, "configDirectory":config, "settingsFile":settings}
         }))
         .unwrap();
         let (_sender, receiver) = tokio::sync::oneshot::channel();
@@ -141,7 +143,10 @@ result:process.env.INSTANCE_MARKER+'|'+process.env.CLAUDE_CONFIG_DIR})));
             crate::conversation::run_turn_in_paths(request, &fixture.0, receiver, |_| true, &[])
                 .await;
         assert_eq!(outcome.status, "completed", "{:?}", outcome.error_code);
-        assert_eq!(outcome.text, format!("{instance}|{}", config.display()));
+        assert_eq!(
+            outcome.text,
+            format!("{instance}|{}|{}", config.display(), settings.display())
+        );
     }
     let request = serde_json::from_value(serde_json::json!({
         "turnId":"12345678-1234-1234-1234-123456789abc",

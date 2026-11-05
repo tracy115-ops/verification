@@ -8,6 +8,7 @@ export async function readModelHints(profile: AgentProfile): Promise<ModelHints>
   const value: unknown = await invoke('read_cli_model_hints', {
     driver: profile.driver,
     configDirectory: profile.launch?.configDirectory ?? null,
+    settingsFile: profile.launch?.settingsFile ?? null,
   });
   if (!value || typeof value !== 'object') throw new Error('cliModelReadFailed');
   const result = value as ModelHints;

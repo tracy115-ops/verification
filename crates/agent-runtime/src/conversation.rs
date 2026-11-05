@@ -326,6 +326,16 @@ pub(crate) async fn run_turn_in_paths(
             .map(str::to_string)
             .collect()
     };
+    if let Some(file) = request
+        .launch
+        .as_ref()
+        .and_then(|launch| launch.settings_file.as_ref())
+    {
+        if !Path::new(file).is_file() {
+            return TurnOutcome::failed("cli_config_invalid");
+        }
+        args.extend(["--settings".into(), file.clone()]);
+    }
     let _mcp_config =
         match crate::codeagent::prepare_mcp_config(&mut args, workspace, &request.turn_id) {
             Ok(config) => config,

@@ -1,6 +1,7 @@
 export interface CliLaunch {
   executablePath?: string;
   configDirectory?: string;
+  settingsFile?: string;
 }
 
 export function validCliLaunch(value: unknown, driver: string): value is CliLaunch | undefined {
@@ -8,7 +9,8 @@ export function validCliLaunch(value: unknown, driver: string): value is CliLaun
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   return Object.entries(value).every(
     ([key, path]) =>
-      (key === 'executablePath' || (key === 'configDirectory' && driver === 'claude')) &&
+      (key === 'executablePath' ||
+        (['configDirectory', 'settingsFile'].includes(key) && driver === 'claude')) &&
       typeof path === 'string' &&
       path.length > 0 &&
       path.length <= 4096 &&

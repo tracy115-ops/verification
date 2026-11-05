@@ -36,7 +36,11 @@ it('preserves independent Claude instance bindings in persistence and chat reque
   const doc = createDocument();
   const profile = doc.profiles.find((item) => item.driver === 'claude')!;
   profile.model = 'fixture-model';
-  profile.launch = { executablePath: 'D:\\Claude One\\claude.cmd', configDirectory: 'D:\\Config One' };
+  profile.launch = {
+    executablePath: 'D:\\Claude One\\claude.cmd',
+    configDirectory: 'D:\\Config One',
+    settingsFile: 'D:\\Config One\\custom.json',
+  };
   const restored = decodeDocument(JSON.parse(JSON.stringify(doc)));
   const first = restored.profiles.find((item) => item.driver === 'claude')!;
   const session = createSession(first.id);
@@ -56,6 +60,7 @@ it('rejects relative paths, command strings, unknown launch fields and non-Claud
     { executablePath: 'claude --model example' },
     { executablePath: 'D:\\tools\\cli.exe\n' },
     { configDirectory: 'D:\\config' },
+    { settingsFile: 'D:\\settings.json' },
     { executablePath: 'D:\\cli.exe', args: '--secret' },
   ])
     expect(profileIsCompatible({ ...profile, launch })).toBe(false);

@@ -20,6 +20,13 @@ pub struct ModelHints {
     pub candidates: Vec<ModelHint>,
 }
 
+pub fn read_claude_model_file(path: PathBuf) -> Result<ModelHints, &'static str> {
+    if !path.is_absolute() || path.as_os_str().len() > 4096 {
+        return Err("cli_config_invalid");
+    }
+    Ok(read_settings(&path, DriverId::Claude, vec![]))
+}
+
 fn add(candidates: &mut Vec<ModelHint>, model: Option<&str>, source: &str) {
     if let Some(model) = model.filter(|value| {
         !value.trim().is_empty()
@@ -166,6 +173,9 @@ mod tests {
         let hints = read_settings(&path, DriverId::Claude, vec![]);
         assert_eq!(hints.candidates[0].model, "fixture-model");
         assert!(!serde_json::to_string(&hints).unwrap().contains("secret"));
+        let explicit = read_claude_model_file(path.clone()).unwrap();
+        assert_eq!(explicit.candidates[0].model, "fixture-model");
+        assert!(read_claude_model_file(PathBuf::from("relative.json")).is_err());
         std::fs::write(&path, "not json secret").unwrap();
         let hints = read_settings(&path, DriverId::Claude, vec![]);
         assert_eq!(hints.status, "invalid");

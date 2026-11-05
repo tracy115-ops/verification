@@ -17,6 +17,7 @@ test('binds a Claude instance, reloads settings and sends through that instance'
             ];
           if (command === 'pick_cli_path') {
             if (payload.kind === 'configuration') return 'D:\\Claude Config';
+            if (payload.kind === 'settings') return 'D:\\Claude Config\\custom.json.bak';
             return fileSelections++ === 0 ? null : 'D:\\Claude One\\claude.cmd';
           }
           if (command === 'send_cli_turn') {
@@ -45,6 +46,7 @@ test('binds a Claude instance, reloads settings and sends through that instance'
   await instance.getByRole('button', { name: '选择启动文件…' }).click();
   await expect(instance.getByLabel('选择本机实例')).toHaveValue('D:\\Claude One\\claude.cmd');
   await instance.getByRole('button', { name: '选择配置目录…' }).click();
+  await instance.getByRole('button', { name: '选择设置文件…' }).click();
   await instance.getByRole('button', { name: '保存实例绑定' }).click();
   const model = page.locator('.settings-model-row').filter({ hasText: 'claude / native' });
   await model.getByRole('textbox').fill('fixture-model');
@@ -55,7 +57,10 @@ test('binds a Claude instance, reloads settings and sends through that instance'
   await page.getByLabel('要配置的 Agent').selectOption('claude-native');
   await instance.locator('summary').first().click();
   await expect(instance.getByLabel('选择本机实例')).toHaveValue('D:\\Claude One\\claude.cmd');
-  await expect(instance.locator('.settings-instance-path')).toHaveText('D:\\Claude Config');
+  await expect(instance.locator('.settings-instance-path')).toHaveText([
+    'D:\\Claude Config',
+    'D:\\Claude Config\\custom.json.bak',
+  ]);
   await page.screenshot({ path: '.runtime/cli-instance-settings.png' });
   for (const width of [900, 1500]) {
     await page.setViewportSize({ width, height: 960 });
@@ -76,6 +81,7 @@ test('binds a Claude instance, reloads settings and sends through that instance'
   expect(request.launch).toEqual({
     executablePath: 'D:\\Claude One\\claude.cmd',
     configDirectory: 'D:\\Claude Config',
+    settingsFile: 'D:\\Claude Config\\custom.json.bak',
   });
   expect(request.model).toBe('fixture-model');
 });
