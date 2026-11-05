@@ -49,6 +49,17 @@ export const conversationZh = {
   transcript_delete_failed: '部分 CLI 对话原始记录未能清理。',
   nativeModels: 'CLI 模型配置',
   cliInstance: 'CLI 实例',
+  agentSetupTitle: '配置并测试 Agent',
+  agentSetupIntro: '选择一个 Agent，按下面两步完成配置。路径通常保持自动发现即可。',
+  agentSetupChoose: '要配置的 Agent',
+  agentSetupReuse:
+    '先确认此 CLI 在系统终端能正常对话。应用复用它已有的登录与 Provider 配置，这里不用再填密钥或服务地址。',
+  agentSetupModelStep: '1. 确认模型',
+  agentSetupTestStep: '2. 测试已保存配置',
+  agentSetupModelHint:
+    '填写在该 CLI 中实际可用的模型 ID，不是界面展示名称。可从已有 CLI 配置或你的服务提供方确认；本工具目前不能自动列出可用模型。',
+  agentSetupUnsaved: '模型已修改，先点击“保存模型”，再测试。',
+  agentSetupMissingModel: '请先在上方填写模型 ID 并保存。',
   connectionCheck: '连通检查',
   connectionCheckSend: '发送短测试',
   connectionCheckHint:
@@ -316,6 +327,18 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
   transcript_delete_failed: 'Some original CLI transcript records could not be removed.',
   nativeModels: 'CLI model configuration',
   cliInstance: 'CLI instance',
+  agentSetupTitle: 'Configure and test an Agent',
+  agentSetupIntro:
+    'Choose one Agent and follow the two steps below. Automatic CLI discovery is usually sufficient.',
+  agentSetupChoose: 'Agent to configure',
+  agentSetupReuse:
+    'First confirm this CLI replies in your system terminal. The app reuses its login and Provider configuration. No API key or endpoint is required here.',
+  agentSetupModelStep: '1. Confirm the model',
+  agentSetupTestStep: '2. Test saved configuration',
+  agentSetupModelHint:
+    'Use a model ID supported by this CLI, rather than a display name. Check its existing configuration or your Provider. Automatic model listing is not available yet.',
+  agentSetupUnsaved: 'Model changed. Save the model before testing.',
+  agentSetupMissingModel: 'Enter a model ID above and save it first.',
   connectionCheck: 'Connection check',
   connectionCheckSend: 'Send short test',
   connectionCheckHint:

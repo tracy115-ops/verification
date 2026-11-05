@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import type { AgentProfile } from '../../domain/workflow';
 import { useI18n } from '../../shared/i18n/context';
-import { NativeLaunchEditor } from './NativeLaunchEditor';
-import { AgentConnectionCheck } from './AgentConnectionCheck';
+import { NativeAgentSetup } from './NativeAgentSetup';
 
 export function NativeModels({
   profiles,
@@ -12,59 +11,39 @@ export function NativeModels({
   saveProfile: (profile: AgentProfile) => void;
 }) {
   const { t } = useI18n();
+  const native = profiles.filter((profile) => profile.protocol === 'native');
+  const [selected, setSelected] = useState(native[0]?.id ?? '');
+  const [drafts, setDrafts] = useState<Record<string, { base: string; value: string }>>({});
+  const profile = native.find((item) => item.id === selected) ?? native[0];
   return (
     <section className="settings-native-models">
-      <h2>{t('nativeModels')}</h2>
-      <p className="wb-muted">{t('nativeModelsHint')}</p>
-      {profiles
-        .filter((profile) => profile.protocol === 'native')
-        .map((profile) => (
-          <div key={profile.id}>
-            <AgentConnectionCheck key={`connection-${JSON.stringify(profile)}`} profile={profile} />
-            <NativeLaunchEditor key={JSON.stringify(profile)} profile={profile} save={saveProfile} />
-            {profile.driver === 'codeagent' ? (
-              <div className="settings-model-row" key={profile.id}>
-                <strong>{profile.name}</strong>
-                <div>
-                  <p>{t('codeagentManagedModel')}</p>
-                  <code>codeagent --dangerously-skip-permissions</code>
-                  <small className="wb-muted">{t('codeagentCompatibilityHint')}</small>
-                </div>
-              </div>
-            ) : (
-              <ModelEditor key={`${profile.id}-${profile.model}`} profile={profile} save={saveProfile} />
-            )}
-          </div>
-        ))}
-    </section>
-  );
-}
-function ModelEditor({ profile, save }: { profile: AgentProfile; save: (profile: AgentProfile) => void }) {
-  const { t } = useI18n();
-  const [model, setModel] = useState(profile.model);
-  return (
-    <form
-      className="settings-model-row"
-      onSubmit={(event) => {
-        event.preventDefault();
-        save({ ...profile, model: model.trim() });
-      }}
-    >
-      <strong>{profile.name}</strong>
-      <label className="wb-field">
-        {t('model')} · {profile.name}
-        <input
-          className="workbench-input"
-          required
-          maxLength={200}
-          value={model}
-          placeholder={t('modelRequiredHint')}
-          onChange={(event) => setModel(event.target.value)}
-        />
+      <h2>{t('agentSetupTitle')}</h2>
+      <p className="wb-muted">{t('agentSetupIntro')}</p>
+      <label className="wb-field settings-agent-picker">
+        {t('agentSetupChoose')}
+        <select
+          className="workbench-select"
+          value={profile?.id ?? ''}
+          onChange={(event) => setSelected(event.target.value)}
+        >
+          {native.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.name}
+            </option>
+          ))}
+        </select>
       </label>
-      <button className="workbench-btn" type="submit" disabled={!model.trim()}>
-        {t('saveModel')}
-      </button>
-    </form>
+      {profile && (
+        <NativeAgentSetup
+          key={profile.id}
+          profile={profile}
+          save={saveProfile}
+          model={drafts[profile.id]?.base === profile.model ? drafts[profile.id].value : profile.model}
+          changeModel={(value) =>
+            setDrafts((previous) => ({ ...previous, [profile.id]: { base: profile.model, value } }))
+          }
+        />
+      )}
+    </section>
   );
 }

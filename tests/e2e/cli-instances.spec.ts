@@ -32,6 +32,7 @@ test('binds a Claude instance, reloads settings and sends through that instance'
   await page.goto('/');
   await page.getByRole('button', { name: '设置', exact: true }).click();
   await page.getByRole('button', { name: 'Agent 与 Provider', exact: true }).click();
+  await page.getByLabel('要配置的 Agent').selectOption('claude-native');
   const instance = page.locator('.settings-native-instance').filter({ hasText: 'claude / native' });
   await instance.locator('summary').first().click();
   await expect(instance.getByRole('option', { name: 'D:\\Claude Two\\claude.exe', exact: true })).toHaveCount(
@@ -51,6 +52,7 @@ test('binds a Claude instance, reloads settings and sends through that instance'
   await page.reload();
   await page.getByRole('button', { name: '设置', exact: true }).click();
   await page.getByRole('button', { name: 'Agent 与 Provider', exact: true }).click();
+  await page.getByLabel('要配置的 Agent').selectOption('claude-native');
   await instance.locator('summary').first().click();
   await expect(instance.getByLabel('选择本机实例')).toHaveValue('D:\\Claude One\\claude.cmd');
   await expect(instance.locator('.settings-instance-path')).toHaveText('D:\\Claude Config');

@@ -11,7 +11,15 @@ import {
 } from '../../services/agent-connection';
 import { isMessageKey, useI18n } from '../../shared/i18n/context';
 
-export function AgentConnectionCheck({ profile }: { profile: AgentProfile }) {
+export function AgentConnectionCheck({
+  profile,
+  blocked = false,
+  compact = false,
+}: {
+  profile: AgentProfile;
+  blocked?: boolean;
+  compact?: boolean;
+}) {
   const { t, locale } = useI18n();
   const snapshot = useSyncExternalStore(subscribeConnections, connectionSnapshot);
   const result = connectionFor(profile, snapshot);
@@ -25,13 +33,23 @@ export function AgentConnectionCheck({ profile }: { profile: AgentProfile }) {
     reason = error instanceof Error ? error.message : 'cli_failed';
   }
   return (
-    <section className="settings-model-row" aria-label={`${t('connectionCheck')} · ${profile.name}`}>
+    <section className="settings-connection-check" aria-label={`${t('connectionCheck')} · ${profile.name}`}>
       <div>
-        <strong>
-          {profile.name} · {t('connectionCheck')}
-        </strong>
+        {!compact && (
+          <strong>
+            {profile.name} · {t('connectionCheck')}
+          </strong>
+        )}
         <small className="wb-muted">{t('connectionCheckHint')}</small>
-        {reason && <small>{isMessageKey(reason) ? t(reason) : t('cli_failed')}</small>}
+        {reason && (
+          <small>
+            {reason === 'model_required'
+              ? t('agentSetupMissingModel')
+              : isMessageKey(reason)
+                ? t(reason)
+                : t('cli_failed')}
+          </small>
+        )}
         {result && (
           <p role="status">
             {t(
@@ -56,7 +74,7 @@ export function AgentConnectionCheck({ profile }: { profile: AgentProfile }) {
       ) : (
         <button
           className="workbench-btn"
-          disabled={!hasDesktopBridge() || !!reason}
+          disabled={blocked || !hasDesktopBridge() || !!reason}
           onClick={() => {
             controller.current = new AbortController();
             void checkAgentConnection(profile, new DesktopAgentPort(), controller.current.signal);

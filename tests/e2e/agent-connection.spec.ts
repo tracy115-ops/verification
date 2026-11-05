@@ -33,6 +33,7 @@ test('checks the saved model on request, invalidates success after edits and rep
   await page.goto('/');
   await page.getByRole('button', { name: '设置', exact: true }).click();
   await page.getByRole('button', { name: 'Agent 与 Provider', exact: true }).click();
+  await page.getByLabel('要配置的 Agent').selectOption('claude-native');
   const check = page.getByRole('region', { name: '连通检查 · claude / native', exact: true });
   const model = page
     .locator('.settings-model-row')
@@ -40,6 +41,11 @@ test('checks the saved model on request, invalidates success after edits and rep
     .filter({ hasText: 'claude / native' });
   await expect(check.getByRole('button', { name: '发送短测试' })).toBeDisabled();
   await model.getByRole('textbox').fill('fixture-model');
+  await expect(check.getByRole('button', { name: '发送短测试' })).toBeDisabled();
+  await page.getByLabel('要配置的 Agent').selectOption('codex-native');
+  await page.getByLabel('要配置的 Agent').selectOption('claude-native');
+  await expect(model.getByRole('textbox')).toHaveValue('fixture-model');
+  await expect(page.locator('.settings-agent-setup')).toHaveCount(1);
   await model.getByRole('button', { name: '保存模型' }).click();
   await expect(check).toContainText('可能产生费用');
   await check.getByRole('button', { name: '发送短测试' }).click();
@@ -54,4 +60,15 @@ test('checks the saved model on request, invalidates success after edits and rep
   await check.getByRole('button', { name: '发送短测试' }).click();
   await expect(check).toContainText('CLI 身份认证失败');
   await expect(check.getByRole('status')).toContainText('连通测试未通过');
+  for (const width of [900, 1500]) {
+    await page.setViewportSize({ width, height: 960 });
+    for (const theme of ['light', 'dark']) {
+      await page.evaluate((theme) => {
+        document.documentElement.dataset.theme = theme;
+      }, theme);
+      const setup = page.locator('.settings-agent-setup');
+      expect(await setup.evaluate((element) => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
+      await setup.screenshot({ path: `.runtime/agent-setup-${width}-${theme}.png` });
+    }
+  }
 });

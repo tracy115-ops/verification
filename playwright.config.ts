@@ -1,6 +1,6 @@
 import { defineConfig } from '@playwright/test';
 const production = process.env.WORKBENCH_TEST_PRODUCTION === '1';
-const baseURL = production ? 'http://127.0.0.1:5174' : 'http://127.0.0.1:5173';
+const baseURL = production ? 'http://127.0.0.1:5284' : 'http://127.0.0.1:5173';
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -15,8 +15,8 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: production ? 'npm run preview' : 'npm run dev',
+    command: production ? 'npx vite preview --host 127.0.0.1 --port 5284 --strictPort' : 'npm run dev',
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !production && !process.env.CI,
   },
 });

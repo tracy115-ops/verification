@@ -8,6 +8,7 @@
 | --- | --- |
 | [TestAgent 产品审查与实施计划](roadmap/testagent-product-plan-2026-11.md) | 当前不合理之处、补齐特性、优先级、版本阶段与可验证交付条件 |
 | [0.9.0 发布说明](releases/0.9.0.md) | 首次/继续分析预算、运行能力提示、主动 CLI 连通检查与验收边界 |
+| [Agent 配置步骤](workflows/agent-setup.md) | CodeAgent 内置模型、其他 CLI 模型 ID、实例选择与测试结果说明 |
 | [逐项验收矩阵](quality/acceptance-matrix.md) | 功能正常/失败/恢复路径、样式组合、实测与离线边界及发布门禁 |
 | [0.8.4 CLI 多实例验证](research/cli-instances-0.8.4.md) | 按 Agent 绑定启动路径、Claude 配置目录、快照隔离与验证边界 |
 | [0.8.5 实例选择改进](releases/0.8.5.md) | 自动扫描、启动文件和配置目录选择器，减少手动路径输入 |
