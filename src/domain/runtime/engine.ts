@@ -168,6 +168,7 @@ export async function approveRun(
   initial: WorkflowRun,
   nodeId: string,
   expectedDigest: string,
+  analysisBatchBudget?: number,
 ): Promise<WorkflowRun> {
   const run = structuredClone(initial);
   const node = run.plan.find((node) => node.id === nodeId);
@@ -177,6 +178,21 @@ export async function approveRun(
   if (expectedDigest !== run.steps[nodeId].reviewDigest || expectedDigest !== (await reviewDigest(run, node)))
     throw new Error('approval_stale');
   if (reviewIssues(run, node).length) throw new Error('review_unresolved');
+  if (analysisBatchBudget !== undefined) {
+    const design = run.plan.find(
+      (item) => item.operation === 'scenarios.design' && item.dependsOn.includes(nodeId),
+    );
+    if (
+      node.operation !== 'review.requirements' ||
+      !design ||
+      run.steps[design.id].status !== 'pending' ||
+      !Number.isInteger(analysisBatchBudget) ||
+      analysisBatchBudget < 1 ||
+      analysisBatchBudget > 64
+    )
+      throw new Error('approval_invalid');
+    run.steps[design.id].analysisBatchBudget = analysisBatchBudget;
+  }
   const draftTypes: Record<string, string> = {
     'review.requirements': 'RequirementBaselineDraft',
     'review.coverage': 'TestDesignDraft',
@@ -200,7 +216,12 @@ export async function approveRun(
           : reviewed,
   );
   run.steps[nodeId].status = 'succeeded';
-  run.approvals.push({ nodeId, digest: expectedDigest, approvedAt: new Date().toISOString() });
+  run.approvals.push({
+    nodeId,
+    digest: expectedDigest,
+    approvedAt: new Date().toISOString(),
+    ...(analysisBatchBudget !== undefined ? { analysisBatchBudget } : {}),
+  });
   resumeFromReview(run);
   run.status = 'ready';
   return run;

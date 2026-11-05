@@ -169,7 +169,12 @@ const run = {
         type: 'object',
         additionalProperties: false,
         required: ['nodeId', 'digest', 'approvedAt'],
-        properties: { nodeId: string, digest: string, approvedAt: string },
+        properties: {
+          nodeId: string,
+          digest: string,
+          approvedAt: string,
+          analysisBatchBudget: { type: 'integer', minimum: 1, maximum: 64 },
+        },
       },
     },
   },

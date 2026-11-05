@@ -58,7 +58,7 @@ const advance = (run: WorkflowRun, port: AgentPort, signal = new AbortController
 it('pauses a large design at its budget and resumes all pending relationships without replay', async () => {
   let run = await advance(runForSpec(), testPort().port);
   const review = run.plan.find((node) => run.steps[node.id].status === 'awaiting_review')!;
-  run = await approveRun(run, review.id, run.steps[review.id].reviewDigest!);
+  run = await approveRun(run, review.id, run.steps[review.id].reviewDigest!, 4);
   const key = Object.keys(run.artifacts).find((key) => run.artifacts[key].type === 'RequirementBaseline')!;
   const baseline = decodeRequirements(run.artifacts[key].value, largeSpec);
   for (const requirement of baseline.requirements) requirement.text += 'a'.repeat(5800);
@@ -68,7 +68,7 @@ it('pauses a large design at its budget and resumes all pending relationships wi
   const node = run.plan.find((item) => item.operation === 'scenarios.design')!;
   const indexes: number[] = [];
   for (let attempt = 0; attempt < 3; attempt++) {
-    const budget = [16, 4, 64][attempt];
+    const budget = [4, 4, 64][attempt];
     const port = testPort();
     run = await advance(attempt ? retryRun(run, false, undefined, budget) : run, port.port);
     expect(port.requests.length).toBeLessThanOrEqual(budget);

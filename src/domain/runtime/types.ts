@@ -78,7 +78,7 @@ export interface WorkflowRun {
   status: 'ready' | 'running' | 'awaiting_review' | 'completed' | 'failed' | 'cancelled' | 'interrupted';
   steps: Record<string, StepState>;
   artifacts: Record<string, Artifact>;
-  approvals: { nodeId: string; digest: string; approvedAt: string }[];
+  approvals: { nodeId: string; digest: string; approvedAt: string; analysisBatchBudget?: number }[];
   clarifications?: { question: string; answer: string; recordedAt: string }[];
   reviewExclusions?: { nodeId: string; issue: string; reason: string; recordedAt: string }[];
   errorCode?: string;

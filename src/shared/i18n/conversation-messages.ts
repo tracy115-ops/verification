@@ -50,6 +50,9 @@ export const conversationZh = {
   nativeModels: 'CLI 模型配置',
   cliInstance: 'CLI 实例',
   analysisBudgetTitle: '设计分析预算',
+  analysisInitialBudget: '首次设计分析的批次预算',
+  analysisInitialBudgetHint:
+    '确认需求后使用此额度。仅限制每轮批次数，不是费用上限；剩余调查保留，可继续追加。',
   analysisBatchBudgetChoice: '本轮最多调用批次',
   analysisBudgetKeep: '保持当前预算（{count}）',
   analysisBudgetEstimate: '按当前需求预估分批模式的调用数量；短任务可能单次完成，确认需求后以实际计划为准。',
@@ -306,6 +309,9 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
   nativeModels: 'CLI model configuration',
   cliInstance: 'CLI instance',
   analysisBudgetTitle: 'Design analysis budget',
+  analysisInitialBudget: 'Initial design analysis batch budget',
+  analysisInitialBudgetHint:
+    'Applied after confirming requirements. Limits batch calls per continuation, not fees. Remaining investigation is retained and can be continued.',
   analysisBatchBudgetChoice: 'Maximum batches this continuation',
   analysisBudgetKeep: 'Keep current budget ({count})',
   analysisBudgetEstimate:

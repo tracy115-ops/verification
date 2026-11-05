@@ -6,6 +6,20 @@ import type { WorkflowRun } from '../domain/runtime/types';
 
 afterEach(() => vi.restoreAllMocks());
 
+it('records the initial design budget atomically with requirement approval', async () => {
+  const app = await setup();
+  const hash = app.run.steps[app.gate.id].reviewDigest!;
+  for (const value of [0, 65, 1.5, NaN])
+    await expect(app.actions.approve(app.run, app.gate.id, hash, value)).rejects.toThrow('approval_invalid');
+  expect(app.drive).not.toHaveBeenCalled();
+  await app.actions.approve(app.run, app.gate.id, hash, 4);
+  const approved = app.drive.mock.calls[0][0] as WorkflowRun;
+  const design = approved.plan.find((item) => item.operation === 'scenarios.design')!;
+  expect(approved.steps[design.id].analysisBatchBudget).toBe(4);
+  expect(approved.approvals.at(-1)?.analysisBatchBudget).toBe(4);
+  expect(app.run.steps[design.id].analysisBatchBudget).toBeUndefined();
+});
+
 async function setup(unresolved = false) {
   const port = fixturePort(unresolved ? { ...requirements, questions: ['Which rule?'] } : undefined).port;
   let current: WorkflowRun | undefined = await advanceRun(

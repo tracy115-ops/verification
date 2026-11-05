@@ -98,5 +98,12 @@ test('submits a large Spec through the composer and resumes persisted batches af
   expect(result.calls.filter((index) => index === 2)).toHaveLength(2);
   expect(result.run.approvals).toHaveLength(0);
   expect(result.run.status).toBe('awaiting_review');
+  await panel.getByRole('button', { name: '打开评审工作区', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  const budget = dialog.getByRole('combobox', { name: '首次设计分析的批次预算', exact: true });
+  await expect(budget).toHaveValue('16');
+  await budget.selectOption('4');
+  await expect(budget).toHaveValue('4');
+  await expect(dialog).toContainText('不是费用上限');
   await page.screenshot({ path: '.runtime/analysis-batches.png' });
 });

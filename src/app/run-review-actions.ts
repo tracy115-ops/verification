@@ -42,8 +42,8 @@ export function runReviewActions({
         true,
       );
     },
-    approve(run: WorkflowRun, nodeId: string, hash: string) {
-      return change(run, (current) => approveRun(current, nodeId, hash), true);
+    approve(run: WorkflowRun, nodeId: string, hash: string, analysisBatchBudget?: number) {
+      return change(run, (current) => approveRun(current, nodeId, hash, analysisBatchBudget), true);
     },
     clarify(
       run: WorkflowRun,
