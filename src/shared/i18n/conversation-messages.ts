@@ -49,6 +49,9 @@ export const conversationZh = {
   transcript_delete_failed: '部分 CLI 对话原始记录未能清理。',
   nativeModels: 'CLI 模型配置',
   cliInstance: 'CLI 实例',
+  providerRuntimeUnsupported: '仅保存配置 · 暂不支持运行',
+  providerRuntimeHint:
+    '当前版本通过原生 CLI 进行推理。此 Provider 可保存为配置草稿，但不能用于会话或流程；使用已配置的原生 CLI 可继续测试。',
   cliChooseInstance: '选择本机实例',
   cliScanInstances: '重新扫描',
   cliBrowseExecutable: '选择启动文件…',
@@ -292,6 +295,9 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
   transcript_delete_failed: 'Some original CLI transcript records could not be removed.',
   nativeModels: 'CLI model configuration',
   cliInstance: 'CLI instance',
+  providerRuntimeUnsupported: 'Configuration only · execution unavailable',
+  providerRuntimeHint:
+    'This version runs inference through native CLIs. This Provider can be saved as a configuration draft but cannot run chats or workflows. Use a configured native CLI to continue testing.',
   cliChooseInstance: 'Choose a local instance',
   cliScanInstances: 'Scan again',
   cliBrowseExecutable: 'Browse launcher…',

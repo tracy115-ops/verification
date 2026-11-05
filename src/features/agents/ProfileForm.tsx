@@ -3,6 +3,7 @@ import { newId } from '../../shared/id';
 import { Plus } from 'lucide-react';
 import { profileIsCompatible, type AgentProfile, type DriverId, type Protocol } from '../../domain/workflow';
 import { useI18n } from '../../shared/i18n/context';
+import { supportsInference } from '../../domain/agent-capabilities';
 
 const protocolOptions: Record<DriverId, Protocol[]> = {
   codeagent: ['native'],
@@ -53,6 +54,7 @@ export function ProfileForm({ addProfile }: { addProfile: (profile: AgentProfile
   }
   return (
     <form className="settings-profile-form" onSubmit={submit}>
+      {!supportsInference(profile) && <p className="wb-muted">{t('providerRuntimeHint')}</p>}
       <div className="wb-section-heading">
         <h2>{t('addProfile')}</h2>
         <Plus size={18} />

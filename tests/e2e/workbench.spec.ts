@@ -46,7 +46,10 @@ test('switches language and theme and explains the browser CLI boundary', async 
   await page.getByRole('button', { name: 'Dark', exact: true }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await page.getByRole('button', { name: 'Agents & providers', exact: true }).first().click();
-  await expect(page.getByRole('button', { name: 'Detect installed CLIs', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Detect installed CLIs', exact: true })).toHaveJSProperty(
+    'disabled',
+    true,
+  );
   await expect(page.locator('.settings-shell')).toContainText('Browser mode');
   await page.screenshot({ path: '.runtime/agents-dark.png' });
   await page.reload();
@@ -92,7 +95,7 @@ test('exports and imports a renamed workflow with its configuration', async ({ p
   await page.getByRole('button', { name: '保存草稿', exact: true }).click();
 });
 
-test('adds a provider profile and binds it to an Agent node', async ({ page }) => {
+test('saves a Provider draft but prevents selecting it for unsupported execution', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: '设置', exact: true }).click();
   await page.getByRole('button', { name: 'Agent 与 Provider', exact: true }).first().click();
@@ -104,11 +107,9 @@ test('adds a provider profile and binds it to an Agent node', async ({ page }) =
   await expect(page.getByRole('status')).toContainText('配置已保存到设置');
   await page.reload();
   await page.getByRole('button', { name: '流程编排', exact: true }).click();
-  await page
-    .getByRole('combobox', { name: 'Agent 配置', exact: true })
-    .selectOption({ label: '企业网关（测试）' });
-  await expect(page.locator('.workflow-profile-summary')).toContainText('openai-responses');
-  await page.getByRole('button', { name: '保存草稿', exact: true }).click();
+  await expect(page.getByRole('option', { name: /企业网关（测试）/ })).toHaveJSProperty('disabled', true);
+  await page.getByRole('button', { name: 'CLI 会话', exact: true }).click();
+  await expect(page.getByRole('option', { name: /企业网关（测试）/ })).toHaveJSProperty('disabled', true);
 });
 
 test('keeps navigation accessible and avoids page overflow in a narrow window', async ({ page }) => {
@@ -147,7 +148,10 @@ test('uses internal CodeAgent models and independently saves models for public C
 test('opens conversations first and selects only saved workflow revisions', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'CLI 会话', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: '发送消息', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: '发送消息', exact: true })).toHaveJSProperty(
+    'disabled',
+    true,
+  );
   await page.screenshot({ path: '.runtime/conversations-light.png' });
   await page.getByRole('button', { name: '流程编排', exact: true }).click();
   await page.getByRole('button', { name: '保存草稿', exact: true }).click();
@@ -155,7 +159,10 @@ test('opens conversations first and selects only saved workflow revisions', asyn
   await page.getByLabel('已保存流程').selectOption('workflow');
   await expect(page.getByRole('combobox', { name: '本次调用范围', exact: true })).toHaveValue('');
   await expect(page.locator('.session-scope')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: '调用流程', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: '调用流程', exact: true })).toHaveJSProperty(
+    'disabled',
+    true,
+  );
   await page.getByLabel('流程编排', { exact: true }).click();
   await page.getByRole('spinbutton', { name: '超时（秒）', exact: true }).fill('450');
   await page.getByRole('button', { name: 'CLI 会话', exact: true }).click();

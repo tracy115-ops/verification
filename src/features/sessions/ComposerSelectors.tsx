@@ -2,6 +2,7 @@ import type { AgentProfile, WorkbenchDocument } from '../../domain/workflow';
 import type { FrameworkProfile } from '../../domain/execution/types';
 import type { ComposerDraft } from '../../domain/runtime/composer-draft';
 import { useI18n } from '../../shared/i18n/context';
+import { supportsInference } from '../../domain/agent-capabilities';
 
 export function ComposerSelectors({
   draft,
@@ -34,8 +35,9 @@ export function ComposerSelectors({
             </option>
           )}
           {profiles.map((profile) => (
-            <option key={profile.id} value={profile.id}>
+            <option key={profile.id} value={profile.id} disabled={!supportsInference(profile)}>
               {profile.name}
+              {!supportsInference(profile) ? ` · ${t('providerRuntimeUnsupported')}` : ''}
             </option>
           ))}
         </select>

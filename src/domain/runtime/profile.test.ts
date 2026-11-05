@@ -4,6 +4,7 @@ import { inferenceModel, nativeAgentFields } from './profile';
 import { chatRequest, createSession, message } from './chat';
 import { decodeDocument, shareableDocument } from '../document';
 import { profileIsCompatible } from '../workflow';
+import { supportsInference } from '../agent-capabilities';
 it('uses CodeAgent internal models and requires explicit models for other CLIs', () => {
   const doc = createDocument();
   const internal = doc.profiles.find((profile) => profile.driver === 'codeagent')!;
@@ -14,6 +15,21 @@ it('uses CodeAgent internal models and requires explicit models for other CLIs',
     expect(() => inferenceModel(profile)).toThrow('model_required');
     expect(inferenceModel({ ...profile, model: ' configured-model ' })).toBe('configured-model');
   }
+});
+
+it('keeps saved Provider drafts separate from executable native profiles', () => {
+  const native = createDocument().profiles[0];
+  expect(supportsInference(native)).toBe(true);
+  expect(() => inferenceModel(native)).toThrow('model_required');
+  const provider = {
+    ...native,
+    protocol: 'openai-responses' as const,
+    model: 'example',
+    baseUrl: 'https://example.invalid',
+  };
+  expect(profileIsCompatible(provider)).toBe(true);
+  expect(supportsInference(provider)).toBe(false);
+  expect(() => nativeAgentFields(provider)).toThrow('unsupported_profile');
 });
 
 it('preserves independent Claude instance bindings in persistence and chat requests', () => {

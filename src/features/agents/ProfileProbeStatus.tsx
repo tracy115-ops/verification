@@ -4,6 +4,7 @@ import { Status } from '../../shared/components/Status';
 import { useI18n } from '../../shared/i18n/context';
 import type { MessageKey } from '../../shared/i18n/messages';
 import { Bot } from 'lucide-react';
+import { supportsInference } from '../../domain/agent-capabilities';
 
 function profileStatus(
   profile: AgentProfile,
@@ -12,7 +13,7 @@ function profileStatus(
   label: MessageKey;
   tone: 'neutral' | 'success' | 'warning';
 } {
-  if (profile.protocol !== 'native') return { label: 'providerEndpointUnchecked', tone: 'neutral' };
+  if (!supportsInference(profile)) return { label: 'providerRuntimeUnsupported', tone: 'warning' };
   if (profile.launch?.executablePath) return { label: 'cliInstanceUnchecked', tone: 'neutral' };
   if (!probe) return { label: 'profileCliNotChecked', tone: 'neutral' };
   if (probe.status === 'found') {

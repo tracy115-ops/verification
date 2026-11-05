@@ -75,7 +75,7 @@ it('synchronizes native profile installation and version without implying Provid
   await waitFor(() => expect(row(native.name).getByText('已检测 CLI 安装')).toBeTruthy());
   expect(row(native.name).getByText(found.version)).toBeTruthy();
   expect(row(codex.name).getByText('CLI 已发现 · 模型未配置')).toBeTruthy();
-  expect(row(provider.name).getByText('Provider 配置 · 接口未检测')).toBeTruthy();
+  expect(row(provider.name).getByText('仅保存配置 · 暂不支持运行')).toBeTruthy();
   expect(row(provider.name).queryByText(found.version)).toBeNull();
 });
 

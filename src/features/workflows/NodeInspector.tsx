@@ -5,6 +5,7 @@ import { Status } from '../../shared/components/Status';
 import { kindKeys, nodeLabel } from './node-label';
 import { useAgentProbes } from '../../app/useAgentProbes';
 import { ProfileProbeStatus } from '../agents/ProfileProbeStatus';
+import { supportsInference } from '../../domain/agent-capabilities';
 
 interface Props {
   document: WorkbenchDocument;
@@ -74,8 +75,9 @@ export function NodeInspector({ document, node, update, openWorkspace, openAgent
               >
                 <option value="">{t('inherit')}</option>
                 {document.profiles.map((item) => (
-                  <option key={item.id} value={item.id}>
+                  <option key={item.id} value={item.id} disabled={!supportsInference(item)}>
                     {item.name}
+                    {!supportsInference(item) ? ` · ${t('providerRuntimeUnsupported')}` : ''}
                   </option>
                 ))}
               </select>
