@@ -50,7 +50,8 @@ export async function generateDesignBatches(
   let attempted = 0;
   for (let index = 0; index < groups.length; index++) {
     if (checkpoint.completed.some((item) => item.index === index)) continue;
-    if (attempted >= DESIGN_ATTEMPT_BATCH_LIMIT) throw new Error('analysis_budget_paused');
+    if (attempted >= (run.steps[node.id].analysisBatchBudget ?? DESIGN_ATTEMPT_BATCH_LIMIT))
+      throw new Error('analysis_budget_paused');
     attempted++;
     const group = groups[index];
     const scoped = { requirements: group.requirements, questions: [] };

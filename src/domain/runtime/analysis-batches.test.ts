@@ -67,10 +67,11 @@ it('pauses a large design at its budget and resumes all pending relationships wi
   expect(total).toBeGreaterThan(16);
   const node = run.plan.find((item) => item.operation === 'scenarios.design')!;
   const indexes: number[] = [];
-  for (let attempt = 0; attempt < Math.ceil(total / 16); attempt++) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const budget = [16, 4, 64][attempt];
     const port = testPort();
-    run = await advance(attempt ? retryRun(run) : run, port.port);
-    expect(port.requests.length).toBeLessThanOrEqual(16);
+    run = await advance(attempt ? retryRun(run, false, undefined, budget) : run, port.port);
+    expect(port.requests.length).toBeLessThanOrEqual(budget);
     indexes.push(...port.requests.map((item) => JSON.parse(item.prompt).analysisBatch.index));
     if (indexes.length < total) {
       expect(run.status).toBe('interrupted');
@@ -84,6 +85,7 @@ it('pauses a large design at its budget and resumes all pending relationships wi
         runs: [run],
       };
       run = decodeConversations(JSON.parse(JSON.stringify([session])))[0].runs[0];
+      if (attempt === 1) expect(run.steps[node.id].analysisBatchBudget).toBe(4);
     }
   }
   expect(run.status).toBe('awaiting_review');

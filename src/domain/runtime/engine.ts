@@ -210,6 +210,7 @@ export function retryRun(
   initial: WorkflowRun,
   forceBatchAnalysis = false,
   analysisTimeoutSeconds?: number,
+  analysisBatchBudget?: number,
 ): WorkflowRun {
   if (!['failed', 'interrupted', 'cancelled'].includes(initial.status)) throw new Error('invalid_run');
   if (forceBatchAnalysis && !canRetryAnalysisInBatches(initial)) throw new Error('approval_invalid');
@@ -224,6 +225,16 @@ export function retryRun(
   const run = structuredClone(initial);
   const node = retryNode(run);
   if (!node) throw new Error('invalid_run');
+  if (analysisBatchBudget !== undefined) {
+    if (
+      node.operation !== 'scenarios.design' ||
+      !Number.isInteger(analysisBatchBudget) ||
+      analysisBatchBudget < 1 ||
+      analysisBatchBudget > 64
+    )
+      throw new Error('invalid_run');
+    run.steps[node.id].analysisBatchBudget = analysisBatchBudget;
+  }
   if (forceBatchAnalysis) run.steps[node.id].forceBatchAnalysis = true;
   if (analysisTimeoutSeconds !== undefined)
     run.steps[node.id].analysisTimeoutSeconds = analysisTimeoutSeconds;

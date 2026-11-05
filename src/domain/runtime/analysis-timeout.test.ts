@@ -23,3 +23,17 @@ it('changes only the failed analysis runtime budget and respects the workflow de
   run.steps[system.id].status = 'failed';
   expect(() => retryRun(run, false, 1800)).toThrow('invalid_run');
 });
+
+it('rejects invalid batch budgets and budgets on unrelated nodes', () => {
+  const run = fixtureRun();
+  run.status = 'interrupted';
+  const node = run.plan.find((item) => item.operation === 'scenarios.design')!;
+  run.steps[node.id].status = 'interrupted';
+  for (const value of [0, -1, 1.5, 65, Infinity, NaN])
+    expect(() => retryRun(run, false, undefined, value)).toThrow('invalid_run');
+  expect(retryRun(run, false, undefined, 4).steps[node.id].analysisBatchBudget).toBe(4);
+  run.steps[node.id].status = 'pending';
+  const other = run.plan.find((item) => item.operation === 'requirements.extract')!;
+  run.steps[other.id].status = 'interrupted';
+  expect(() => retryRun(run, false, undefined, 4)).toThrow('invalid_run');
+});

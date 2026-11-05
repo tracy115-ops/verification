@@ -50,6 +50,9 @@ export const conversationZh = {
   nativeModels: 'CLI 模型配置',
   cliInstance: 'CLI 实例',
   analysisBudgetTitle: '设计分析预算',
+  analysisBatchBudgetChoice: '本轮最多调用批次',
+  analysisBudgetKeep: '保持当前预算（{count}）',
+  analysisBudgetEstimate: '按当前需求预估分批模式的调用数量；短任务可能单次完成，确认需求后以实际计划为准。',
   analysisBudgetPausedLabel: '分析预算暂停',
   analysisBudgetCounts: '已完成 {completed} / {total} 个计划批次',
   analysisBudgetLimit: '每次继续最多调用 {limit} 个批次；剩余关系保留，尚未完成覆盖调查。',
@@ -303,6 +306,10 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
   nativeModels: 'CLI model configuration',
   cliInstance: 'CLI instance',
   analysisBudgetTitle: 'Design analysis budget',
+  analysisBatchBudgetChoice: 'Maximum batches this continuation',
+  analysisBudgetKeep: 'Keep current budget ({count})',
+  analysisBudgetEstimate:
+    'Estimated batched calls from current requirements. Short tasks may finish in one call; the confirmed runtime plan takes precedence.',
   analysisBudgetPausedLabel: 'Analysis budget paused',
   analysisBudgetCounts: 'Completed {completed} / {total} planned batches',
   analysisBudgetLimit:

@@ -21,6 +21,7 @@ const step = {
     caseBatchAttempts: { type: 'integer', minimum: 0 },
     forceBatchAnalysis: { const: true },
     analysisTimeoutSeconds: { type: 'integer', minimum: 1, maximum: 86400 },
+    analysisBatchBudget: { type: 'integer', minimum: 1, maximum: 64 },
     analysis: {
       type: 'object',
       additionalProperties: false,
@@ -265,6 +266,8 @@ export function decodeConversations(value: unknown): ConversationSession[] {
         throw new Error('session_storage_invalid');
       if (run.plan.some((node) => !run.steps[node.id])) throw new Error('session_storage_invalid');
       for (const node of run.plan) {
+        if (run.steps[node.id].analysisBatchBudget !== undefined && node.operation !== 'scenarios.design')
+          throw new Error('session_storage_invalid');
         if (run.steps[node.id].designMappingIssues && node.operation !== 'scenarios.design')
           throw new Error('session_storage_invalid');
         if (

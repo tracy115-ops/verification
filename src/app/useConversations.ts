@@ -122,7 +122,12 @@ export function useConversations(
     }, current.id);
     return accepted;
   }
-  async function retry(run: WorkflowRun, forceBatchAnalysis = false, analysisTimeoutSeconds?: number) {
+  async function retry(
+    run: WorkflowRun,
+    forceBatchAnalysis = false,
+    analysisTimeoutSeconds?: number,
+    analysisBatchBudget?: number,
+  ) {
     await perform(async (controller) => {
       const current = store.getSession(run.sessionId);
       if (current?.runs.find((item) => item.id === run.id) !== run) throw new Error('approval_stale');
@@ -141,7 +146,10 @@ export function useConversations(
       if (controller.signal.aborted) throw new Error('execution_cancelled');
       if (store.getSession(run.sessionId)?.runs.find((item) => item.id === run.id) !== run)
         throw new Error('approval_stale');
-      await drive(retryRun(recovered, forceBatchAnalysis, analysisTimeoutSeconds), controller);
+      await drive(
+        retryRun(recovered, forceBatchAnalysis, analysisTimeoutSeconds, analysisBatchBudget),
+        controller,
+      );
     }, run.sessionId);
   }
   async function stopRecovered() {

@@ -85,7 +85,7 @@ export function RunPanel({
         </h3>
         <RunSteps run={run} openArtifact={setSelectedArtifact} />
       </section>
-      {canRetryAnalysis(run) && <AnalysisRetryControls run={run} actions={actions} />}
+      {canRetryAnalysis(run) && <AnalysisRetryControls key={run.id} run={run} actions={actions} />}
       {['failed', 'interrupted', 'cancelled'].includes(run.status) &&
         !failedExecution &&
         !canRetryAnalysis(run) && (
