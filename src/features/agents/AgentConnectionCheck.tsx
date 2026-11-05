@@ -10,6 +10,7 @@ import {
   subscribeConnections,
 } from '../../services/agent-connection';
 import { isMessageKey, useI18n } from '../../shared/i18n/context';
+import { ClaudeAuthHelp } from './ClaudeAuthHelp';
 
 export function AgentConnectionCheck({
   profile,
@@ -65,6 +66,9 @@ export function AgentConnectionCheck({
         )}
         {result?.errorCode && (
           <p className="wb-error">{isMessageKey(result.errorCode) ? t(result.errorCode) : t('cli_failed')}</p>
+        )}
+        {profile.driver === 'claude' && result?.errorCode === 'cli_auth_failed' && (
+          <ClaudeAuthHelp profile={profile} />
         )}
       </div>
       {busy ? (

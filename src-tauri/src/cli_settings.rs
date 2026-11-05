@@ -1,6 +1,17 @@
 use tauri_plugin_dialog::DialogExt;
 
 #[tauri::command]
+pub async fn inspect_claude_setup(
+    config_directory: Option<std::path::PathBuf>,
+) -> Result<agent_runtime::ClaudeSetup, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        agent_runtime::inspect_claude_setup(config_directory).map_err(str::to_string)
+    })
+    .await
+    .map_err(|_| "cliSetupInspectFailed".to_string())?
+}
+
+#[tauri::command]
 pub async fn read_cli_model_hints(
     driver: agent_runtime::DriverId,
     config_directory: Option<std::path::PathBuf>,

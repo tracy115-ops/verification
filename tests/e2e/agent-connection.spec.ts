@@ -12,6 +12,15 @@ test('checks the saved model on request, invalidates success after edits and rep
         transformCallback: () => 1,
         unregisterCallback: () => {},
         invoke: async (command: string, payload: { request?: unknown }) => {
+          if (command === 'inspect_claude_setup')
+            return {
+              configDirectory: 'D:\\Claude Config',
+              environmentAuth: false,
+              settingsAuth: false,
+              loginFilePresent: false,
+              keyHelperPresent: false,
+              endpointPresent: false,
+            };
           if (command === 'read_cli_model_hints')
             return {
               status: 'found',
@@ -68,6 +77,9 @@ test('checks the saved model on request, invalidates success after edits and rep
   await check.getByRole('button', { name: '发送短测试' }).click();
   await expect(check).toContainText('CLI 身份认证失败');
   await expect(check.getByRole('status')).toContainText('连通测试未通过');
+  await expect(check).toContainText('在常见来源中未发现认证配置');
+  await expect(check).toContainText('桌面进程：未发现常见认证环境变量');
+  await expect(check).toContainText('D:\\Claude Config');
   for (const width of [900, 1500]) {
     await page.setViewportSize({ width, height: 960 });
     for (const theme of ['light', 'dark']) {
