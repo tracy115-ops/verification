@@ -6,8 +6,10 @@
 
 | 文档 | 解决的问题 |
 | --- | --- |
+| [TestAgent 产品审查与实施计划](roadmap/testagent-product-plan-2026-11.md) | 当前不合理之处、补齐特性、优先级、版本阶段与可验证交付条件 |
 | [逐项验收矩阵](quality/acceptance-matrix.md) | 功能正常/失败/恢复路径、样式组合、实测与离线边界及发布门禁 |
 | [0.8.4 CLI 多实例验证](research/cli-instances-0.8.4.md) | 按 Agent 绑定启动路径、Claude 配置目录、快照隔离与验证边界 |
+| [0.8.5 实例选择改进](releases/0.8.5.md) | 自动扫描、启动文件和配置目录选择器，减少手动路径输入 |
 | [0.8.3 全面巡检](research/product-audit-0.8.3.md) | 主动发现的问题、144 个界面状态、CLI/执行/代理实际结果及截图 |
 | [0.8.2 CLI 失败提示验收](research/cli-failures-0.8.2-validation.md) | 未登录分类、消息级恢复、原调用标识及设置跳转 |
 | [企业化验收清单](roadmap/enterprise-readiness.md) | 可靠性、数据迁移、评审、协作及 1.0.0 发布门槛 |
