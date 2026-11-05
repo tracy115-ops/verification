@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createDocument, decodeDocument } from '../domain/document';
+import { createDocument, decodeDocument, shareableDocument } from '../domain/document';
 import { checkDocument, type WorkbenchDocument, type WorkflowIssue } from '../domain/workflow';
 import { browserRepository } from '../services/repository';
 import { loadProfiles, saveProfiles } from '../services/profile-repository';
@@ -98,7 +98,7 @@ export function useWorkbench() {
   function exportDraft() {
     if (!validate()) return;
     const url = URL.createObjectURL(
-      new Blob([JSON.stringify(document, null, 2)], { type: 'application/json' }),
+      new Blob([JSON.stringify(shareableDocument(document), null, 2)], { type: 'application/json' }),
     );
     const link = window.document.createElement('a');
     link.href = url;

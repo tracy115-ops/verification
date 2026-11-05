@@ -300,7 +300,19 @@ pub(crate) async fn run_turn_in_paths(
     let spec = DRIVERS
         .iter()
         .find(|spec| spec.id == request.driver.as_str());
-    let Some(launch) = spec.and_then(|spec| resolve_driver(spec, paths)) else {
+    let explicit = request
+        .launch
+        .as_ref()
+        .and_then(|launch| launch.executable_path.as_ref());
+    let launch = if let Some(file) = explicit {
+        crate::discovery::instance_launch(Path::new(file), paths)
+    } else {
+        spec.and_then(|spec| resolve_driver(spec, paths))
+    };
+    let Some(launch) = launch else {
+        if explicit.is_some() {
+            return TurnOutcome::failed("cli_path_invalid");
+        }
         return TurnOutcome::failed("cli_not_found");
     };
     let mut args: Vec<String> = if matches!(request.driver, DriverId::Codeagent) {
@@ -320,6 +332,16 @@ pub(crate) async fn run_turn_in_paths(
             Err(_) => return TurnOutcome::failed("workspace_failed"),
         };
     let mut command = Command::new(&launch.program);
+    if let Some(directory) = request
+        .launch
+        .as_ref()
+        .and_then(|launch| launch.config_directory.as_ref())
+    {
+        if !Path::new(directory).is_dir() {
+            return TurnOutcome::failed("cli_config_invalid");
+        }
+        command.env("CLAUDE_CONFIG_DIR", directory);
+    }
     crate::search_paths::configure_command(&mut command, paths);
     let proxy_mode = crate::proxy::configure(&mut command);
     if !sink(AgentEvent::LaunchDiagnostic {

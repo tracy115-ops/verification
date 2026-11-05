@@ -237,6 +237,7 @@ fn codex_reconnect_notice_can_recover_but_other_errors_remain_fatal() {
 #[test]
 fn requests_reject_path_traversal_ids_and_unbounded_deadlines() {
     let mut request = TurnRequest {
+        launch: None,
         turn_id: "12345678-1234-1234-1234-123456789abc".into(),
         session_id: "12345678-1234-1234-1234-123456789abc".into(),
         driver: DriverId::Codex,

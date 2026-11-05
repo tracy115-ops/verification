@@ -1,7 +1,7 @@
 import type { AgentProfile, WorkflowNode } from '../workflow';
 import type { AgentEvent, AgentPort, WorkflowRun } from './types';
 import { newId } from '../../shared/id';
-import { inferenceModel } from './profile';
+import { nativeAgentFields } from './profile';
 import { remainingNodeSeconds } from './deadline';
 import { ANALYSIS_PROMPT_LIMIT, byteLength } from './analysis-plan';
 import { parseArtifact } from './artifacts';
@@ -44,8 +44,7 @@ export async function callAnalysis(context: AnalysisContext, task: object, cross
     {
       turnId: step.turnId,
       sessionId: run.sessionId,
-      driver: profile.driver,
-      model: inferenceModel(profile),
+      ...nativeAgentFields(profile),
       prompt,
       timeoutSeconds: remainingNodeSeconds(run, node),
     },

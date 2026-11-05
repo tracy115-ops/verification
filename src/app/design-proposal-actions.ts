@@ -11,7 +11,7 @@ import {
 } from '../domain/runtime/design-proposals';
 import { type DesignProposal, isDesignProposal } from '../domain/runtime/design-proposal-schema';
 import { parseArtifact } from '../domain/runtime/artifacts';
-import { inferenceModel } from '../domain/runtime/profile';
+import { nativeAgentFields } from '../domain/runtime/profile';
 import { message } from '../domain/runtime/chat';
 import { newId } from '../shared/id';
 import { digest } from '../domain/runtime/plan';
@@ -45,8 +45,7 @@ export function designProposalActions(store: Store, tasks: Tasks, port: AgentPor
       const request = {
         turnId: newId(),
         sessionId: session.id,
-        driver: profile.driver,
-        model: inferenceModel(profile),
+        ...nativeAgentFields(profile),
         prompt: designProposalTask(run, instruction),
         timeoutSeconds: 600,
       };

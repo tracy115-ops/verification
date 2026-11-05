@@ -4,6 +4,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { invoke } from '@tauri-apps/api/core';
 import { probeAgents } from '../../services/agent-api';
 import { AgentSettings } from './AgentSettings';
+import { NativeModels } from './NativeModels';
 import type { AgentProfile } from '../../domain/workflow';
 
 vi.mock('@tauri-apps/api/core', () => ({ isTauri: () => true, invoke: vi.fn() }));
@@ -29,6 +30,25 @@ const found = {
   executable: 'C:\\Example Tools\\codeagent.bat',
   reason: null,
 } as const;
+
+it('edits a Claude launcher and config directory independently from the model', () => {
+  const save = vi.fn();
+  const profile: AgentProfile = { ...native, driver: 'claude', model: 'example-model' };
+  render(<NativeModels profiles={[profile]} saveProfile={save} />);
+  fireEvent.click(screen.getByText(/CLI 实例/, { selector: 'summary' }));
+  fireEvent.change(screen.getByLabelText('CLI 启动文件的绝对路径'), {
+    target: { value: 'D:\\Claude One\\claude.cmd' },
+  });
+  fireEvent.change(screen.getByLabelText(/Claude 配置目录/), { target: { value: 'D:\\Config One' } });
+  fireEvent.click(screen.getByText('保存实例绑定'));
+  expect(save).toHaveBeenCalledWith({
+    ...profile,
+    launch: {
+      executablePath: 'D:\\Claude One\\claude.cmd',
+      configDirectory: 'D:\\Config One',
+    },
+  });
+});
 
 it('synchronizes native profile installation and version without implying Provider connectivity', async () => {
   vi.mocked(invoke).mockResolvedValue([found, { ...found, driver: 'codex' }]);

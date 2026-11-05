@@ -83,6 +83,7 @@ export function WorkflowCallCard({
           {t('actualAgentRequest')} ·{' '}
           {t('analysisInputBytes').replace('{bytes}', new Intl.NumberFormat(locale).format(inputBytes))}
         </summary>
+        {turn.request.launch && <pre>{JSON.stringify(turn.request.launch, null, 2)}</pre>}
         <pre>{turn.request.prompt}</pre>
       </details>
       {turn.text &&

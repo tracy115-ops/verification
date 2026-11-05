@@ -3,7 +3,7 @@ import base from './playwright.config';
 
 process.env.PRODUCT_AUDIT_ROOT = '.runtime/product-audit-development';
 export default defineConfig(base, {
-  testMatch: '**/product-audit.spec.ts',
+  testMatch: ['**/product-audit.spec.ts', '**/cli-instances.spec.ts'],
   maxFailures: 1,
   outputDir: '.runtime/playwright-visual-development',
   use: { baseURL: 'http://127.0.0.1:5177' },

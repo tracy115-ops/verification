@@ -5,6 +5,7 @@ use tokio::{process::Command, sync::oneshot};
 
 fn request() -> TurnRequest {
     TurnRequest {
+        launch: None,
         turn_id: "12345678-1234-1234-1234-123456789abc".into(),
         session_id: "12345678-1234-1234-1234-123456789abc".into(),
         driver: DriverId::Codex,

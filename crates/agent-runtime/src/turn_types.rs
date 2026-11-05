@@ -22,7 +22,35 @@ impl DriverId {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CliLaunch {
+    pub executable_path: Option<String>,
+    pub config_directory: Option<String>,
+}
+
+impl CliLaunch {
+    fn validate(&self, driver: DriverId) -> Result<(), &'static str> {
+        for path in [&self.executable_path, &self.config_directory]
+            .into_iter()
+            .flatten()
+        {
+            if path.len() > 4096
+                || path.chars().any(char::is_control)
+                || !std::path::Path::new(path).is_absolute()
+            {
+                return Err("cli_path_invalid");
+            }
+        }
+        if self.config_directory.is_some() && !matches!(driver, DriverId::Claude) {
+            return Err("cli_config_invalid");
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TurnRequest {
+    pub launch: Option<CliLaunch>,
     pub turn_id: String,
     pub session_id: String,
     pub driver: DriverId,
@@ -33,6 +61,9 @@ pub struct TurnRequest {
 
 impl TurnRequest {
     pub fn validate(&self) -> Result<(), &'static str> {
+        if let Some(launch) = &self.launch {
+            launch.validate(self.driver)?;
+        }
         if matches!(self.driver, DriverId::Codeagent) && !self.model.is_empty() {
             return Err("invalid_request");
         }

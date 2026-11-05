@@ -9,6 +9,14 @@ export const profileSchema = {
   additionalProperties: false,
   required: ['id', 'name', 'driver', 'protocol', 'baseUrl', 'model', 'credentialRef'],
   properties: {
+    launch: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        executablePath: { type: 'string', minLength: 1, maxLength: 4096 },
+        configDirectory: { type: 'string', minLength: 1, maxLength: 4096 },
+      },
+    },
     id: { type: 'string', minLength: 1 },
     name: { type: 'string', minLength: 1 },
     driver: { enum: ['codeagent', 'claude', 'codex', 'pi'] },
@@ -48,6 +56,12 @@ export function decodeDocument(value: unknown): WorkbenchDocument {
   if (!validateEnvelope(value) || checkWorkflow(value.definition).length) throw new Error('invalidDocument');
   if (checkDocument(value).length) throw new Error('invalidDocument');
   return structuredClone(value);
+}
+
+export function shareableDocument(document: WorkbenchDocument): WorkbenchDocument {
+  const copy = structuredClone(document);
+  for (const profile of copy.profiles) delete profile.launch;
+  return copy;
 }
 
 export function createDocument(): WorkbenchDocument {

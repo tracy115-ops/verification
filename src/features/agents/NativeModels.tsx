@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { AgentProfile } from '../../domain/workflow';
 import { useI18n } from '../../shared/i18n/context';
+import { NativeLaunchEditor } from './NativeLaunchEditor';
 
 export function NativeModels({
   profiles,
@@ -16,20 +17,23 @@ export function NativeModels({
       <p className="wb-muted">{t('nativeModelsHint')}</p>
       {profiles
         .filter((profile) => profile.protocol === 'native')
-        .map((profile) =>
-          profile.driver === 'codeagent' ? (
-            <div className="settings-model-row" key={profile.id}>
-              <strong>{profile.name}</strong>
-              <div>
-                <p>{t('codeagentManagedModel')}</p>
-                <code>codeagent --dangerously-skip-permissions</code>
-                <small className="wb-muted">{t('codeagentCompatibilityHint')}</small>
+        .map((profile) => (
+          <div key={profile.id}>
+            <NativeLaunchEditor key={JSON.stringify(profile)} profile={profile} save={saveProfile} />
+            {profile.driver === 'codeagent' ? (
+              <div className="settings-model-row" key={profile.id}>
+                <strong>{profile.name}</strong>
+                <div>
+                  <p>{t('codeagentManagedModel')}</p>
+                  <code>codeagent --dangerously-skip-permissions</code>
+                  <small className="wb-muted">{t('codeagentCompatibilityHint')}</small>
+                </div>
               </div>
-            </div>
-          ) : (
-            <ModelEditor key={`${profile.id}-${profile.model}`} profile={profile} save={saveProfile} />
-          ),
-        )}
+            ) : (
+              <ModelEditor key={`${profile.id}-${profile.model}`} profile={profile} save={saveProfile} />
+            )}
+          </div>
+        ))}
     </section>
   );
 }

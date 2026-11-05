@@ -234,6 +234,19 @@
   min-height: 300px;
   font-size: 12px;
 }
+.settings-native-instance {
+  padding-block: 12px;
+}
+.settings-native-instance summary {
+  cursor: pointer;
+}
+.settings-native-instance .settings-fields {
+  margin-block: 12px;
+  align-items: start;
+}
+.settings-native-instance button {
+  justify-self: start;
+}
 .settings-model-row {
   display: flex;
   flex-wrap: wrap;

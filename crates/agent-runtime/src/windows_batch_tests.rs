@@ -63,6 +63,7 @@ else { for(let i=0;i<5;i++) console.log(JSON.stringify({type:'system',subtype:'i
     assert!(large_prompt.len() > 32_800 && large_prompt.len() < 131_072);
     for prompt in ["你好，测试非交互调用".to_string(), large_prompt] {
         let request = crate::TurnRequest {
+            launch: None,
             turn_id: "12345678-1234-1234-1234-123456789abc".into(),
             session_id: "12345678-1234-1234-1234-123456789abc".into(),
             driver: crate::DriverId::Codeagent,
@@ -106,6 +107,61 @@ else { for(let i=0;i<5;i++) console.log(JSON.stringify({type:'system',subtype:'i
         );
     }
 }
+#[tokio::test]
+async fn explicit_claude_instances_preserve_wrappers_and_isolate_config_directories() {
+    let fixture = Fixture::new();
+    let node = crate::search_paths::driver_search_paths()
+        .into_iter()
+        .map(|path| path.join("node.exe"))
+        .find(|path| path.is_file())
+        .unwrap();
+    fs::write(
+        fixture.0.join("instance.cjs"),
+        r#"
+process.stdin.resume();
+process.stdin.on('end', () => console.log(JSON.stringify({type:'result', is_error:false,
+result:process.env.INSTANCE_MARKER+'|'+process.env.CLAUDE_CONFIG_DIR})));
+"#,
+    )
+    .unwrap();
+    for instance in ["first", "second"] {
+        let config = fixture.0.join(format!("config {instance}"));
+        fs::create_dir(&config).unwrap();
+        let wrapper = fixture.0.join(format!("claude {instance}.cmd"));
+        fs::write(&wrapper, format!("@echo off\r\nset INSTANCE_MARKER={instance}\r\n\"{}\" \"%~dp0instance.cjs\" %*\r\n", node.display())).unwrap();
+        let request = serde_json::from_value(serde_json::json!({
+            "turnId":"12345678-1234-1234-1234-123456789abc",
+            "sessionId":"12345678-1234-1234-1234-123456789abc",
+            "driver":"claude", "model":"fixture-model", "prompt":"hello", "timeoutSeconds":5,
+            "launch":{"executablePath":wrapper, "configDirectory":config}
+        }))
+        .unwrap();
+        let (_sender, receiver) = tokio::sync::oneshot::channel();
+        let outcome =
+            crate::conversation::run_turn_in_paths(request, &fixture.0, receiver, |_| true, &[])
+                .await;
+        assert_eq!(outcome.status, "completed", "{:?}", outcome.error_code);
+        assert_eq!(outcome.text, format!("{instance}|{}", config.display()));
+    }
+    let request = serde_json::from_value(serde_json::json!({
+        "turnId":"12345678-1234-1234-1234-123456789abc",
+        "sessionId":"12345678-1234-1234-1234-123456789abc",
+        "driver":"claude", "model":"fixture-model", "prompt":"hello", "timeoutSeconds":5,
+        "launch":{"executablePath":fixture.0.join("missing.exe")}
+    }))
+    .unwrap();
+    let (_sender, receiver) = tokio::sync::oneshot::channel();
+    let outcome = crate::conversation::run_turn_in_paths(
+        request,
+        &fixture.0,
+        receiver,
+        |_| true,
+        &crate::search_paths::driver_search_paths(),
+    )
+    .await;
+    assert_eq!(outcome.error_code.as_deref(), Some("cli_path_invalid"));
+}
+
 impl Drop for Fixture {
     fn drop(&mut self) {
         let root = self.0.canonicalize().expect("owned fixture");

@@ -19,6 +19,21 @@ async function approve(run: WorkflowRun) {
 }
 
 describe('saved workflow execution', () => {
+  it('uses frozen instance bindings for each design workflow call', async () => {
+    const doc = savedDocument();
+    for (const profile of doc.profiles) profile.launch = { executablePath: 'D:\\Tools\\instance.exe' };
+    let run = createRun(doc, crypto.randomUUID(), spec, doc.profiles, 'codex-native');
+    doc.profiles[0].launch!.executablePath = 'D:\\Other\\instance.exe';
+    const { port, requests } = fixturePort();
+    for (let gate = 0; gate < 3; gate++) {
+      run = await advance(run, port);
+      run = await approve(run);
+    }
+    expect(requests).toHaveLength(3);
+    expect(requests.every((request) => request.launch?.executablePath === 'D:\\Tools\\instance.exe')).toBe(
+      true,
+    );
+  });
   it('caps a CLI attempt to the remaining workflow deadline', () => {
     const run = fixtureRun();
     run.createdAt = new Date(

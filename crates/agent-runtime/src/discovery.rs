@@ -98,6 +98,21 @@ pub fn resolve_driver(spec: &DriverSpec, paths: &[PathBuf]) -> Option<LaunchSpec
     None
 }
 
+pub(crate) fn instance_launch(file: &Path, paths: &[PathBuf]) -> Option<LaunchSpec> {
+    if !file.is_absolute() || !file.is_file() {
+        return None;
+    }
+    if file
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .is_some_and(|ext| ext.eq_ignore_ascii_case("cmd") || ext.eq_ignore_ascii_case("bat"))
+    {
+        // An explicit wrapper may set instance-specific authentication or configuration.
+        return batch_launch(file);
+    }
+    explicit_launch(file, paths)
+}
+
 fn explicit_launch(file: &Path, paths: &[PathBuf]) -> Option<LaunchSpec> {
     if !file.is_file() {
         return None;

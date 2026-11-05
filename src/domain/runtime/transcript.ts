@@ -1,4 +1,5 @@
 import type { AgentEvent, TurnOutcome, TurnRequest } from './types';
+import { validCliLaunch } from '../cli-launch';
 import { isCliProgress, type CliProgress } from './cli-progress';
 
 export interface CliTurnRecord {
@@ -52,6 +53,7 @@ export function isCliTurnRecord(value: unknown): value is CliTurnRecord {
     request.sessionId === item.sessionId &&
     ['codex', 'claude', 'pi', 'codeagent'].includes(String(request.driver)) &&
     typeof request.model === 'string' &&
+    validCliLaunch(request.launch, request.driver) &&
     request.model.length <= 200 &&
     typeof request.prompt === 'string' &&
     new TextEncoder().encode(request.prompt).length <= 131072 &&

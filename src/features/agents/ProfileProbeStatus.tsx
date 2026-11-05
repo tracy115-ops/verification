@@ -13,6 +13,7 @@ function profileStatus(
   tone: 'neutral' | 'success' | 'warning';
 } {
   if (profile.protocol !== 'native') return { label: 'providerEndpointUnchecked', tone: 'neutral' };
+  if (profile.launch?.executablePath) return { label: 'cliInstanceUnchecked', tone: 'neutral' };
   if (!probe) return { label: 'profileCliNotChecked', tone: 'neutral' };
   if (probe.status === 'found') {
     return profile.driver !== 'codeagent' && !profile.model.trim()
@@ -41,9 +42,10 @@ export function AgentProfileRow({ profile, probe }: { profile: AgentProfile; pro
         <small>
           {profile.driver} · {profile.protocol === 'native' ? t('native') : profile.protocol}
         </small>
-        {profile.protocol === 'native' && probe?.status === 'found' && probe.version && (
-          <small>{probe.version}</small>
-        )}
+        {profile.protocol === 'native' &&
+          !profile.launch?.executablePath &&
+          probe?.status === 'found' &&
+          probe.version && <small>{probe.version}</small>}
       </div>
       <ProfileProbeStatus profile={profile} probe={probe} />
     </div>

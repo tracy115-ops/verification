@@ -1,7 +1,7 @@
 export const conversationZh = {
   chatCallFailed: '本条消息发送失败。请查看调用信息，处理后重新发送。',
   chatSignInRecovery:
-    '请先在系统终端启动本条回复所示的 CLI 并完成登录。终端能正常回复后，回到此会话重新发送。',
+    '请核对 Agent 设置中的 CLI 实例与配置目录，在系统终端确认可用。官方账户需完成登录；第三方 Provider 需在该实例配置认证。正常回复后重新发送。',
   chatModelRecovery:
     '请在 Agent 设置中核对本条回复所示的模型，并确认对应 CLI 账户有访问权限。修复后重新发送即可。',
   chatInternalModelRecovery:
@@ -48,6 +48,19 @@ export const conversationZh = {
   transcript_invalid: '已保存的 CLI 对话记录格式无效。',
   transcript_delete_failed: '部分 CLI 对话原始记录未能清理。',
   nativeModels: 'CLI 模型配置',
+  cliInstance: 'CLI 实例',
+  cliInstanceHint:
+    '留空时自动发现。多个安装实例可分别绑定完整启动文件路径；指定路径失效时不会回退。配置会用于新对话调用与新流程，已有流程保留原快照。',
+  cliExecutablePath: 'CLI 启动文件的绝对路径',
+  cliPathAutomatic: '自动发现（PATH）',
+  cliConfigDirectory: 'Claude 配置目录（CLAUDE_CONFIG_DIR）',
+  cliConfigInherited: '继承当前 CLI 配置',
+  claudeInstanceAuthHint:
+    '选择已有配置目录；不会复制或覆盖凭据。GLM 等第三方模型仍需在该 CLI 实例中配置服务地址与认证。',
+  saveCliInstance: '保存实例绑定',
+  cliInstanceUnchecked: '指定实例，尚未验证调用',
+  cli_path_invalid: '指定的 CLI 启动路径无效，请在 Agent 设置中核对文件。',
+  cli_config_invalid: '指定的 CLI 配置目录无效，请在 Agent 设置中核对目录。',
   nativeModelsHint: 'CodeAgent 使用内部模型配置；其他 CLI 在此指定模型 ID。保存配置不代表已验证推理。',
   codeagentManagedModel: '模型由 CodeAgent 内部管理，无需单独配置。',
   codeagentCompatibilityHint: '交互启动命令来自内部环境；自动流程会先检查非交互与事件输出能力。',
@@ -166,7 +179,7 @@ export const conversationZh = {
   cli_failed: 'CLI 本次调用失败，已完成的产物已保留。请重试当前步骤。',
   cli_not_found: '未找到所选 CLI，请在设置中检查安装。',
   cli_network_failed: 'CLI 无法连接模型服务，请检查本机网络、代理及 CLI 原生服务地址；已完成的产物已保留。',
-  cli_auth_failed: 'CLI 身份认证失败，请在本机 CLI 中恢复登录后重试。',
+  cli_auth_failed: 'CLI 身份认证失败，请核对所选实例的登录状态或第三方 Provider 认证配置。',
   cli_model_ambiguous:
     '模型名匹配多个 Provider。请在设置中使用 provider/model 格式，并确认对应 Provider 已登录。',
   cli_rate_limited: '模型服务限流或额度不足，请检查 CLI 账户状态后重试。',
@@ -218,7 +231,7 @@ export const conversationZh = {
 export const conversationEn: Record<keyof typeof conversationZh, string> = {
   chatCallFailed: 'This message failed. Inspect the call details, resolve the issue, then send it again.',
   chatSignInRecovery:
-    'Open the CLI shown on this reply in your system terminal and sign in. Once it replies successfully there, return to this conversation and send again.',
+    'Check the CLI instance and configuration directory in Agent settings. Sign in for an official account, or configure third-party Provider authentication in that instance. Retry after it replies successfully in your terminal.',
   chatModelRecovery:
     'Check the model shown on this reply in Agent settings and confirm that the CLI account can access it. Send again after resolving the issue.',
   chatInternalModelRecovery:
@@ -270,6 +283,19 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
   transcript_invalid: 'Saved CLI transcript has an invalid format.',
   transcript_delete_failed: 'Some original CLI transcript records could not be removed.',
   nativeModels: 'CLI model configuration',
+  cliInstance: 'CLI instance',
+  cliInstanceHint:
+    'Leave blank for automatic discovery. Bind each installation to its full launcher path. Invalid explicit paths never fall back. New calls and runs use this binding; existing runs retain their snapshot.',
+  cliExecutablePath: 'Absolute CLI launcher path',
+  cliPathAutomatic: 'Automatic discovery (PATH)',
+  cliConfigDirectory: 'Claude configuration directory (CLAUDE_CONFIG_DIR)',
+  cliConfigInherited: 'Inherit current CLI configuration',
+  claudeInstanceAuthHint:
+    'Select an existing configuration directory. Credentials are never copied or overwritten. Third-party models such as GLM require endpoint and authentication configuration in this CLI instance.',
+  saveCliInstance: 'Save instance binding',
+  cliInstanceUnchecked: 'Explicit instance; inference unchecked',
+  cli_path_invalid: 'The configured CLI launcher path is invalid. Check the file in Agent settings.',
+  cli_config_invalid: 'The configured CLI configuration directory is invalid. Check Agent settings.',
   nativeModelsHint:
     'CodeAgent uses its internal model configuration. Set model IDs for the other CLIs here. Saving does not certify inference.',
   codeagentManagedModel:
@@ -402,7 +428,8 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
   cli_not_found: 'CLI not found. Check installation in settings.',
   cli_network_failed:
     'CLI could not reach the model service. Check local networking, proxy and native CLI endpoint. Completed artifacts are retained.',
-  cli_auth_failed: 'CLI authentication failed. Sign in through the local CLI and retry.',
+  cli_auth_failed:
+    'CLI authentication failed. Check the selected instance login or third-party Provider authentication.',
   cli_model_ambiguous:
     'The model matches multiple providers. Use provider/model in settings and ensure that provider is authenticated.',
   cli_rate_limited: 'Model service rate limit or quota reached. Check the CLI account before retrying.',

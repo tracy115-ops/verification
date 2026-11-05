@@ -1,7 +1,7 @@
 import type { ConversationMessage, ConversationSession, TurnRequest, TurnOutcome } from './types';
 import { newId } from '../../shared/id';
 import type { AgentProfile } from '../workflow';
-import { inferenceModel } from './profile';
+import { nativeAgentFields } from './profile';
 import { chatContext, type ChatContextMode } from './chat-context';
 
 export function createSession(profileId: string): ConversationSession {
@@ -39,8 +39,7 @@ export function chatRequest(
   return {
     turnId: newId(),
     sessionId: session.id,
-    driver: profile.driver,
-    model: inferenceModel(profile),
+    ...nativeAgentFields(profile),
     prompt,
     timeoutSeconds: 300,
   };

@@ -3,7 +3,7 @@ import type { WorkflowRun, AgentPort, AgentEvent, CaseArtifact } from './types';
 import { isDesign, parseArtifact, decodeCases } from './artifacts';
 import { digest } from './plan';
 import { newId } from '../../shared/id';
-import { inferenceModel } from './profile';
+import { nativeAgentFields } from './profile';
 import { taskFor, validateTaskArtifact } from './handlers';
 import { latestArtifact } from './bindings';
 import { decodeRequirements } from './artifacts';
@@ -72,9 +72,8 @@ export async function generateCaseBatches(
     const request = {
       turnId: step.turnId,
       sessionId: run.sessionId,
-      driver: profile.driver,
+      ...nativeAgentFields(profile),
       prompt: JSON.stringify(task),
-      model: inferenceModel(profile),
       timeoutSeconds: remainingNodeSeconds(run, node),
     };
     const result = await port.send(request, onEvent, signal);

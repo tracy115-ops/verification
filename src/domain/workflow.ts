@@ -1,4 +1,5 @@
 import Ajv2020 from 'ajv/dist/2020.js';
+import { validCliLaunch, type CliLaunch } from './cli-launch';
 import definitionSchema from '../../docs/schemas/workflow-definition.schema.json';
 import { operationKinds } from './node-registry';
 
@@ -34,6 +35,7 @@ export interface WorkflowDefinition {
   nodes: WorkflowNode[];
 }
 export interface AgentProfile {
+  launch?: CliLaunch;
   id: string;
   name: string;
   driver: DriverId;
@@ -134,6 +136,11 @@ export function checkWorkflow(value: unknown): WorkflowIssue[] {
 }
 
 export function profileIsCompatible(profile: AgentProfile): boolean {
+  if (
+    !validCliLaunch(profile.launch, profile.driver) ||
+    (profile.launch !== undefined && profile.protocol !== 'native')
+  )
+    return false;
   if (profile.driver === 'codeagent')
     return (
       profile.protocol === 'native' &&

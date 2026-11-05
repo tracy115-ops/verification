@@ -11,6 +11,7 @@ export interface AgentEvent {
   id?: string;
 }
 export interface TurnRequest {
+  launch?: AgentProfile['launch'];
   turnId: string;
   sessionId: string;
   driver: DriverId;
