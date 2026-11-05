@@ -35,5 +35,12 @@ test('shows a Windows batch launcher and its internal CodeAgent version', async 
   await expect(profile).toContainText('已检测 CLI 安装');
   await expect(profile).toContainText('1.2605.05.02 (codeAgentCLI)');
   await expect(profile).not.toContainText('尚未探测');
+  await page.getByRole('button', { name: 'CLI 会话', exact: true }).click();
+  await page.getByRole('button', { name: '设置', exact: true }).click();
+  await page.getByRole('button', { name: 'Agent 与 Provider', exact: true }).click();
+  await expect(profile).toContainText('已检测 CLI 安装');
+  await page.getByRole('button', { name: '流程编排', exact: true }).click();
+  await page.locator('.workflow-inspector select').selectOption('codeagent-native');
+  await expect(page.locator('.workflow-profile-summary')).toContainText('已检测 CLI 安装');
   await page.screenshot({ path: '.runtime/codeagent-bat-detection.png' });
 });

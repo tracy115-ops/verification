@@ -68,6 +68,7 @@ export function ContributionImport({
           {t('collab_run_package')}
           <input
             type="file"
+            className="workbench-file"
             accept=".json,application/json"
             onChange={(event) => {
               const file = event.target.files?.[0];

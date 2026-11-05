@@ -9,6 +9,20 @@ export interface AgentProbe {
   reason?: string | null;
 }
 
+let snapshot: AgentProbe[] = [];
+const listeners = new Set<() => void>();
+export const agentProbeSnapshot = () => snapshot;
+export function subscribeAgentProbes(listener: () => void) {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+function publishProbes(value: AgentProbe[]) {
+  snapshot = value;
+  for (const listener of listeners) listener();
+}
+
 function isProbe(value: unknown): value is AgentProbe {
   if (typeof value !== 'object' || value === null) return false;
   if (!('driver' in value) || !['codeagent', 'claude', 'codex', 'pi'].includes(String(value.driver)))
@@ -30,7 +44,18 @@ export function hasDesktopBridge(): boolean {
 
 export async function probeAgents(): Promise<AgentProbe[]> {
   if (!hasDesktopBridge()) throw new Error('browserOnly');
-  const result: unknown = await invoke('probe_agents');
-  if (!Array.isArray(result) || !result.every(isProbe)) throw new Error('discoveryFailed');
-  return result;
+  try {
+    const result: unknown = await invoke('probe_agents');
+    if (
+      !Array.isArray(result) ||
+      !result.every(isProbe) ||
+      new Set(result.map((item) => item.driver)).size !== result.length
+    )
+      throw new Error('discoveryFailed');
+    publishProbes(structuredClone(result));
+    return result;
+  } catch (error) {
+    publishProbes([]);
+    throw error;
+  }
 }

@@ -12,7 +12,7 @@
 `package.json` 为版本入口，必须同步 npm 锁文件、Tauri 配置、Cargo workspace 和四个本地 crate 的锁文件版本。版本不是工作流修订号、项目协作 revision 或产物 schemaVersion。
 
 ```powershell
-npm.cmd run version:set -- 0.8.3
+npm.cmd run version:set -- 0.8.4
 npm.cmd run version:check
 ```
 
@@ -25,10 +25,10 @@ npm.cmd run version:check
 Rust 工具链由根目录 `rust-toolchain.toml` 固定为本地已验证的 1.97.0；升级工具链单独验证，不随 CI 的 stable 渠道自动漂移。`v0.1.0` 与 `v0.1.1` 的远端构建失败且没有发布附件；修复并发目录冲突后使用 `v0.1.2`，不覆盖原标签。
 
 ```powershell
-# 以下以尚未发布的下一 PATCH 为例，先提交版本及 docs/releases/0.8.3.md：
+# 以下以尚未发布的下一 PATCH 为例，先提交版本及 docs/releases/0.8.4.md：
 git push origin main
-git tag -a v0.8.3 -m 'Release 0.8.3'
-git push origin v0.8.3
+git tag -a v0.8.4 -m 'Release 0.8.4'
+git push origin v0.8.4
 ```
 
 标签与已发布附件不覆盖；发布后修复使用新 PATCH 版本。未发布成功时可以在原标签重跑工作流；已存在 Release 时创建操作会失败，不静默替换附件。

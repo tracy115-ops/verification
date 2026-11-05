@@ -1,7 +1,7 @@
 {
   "name": "verification-workbench",
   "private": true,
-  "version": "0.8.2",
+  "version": "0.8.3",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
@@ -11,6 +11,8 @@
     "package:windows": "tauri build --ci --config src-tauri/tauri.bundle.conf.json --bundles nsis",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:e2e:production": "node scripts/test-production-ui.mjs",
+    "test:ui:development": "playwright test --config playwright.visual.config.ts",
     "test:team:e2e": "playwright test --config playwright.team.config.ts",
     "serve:lan": "node server/index.ts",
     "serve:game-fixture": "node scripts/serve-game-fixture.mjs",
@@ -23,6 +25,7 @@
     "version:check": "node scripts/version.mjs && node --test scripts/version-contracts.mjs",
     "version:set": "node scripts/version.mjs",
     "check": "npm run version:check && npm run format:check && npm run check:constraints && npm run test && npm run build",
+    "verify:product": "npm run check && node scripts/bundle-team.mjs && npm run test:e2e:production && npm run test:team:e2e && cargo test --workspace --locked && npm run verify:workflow && npm run verify:deep-agent -- --reuse-script",
     "check:constraints": "node scripts/check-constraints.mjs",
     "tauri": "tauri"
   },

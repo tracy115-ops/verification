@@ -51,16 +51,16 @@
   min-height: 390px;
   min-width: 0;
   --xy-background-color: var(--wb-canvas);
-  --xy-background-pattern-dots-color-default: var(--wb-input-border);
-  --xy-edge-stroke-default: var(--wb-line);
-  --xy-edge-stroke-width-default: 1.5;
-  --xy-controls-button-background-color-default: var(--wb-surface);
-  --xy-controls-button-background-color-hover-default: var(--wb-hover);
-  --xy-controls-button-color-default: var(--wb-text);
-  --xy-controls-button-border-color-default: var(--wb-border);
-  --xy-minimap-background-color-default: var(--wb-surface);
-  --xy-minimap-mask-background-color-default: var(--wb-mask);
-  --xy-minimap-node-background-color-default: var(--wb-line);
+  --xy-background-pattern-dots-color: var(--wb-input-border);
+  --xy-edge-stroke: var(--wb-line);
+  --xy-edge-stroke-width: 1.5;
+  --xy-controls-button-background-color: var(--wb-surface);
+  --xy-controls-button-background-color-hover: var(--wb-hover);
+  --xy-controls-button-color: var(--wb-text);
+  --xy-controls-button-border-color: var(--wb-border);
+  --xy-minimap-background-color: var(--wb-surface);
+  --xy-minimap-mask-background-color: var(--wb-mask);
+  --xy-minimap-node-background-color: var(--wb-line);
 }
 .workflow-node {
   width: 238px;

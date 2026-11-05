@@ -89,6 +89,7 @@ export function ScriptImport({ actions, close }: { actions: TeamActions; close: 
           {t('collab_script_file')}
           <input
             type="file"
+            className="workbench-file"
             accept=".py,.json,text/x-python,application/json"
             disabled={busy}
             onChange={(event) => void file(event.target.files?.[0]).catch(() => setError('team_invalid'))}

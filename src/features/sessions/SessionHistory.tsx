@@ -21,6 +21,8 @@ export function SessionHistory({
     <section className="session-history">
       <button
         className="workbench-btn session-history-new"
+        aria-label={t('newSession')}
+        title={t('newSession')}
         onClick={() => {
           actions.newSession();
           open();
@@ -82,7 +84,14 @@ export function SessionHistory({
             </div>
           ))}
       </div>
-      {searching && <ConversationSearch actions={actions} close={() => setSearching(false)} open={open} />}
+      {searching && (
+        <ConversationSearch
+          actions={actions}
+          close={() => setSearching(false)}
+          open={open}
+          openAssets={openAssets}
+        />
+      )}
     </section>
   );
 }

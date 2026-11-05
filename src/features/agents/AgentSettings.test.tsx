@@ -1,11 +1,16 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { invoke } from '@tauri-apps/api/core';
 import { probeAgents } from '../../services/agent-api';
 import { AgentSettings } from './AgentSettings';
 import type { AgentProfile } from '../../domain/workflow';
 
-vi.mock('../../services/agent-api', () => ({ hasDesktopBridge: () => true, probeAgents: vi.fn() }));
+vi.mock('@tauri-apps/api/core', () => ({ isTauri: () => true, invoke: vi.fn() }));
+beforeEach(async () => {
+  vi.mocked(invoke).mockReset().mockResolvedValue([]);
+  await probeAgents();
+});
 afterEach(cleanup);
 
 const native: AgentProfile = {
@@ -26,7 +31,7 @@ const found = {
 } as const;
 
 it('synchronizes native profile installation and version without implying Provider connectivity', async () => {
-  vi.mocked(probeAgents).mockResolvedValue([found, { ...found, driver: 'codex' }]);
+  vi.mocked(invoke).mockResolvedValue([found, { ...found, driver: 'codex' }]);
   const codex: AgentProfile = { ...native, id: 'codex', name: 'Codex missing model', driver: 'codex' };
   const provider: AgentProfile = {
     ...codex,
@@ -55,7 +60,7 @@ it('synchronizes native profile installation and version without implying Provid
 it.each(['missing', 'failed'] as const)(
   'refreshing a %s probe does not retain a stale success badge',
   async (next) => {
-    const mock = vi.mocked(probeAgents).mockResolvedValueOnce([found]);
+    const mock = vi.mocked(invoke).mockResolvedValueOnce([found]);
     if (next === 'missing')
       mock.mockResolvedValueOnce([{ ...found, status: 'missing', executable: null, version: null }]);
     else mock.mockRejectedValueOnce(new Error('fixture failure'));
@@ -71,7 +76,7 @@ it.each(['missing', 'failed'] as const)(
 );
 
 it('displays the CodeAgent batch path and accepts its internal version format', async () => {
-  vi.mocked(probeAgents).mockResolvedValue([
+  vi.mocked(invoke).mockResolvedValue([
     {
       driver: 'codeagent',
       status: 'found',
@@ -87,7 +92,7 @@ it('displays the CodeAgent batch path and accepts its internal version format', 
 });
 
 it('distinguishes a found launcher with a failed version command from an absent installation', async () => {
-  vi.mocked(probeAgents).mockResolvedValue([
+  vi.mocked(invoke).mockResolvedValue([
     {
       driver: 'codeagent',
       status: 'error',

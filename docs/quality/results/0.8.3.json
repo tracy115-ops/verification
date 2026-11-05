@@ -1,0 +1,82 @@
+{
+  "version": "0.8.3",
+  "recordedAt": "2026-11-05T01:45:59.557Z",
+  "checks": {
+    "unitTests": 193,
+    "productionUiTests": 57,
+    "teamUiTests": 4,
+    "developmentUiProfiles": 8,
+    "productionStates": 120,
+    "nativeFormFixtureStates": 24,
+    "developmentStates": 120,
+    "geometryMatches": 120,
+    "pythonWorkflows": 2,
+    "deepDefectsDetected": 6,
+    "referenceFailures": 0,
+    "referenceErrors": 0
+  },
+  "cli": [
+    {
+      "driver": "codex",
+      "status": "completed",
+      "errorCode": null,
+      "qaReplyMatched": true
+    },
+    {
+      "driver": "claude",
+      "status": "completed",
+      "errorCode": null,
+      "qaReplyMatched": true
+    },
+    {
+      "driver": "pi",
+      "status": "failed",
+      "errorCode": "cli_model_ambiguous",
+      "qaReplyMatched": false
+    }
+  ],
+  "codeagent": "not_installed",
+  "nativeGui": {
+    "status": "blocked",
+    "action": "start independent desktop QA process",
+    "reason": "blocked by policy"
+  },
+  "liveDownload": {
+    "version": "0.8.2",
+    "bytes": 3331371,
+    "verified": true,
+    "installed": false
+  },
+  "windowsPac": true,
+  "uiData": "public archived sample plus offline IPC fixtures",
+  "screenshots": [
+    {
+      "name": "compact-history.png",
+      "sha256": "4fa001ea9468aa1e9231f8c86c5882ac5480cbec3ce259f48d69b2c25e2c47fc"
+    },
+    {
+      "name": "workflow-dark.png",
+      "sha256": "fa254fae0d6be0c0cff8f88ca29855f436a310895ebb1d2c5e01ea05f4ed56db"
+    },
+    {
+      "name": "cases-compact.png",
+      "sha256": "ce6de4d2652917b807bd679d9bb74a305262d47bac3d2c58fa5e5997d15a878d"
+    },
+    {
+      "name": "framework-file.png",
+      "sha256": "bc07ce0ae290ba9c876c6d8eaef0cce4b0748df112621edfaa51aaec44d088c3"
+    },
+    {
+      "name": "hosting-dark.png",
+      "sha256": "0e254626ab01041b8b8304c6688c51cfae369c20ce91b90f8c03526a8ad1c125"
+    },
+    {
+      "name": "proxy-compact.png",
+      "sha256": "97de1e964247a158cda7bfa9d2ee96ae8d0ff4903e8a34ca880c8202d6c28477"
+    },
+    {
+      "name": "logs-dark.png",
+      "sha256": "8ce8b10b736f6f38f49881ad59b97984895647111e9f4d3e3c993927d837ed7a"
+    }
+  ]
+}

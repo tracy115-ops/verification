@@ -13,7 +13,8 @@ export const conversationZh = {
   cli_trust_required: 'CodeAgent 的项目安全确认阻止了非交互调用。请查看设置中的诊断日志。',
   cli_option_unsupported: 'CLI 不支持当前启动参数，请查看诊断日志并核对版本。',
   cli_mcp_invalid: 'CLI 拒绝了 MCP 配置，请查看诊断日志。',
-  profileProbeScope: '本机 CLI 配置同步上方安装与版本结果；检测不检查登录、模型授权或 Provider 接口连通性。',
+  profileProbeScope:
+    '本次应用运行内共享最近安装与版本探测结果，刷新后需重新检测；不检查登录、模型授权或 Provider 接口连通性。',
   profileCliNotChecked: '安装未检测',
   profileCliDetected: '已检测 CLI 安装',
   profileCliNeedsModel: 'CLI 已发现 · 模型未配置',
@@ -232,7 +233,7 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
   cli_option_unsupported: 'The CLI rejected a launch option. Review diagnostics and verify its version.',
   cli_mcp_invalid: 'The CLI rejected the MCP configuration. Review diagnostics.',
   profileProbeScope:
-    'Local CLI profiles share the installation and version results above. Discovery does not check sign-in, model access or Provider connectivity.',
+    'The latest installation and version results are shared during this app session; probe again after reload. Discovery does not check sign-in, model access or Provider connectivity.',
   profileCliNotChecked: 'Installation unchecked',
   profileCliDetected: 'CLI installation checked',
   profileCliNeedsModel: 'CLI found · model not configured',

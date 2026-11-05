@@ -274,6 +274,15 @@
   text-align: left;
   cursor: pointer;
 }
+.session-search-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.session-search-row .session-search-result {
+  flex: 1;
+  min-width: 0;
+}
 .session-search-result:hover {
   background: var(--wb-hover);
 }
@@ -383,11 +392,18 @@
 .session-history-item:hover {
   background: var(--wb-hover);
 }
-@media (max-width: 1100px) {
+@media (max-width: 1150px) {
   .session-history-new span,
   .session-history-heading h2,
-  .session-history-item span {
+  .session-history-list {
     display: none;
+  }
+  .session-history-heading {
+    margin-inline: 0;
+  }
+  .session-history-heading > button {
+    width: 100%;
+    min-height: 36px;
   }
   .session-history-new {
     min-width: 0;

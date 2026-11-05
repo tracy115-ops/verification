@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { RefreshCw, Terminal } from 'lucide-react';
 import type { AgentProfile } from '../../domain/workflow';
-import { hasDesktopBridge, probeAgents, type AgentProbe } from '../../services/agent-api';
+import { hasDesktopBridge, probeAgents } from '../../services/agent-api';
+import { useAgentProbes } from '../../app/useAgentProbes';
 import { isMessageKey, useI18n } from '../../shared/i18n/context';
 import type { MessageKey } from '../../shared/i18n/messages';
 import { Status } from '../../shared/components/Status';
@@ -19,15 +20,14 @@ export function AgentSettings({
   notify: (key: MessageKey) => void;
 }) {
   const { t } = useI18n();
-  const [probes, setProbes] = useState<AgentProbe[]>([]);
+  const probes = useAgentProbes();
   const [busy, setBusy] = useState(false);
   const desktop = hasDesktopBridge();
   async function detect() {
     setBusy(true);
     try {
-      setProbes(await probeAgents());
+      await probeAgents();
     } catch {
-      setProbes([]);
       notify(desktop ? 'discoveryFailed' : 'browserOnly');
     } finally {
       setBusy(false);

@@ -170,6 +170,7 @@ function FrameworkForm({
         {t('loadFrameworkFile')}
         <input
           type="file"
+          className="workbench-file"
           accept=".py,text/x-python"
           onChange={(event) => {
             void read(event.target.files?.[0]);

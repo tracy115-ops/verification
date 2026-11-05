@@ -3,6 +3,8 @@ import type { WorkbenchDocument, WorkflowNode } from '../../domain/workflow';
 import { useI18n } from '../../shared/i18n/context';
 import { Status } from '../../shared/components/Status';
 import { kindKeys, nodeLabel } from './node-label';
+import { useAgentProbes } from '../../app/useAgentProbes';
+import { ProfileProbeStatus } from '../agents/ProfileProbeStatus';
 
 interface Props {
   document: WorkbenchDocument;
@@ -14,6 +16,7 @@ interface Props {
 
 export function NodeInspector({ document, node, update, openWorkspace, openAgents }: Props) {
   const { t } = useI18n();
+  const probes = useAgentProbes();
   const profile = document.profiles.find((item) => item.id === document.bindings[node.id]);
   function patchNode(patch: Partial<WorkflowNode>) {
     update({
@@ -81,7 +84,10 @@ export function NodeInspector({ document, node, update, openWorkspace, openAgent
               <div className="workflow-profile-summary">
                 <strong>{profile.driver}</strong>
                 <span>{profile.protocol === 'native' ? t('native') : profile.protocol}</span>
-                <Status tone="warning">{t('notProbed')}</Status>
+                <ProfileProbeStatus
+                  profile={profile}
+                  probe={probes.find((item) => item.driver === profile.driver)}
+                />
               </div>
             )}
             <p className="wb-muted">{t('agentHint')}</p>

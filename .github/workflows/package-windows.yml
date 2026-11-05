@@ -68,6 +68,30 @@ jobs:
       - name: Check frontend, domain tests and source constraints
         run: npm.cmd run check
 
+      - name: Check production UI and collaboration before packaging
+        env:
+          WORKBENCH_TEST_PRODUCTION: '1'
+        run: |
+          npx.cmd playwright install chromium
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm.cmd run test:e2e
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm.cmd run test:team:e2e
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Preserve UI audit evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: ui-audit-${{ steps.version.outputs.identity }}
+          path: |
+            .runtime/product-audit/*.png
+            .runtime/product-audit/*.json
+            .runtime/playwright/
+            .runtime/playwright-team/
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Prepare bundled resources for native desktop tests
         run: node scripts/bundle-team.mjs
 
