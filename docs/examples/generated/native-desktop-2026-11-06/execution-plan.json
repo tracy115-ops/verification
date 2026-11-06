@@ -1,0 +1,57 @@
+{
+  "digest": "5caa468c4a3a90bdcaa1af7b6d97bbc954fb07edcc99a319510296c8246cdbf2",
+  "scriptSha256": "29ab4ed7342f108c36354a0d0e54af9c473eb2a787d3eadfb9435efed8274d51",
+  "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+  "pythonVersion": "3.11.15",
+  "testNames": [
+    "test_cap_1_invalid_returns_400",
+    "test_cap_2_valid_returns_201",
+    "test_cap_8_valid_returns_201",
+    "test_cap_9_invalid_returns_400"
+  ],
+  "payload": {
+    "sessionId": "40393d8d-b58e-4b7d-81e6-6209864b4d55",
+    "runId": "c87577a6-aca2-41f2-896c-1a48b84b55d8",
+    "executionId": "5ec2cc95-b398-4093-9886-e24a14763061",
+    "profile": {
+      "id": "game-unittest",
+      "name": "Desktop E2E room capacity",
+      "adapter": "python-unittest-v1",
+      "pythonCommand": "python",
+      "frameworkSource": "\"\"\"Provided test framework for the local game-platform black-box topic.\"\"\"\nimport concurrent.futures\nimport json\nimport os\nimport threading\nimport unittest\nimport urllib.error\nimport urllib.parse\nimport urllib.request\nfrom dataclasses import dataclass\n\n\n@dataclass\nclass Response:\n    status: int\n    body: dict\n\n\nclass GameClient:\n    def __init__(self, test_id):\n        self.base = os.environ[\"BLACKBOX_BASE_URL\"]\n        parsed = urllib.parse.urlsplit(self.base)\n        if parsed.scheme != \"http\" or parsed.hostname != \"127.0.0.1\":\n            raise ValueError(\"benchmark_target_invalid\")\n        self.test_id = test_id\n        self.lock = threading.Lock()\n        self.count = 0\n\n    def call(self, method, path, body=None, user=\"player-a\", headers=None):\n        if not path.startswith(\"/\") or path.startswith(\"//\"):\n            raise ValueError(\"benchmark_path_invalid\")\n        with self.lock:\n            self.count += 1\n            if self.count > 100:\n                raise ValueError(\"request_limit\")\n        request_headers = {\"Content-Type\": \"application/json\", **(headers or {})}\n        if user is not None:\n            request_headers[\"X-Player\"] = user\n        payload = json.dumps(body).encode() if body is not None else None\n        request = urllib.request.Request(self.base + path, data=payload, headers=request_headers, method=method)\n        try:\n            response = urllib.request.urlopen(request, timeout=3)\n        except urllib.error.HTTPError as error:\n            response = error\n        with response:\n            raw = response.read(65537)\n            if len(raw) > 65536:\n                raise ValueError(\"response_limit\")\n            result = Response(response.status, json.loads(raw.decode(\"utf-8\")))\n        evidence = {\"test\": self.test_id, \"request\": {\"method\": method, \"path\": path, \"body\": body, \"user\": user, \"headers\": headers}, \"response\": {\"status\": result.status, \"body\": result.body}}\n        with self.lock:\n            with open(os.environ[\"BLACKBOX_EVIDENCE_FILE\"], \"a\", encoding=\"utf-8\") as stream:\n                stream.write(json.dumps(evidence, ensure_ascii=False) + \"\\n\")\n        return result\n\n    def parallel(self, requests):\n        if len(requests) > 4:\n            raise ValueError(\"concurrency_limit\")\n        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:\n            futures = [pool.submit(self.call, **request) for request in requests]\n            return [future.result() for future in futures]\n\n\nclass BlackBoxCase(unittest.TestCase):\n    def setUp(self):\n        self.client = GameClient(self.id())\n        self.client.call(\"POST\", \"/__fixture/reset\", {})\n",
+      "instructions": "Single-file unittest adapter. Import BlackBoxCase from framework. Use self.client.call(method, path, body=None, user=\"player-a\", headers=None) and self.client.parallel(requests). The example framework resets its game fixture in setUp; replace framework.py with your trusted SDK for other targets. Record request/response JSONL to BLACKBOX_EVIDENCE_FILE and read BLACKBOX_BASE_URL for the target.",
+      "targetUrl": "http://127.0.0.1:3703",
+      "timeoutSeconds": 60
+    },
+    "implementation": {
+      "script": "# 黑盒房间容量验证脚本（单文件 unittest 适配器）。\n# 范围说明：仅覆盖四个已批准用例（SC-CAP-2-VALID-201、SC-CAP-8-VALID-201、\n# SC-CAP-1-INVALID-400、SC-CAP-9-INVALID-400），按声明的 oracle 只断言 HTTP 状态码。\n# 审计备注（非阻塞问题）：其他输入组合、鉴权变体、缺失字段、响应体字段断言、\n# 并发行为与依赖故障均被明确排除在范围之外；固定前置条件（player-a、mode=duel、\n# ranked=false、每测试独立夹具重置）按规约不单独建测，由框架 setUp 统一提供。\nimport unittest\n\nimport framework\n\n\nclass RoomCapacityBlackBoxTests(framework.BlackBoxCase):\n    def test_cap_1_invalid_returns_400(self):\n        response = self.client.call(\n            \"POST\",\n            \"/rooms\",\n            {\"maxPlayers\": 1, \"mode\": \"duel\", \"ranked\": False},\n            user=\"player-a\",\n        )\n        self.assertEqual(400, response.status)\n\n    def test_cap_2_valid_returns_201(self):\n        response = self.client.call(\n            \"POST\",\n            \"/rooms\",\n            {\"maxPlayers\": 2, \"mode\": \"duel\", \"ranked\": False},\n            user=\"player-a\",\n        )\n        self.assertEqual(201, response.status)\n\n    def test_cap_8_valid_returns_201(self):\n        response = self.client.call(\n            \"POST\",\n            \"/rooms\",\n            {\"maxPlayers\": 8, \"mode\": \"duel\", \"ranked\": False},\n            user=\"player-a\",\n        )\n        self.assertEqual(201, response.status)\n\n    def test_cap_9_invalid_returns_400(self):\n        response = self.client.call(\n            \"POST\",\n            \"/rooms\",\n            {\"maxPlayers\": 9, \"mode\": \"duel\", \"ranked\": False},\n            user=\"player-a\",\n        )\n        self.assertEqual(400, response.status)\n",
+      "tests": [
+        {
+          "testName": "test_cap_1_invalid_returns_400",
+          "caseIds": [
+            "B1-TC-CAP-1-INVALID-400"
+          ]
+        },
+        {
+          "testName": "test_cap_2_valid_returns_201",
+          "caseIds": [
+            "B1-TC-CAP-2-VALID-201"
+          ]
+        },
+        {
+          "testName": "test_cap_8_valid_returns_201",
+          "caseIds": [
+            "B1-TC-CAP-8-VALID-201"
+          ]
+        },
+        {
+          "testName": "test_cap_9_invalid_returns_400",
+          "caseIds": [
+            "B2-TC-CAP-9-INVALID-400"
+          ]
+        }
+      ],
+      "questions": []
+    }
+  }
+}

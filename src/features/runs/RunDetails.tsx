@@ -77,7 +77,7 @@ export function RunDetails({
         >
           {t('assetsTitle')}
         </button>
-        <RunReport artifact={report} />
+        <RunReport artifact={report} run={run} />
       </div>
       {current && (
         <div className="run-current">

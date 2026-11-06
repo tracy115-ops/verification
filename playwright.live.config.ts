@@ -3,6 +3,7 @@ import { defineConfig } from '@playwright/test';
 // Explicit opt-in only: these tests call an installed CLI and may incur model costs.
 export default defineConfig({
   testDir: './tests/live',
+  testMatch: '**/claude-settings.spec.ts',
   workers: 1,
   retries: 0,
   timeout: 180_000,

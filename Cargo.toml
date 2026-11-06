@@ -4,6 +4,6 @@ default-members = ["crates/agent-runtime"]
 resolver = "2"
 
 [workspace.package]
-version = "0.9.6"
+version = "0.9.7"
 edition = "2024"
 license = "UNLICENSED"

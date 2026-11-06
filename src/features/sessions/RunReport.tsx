@@ -3,9 +3,9 @@ import { isReport } from '../../domain/execution/schema';
 import { useI18n } from '../../shared/i18n/context';
 import { ReviewDialog } from './ReviewDialog';
 import { ExecutionArtifact } from './ExecutionArtifact';
-import type { Artifact } from '../../domain/runtime/types';
+import type { Artifact, WorkflowRun } from '../../domain/runtime/types';
 
-export function RunReport({ artifact }: { artifact: Artifact | undefined }) {
+export function RunReport({ artifact, run }: { artifact: Artifact | undefined; run?: WorkflowRun }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   if (!artifact || !isReport(artifact.value)) return null;
@@ -21,7 +21,7 @@ export function RunReport({ artifact }: { artifact: Artifact | undefined }) {
         closeLabel="designClose"
       >
         <section className="session-review-card">
-          <ExecutionArtifact artifact={artifact} />
+          <ExecutionArtifact artifact={artifact} run={run} />
         </section>
       </ReviewDialog>
     </>

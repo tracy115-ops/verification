@@ -1,7 +1,8 @@
-import type { Artifact } from '../../domain/runtime/types';
+import type { Artifact, WorkflowRun } from '../../domain/runtime/types';
 import { isEvidence, isImplementation, isReport } from '../../domain/execution/schema';
 import { useI18n } from '../../shared/i18n/context';
 import { Status } from '../../shared/components/Status';
+import { ReportCandidates } from './ReportCandidates';
 
 function download(name: string, text: string, type: string) {
   const url = URL.createObjectURL(new Blob([text], { type }));
@@ -14,9 +15,11 @@ function download(name: string, text: string, type: string) {
 export function ExecutionArtifact({
   artifact,
   expandSource = false,
+  run,
 }: {
   artifact: Artifact;
   expandSource?: boolean;
+  run?: WorkflowRun;
 }) {
   const { t, locale } = useI18n();
   const value = artifact.value;
@@ -94,14 +97,17 @@ export function ExecutionArtifact({
               ))}
             </details>
           )}
-          {value.candidates.map((item) => (
-            <article key={item.id}>
-              <h4>{item.title}</h4>
-              <p>{item.explanation}</p>
-              <code>{item.testNames.join(', ')}</code>
-              <p>{item.caseIds.join(', ')}</p>
-            </article>
-          ))}
+          <ReportCandidates key={artifact.digest} report={value} run={run} />
+          {!!value.notes.length && (
+            <details>
+              <summary>{t('candidateReportNotes')}</summary>
+              <ul>
+                {value.notes.map((note, index) => (
+                  <li key={index}>{note}</li>
+                ))}
+              </ul>
+            </details>
+          )}
           <p>{t(`action_${value.action}`)}</p>
           <p className="wb-muted">{t('reportOnly')}</p>
           <button

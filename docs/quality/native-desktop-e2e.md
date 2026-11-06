@@ -2,6 +2,10 @@
 
 ## 本轮结论
 
+0.9.7 使用正式 Tauri 构建入口生成的本地 Release 程序，恢复 0.9.6 原生完整流程留下的独立 WebView2 数据，通过原 IPC 核对版本，并在界面检查报告四个标签、两条请求、关联用例、原文及原脚本摘要。最终复验通过，无数据注入、无新模型调用。截图与构建摘要见[报告复验证据](../examples/generated/report-review-0.9.7/proof.json)及[真实桌面截图](../examples/generated/report-review-0.9.7/report.png)。本次范围是报告恢复与复核，不声称重新生成或执行整条流程，也不等于尚待 GitHub 生成的安装包已验收。
+
+复验前曾发现两项失败：直接 Cargo Release 构建尝试加载开发服务器，改为正式 `npm run tauri -- build --no-bundle --ci`；报告错误使用产物包装摘要关联证据，改为既有契约中的 `EvidenceBundle.resultSha256`，并补入反例测试。不能用新窗口显示版本号代替实际报告操作。
+
 0.9.6 已在本机真实 Release Tauri 窗口完成 13 步验证流程、4 次评审、真实 CLI 推理与真实 Python 执行，最终报告可见。正确参考目标和缺陷目标另作同脚本原生执行对照。详见[完整生成与执行证据](../examples/generated/native-desktop-2026-11-06/README.md)。
 
 该验证取代此前“只验证真实 CLI / 引擎”和“浏览器界面 + 原生测试桥”的不足；两种旧证据仍保留其原有范围，不能追溯扩大。
@@ -34,3 +38,5 @@ npx playwright test --config playwright.desktop.config.ts
 该测试可能产生模型费用，最多运行 30 分钟，无自动重试，普通测试/CI不包含它。所有业务步骤由界面控件操作；只读读取本地运行用于断言、归档，不通过注入数据制造成功。遇到缺口或失败保留真实运行，不自动豁免；修复后可以设置 `DESKTOP_AUDIT_RESUME=1`，在原窗口继续评审。
 
 结果写入 `.runtime/desktop-e2e/evidence/`。结束后关闭自己启动的审计窗口和基准服务，避免遗留调试端口；不要结束其他工作台进程。
+
+只复验已有真实任务的报告时，用启动器 `--root` 指向那次审计目录，设置 `DESKTOP_AUDIT_ENDPOINT` 与预期 `DESKTOP_AUDIT_VERSION` 后运行 `npx playwright test --config playwright.report-native.config.ts`。该测试只操作已存在任务的报告，不填充存储或调用模型。

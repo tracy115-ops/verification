@@ -53,7 +53,7 @@ export function RunPanel({
         {run.status === 'awaiting_review' && <small>{t('runReviewBudgetPaused')}</small>}
       </div>
       <RunSummary value={report} />
-      <RunReport artifact={Object.values(run.artifacts).find((item) => isReport(item.value))} />
+      <RunReport run={run} artifact={Object.values(run.artifacts).find((item) => isReport(item.value))} />
       <CurrentStep run={run} />
       <AnalysisBudgetSummary run={run} />
       <DesignProposalPanel run={run} actions={actions} />

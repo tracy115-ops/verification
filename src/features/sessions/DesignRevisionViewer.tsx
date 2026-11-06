@@ -69,7 +69,7 @@ export function DesignRevisionViewer({ run, artifact }: { run: WorkflowRun; arti
           <EvidenceViewer run={snapshot} evidence={current.value} />
         ) : (
           <div className="session-artifact-reading">
-            <ExecutionArtifact artifact={current} expandSource />
+            <ExecutionArtifact artifact={current} run={snapshot} expandSource />
           </div>
         ))}
       {!current && <p className="wb-error">{t('artifact_invalid')}</p>}

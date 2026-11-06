@@ -1,4 +1,4 @@
-import type { Artifact } from '../../domain/runtime/types';
+import type { Artifact, WorkflowRun } from '../../domain/runtime/types';
 import { isCases, isDesign, isRequirements } from '../../domain/runtime/artifacts';
 import { useI18n } from '../../shared/i18n/context';
 import { ExecutionArtifact } from './ExecutionArtifact';
@@ -6,15 +6,17 @@ import { ExecutionArtifact } from './ExecutionArtifact';
 export function ArtifactPanel({
   artifact,
   onNavigate,
+  run,
 }: {
   artifact: Artifact;
   onNavigate?: (kind: 'requirements' | 'scenarios', id: string) => void;
+  run?: WorkflowRun;
 }) {
   const { t } = useI18n();
   const value = artifact.value;
   return (
     <section className="session-artifact">
-      <ExecutionArtifact artifact={artifact} />
+      <ExecutionArtifact artifact={artifact} run={run} />
       {isRequirements(value) && (
         <>
           <h3>{t('requirementItems')}</h3>

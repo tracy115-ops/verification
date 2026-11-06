@@ -177,7 +177,7 @@ function ArtifactDetail({
     );
   return (
     <div className="session-artifact-reading">
-      <ArtifactPanel artifact={artifact} />
+      <ArtifactPanel artifact={artifact} run={run} />
     </div>
   );
 }

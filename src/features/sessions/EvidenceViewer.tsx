@@ -4,6 +4,7 @@ import type { WorkflowRun } from '../../domain/runtime/types';
 import { isImplementation } from '../../domain/execution/schema';
 import { useI18n } from '../../shared/i18n/context';
 import { Status } from '../../shared/components/Status';
+import { requestsForTest } from '../../domain/runtime/candidate-trace';
 
 export function EvidenceViewer({ evidence, run }: { evidence: EvidenceBundle; run: WorkflowRun }) {
   const { t } = useI18n();
@@ -20,14 +21,7 @@ export function EvidenceViewer({ evidence, run }: { evidence: EvidenceBundle; ru
   const mapped = isImplementation(implementation)
     ? implementation.tests.find((item) => item.testName === current?.testName)?.caseIds
     : [];
-  const requests = evidence.requests.filter(
-    (item) =>
-      item &&
-      typeof item === 'object' &&
-      'test' in item &&
-      typeof item.test === 'string' &&
-      (item.test === current?.testName || item.test.endsWith(`.${current?.testName}`)),
-  );
+  const requests = current ? requestsForTest(evidence, current.testName) : [];
   return (
     <div className="assets-body">
       <div className="assets-list">
@@ -97,7 +91,7 @@ export function EvidenceViewer({ evidence, run }: { evidence: EvidenceBundle; ru
   );
 }
 
-function RequestEvidence({ value }: { value: unknown }) {
+export function RequestEvidence({ value }: { value: unknown }) {
   const { t } = useI18n();
   const record = value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
   const request =

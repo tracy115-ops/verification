@@ -1,0 +1,17 @@
+{
+  "version": "0.9.7",
+  "nativeIpc": true,
+  "recordedTaskFrom": "0.9.6 actual native workflow",
+  "tests": 4,
+  "requestsForCandidate": 2,
+  "scriptDigestMatched": true,
+  "tabsVerified": 4,
+  "newInferenceCalls": 0,
+  "verifiedAt": "2026-11-06T06:34:33.831Z",
+  "buildCommand": "npm run tauri -- build --no-bundle --ci",
+  "executableSha256": "470fa48bd49ac999330ebc46b45252ccd9168d5da334afb35d99228313261243",
+  "screenshotSha256": "ff47cfedbea03905146bcf2df61b4942689be008ac637a34e98f434f12b0e754",
+  "originalRunId": "c87577a6-aca2-41f2-896c-1a48b84b55d8",
+  "dataInjection": false,
+  "scope": "Report restore and review only; original task was generated and executed in 0.9.6. Local Release binary, not the forthcoming GitHub installer."
+}

@@ -98,12 +98,13 @@
     "evidence.redacted.json": "e2bbe2e73f18408d7ac07a55e811a357fce07b9e44797da4226760298b39700c",
     "final-report.png": "77404219fd1c6972ce7abf7a00d8fdf885277249bc7b27d790f0db99a9c4bf09",
     "implementation.json": "a2ce8aac27ededa70a1e5aff98c101cc5f6d0a598c8ba630047bc73e8cbc232d",
-    "README.md": "9820bb107b425998ee3f0d96f71d9d5ef371fcab474f8303ca3e2dc52eaa6876",
+    "README.md": "46640a2006ef255619f8e16de218a98df6eb54a6004a776504c0007d1ec3f47f",
     "report.json": "fe64293f18b0473ac41f746da05e0245264fca49f5d2a9d6a803e0c9c53aa3e1",
     "requirements.json": "d00571b4de7eaa2b33c192fc87b03d98e74cb99eabf946b38714ee2a189c70cf",
     "source.txt": "6982a93465a4761110f2e214f7f833257c33d2729518621693dda1a6a6fe5bf8",
     "stages.json": "a048fb4ec256f87fb21f2b1ec73a83a3bde7baad76963451f488d416833af6f2",
-    "test_rooms.py": "29ab4ed7342f108c36354a0d0e54af9c473eb2a787d3eadfb9435efed8274d51"
+    "test_rooms.py": "29ab4ed7342f108c36354a0d0e54af9c473eb2a787d3eadfb9435efed8274d51",
+    "execution-plan.json": "af6d4cf5cc358e11a5ad348e7260d55e19cf8661f6fe23c0f276649652d85941"
   },
   "originalEvidenceSerializedSha256": "92858e276815acf795220192f519a1e09af45c8bb96720eac7e5ddbd1f3ef6a8",
   "originalEvidenceArtifactDigest": "41bef881a2b8a75985faf322f05c37d11418ba3d8ea86f22fa9f1277c92c815f",
