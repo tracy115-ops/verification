@@ -1,0 +1,99 @@
+{
+  "cases": [
+    {
+      "id": "B1-TC-CAP-2-VALID-201",
+      "title": "POST /rooms with maxPlayers=2 as player-a returns HTTP 201",
+      "scenarioIds": [
+        "SC-CAP-2-VALID-201"
+      ],
+      "requirementIds": [
+        "REQ-CAP-2",
+        "REQ-ROOMS-INTERFACE"
+      ],
+      "preconditions": [
+        "The service under test exposes POST /rooms accepting a JSON body {maxPlayers, mode, ranked}.",
+        "The request is issued under the fixed identity player-a with mode=duel and ranked=false.",
+        "A fresh, independent room fixture is established for this test before the request is issued (per-test fixture reset)."
+      ],
+      "steps": [
+        "Send POST /rooms with JSON body {\"maxPlayers\": 2, \"mode\": \"duel\", \"ranked\": false} under identity player-a."
+      ],
+      "expected": "The service responds to the request with HTTP status 201; per the declared oracle only the HTTP status code is verified.",
+      "assertions": [
+        "The observed HTTP response status code equals 201."
+      ]
+    },
+    {
+      "id": "B1-TC-CAP-8-VALID-201",
+      "title": "POST /rooms with maxPlayers=8 as player-a returns HTTP 201",
+      "scenarioIds": [
+        "SC-CAP-8-VALID-201"
+      ],
+      "requirementIds": [
+        "REQ-CAP-8",
+        "REQ-ROOMS-INTERFACE"
+      ],
+      "preconditions": [
+        "The service under test exposes POST /rooms accepting a JSON body {maxPlayers, mode, ranked}.",
+        "The request is issued under the fixed identity player-a with mode=duel and ranked=false.",
+        "A fresh, independent room fixture is established for this test before the request is issued (per-test fixture reset)."
+      ],
+      "steps": [
+        "Send POST /rooms with JSON body {\"maxPlayers\": 8, \"mode\": \"duel\", \"ranked\": false} under identity player-a."
+      ],
+      "expected": "The service responds to the request with HTTP status 201; per the declared oracle only the HTTP status code is verified.",
+      "assertions": [
+        "The observed HTTP response status code equals 201."
+      ]
+    },
+    {
+      "id": "B1-TC-CAP-1-INVALID-400",
+      "title": "POST /rooms with maxPlayers=1 as player-a returns HTTP 400",
+      "scenarioIds": [
+        "SC-CAP-1-INVALID-400"
+      ],
+      "requirementIds": [
+        "REQ-CAP-1",
+        "REQ-ROOMS-INTERFACE"
+      ],
+      "preconditions": [
+        "The service under test exposes POST /rooms accepting a JSON body {maxPlayers, mode, ranked}.",
+        "The request is issued under the fixed identity player-a with mode=duel and ranked=false.",
+        "A fresh, independent room fixture is established for this test before the request is issued (per-test fixture reset)."
+      ],
+      "steps": [
+        "Send POST /rooms with JSON body {\"maxPlayers\": 1, \"mode\": \"duel\", \"ranked\": false} under identity player-a."
+      ],
+      "expected": "The service rejects the out-of-range capacity and responds with HTTP status 400; per the declared oracle only the HTTP status code is verified.",
+      "assertions": [
+        "The observed HTTP response status code equals 400."
+      ]
+    },
+    {
+      "id": "B2-TC-CAP-9-INVALID-400",
+      "title": "Room creation with invalid capacity maxPlayers=9 returns HTTP 400",
+      "scenarioIds": [
+        "SC-CAP-9-INVALID-400"
+      ],
+      "requirementIds": [
+        "REQ-CAP-9",
+        "REQ-ROOMS-INTERFACE"
+      ],
+      "preconditions": [
+        "The target service is reachable at the base URL provided via BLACKBOX_BASE_URL.",
+        "The caller identity for the request is player-a (fixed precondition shared by all in-scope requests).",
+        "The fixed request inputs are mode=duel and ranked=false (fixed preconditions shared by all in-scope requests).",
+        "The framework provides a fresh, independent game fixture for this test via its per-test reset."
+      ],
+      "steps": [
+        "Using identity player-a, submit POST /rooms with JSON body {\"maxPlayers\": 9, \"mode\": \"duel\", \"ranked\": false}.",
+        "Observe the HTTP status code of the response."
+      ],
+      "expected": "POST /rooms with a JSON body containing maxPlayers=9, mode=duel and ranked=false, issued under identity player-a, responds with HTTP status 400.",
+      "assertions": [
+        "The response status code equals 400.",
+        "Only the HTTP status code is asserted; no response body fields are asserted."
+      ]
+    }
+  ]
+}

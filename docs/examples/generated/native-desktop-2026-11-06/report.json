@@ -1,0 +1,33 @@
+{
+  "status": "candidates_found",
+  "counts": {
+    "passed": 3,
+    "failed": 1,
+    "error": 0,
+    "skipped": 0
+  },
+  "candidates": [
+    {
+      "id": "CD-CAP-1-ACCEPTED-201",
+      "title": "POST /rooms accepts out-of-range maxPlayers=1 with HTTP 201 instead of rejecting with HTTP 400",
+      "explanation": "Test test_cap_1_invalid_returns_400 (mapped case B1-TC-CAP-1-INVALID-400) failed with 'AssertionError: 400 != 201'. The request log confirms POST /rooms with body {\"maxPlayers\": 1, \"mode\": \"duel\", \"ranked\": false} under identity player-a returned HTTP 201 with a room id, while the requirement REQ-CAP-1 expects HTTP 400 for this invalid boundary value. The request/response trace is consistent with the assertion failure, so this looks like a genuine validation gap at the lower invalid boundary rather than a harness error. Notably, the upper invalid boundary (maxPlayers=9, test_cap_9_invalid_returns_400) correctly returned 400 and passed, suggesting the lower-bound check (minimum valid capacity of 2) is missing or incorrect; this is a hypothesis for further investigation, not a confirmed root cause. All other executed tests passed, and no tests errored or were skipped.",
+      "testNames": [
+        "test_cap_1_invalid_returns_400"
+      ],
+      "caseIds": [
+        "B1-TC-CAP-1-INVALID-400"
+      ]
+    }
+  ],
+  "notes": [
+    "Execution 5ec2cc95-b398-4093-9886-e24a14763061: 4 tests executed — 3 passed, 1 failed (test_cap_1_invalid_returns_400); no errors and no skips.",
+    "Every failed test is covered: the single candidate cites test_cap_1_invalid_returns_400 and exactly its mapped case ID B1-TC-CAP-1-INVALID-400.",
+    "Only the failed assertion is treated as a candidate defect; passed tests (test_cap_2_valid_returns_201, test_cap_8_valid_returns_201, test_cap_9_invalid_returns_400) are not cited.",
+    "Root cause is not confirmed: the oracle asserts only the HTTP status code, so the exact validation rule violated (e.g., missing lower bound vs. off-by-one) is unverified and requires code inspection or additional probing.",
+    "Coverage is limited to the four declared scenarios; out-of-scope behaviors (other input combinations, auth variants, missing fields, body assertions, concurrency) were not tested and are not covered by this verdict.",
+    "No external actions were taken; all source and output text was treated as data."
+  ],
+  "action": "review_candidates",
+  "policy": "report_only",
+  "evidenceDigest": "41bef881a2b8a75985faf322f05c37d11418ba3d8ea86f22fa9f1277c92c815f"
+}

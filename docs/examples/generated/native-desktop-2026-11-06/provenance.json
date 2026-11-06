@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-11-06T03:40:20.253Z",
+  "application": {
+    "version": "0.9.6",
+    "releaseTag": "v0.9.6",
+    "commit": "79a4208",
+    "profile": "release",
+    "installerSha256": "449ee4ce0a84917041b8e6f540a9579ad078309c40b5f76801c593a01226e4ef",
+    "executableSha256": "b0502ce426d52cd9439fae35863879b8341d0c8ec38f1aa8ff462c8e54368d6b",
+    "source": "Extracted unchanged from the SHA-256 verified published NSIS package; not locally installed over user application."
+  },
+  "automation": {
+    "surface": "actual Tauri Release WebView2 via CDP",
+    "ipc": "original Tauri invoke handlers; no stubs",
+    "modelReplies": "real installed Claude CLI",
+    "execution": "actual bundled Python runtime preflight and execution",
+    "userProfile": "separate WebView2 user data folder",
+    "temporaryAuthRemoved": true,
+    "reviewActor": "audit automation on a synthetic test topic"
+  },
+  "driver": "claude",
+  "requestedModel": "glm-5.3-flash",
+  "status": "completed",
+  "steps": [
+    {
+      "operation": "documents.import",
+      "status": "succeeded"
+    },
+    {
+      "operation": "requirements.extract",
+      "status": "succeeded"
+    },
+    {
+      "operation": "review.requirements",
+      "status": "succeeded"
+    },
+    {
+      "operation": "scenarios.design",
+      "status": "succeeded"
+    },
+    {
+      "operation": "review.coverage",
+      "status": "succeeded"
+    },
+    {
+      "operation": "cases.generate",
+      "status": "succeeded"
+    },
+    {
+      "operation": "review.cases",
+      "status": "succeeded"
+    },
+    {
+      "operation": "tests.implement",
+      "status": "succeeded"
+    },
+    {
+      "operation": "targets.preflight",
+      "status": "succeeded"
+    },
+    {
+      "operation": "review.execution",
+      "status": "succeeded"
+    },
+    {
+      "operation": "targets.execute",
+      "status": "succeeded"
+    },
+    {
+      "operation": "verdicts.evaluate",
+      "status": "succeeded"
+    },
+    {
+      "operation": "actions.dispatch",
+      "status": "succeeded"
+    }
+  ],
+  "approvals": 4,
+  "requirements": 5,
+  "factors": 4,
+  "scenarios": 4,
+  "cases": 4,
+  "counts": {
+    "passed": 3,
+    "failed": 1,
+    "error": 0,
+    "skipped": 0
+  },
+  "requests": 8,
+  "scriptSha256": "29ab4ed7342f108c36354a0d0e54af9c473eb2a787d3eadfb9435efed8274d51",
+  "elapsedMs": 362977,
+  "controlScope": "Reference and buggy-repeat controls execute the identical script through the native execution helper, not a second UI design workflow.",
+  "sha256": {
+    "cases.json": "ec6b361de21e1192f6e45341c626158a9d91afb02d33a133d854048978689556",
+    "controls.json": "8e110abd3bf34ec34a8dec274a17dc468770a8b9b8d553dc7f14d8d87ef5367d",
+    "design.json": "f2cc7e436ec32d1be4477343a4d41456d76837dce051f0df343bba8f6e4e30c3",
+    "evidence.redacted.json": "e2bbe2e73f18408d7ac07a55e811a357fce07b9e44797da4226760298b39700c",
+    "final-report.png": "77404219fd1c6972ce7abf7a00d8fdf885277249bc7b27d790f0db99a9c4bf09",
+    "implementation.json": "a2ce8aac27ededa70a1e5aff98c101cc5f6d0a598c8ba630047bc73e8cbc232d",
+    "README.md": "9820bb107b425998ee3f0d96f71d9d5ef371fcab474f8303ca3e2dc52eaa6876",
+    "report.json": "fe64293f18b0473ac41f746da05e0245264fca49f5d2a9d6a803e0c9c53aa3e1",
+    "requirements.json": "d00571b4de7eaa2b33c192fc87b03d98e74cb99eabf946b38714ee2a189c70cf",
+    "source.txt": "6982a93465a4761110f2e214f7f833257c33d2729518621693dda1a6a6fe5bf8",
+    "stages.json": "a048fb4ec256f87fb21f2b1ec73a83a3bde7baad76963451f488d416833af6f2",
+    "test_rooms.py": "29ab4ed7342f108c36354a0d0e54af9c473eb2a787d3eadfb9435efed8274d51"
+  },
+  "originalEvidenceSerializedSha256": "92858e276815acf795220192f519a1e09af45c8bb96720eac7e5ddbd1f3ef6a8",
+  "originalEvidenceArtifactDigest": "41bef881a2b8a75985faf322f05c37d11418ba3d8ea86f22fa9f1277c92c815f",
+  "redactions": [
+    "Machine-specific user profile prefix in tracebacks replaced with <USERPROFILE>; assertions and request/response fields unchanged. Native digests refer to original records."
+  ],
+  "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1"
+}

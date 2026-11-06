@@ -1,0 +1,177 @@
+{
+  "executionId": "5ec2cc95-b398-4093-9886-e24a14763061",
+  "planDigest": "5caa468c4a3a90bdcaa1af7b6d97bbc954fb07edcc99a319510296c8246cdbf2",
+  "results": [
+    {
+      "testName": "test_cap_1_invalid_returns_400",
+      "status": "failed",
+      "details": [
+        "Traceback (most recent call last):\n  File \"<USERPROFILE>\\AppData\\Roaming\\uv\\python\\cpython-3.11.15-windows-x86_64-none\\Lib\\unittest\\case.py\", line 57, in testPartExecutor\n    yield\n  File \"<USERPROFILE>\\AppData\\Roaming\\uv\\python\\cpython-3.11.15-windows-x86_64-none\\Lib\\unittest\\case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"<USERPROFILE>\\AppData\\Roaming\\uv\\python\\cpython-3.11.15-windows-x86_64-none\\Lib\\unittest\\case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"<USERPROFILE>\\AppData\\Roaming\\dev.verification.workbench\\python-executions\\5ec2cc95-b398-4093-9886-e24a14763061-execute\\test_generated.py\", line 20, in test_cap_1_invalid_returns_400\n    self.assertEqual(400, response.status)\nAssertionError: 400 != 201\n"
+      ]
+    },
+    {
+      "testName": "test_cap_2_valid_returns_201",
+      "status": "passed",
+      "details": []
+    },
+    {
+      "testName": "test_cap_8_valid_returns_201",
+      "status": "passed",
+      "details": []
+    },
+    {
+      "testName": "test_cap_9_invalid_returns_400",
+      "status": "passed",
+      "details": []
+    }
+  ],
+  "requests": [
+    {
+      "request": {
+        "body": {},
+        "headers": null,
+        "method": "POST",
+        "path": "/__fixture/reset",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "reset": true
+        },
+        "status": 200
+      },
+      "test": "test_generated.RoomCapacityBlackBoxTests.test_cap_1_invalid_returns_400"
+    },
+    {
+      "request": {
+        "body": {
+          "maxPlayers": 1,
+          "mode": "duel",
+          "ranked": false
+        },
+        "headers": null,
+        "method": "POST",
+        "path": "/rooms",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "id": "new-room"
+        },
+        "status": 201
+      },
+      "test": "test_generated.RoomCapacityBlackBoxTests.test_cap_1_invalid_returns_400"
+    },
+    {
+      "request": {
+        "body": {},
+        "headers": null,
+        "method": "POST",
+        "path": "/__fixture/reset",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "reset": true
+        },
+        "status": 200
+      },
+      "test": "test_generated.RoomCapacityBlackBoxTests.test_cap_2_valid_returns_201"
+    },
+    {
+      "request": {
+        "body": {
+          "maxPlayers": 2,
+          "mode": "duel",
+          "ranked": false
+        },
+        "headers": null,
+        "method": "POST",
+        "path": "/rooms",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "id": "new-room"
+        },
+        "status": 201
+      },
+      "test": "test_generated.RoomCapacityBlackBoxTests.test_cap_2_valid_returns_201"
+    },
+    {
+      "request": {
+        "body": {},
+        "headers": null,
+        "method": "POST",
+        "path": "/__fixture/reset",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "reset": true
+        },
+        "status": 200
+      },
+      "test": "test_generated.RoomCapacityBlackBoxTests.test_cap_8_valid_returns_201"
+    },
+    {
+      "request": {
+        "body": {
+          "maxPlayers": 8,
+          "mode": "duel",
+          "ranked": false
+        },
+        "headers": null,
+        "method": "POST",
+        "path": "/rooms",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "id": "new-room"
+        },
+        "status": 201
+      },
+      "test": "test_generated.RoomCapacityBlackBoxTests.test_cap_8_valid_returns_201"
+    },
+    {
+      "request": {
+        "body": {},
+        "headers": null,
+        "method": "POST",
+        "path": "/__fixture/reset",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "reset": true
+        },
+        "status": 200
+      },
+      "test": "test_generated.RoomCapacityBlackBoxTests.test_cap_9_invalid_returns_400"
+    },
+    {
+      "request": {
+        "body": {
+          "maxPlayers": 9,
+          "mode": "duel",
+          "ranked": false
+        },
+        "headers": null,
+        "method": "POST",
+        "path": "/rooms",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "error": "invalid_room"
+        },
+        "status": 400
+      },
+      "test": "test_generated.RoomCapacityBlackBoxTests.test_cap_9_invalid_returns_400"
+    }
+  ],
+  "rawEvidenceSha256": "1dfd8aa6eaad413dfd9cb7f5ed5435319335dac5a82162b45551ae44a9f854d6",
+  "resultSha256": "41bef881a2b8a75985faf322f05c37d11418ba3d8ea86f22fa9f1277c92c815f",
+  "workspaceId": "5ec2cc95-b398-4093-9886-e24a14763061-execute"
+}

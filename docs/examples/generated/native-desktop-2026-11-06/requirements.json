@@ -1,0 +1,46 @@
+{
+  "requirements": [
+    {
+      "id": "REQ-ROOMS-INTERFACE",
+      "text": "The system under test exposes room creation at POST /rooms and accepts a JSON request body containing the fields maxPlayers, mode, and ranked. All in-scope requests use the fixed inputs identity player-a, mode=duel, and ranked=false; these shared preconditions are exercised within the four in-scope scenarios and require no separate test variants.",
+      "quote": "submits POST /rooms with JSON {maxPlayers,mode,ranked}",
+      "acceptanceCriteria": [
+        "A POST request to /rooms carrying a JSON body with the fields maxPlayers, mode, and ranked is accepted for processing by the system.",
+        "In-scope requests are issued under identity player-a with mode=duel and ranked=false."
+      ]
+    },
+    {
+      "id": "REQ-CAP-2",
+      "text": "Room creation with the in-scope valid capacity maxPlayers=2: when player-a submits POST /rooms with mode=duel, ranked=false, and maxPlayers=2, the system responds with HTTP status 201. Only the HTTP status code is asserted for this scenario.",
+      "quote": "maxPlayers=2 returns HTTP 201",
+      "acceptanceCriteria": [
+        "POST /rooms with maxPlayers=2, mode=duel, ranked=false under identity player-a responds with HTTP status 201."
+      ]
+    },
+    {
+      "id": "REQ-CAP-8",
+      "text": "Room creation with the in-scope valid capacity maxPlayers=8: when player-a submits POST /rooms with mode=duel, ranked=false, and maxPlayers=8, the system responds with HTTP status 201. Only the HTTP status code is asserted for this scenario.",
+      "quote": "maxPlayers=8 returns HTTP 201",
+      "acceptanceCriteria": [
+        "POST /rooms with maxPlayers=8, mode=duel, ranked=false under identity player-a responds with HTTP status 201."
+      ]
+    },
+    {
+      "id": "REQ-CAP-1",
+      "text": "Room creation with the in-scope invalid capacity maxPlayers=1: when player-a submits POST /rooms with mode=duel, ranked=false, and maxPlayers=1, the system responds with HTTP status 400. Only the HTTP status code is asserted for this scenario.",
+      "quote": "maxPlayers=1 returns HTTP 400",
+      "acceptanceCriteria": [
+        "POST /rooms with maxPlayers=1, mode=duel, ranked=false under identity player-a responds with HTTP status 400."
+      ]
+    },
+    {
+      "id": "REQ-CAP-9",
+      "text": "Room creation with the in-scope invalid capacity maxPlayers=9: when player-a submits POST /rooms with mode=duel, ranked=false, and maxPlayers=9, the system responds with HTTP status 400. Only the HTTP status code is asserted for this scenario.",
+      "quote": "maxPlayers=9 returns HTTP 400",
+      "acceptanceCriteria": [
+        "POST /rooms with maxPlayers=9, mode=duel, ranked=false under identity player-a responds with HTTP status 400."
+      ]
+    }
+  ],
+  "questions": []
+}

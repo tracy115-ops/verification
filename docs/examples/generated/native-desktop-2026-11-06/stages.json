@@ -1,0 +1,30 @@
+[
+  {
+    "stage": "native_configuration_passed",
+    "at": "2026-11-06T03:32:27.909Z"
+  },
+  {
+    "stage": "spec_submitted_from_desktop",
+    "at": "2026-11-06T03:32:28.577Z"
+  },
+  {
+    "stage": "review.requirements",
+    "at": "2026-11-06T03:34:30.769Z"
+  },
+  {
+    "stage": "review.coverage",
+    "at": "2026-11-06T03:36:00.623Z"
+  },
+  {
+    "stage": "review.cases",
+    "at": "2026-11-06T03:37:15.240Z"
+  },
+  {
+    "stage": "review.execution",
+    "at": "2026-11-06T03:38:14.568Z"
+  },
+  {
+    "stage": "native_report_verified",
+    "at": "2026-11-06T03:38:30.886Z"
+  }
+]

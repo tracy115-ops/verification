@@ -1,0 +1,24 @@
+[
+  {
+    "variant": "reference",
+    "counts": {
+      "passed": 4,
+      "failed": 0,
+      "error": 0,
+      "skipped": 0
+    },
+    "scriptSha256": "29ab4ed7342f108c36354a0d0e54af9c473eb2a787d3eadfb9435efed8274d51",
+    "requests": 8
+  },
+  {
+    "variant": "buggy-repeat",
+    "counts": {
+      "passed": 3,
+      "failed": 1,
+      "error": 0,
+      "skipped": 0
+    },
+    "scriptSha256": "29ab4ed7342f108c36354a0d0e54af9c473eb2a787d3eadfb9435efed8274d51",
+    "requests": 8
+  }
+]

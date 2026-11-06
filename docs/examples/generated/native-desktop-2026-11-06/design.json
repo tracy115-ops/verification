@@ -1,0 +1,170 @@
+{
+  "strategy": "Black-box equivalence partitioning and boundary analysis of the maxPlayers field on POST /rooms. The four in-scope requirements form two valid equivalence classes (maxPlayers=2 and maxPlayers=8, each expecting HTTP 201) and two invalid boundary classes (maxPlayers=1 just below the lowest in-scope valid value and maxPlayers=9 just above the highest in-scope valid value, each expecting HTTP 400). Exactly four independent scenarios are designed, one per requirement, matching the declared scope of four test scenarios and four test cases; no additional variants are created for the shared fixed preconditions (identity player-a, mode=duel, ranked=false), which are linked explicitly to each scenario via dedicated fixed-input factors backed by REQ-ROOMS-INTERFACE. The observable oracle is limited to the HTTP status code, exactly as declared; no response body fields, authentication variations, missing-field handling, concurrency or dependency behavior are asserted because the sourceSpec declares them out of scope. Each scenario maps to one independent test case using the framework's per-test fixture reset, but the reset itself is a verification-harness detail and is not modeled as a requirement. All in-scope expectations are specified by the requirements and covered by the four scenarios, so no open questions or coverage gaps remain within the declared scope.",
+  "scenarios": [
+    {
+      "id": "SC-CAP-2-VALID-201",
+      "title": "Room creation with valid capacity maxPlayers=2 returns HTTP 201",
+      "requirementIds": [
+        "REQ-CAP-2",
+        "REQ-ROOMS-INTERFACE"
+      ],
+      "dimension": "Input equivalence class: in-scope valid capacity value at the lower valid point of maxPlayers",
+      "expected": "POST /rooms with a JSON body containing maxPlayers=2, mode=duel and ranked=false, issued under identity player-a, responds with HTTP status 201. Only the HTTP status code is asserted.",
+      "factorLevels": [
+        {
+          "factorId": "F-CAPACITY",
+          "level": "maxPlayers=2"
+        },
+        {
+          "factorId": "F-IDENTITY",
+          "level": "player-a"
+        },
+        {
+          "factorId": "F-MODE",
+          "level": "duel"
+        },
+        {
+          "factorId": "F-RANKED",
+          "level": "false"
+        }
+      ]
+    },
+    {
+      "id": "SC-CAP-8-VALID-201",
+      "title": "Room creation with valid capacity maxPlayers=8 returns HTTP 201",
+      "requirementIds": [
+        "REQ-CAP-8",
+        "REQ-ROOMS-INTERFACE"
+      ],
+      "dimension": "Input equivalence class: in-scope valid capacity value at the upper valid point of maxPlayers",
+      "expected": "POST /rooms with a JSON body containing maxPlayers=8, mode=duel and ranked=false, issued under identity player-a, responds with HTTP status 201. Only the HTTP status code is asserted.",
+      "factorLevels": [
+        {
+          "factorId": "F-CAPACITY",
+          "level": "maxPlayers=8"
+        },
+        {
+          "factorId": "F-IDENTITY",
+          "level": "player-a"
+        },
+        {
+          "factorId": "F-MODE",
+          "level": "duel"
+        },
+        {
+          "factorId": "F-RANKED",
+          "level": "false"
+        }
+      ]
+    },
+    {
+      "id": "SC-CAP-1-INVALID-400",
+      "title": "Room creation with invalid capacity maxPlayers=1 returns HTTP 400",
+      "requirementIds": [
+        "REQ-CAP-1",
+        "REQ-ROOMS-INTERFACE"
+      ],
+      "dimension": "Input boundary rejection: maxPlayers just below the lowest in-scope valid capacity value",
+      "expected": "POST /rooms with a JSON body containing maxPlayers=1, mode=duel and ranked=false, issued under identity player-a, responds with HTTP status 400. Only the HTTP status code is asserted.",
+      "factorLevels": [
+        {
+          "factorId": "F-CAPACITY",
+          "level": "maxPlayers=1"
+        },
+        {
+          "factorId": "F-IDENTITY",
+          "level": "player-a"
+        },
+        {
+          "factorId": "F-MODE",
+          "level": "duel"
+        },
+        {
+          "factorId": "F-RANKED",
+          "level": "false"
+        }
+      ]
+    },
+    {
+      "id": "SC-CAP-9-INVALID-400",
+      "title": "Room creation with invalid capacity maxPlayers=9 returns HTTP 400",
+      "requirementIds": [
+        "REQ-CAP-9",
+        "REQ-ROOMS-INTERFACE"
+      ],
+      "dimension": "Input boundary rejection: maxPlayers just above the highest in-scope valid capacity value",
+      "expected": "POST /rooms with a JSON body containing maxPlayers=9, mode=duel and ranked=false, issued under identity player-a, responds with HTTP status 400. Only the HTTP status code is asserted.",
+      "factorLevels": [
+        {
+          "factorId": "F-CAPACITY",
+          "level": "maxPlayers=9"
+        },
+        {
+          "factorId": "F-IDENTITY",
+          "level": "player-a"
+        },
+        {
+          "factorId": "F-MODE",
+          "level": "duel"
+        },
+        {
+          "factorId": "F-RANKED",
+          "level": "false"
+        }
+      ]
+    }
+  ],
+  "gaps": [],
+  "factors": [
+    {
+      "id": "F-CAPACITY",
+      "name": "Room capacity value (maxPlayers) equivalence class and boundary level",
+      "requirementIds": [
+        "REQ-CAP-2",
+        "REQ-CAP-8",
+        "REQ-CAP-1",
+        "REQ-CAP-9"
+      ],
+      "levels": [
+        "maxPlayers=2",
+        "maxPlayers=8",
+        "maxPlayers=1",
+        "maxPlayers=9"
+      ],
+      "sourceQuote": "maxPlayers=2 returns HTTP 201"
+    },
+    {
+      "id": "F-IDENTITY",
+      "name": "Caller identity (fixed precondition shared by all in-scope requests)",
+      "requirementIds": [
+        "REQ-ROOMS-INTERFACE"
+      ],
+      "levels": [
+        "player-a"
+      ],
+      "sourceQuote": "submits POST /rooms with JSON {maxPlayers,mode,ranked}"
+    },
+    {
+      "id": "F-MODE",
+      "name": "Game mode (fixed precondition shared by all in-scope requests)",
+      "requirementIds": [
+        "REQ-ROOMS-INTERFACE"
+      ],
+      "levels": [
+        "duel"
+      ],
+      "sourceQuote": "submits POST /rooms with JSON {maxPlayers,mode,ranked}"
+    },
+    {
+      "id": "F-RANKED",
+      "name": "Ranked flag (fixed precondition shared by all in-scope requests)",
+      "requirementIds": [
+        "REQ-ROOMS-INTERFACE"
+      ],
+      "levels": [
+        "false"
+      ],
+      "sourceQuote": "submits POST /rooms with JSON {maxPlayers,mode,ranked}"
+    }
+  ]
+}
