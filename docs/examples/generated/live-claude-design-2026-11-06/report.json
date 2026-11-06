@@ -1,0 +1,77 @@
+{
+  "generatedAt": "2026-11-06T01:18:47.300Z",
+  "driver": "claude",
+  "requestedModel": "glm-5.3-flash",
+  "configuration": "explicit-settings-file",
+  "temporaryAuthRemoved": true,
+  "engine": "advanceRun / approveRun / createDesignProposal / applyDesignProposal",
+  "fixtureReviewsApprovedByAudit": true,
+  "requirements": 7,
+  "scenarios": 4,
+  "missingLevel": "F-isolation: no room shared between tests",
+  "missingLevelsAfterRepair": [],
+  "scope": "Complete design-only engine workflow with three fixture audit approvals. No target execution, bug-capture or native desktop clicking evidence.",
+  "sha256": {
+    "source.txt": "4dfc1ee2fa80499aa1e11980de50d1259d57a3dcf73f0e71146d2d4637dfc805",
+    "requirements.json": "6a1ff1df4946095543e95473f2a41cbb38d09fd1d0da684611b1026b5fcdaf6b",
+    "design-before.json": "77e6e8c8d390c91147252c33270177105495860966e48a5c7d1254982534bb00",
+    "repair-patch.json": "506b7a3d539212b7975fb7ae173dac723a85330813a2cf7254b87246df20acab",
+    "design-after.json": "d4c4dd0fc9839e2b6ee66cca8c71ee14e1231225bb825944a4b21c4fe77c3dc7",
+    "cases.json": "675ec9764168509a16224e86f72c7b93917e712e63bdbf97132bc2478ccd9f9e"
+  },
+  "status": "completed",
+  "approvals": 3,
+  "cases": 4,
+  "calls": [
+    {
+      "operation": "requirements.extract",
+      "promptBytes": 3247,
+      "status": "completed",
+      "elapsedMs": 156596,
+      "protocolRecords": 14796,
+      "publicTextBytes": 2932,
+      "stdoutBytes": 3922499,
+      "terminal": true
+    },
+    {
+      "operation": "scenarios.design",
+      "promptBytes": 10162,
+      "status": "completed",
+      "elapsedMs": 117361,
+      "protocolRecords": 10289,
+      "publicTextBytes": 7982,
+      "stdoutBytes": 2816784,
+      "terminal": true
+    },
+    {
+      "operation": "design.propose",
+      "promptBytes": 14526,
+      "status": "completed",
+      "elapsedMs": 54667,
+      "protocolRecords": 5144,
+      "publicTextBytes": 5211,
+      "stdoutBytes": 1400207,
+      "terminal": true
+    },
+    {
+      "operation": "cases.generate",
+      "promptBytes": 13300,
+      "status": "completed",
+      "elapsedMs": 71001,
+      "protocolRecords": 6786,
+      "publicTextBytes": 3226,
+      "stdoutBytes": 1840031,
+      "terminal": true
+    },
+    {
+      "operation": "cases.generate",
+      "promptBytes": 11076,
+      "status": "completed",
+      "elapsedMs": 39199,
+      "protocolRecords": 3380,
+      "publicTextBytes": 1108,
+      "stdoutBytes": 902781,
+      "terminal": true
+    }
+  ]
+}

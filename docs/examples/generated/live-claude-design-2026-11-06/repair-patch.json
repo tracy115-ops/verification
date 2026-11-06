@@ -1,0 +1,171 @@
+{
+  "summary": "Bounded repair of the declared missing factor-level mappings: the F-isolation level 'no room shared between tests' is added as a factorLevels link to all four existing scenarios (S-maxplayers-2-201, S-maxplayers-8-201, S-maxplayers-1-400, S-maxplayers-9-400). It is a fixed fixture precondition, not an extra test, and is backed exactly by REQ-007's quote 'Each test uses a fresh framework fixture and creates no shared room', which every updated scenario already lists in requirementIds, so the factor-requirement overlap holds. F-isolation already declares both of its levels, so no factor record is changed and the factors patch is empty. All existing IDs, titles, dimensions, expected outcomes, requirement links, fixed inputs, and the four-scenario scope are preserved verbatim; no factors, scenarios, levels, or assertions are added or removed, nothing is deleted or excluded, and no execution is claimed.",
+  "factors": [],
+  "scenarios": [
+    {
+      "action": "update",
+      "value": {
+        "id": "S-maxplayers-2-201",
+        "title": "Create a room as player-a with maxPlayers=2, mode=duel, ranked=false on a fresh fixture",
+        "requirementIds": [
+          "REQ-001",
+          "REQ-002",
+          "REQ-003",
+          "REQ-007"
+        ],
+        "dimension": "Input equivalence/boundary: declared valid boundary-adjacent value of the single varying input maxPlayers, executed by direct specification against the black-box HTTP interface with fixed non-varying inputs and a fresh fixture precondition",
+        "expected": "The system responds to the POST /rooms request submitted as player-a with maxPlayers=2, mode=duel, and ranked=false on a fresh framework fixture with HTTP status 201.",
+        "factorLevels": [
+          {
+            "factorId": "F-endpoint",
+            "level": "POST /rooms as player-a with JSON body {maxPlayers,mode,ranked}"
+          },
+          {
+            "factorId": "F-fixed-inputs",
+            "level": "mode=duel"
+          },
+          {
+            "factorId": "F-fixed-inputs",
+            "level": "ranked=false"
+          },
+          {
+            "factorId": "F-maxplayers-2",
+            "level": "maxPlayers=2"
+          },
+          {
+            "factorId": "F-isolation",
+            "level": "fresh framework fixture per test"
+          },
+          {
+            "factorId": "F-isolation",
+            "level": "no room shared between tests"
+          }
+        ]
+      }
+    },
+    {
+      "action": "update",
+      "value": {
+        "id": "S-maxplayers-8-201",
+        "title": "Create a room as player-a with maxPlayers=8, mode=duel, ranked=false on a fresh fixture",
+        "requirementIds": [
+          "REQ-001",
+          "REQ-002",
+          "REQ-004",
+          "REQ-007"
+        ],
+        "dimension": "Input equivalence/boundary: declared valid boundary-adjacent value of the single varying input maxPlayers, executed by direct specification against the black-box HTTP interface with fixed non-varying inputs and a fresh fixture precondition",
+        "expected": "The system responds to the POST /rooms request submitted as player-a with maxPlayers=8, mode=duel, and ranked=false on a fresh framework fixture with HTTP status 201.",
+        "factorLevels": [
+          {
+            "factorId": "F-endpoint",
+            "level": "POST /rooms as player-a with JSON body {maxPlayers,mode,ranked}"
+          },
+          {
+            "factorId": "F-fixed-inputs",
+            "level": "mode=duel"
+          },
+          {
+            "factorId": "F-fixed-inputs",
+            "level": "ranked=false"
+          },
+          {
+            "factorId": "F-maxplayers-8",
+            "level": "maxPlayers=8"
+          },
+          {
+            "factorId": "F-isolation",
+            "level": "fresh framework fixture per test"
+          },
+          {
+            "factorId": "F-isolation",
+            "level": "no room shared between tests"
+          }
+        ]
+      }
+    },
+    {
+      "action": "update",
+      "value": {
+        "id": "S-maxplayers-1-400",
+        "title": "Submit room creation as player-a with maxPlayers=1, mode=duel, ranked=false on a fresh fixture",
+        "requirementIds": [
+          "REQ-001",
+          "REQ-002",
+          "REQ-005",
+          "REQ-007"
+        ],
+        "dimension": "Input equivalence/boundary: declared rejected boundary-adjacent value of the single varying input maxPlayers, executed by direct specification against the black-box HTTP interface with fixed non-varying inputs and a fresh fixture precondition",
+        "expected": "The system responds to the POST /rooms request submitted as player-a with maxPlayers=1, mode=duel, and ranked=false on a fresh framework fixture with HTTP status 400.",
+        "factorLevels": [
+          {
+            "factorId": "F-endpoint",
+            "level": "POST /rooms as player-a with JSON body {maxPlayers,mode,ranked}"
+          },
+          {
+            "factorId": "F-fixed-inputs",
+            "level": "mode=duel"
+          },
+          {
+            "factorId": "F-fixed-inputs",
+            "level": "ranked=false"
+          },
+          {
+            "factorId": "F-maxplayers-1",
+            "level": "maxPlayers=1"
+          },
+          {
+            "factorId": "F-isolation",
+            "level": "fresh framework fixture per test"
+          },
+          {
+            "factorId": "F-isolation",
+            "level": "no room shared between tests"
+          }
+        ]
+      }
+    },
+    {
+      "action": "update",
+      "value": {
+        "id": "S-maxplayers-9-400",
+        "title": "Submit room creation as player-a with maxPlayers=9, mode=duel, ranked=false on a fresh fixture",
+        "requirementIds": [
+          "REQ-001",
+          "REQ-002",
+          "REQ-006",
+          "REQ-007"
+        ],
+        "dimension": "Input equivalence/boundary: declared rejected boundary-adjacent value of the single varying input maxPlayers, executed by direct specification against the black-box HTTP interface with fixed non-varying inputs and a fresh fixture precondition",
+        "expected": "The system responds to the POST /rooms request submitted as player-a with maxPlayers=9, mode=duel, and ranked=false on a fresh framework fixture with HTTP status 400.",
+        "factorLevels": [
+          {
+            "factorId": "F-endpoint",
+            "level": "POST /rooms as player-a with JSON body {maxPlayers,mode,ranked}"
+          },
+          {
+            "factorId": "F-fixed-inputs",
+            "level": "mode=duel"
+          },
+          {
+            "factorId": "F-fixed-inputs",
+            "level": "ranked=false"
+          },
+          {
+            "factorId": "F-maxplayers-9",
+            "level": "maxPlayers=9"
+          },
+          {
+            "factorId": "F-isolation",
+            "level": "fresh framework fixture per test"
+          },
+          {
+            "factorId": "F-isolation",
+            "level": "no room shared between tests"
+          }
+        ]
+      }
+    }
+  ],
+  "questions": []
+}

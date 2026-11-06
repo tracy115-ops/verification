@@ -1,0 +1,68 @@
+{
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "text": "Room creation is exposed over HTTP: the framework submits POST /rooms as player-a with a JSON body containing the fields maxPlayers, mode, and ranked.",
+      "quote": "The framework submits POST /rooms as player-a with JSON {maxPlayers,mode,ranked}",
+      "acceptanceCriteria": [
+        "A POST request is sent to /rooms with player-a as the requesting player.",
+        "The request body is JSON containing the fields maxPlayers, mode, and ranked."
+      ]
+    },
+    {
+      "id": "REQ-002",
+      "text": "For all requests in this task, mode is fixed to duel and ranked is fixed to false; these two inputs do not vary between the four tests, which differ only in maxPlayers.",
+      "quote": "mode is fixed to duel; ranked is fixed to false",
+      "acceptanceCriteria": [
+        "Each of the four room-creation requests sends mode=duel.",
+        "Each of the four room-creation requests sends ranked=false."
+      ]
+    },
+    {
+      "id": "REQ-003",
+      "text": "When a room is created via POST /rooms as player-a with maxPlayers=2, mode=duel, and ranked=false, the system responds with HTTP status 201.",
+      "quote": "maxPlayers=2 returns HTTP 201",
+      "acceptanceCriteria": [
+        "POST /rooms is submitted as player-a with maxPlayers=2, mode=duel, and ranked=false on a fresh framework fixture.",
+        "The HTTP response status code is 201."
+      ]
+    },
+    {
+      "id": "REQ-004",
+      "text": "When a room is created via POST /rooms as player-a with maxPlayers=8, mode=duel, and ranked=false, the system responds with HTTP status 201.",
+      "quote": "maxPlayers=8 returns HTTP 201",
+      "acceptanceCriteria": [
+        "POST /rooms is submitted as player-a with maxPlayers=8, mode=duel, and ranked=false on a fresh framework fixture.",
+        "The HTTP response status code is 201."
+      ]
+    },
+    {
+      "id": "REQ-005",
+      "text": "When a room creation request is submitted via POST /rooms as player-a with maxPlayers=1, mode=duel, and ranked=false, the system responds with HTTP status 400.",
+      "quote": "maxPlayers=1 returns HTTP 400",
+      "acceptanceCriteria": [
+        "POST /rooms is submitted as player-a with maxPlayers=1, mode=duel, and ranked=false on a fresh framework fixture.",
+        "The HTTP response status code is 400."
+      ]
+    },
+    {
+      "id": "REQ-006",
+      "text": "When a room creation request is submitted via POST /rooms as player-a with maxPlayers=9, mode=duel, and ranked=false, the system responds with HTTP status 400.",
+      "quote": "maxPlayers=9 returns HTTP 400",
+      "acceptanceCriteria": [
+        "POST /rooms is submitted as player-a with maxPlayers=9, mode=duel, and ranked=false on a fresh framework fixture.",
+        "The HTTP response status code is 400."
+      ]
+    },
+    {
+      "id": "REQ-007",
+      "text": "The four tests are independent of one another's state: each test runs against a fresh framework fixture and creates no room shared with any other test, so no room state carries over between tests.",
+      "quote": "Each test uses a fresh framework fixture and creates no shared room",
+      "acceptanceCriteria": [
+        "Each of the four tests executes against its own fresh framework fixture.",
+        "No room created during one test is shared with or reused by another test."
+      ]
+    }
+  ],
+  "questions": []
+}

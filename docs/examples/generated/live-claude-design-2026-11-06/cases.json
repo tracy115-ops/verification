@@ -1,0 +1,105 @@
+{
+  "cases": [
+    {
+      "id": "B1-C-maxplayers-2-201",
+      "title": "POST /rooms as player-a with maxPlayers=2, mode=duel, ranked=false returns HTTP 201",
+      "scenarioIds": [
+        "S-maxplayers-2-201"
+      ],
+      "requirementIds": [
+        "REQ-001",
+        "REQ-002",
+        "REQ-003",
+        "REQ-007"
+      ],
+      "preconditions": [
+        "The test runs on a fresh framework fixture and creates no shared room, so no state carries over from other tests.",
+        "The request is submitted as player-a against the fixed POST /rooms interface with JSON body {maxPlayers,mode,ranked}."
+      ],
+      "steps": [
+        "On the fresh framework fixture, submit POST /rooms as player-a with JSON body {\"maxPlayers\": 2, \"mode\": \"duel\", \"ranked\": false}.",
+        "Observe the HTTP status code returned for the request."
+      ],
+      "expected": "The system responds to the POST /rooms request submitted as player-a with maxPlayers=2, mode=duel, and ranked=false on a fresh framework fixture with HTTP status 201.",
+      "assertions": [
+        "The HTTP response status code is exactly 201."
+      ]
+    },
+    {
+      "id": "B1-C-maxplayers-8-201",
+      "title": "POST /rooms as player-a with maxPlayers=8, mode=duel, ranked=false returns HTTP 201",
+      "scenarioIds": [
+        "S-maxplayers-8-201"
+      ],
+      "requirementIds": [
+        "REQ-001",
+        "REQ-002",
+        "REQ-004",
+        "REQ-007"
+      ],
+      "preconditions": [
+        "The test runs on a fresh framework fixture and creates no shared room, so no state carries over from other tests.",
+        "The request is submitted as player-a against the fixed POST /rooms interface with JSON body {maxPlayers,mode,ranked}."
+      ],
+      "steps": [
+        "On the fresh framework fixture, submit POST /rooms as player-a with JSON body {\"maxPlayers\": 8, \"mode\": \"duel\", \"ranked\": false}.",
+        "Observe the HTTP status code returned for the request."
+      ],
+      "expected": "The system responds to the POST /rooms request submitted as player-a with maxPlayers=8, mode=duel, and ranked=false on a fresh framework fixture with HTTP status 201.",
+      "assertions": [
+        "The HTTP response status code is exactly 201."
+      ]
+    },
+    {
+      "id": "B1-C-maxplayers-1-400",
+      "title": "POST /rooms as player-a with maxPlayers=1, mode=duel, ranked=false returns HTTP 400",
+      "scenarioIds": [
+        "S-maxplayers-1-400"
+      ],
+      "requirementIds": [
+        "REQ-001",
+        "REQ-002",
+        "REQ-005",
+        "REQ-007"
+      ],
+      "preconditions": [
+        "The test runs on a fresh framework fixture and creates no shared room, so no state carries over from other tests.",
+        "The request is submitted as player-a against the fixed POST /rooms interface with JSON body {maxPlayers,mode,ranked}."
+      ],
+      "steps": [
+        "On the fresh framework fixture, submit POST /rooms as player-a with JSON body {\"maxPlayers\": 1, \"mode\": \"duel\", \"ranked\": false}.",
+        "Observe the HTTP status code returned for the request."
+      ],
+      "expected": "The system responds to the POST /rooms request submitted as player-a with maxPlayers=1, mode=duel, and ranked=false on a fresh framework fixture with HTTP status 400.",
+      "assertions": [
+        "The HTTP response status code is exactly 400."
+      ]
+    },
+    {
+      "id": "B2-C-maxplayers-9-400",
+      "title": "Create room as player-a with maxPlayers=9, mode=duel, ranked=false on a fresh fixture and assert HTTP 400",
+      "scenarioIds": [
+        "S-maxplayers-9-400"
+      ],
+      "requirementIds": [
+        "REQ-001",
+        "REQ-002",
+        "REQ-006",
+        "REQ-007"
+      ],
+      "preconditions": [
+        "Each test uses a fresh framework fixture and creates no shared room, so no state carries over from any other test.",
+        "The room creation interface is exercised exactly as declared: POST /rooms submitted as player-a with a JSON body containing maxPlayers, mode, and ranked."
+      ],
+      "steps": [
+        "Prepare a fresh framework fixture and ensure no room is shared with any other test.",
+        "Submit POST /rooms as player-a with JSON body {\"maxPlayers\":9,\"mode\":\"duel\",\"ranked\":false}, keeping mode fixed to duel and ranked fixed to false.",
+        "Observe the HTTP status code of the response."
+      ],
+      "expected": "The POST /rooms request submitted as player-a with maxPlayers=9, mode=duel, and ranked=false on the fresh fixture receives an HTTP response with status 400.",
+      "assertions": [
+        "The HTTP status code of the response to POST /rooms with maxPlayers=9 is 400."
+      ]
+    }
+  ]
+}
