@@ -20,6 +20,16 @@ jobs:
       - run: npm run check
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      - name: Preserve UI failure evidence
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: linux-ui-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .runtime/playwright/
+            .runtime/product-audit/
+          if-no-files-found: ignore
+          retention-days: 14
       - run: npm run test:team:e2e
       - run: npm run verify:blackbox
       - run: npm run verify:game-agent -- --reuse-script
