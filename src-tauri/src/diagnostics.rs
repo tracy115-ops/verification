@@ -72,6 +72,9 @@ pub fn record(app: &AppHandle, event: &str, fields: Value) {
         "partial_messages",
         "session_persistence_disabled",
         "proxy_mode",
+        "settings_file_bound",
+        "executable_bound",
+        "config_directory_bound",
     ];
     let details: serde_json::Map<String, Value> = fields
         .as_object()

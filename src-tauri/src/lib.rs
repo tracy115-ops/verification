@@ -36,6 +36,7 @@ pub fn run() -> tauri::Result<()> {
             cli_settings::pick_cli_path,
             cli_settings::read_cli_model_hints,
             cli_settings::inspect_claude_setup,
+            cli_settings::discover_claude_settings,
             conversations::send_cli_turn,
             conversations::cancel_cli_turn,
             executions::preflight_python,

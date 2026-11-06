@@ -3,6 +3,8 @@ import { useI18n } from '../../shared/i18n/context';
 import { NativeLaunchEditor } from './NativeLaunchEditor';
 import { AgentConnectionCheck } from './AgentConnectionCheck';
 import { ModelHintsPicker } from './ModelHintsPicker';
+import { ClaudeSettingsSources } from './ClaudeSettingsSources';
+import { NativeConfigSummary } from './NativeConfigSummary';
 
 export function NativeAgentSetup({
   profile,
@@ -24,6 +26,14 @@ export function NativeAgentSetup({
         <h3>{profile.name}</h3>
         <p className="wb-muted">{t('agentSetupReuse')}</p>
       </header>
+      <section>
+        <h4>{t('agentSetupConfigStep')}</h4>
+        <NativeConfigSummary profile={profile} />
+        {profile.driver === 'claude' && (
+          <ClaudeSettingsSources key={JSON.stringify(profile.launch)} profile={profile} save={save} />
+        )}
+        <NativeLaunchEditor key={`launch-${JSON.stringify(profile)}`} profile={profile} save={save} />
+      </section>
       <section>
         <h4>{t('agentSetupModelStep')}</h4>
         {!internal && (
@@ -55,6 +65,9 @@ export function NativeAgentSetup({
                 onChange={(event) => changeModel(event.target.value)}
               />
               <small className="wb-muted">{t('agentSetupModelHint')}</small>
+              {/\s/.test(model.trim()) && (
+                <small className="wb-error">{t('agentModelDisplayNameWarning')}</small>
+              )}
             </label>
             <button className="workbench-btn" disabled={!model.trim()}>
               {t('saveModel')}
@@ -71,7 +84,6 @@ export function NativeAgentSetup({
         <h4>{t('agentSetupTestStep')}</h4>
         <AgentConnectionCheck key={JSON.stringify(profile)} profile={profile} blocked={dirty} compact />
       </section>
-      <NativeLaunchEditor key={`launch-${JSON.stringify(profile)}`} profile={profile} save={save} />
     </article>
   );
 }

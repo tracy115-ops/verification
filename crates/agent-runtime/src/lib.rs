@@ -13,7 +13,9 @@ mod search_paths;
 mod turn_types;
 
 pub use assistant_observation::AssistantObservation;
-pub use claude_setup::{ClaudeSetup, inspect_claude_setup};
+pub use claude_setup::{
+    ClaudeSettingsCandidate, ClaudeSetup, discover_claude_settings, inspect_claude_setup,
+};
 pub use conversation::run_turn;
 pub use instances::{CliInstance, discover_cli_instances};
 pub use model_hints::{ModelHints, read_claude_model_file, read_model_hints};

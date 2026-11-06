@@ -1,6 +1,17 @@
 use tauri_plugin_dialog::DialogExt;
 
 #[tauri::command]
+pub async fn discover_claude_settings(
+    config_directory: Option<std::path::PathBuf>,
+) -> Result<Vec<agent_runtime::ClaudeSettingsCandidate>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        agent_runtime::discover_claude_settings(config_directory).map_err(str::to_string)
+    })
+    .await
+    .map_err(|_| "cliSetupInspectFailed".to_string())?
+}
+
+#[tauri::command]
 pub async fn inspect_claude_setup(
     config_directory: Option<std::path::PathBuf>,
     settings_file: Option<std::path::PathBuf>,

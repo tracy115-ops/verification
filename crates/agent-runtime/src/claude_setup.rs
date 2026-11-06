@@ -13,6 +13,55 @@ pub struct ClaudeSetup {
     pub endpoint_present: bool,
 }
 
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ClaudeSettingsCandidate {
+    pub path: String,
+    pub model: Option<String>,
+    pub authentication_fields: bool,
+    pub backup: bool,
+}
+
+/// Read only bounded settings metadata; choosing a file remains an explicit user action.
+pub fn discover_claude_settings(
+    directory: Option<PathBuf>,
+) -> Result<Vec<ClaudeSettingsCandidate>, &'static str> {
+    let setup = inspect_claude_setup(directory, None)?;
+    let directory = PathBuf::from(setup.config_directory);
+    let Ok(entries) = std::fs::read_dir(&directory) else {
+        return Ok(vec![]);
+    };
+    let mut paths: Vec<_> = entries
+        .flatten()
+        .take(64)
+        .map(|entry| entry.path())
+        .filter(|path| {
+            path.file_name()
+                .and_then(|name| name.to_str())
+                .is_some_and(|name| {
+                    name.starts_with("settings.")
+                        && (name.ends_with(".json") || name.ends_with(".json.bak"))
+                })
+        })
+        .collect();
+    paths.sort();
+    let mut candidates = Vec::new();
+    for path in paths.into_iter().take(12) {
+        let hints = crate::read_claude_model_file(path.clone())?;
+        if matches!(hints.status, "invalid" | "unavailable") {
+            continue;
+        }
+        let metadata = inspect(directory.clone(), false, false, Some(path.clone()))?;
+        candidates.push(ClaudeSettingsCandidate {
+            backup: path.extension().is_some_and(|ext| ext == "bak"),
+            path: path.to_string_lossy().into_owned(),
+            model: hints.candidates.into_iter().next().map(|item| item.model),
+            authentication_fields: metadata.settings_auth || metadata.key_helper_present,
+        });
+    }
+    Ok(candidates)
+}
+
 fn inspect(
     directory: PathBuf,
     environment_auth: bool,
@@ -93,6 +142,33 @@ pub fn inspect_claude_setup(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn discovers_settings_without_returning_credentials_or_selecting_a_backup() {
+        let directory =
+            std::env::temp_dir().join(format!("claude-sources-check-{}", std::process::id()));
+        std::fs::create_dir_all(&directory).unwrap();
+        std::fs::write(directory.join("settings.json"), "{}").unwrap();
+        std::fs::write(directory.join("settings.json.bak"), r#"{"model":"fixture-model","env":{"ANTHROPIC_AUTH_TOKEN":"PRIVATE_VALUE","ANTHROPIC_BASE_URL":"https://private.invalid"}}"#).unwrap();
+        std::fs::write(
+            directory.join("settings.invalid.json"),
+            "invalid PRIVATE_VALUE",
+        )
+        .unwrap();
+        std::fs::write(directory.join("unrelated.json"), "{}").unwrap();
+        let result = discover_claude_settings(Some(directory.clone())).unwrap();
+        assert_eq!(result.len(), 2);
+        let backup = result.iter().find(|item| item.backup).unwrap();
+        assert!(backup.authentication_fields);
+        assert_eq!(backup.model.as_deref(), Some("fixture-model"));
+        let serialized = serde_json::to_string(&result).unwrap();
+        assert!(!serialized.contains("PRIVATE_VALUE"));
+        assert!(!serialized.contains("private.invalid"));
+        assert_eq!(
+            std::fs::read_to_string(directory.join("settings.json")).unwrap(),
+            "{}"
+        );
+        std::fs::remove_dir_all(directory).unwrap();
+    }
     #[test]
     fn distinguishes_desktop_environment_from_file_auth_without_returning_values() {
         let directory =

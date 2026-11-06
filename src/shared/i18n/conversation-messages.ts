@@ -75,8 +75,22 @@ export const conversationZh = {
   agentSetupChoose: '要配置的 Agent',
   agentSetupReuse:
     '先确认此 CLI 在系统终端能正常对话。应用复用它已有的登录与 Provider 配置，这里不用再填密钥或服务地址。',
-  agentSetupModelStep: '1. 确认模型',
-  agentSetupTestStep: '2. 测试已保存配置',
+  agentSetupConfigStep: '1. 选择 CLI 与配置来源',
+  agentSetupModelStep: '2. 确认模型',
+  agentSetupTestStep: '3. 测试已保存配置',
+  claudeChooseSourceHint:
+    '启动文件不是登录配置。终端通过 --settings 启动时，需要另选相同的设置文件。可以先查找已有文件，再确认使用；不会自动启用备份。',
+  claudeFindSettings: '查找已有设置文件',
+  claudeNoSettingsSources: '常用配置目录中未找到可读设置文件，请浏览选择你在终端使用的文件。',
+  claudeSourceAuthFound: '含认证字段或密钥助手（有效性待测试）',
+  claudeSourceAuthAbsent: '未发现文件认证字段；可能使用 CLI 原生登录',
+  claudeSourceBackup: '备份文件，使用前请确认用途',
+  claudeUseSettingsSource: '使用此设置文件',
+  claudeSourceSelected: '已选择',
+  claudeNoExplicitSettings: '未选择独立设置文件，使用 CLI 默认配置',
+  connectionSavedSource: '本次测试使用的已保存配置',
+  agentModelDisplayNameWarning:
+    '此值包含空格，可能是界面显示名而非模型 ID。建议读取已有模型配置并确认实际 ID。',
   agentSetupModelHint:
     '填写在该 CLI 中实际可用的模型 ID，不是界面展示名称。可从已有 CLI 配置或你的服务提供方确认；本工具目前不能自动列出可用模型。',
   agentSetupUnsaved: '模型已修改，先点击“保存模型”，再测试。',
@@ -385,8 +399,23 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
   agentSetupChoose: 'Agent to configure',
   agentSetupReuse:
     'First confirm this CLI replies in your system terminal. The app reuses its login and Provider configuration. No API key or endpoint is required here.',
-  agentSetupModelStep: '1. Confirm the model',
-  agentSetupTestStep: '2. Test saved configuration',
+  agentSetupConfigStep: '1. Choose the CLI and configuration source',
+  agentSetupModelStep: '2. Confirm the model',
+  agentSetupTestStep: '3. Test saved configuration',
+  claudeChooseSourceHint:
+    'A launcher is not a sign-in configuration. If your terminal uses --settings, select the same settings file. Find existing files and explicitly choose one; backups are never enabled automatically.',
+  claudeFindSettings: 'Find existing settings files',
+  claudeNoSettingsSources:
+    'No readable settings files found in the usual directory. Browse for the file used by your terminal.',
+  claudeSourceAuthFound: 'Authentication field or key helper present (validity untested)',
+  claudeSourceAuthAbsent: 'No file authentication fields found; native CLI sign-in may be used',
+  claudeSourceBackup: 'Backup file; confirm its purpose before use',
+  claudeUseSettingsSource: 'Use this settings file',
+  claudeSourceSelected: 'Selected',
+  claudeNoExplicitSettings: 'No explicit settings file selected; CLI defaults are used',
+  connectionSavedSource: 'Saved configuration used by this test',
+  agentModelDisplayNameWarning:
+    'This value contains spaces and may be a display name. Read the existing configuration and confirm the actual model ID.',
   agentSetupModelHint:
     'Use a model ID supported by this CLI, rather than a display name. Check its existing configuration or your Provider. Automatic model listing is not available yet.',
   agentSetupUnsaved: 'Model changed. Save the model before testing.',

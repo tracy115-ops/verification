@@ -11,6 +11,7 @@ import {
 } from '../../services/agent-connection';
 import { isMessageKey, useI18n } from '../../shared/i18n/context';
 import { ClaudeAuthHelp } from './ClaudeAuthHelp';
+import { NativeConfigSummary } from './NativeConfigSummary';
 
 export function AgentConnectionCheck({
   profile,
@@ -42,6 +43,10 @@ export function AgentConnectionCheck({
           </strong>
         )}
         <small className="wb-muted">{t('connectionCheckHint')}</small>
+        <details className="settings-test-source">
+          <summary>{t('connectionSavedSource')}</summary>
+          <NativeConfigSummary profile={profile} />
+        </details>
         {reason && (
           <small>
             {reason === 'model_required'

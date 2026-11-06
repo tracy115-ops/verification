@@ -1,7 +1,7 @@
 {
   "name": "verification-workbench",
   "private": true,
-  "version": "0.9.5",
+  "version": "0.9.6",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
@@ -20,8 +20,8 @@
     "verify:game-agent": "node scripts/verify-game-agent.mjs",
     "verify:deep-agent": "node scripts/verify-deep-agent.mjs",
     "verify:workflow": "cargo build -p execution-runtime --example local --locked && vitest run --config vitest.workflow.config.ts",
-    "format:check": "prettier --check src server scripts tests/e2e tests/runtime *.ts package.json tsconfig.json",
-    "format": "prettier --write src server scripts tests/e2e tests/runtime *.ts package.json tsconfig.json",
+    "format:check": "prettier --check src server scripts tests/e2e tests/runtime tests/live *.ts package.json tsconfig.json",
+    "format": "prettier --write src server scripts tests/e2e tests/runtime tests/live *.ts package.json tsconfig.json",
     "version:check": "node scripts/version.mjs && node --test scripts/version-contracts.mjs",
     "version:set": "node scripts/version.mjs",
     "check": "npm run version:check && npm run format:check && npm run check:constraints && npm run test && npm run build",

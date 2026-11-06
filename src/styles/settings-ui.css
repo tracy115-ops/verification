@@ -303,6 +303,41 @@
   min-width: 0;
 }
 .settings-instance-choice > label,
+.settings-config-summary {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.4fr) minmax(0, 1fr);
+  gap: 6px 16px;
+  font-size: 12px;
+}
+.settings-config-summary dt {
+  color: var(--wb-muted);
+}
+.settings-config-summary dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.settings-config-sources {
+  margin-block: 16px;
+}
+.settings-config-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.settings-config-source {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius);
+}
+.settings-config-source code {
+  overflow-wrap: anywhere;
+}
+.settings-config-source .workbench-btn {
+  justify-self: start;
+}
 .settings-instance-path {
   flex: 1;
   min-width: min(260px, 100%);
