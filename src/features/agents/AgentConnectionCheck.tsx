@@ -1,14 +1,7 @@
-import { useEffect, useRef, useSyncExternalStore } from 'react';
 import type { AgentProfile } from '../../domain/workflow';
 import { nativeAgentFields } from '../../domain/runtime/profile';
-import { DesktopAgentPort } from '../../services/conversation-api';
 import { hasDesktopBridge } from '../../services/agent-api';
-import {
-  checkAgentConnection,
-  connectionFor,
-  connectionSnapshot,
-  subscribeConnections,
-} from '../../services/agent-connection';
+import type { useAgentConnection } from './useAgentConnection';
 import { isMessageKey, useI18n } from '../../shared/i18n/context';
 import { ClaudeAuthHelp } from './ClaudeAuthHelp';
 import { NativeConfigSummary } from './NativeConfigSummary';
@@ -17,17 +10,15 @@ export function AgentConnectionCheck({
   profile,
   blocked = false,
   compact = false,
+  connection,
 }: {
   profile: AgentProfile;
   blocked?: boolean;
   compact?: boolean;
+  connection: ReturnType<typeof useAgentConnection>;
 }) {
   const { t, locale } = useI18n();
-  const snapshot = useSyncExternalStore(subscribeConnections, connectionSnapshot);
-  const result = connectionFor(profile, snapshot);
-  const controller = useRef<AbortController | null>(null);
-  useEffect(() => () => controller.current?.abort(), []);
-  const busy = result?.status === 'checking';
+  const { result, busy } = connection;
   let reason: string | undefined;
   try {
     nativeAgentFields(profile);
@@ -77,17 +68,14 @@ export function AgentConnectionCheck({
         )}
       </div>
       {busy ? (
-        <button className="workbench-btn" onClick={() => controller.current?.abort()}>
+        <button className="workbench-btn" onClick={connection.cancel}>
           {t('cancelRun')}
         </button>
       ) : (
         <button
           className="workbench-btn"
           disabled={blocked || !hasDesktopBridge() || !!reason}
-          onClick={() => {
-            controller.current = new AbortController();
-            void checkAgentConnection(profile, new DesktopAgentPort(), controller.current.signal);
-          }}
+          onClick={() => connection.start()}
         >
           {t('connectionCheckSend')}
         </button>

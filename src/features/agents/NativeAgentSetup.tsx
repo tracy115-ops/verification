@@ -5,6 +5,7 @@ import { AgentConnectionCheck } from './AgentConnectionCheck';
 import { ModelHintsPicker } from './ModelHintsPicker';
 import { ClaudeSettingsSources } from './ClaudeSettingsSources';
 import { NativeConfigSummary } from './NativeConfigSummary';
+import { useAgentConnection } from './useAgentConnection';
 
 export function NativeAgentSetup({
   profile,
@@ -20,6 +21,7 @@ export function NativeAgentSetup({
   const { t } = useI18n();
   const internal = profile.driver === 'codeagent';
   const dirty = !internal && model.trim() !== profile.model;
+  const connection = useAgentConnection(profile);
   return (
     <article className="settings-agent-setup" aria-label={profile.name}>
       <header>
@@ -30,7 +32,12 @@ export function NativeAgentSetup({
         <h4>{t('agentSetupConfigStep')}</h4>
         <NativeConfigSummary profile={profile} />
         {profile.driver === 'claude' && (
-          <ClaudeSettingsSources key={JSON.stringify(profile.launch)} profile={profile} save={save} />
+          <ClaudeSettingsSources
+            profile={profile}
+            save={save}
+            connection={connection}
+            blocked={dirty || !profile.model.trim()}
+          />
         )}
         <NativeLaunchEditor key={`launch-${JSON.stringify(profile)}`} profile={profile} save={save} />
       </section>
@@ -82,7 +89,7 @@ export function NativeAgentSetup({
       </section>
       <section>
         <h4>{t('agentSetupTestStep')}</h4>
-        <AgentConnectionCheck key={JSON.stringify(profile)} profile={profile} blocked={dirty} compact />
+        <AgentConnectionCheck profile={profile} blocked={dirty} compact connection={connection} />
       </section>
     </article>
   );

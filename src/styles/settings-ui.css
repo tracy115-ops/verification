@@ -335,6 +335,12 @@
 .settings-config-source code {
   overflow-wrap: anywhere;
 }
+.settings-config-source[data-selected='true'] {
+  border-color: var(--wb-accent);
+}
+.settings-source-current {
+  overflow-wrap: anywhere;
+}
 .settings-config-source .workbench-btn {
   justify-self: start;
 }

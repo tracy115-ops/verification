@@ -10,6 +10,14 @@
 
 该验证取代此前“只验证真实 CLI / 引擎”和“浏览器界面 + 原生测试桥”的不足；两种旧证据仍保留其原有范围，不能追溯扩大。
 
+## 0.9.8 来源选择补验
+
+本地以正式资源协议编译 Release 后，通过 `desktop-source.spec.ts` 在真正 WebView 中验证“选用并测试”。原 Tauri IPC、实际已安装 Claude 与既有可信设置文件均未替换：短测通过后选中行保留，刷新后配置恢复但历史短测绿灯不继承。结果在本机 `.runtime/native-source-selection/summary.json`，不归档用户设置路径或配置内容。
+
+原生来源验证入口：`npx playwright test --config playwright.desktop.config.ts desktop-source.spec.ts`。需填写已有 `DESKTOP_AUDIT_ENDPOINT`、`CLI_AUDIT_SETTINGS_FILE`、`CLI_AUDIT_EXECUTABLE`、`CLI_AUDIT_MODEL`；`DESKTOP_AUDIT_VERSION` 可核对预期版本。只在明确执行时调用模型，普通 CI 不包含该测试。本项仅复验来源选择短测，不冒称重新跑过 13 步完整测试流程。
+
+本地构建要包含正式资源协议，例如 `node scripts/bundle-team.mjs` 后执行 `cargo build -p verification-desktop --release --features tauri/custom-protocol --locked`；单独 `--release` 并不保证使用内嵌页面，首轮检查已发现会误连开发地址。
+
 ## 启动 Release
 
 先核对 GitHub 发布包的 `SHA256SUMS.txt`。可使用已有安装或解包后的原始 Release 可执行文件；审计须用独立 WebView2 数据目录，不能连接正在使用的个人窗口。准备已有可信 Claude 配置和已安装 CLI、Python。

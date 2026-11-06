@@ -107,12 +107,13 @@ test('selects a real settings source in the UI, persists it, and completes a rea
   await page.getByRole('button', { name: '查找已有设置文件', exact: true }).click();
   const candidate = page.locator('.settings-config-source').filter({ hasText: settingsFile! });
   await expect(candidate).toContainText('含认证字段');
-  await candidate.getByRole('button', { name: '使用此设置文件' }).click();
+  await candidate.getByRole('button', { name: '选用并测试' }).click();
+  await expect(check.getByRole('status')).toContainText('短对话已验证', { timeout: 75_000 });
+  await expect(candidate).toContainText('已选用 · 短测通过');
   await page.reload();
   await openSettings();
   await expect(page.locator('.settings-agent-setup > section').first()).toContainText(settingsFile!);
-  await check.getByRole('button', { name: '发送短测试' }).click();
-  await expect(check.getByRole('status')).toContainText('短对话已验证', { timeout: 75_000 });
+  await expect(check.getByText('短对话已验证', { exact: false })).toHaveCount(0);
   expect(turns[1].request.launch?.settingsFile).toBe(settingsFile);
   expect(turns[1].request.launch?.executablePath).toBe(process.env.CLI_AUDIT_EXECUTABLE);
   expect(turns[1].outcome.text.trim()).toBe('WORKBENCH_CONNECTION_OK');
