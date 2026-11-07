@@ -1,4 +1,5 @@
 import { conversationEn, conversationZh } from './conversation-messages';
+import { preparationEn, preparationZh } from './preparation-messages';
 import { proposalEn, proposalZh } from './design-proposal-messages';
 import { quoteRepairEn, quoteRepairZh } from './quote-repair-messages';
 import { matrixEn, matrixZh } from './coverage-matrix-messages';
@@ -13,6 +14,7 @@ import { lanEn, lanZh } from './lan-messages';
 import { collaborationEn, collaborationZh } from './collaboration-messages';
 
 export const zh = {
+  ...preparationZh,
   ...proposalZh,
   ...quoteRepairZh,
   ...matrixZh,
@@ -190,6 +192,7 @@ export const zh = {
 } as const;
 
 export const en: Record<keyof typeof zh, string> = {
+  ...preparationEn,
   ...proposalEn,
   ...quoteRepairEn,
   ...matrixEn,

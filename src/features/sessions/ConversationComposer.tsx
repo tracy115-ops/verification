@@ -9,6 +9,8 @@ import { emptyComposerDraft, type ComposerDraft } from '../../domain/runtime/com
 import { ChatContextControl } from './ChatContextControl';
 import { ComposerInput } from './ComposerInput';
 import { ComposerSelectors } from './ComposerSelectors';
+import { prepareInvocation } from '../../domain/runtime/preparation';
+import { InvocationPreparation } from './InvocationPreparation';
 
 export function ConversationComposer({
   actions,
@@ -16,6 +18,7 @@ export function ConversationComposer({
   saved,
   dirty,
   openWorkflow,
+  openSettings,
   frameworks,
 }: {
   actions: Conversations;
@@ -23,12 +26,14 @@ export function ConversationComposer({
   saved: WorkbenchDocument | null;
   dirty: boolean;
   openWorkflow: () => void;
+  openSettings: () => void;
   frameworks: FrameworkProfile[];
 }) {
   const { t } = useI18n();
   const fallbackProfile = actions.session?.profileId ?? profiles[0]?.id ?? '';
   const draft = actions.session?.draft ?? emptyComposerDraft(fallbackProfile);
   const { text, invoke, profileId, frameworkId, useNodeBindings, contextMode } = draft;
+  const preparation = prepareInvocation(draft, saved, profiles, frameworks);
   const changeDraft = (patch: Partial<ComposerDraft>) => actions.updateComposerDraft(patch, fallbackProfile);
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
   const file = useRef<HTMLInputElement>(null);
@@ -38,6 +43,7 @@ export function ConversationComposer({
     run && Object.values(run.artifacts).some((item) => ['TestDesign', 'TestDesignDraft'].includes(item.type));
   async function send() {
     if (actions.busy || !hasDesktopBridge() || !text.trim()) return;
+    if (preparation?.issues.length) return;
     if (draft.editDesign) {
       if (!run || !canPropose) {
         actions.setError('design_proposal_unavailable');
@@ -121,6 +127,12 @@ export function ConversationComposer({
         send={send}
         placeholderKey={draft.editDesign ? 'designProposalPlaceholder' : 'composerPlaceholder'}
       />
+      <InvocationPreparation
+        preparation={preparation}
+        saved={saved}
+        openSettings={openSettings}
+        openWorkflow={openWorkflow}
+      />
       {draft.editDesign && <small className="wb-muted">{t('designProposalModeHint')}</small>}
       {actions.busy && <small className="wb-muted">{t('composerDraftWhileRunning')}</small>}
       {attachmentError === actions.activeId && (
@@ -151,7 +163,7 @@ export function ConversationComposer({
         ) : (
           <button
             className="workbench-btn wb-primary"
-            disabled={!hasDesktopBridge() || !text.trim()}
+            disabled={!hasDesktopBridge() || !text.trim() || !!preparation?.issues.length}
             title={t('composerKeyboardHint')}
             onClick={() => void send()}
           >

@@ -54,6 +54,22 @@ test('verifies source selection and its real reply in the native Release window'
     await open();
     await page.getByRole('button', { name: '查找已有设置文件' }).click();
     await expect(selected).toContainText('已选用 · 尚未短测');
+    await page.getByRole('button', { name: '流程编排', exact: true }).click();
+    await page.getByRole('button', { name: '保存草稿', exact: true }).click();
+    await page.getByRole('button', { name: '新建会话', exact: true }).click();
+    await page.getByRole('combobox', { name: '已保存流程', exact: true }).selectOption('workflow');
+    await page.locator('.session-composer textarea').fill('验证房间容量仅允许2至8的整数，非法返回400。');
+    const invoke = page.getByRole('button', { name: '调用流程', exact: true });
+    await expect(invoke).toBeDisabled();
+    await page.getByRole('combobox', { name: '会话 Agent', exact: true }).selectOption('claude-native');
+    const preparation = page.locator('.session-preparation');
+    await preparation.locator('summary').click();
+    await expect(preparation).toContainText(settingsFile!);
+    await expect(preparation).toContainText(model!);
+    await expect(preparation).toContainText('当前配置尚未做短对话测试');
+    await expect(preparation).toContainText('仅设计评审');
+    await expect(invoke).toBeEnabled();
+    await page.screenshot({ path: path.join(output, 'preparation-native.png') });
     writeFileSync(
       path.join(output, 'summary.json'),
       JSON.stringify(
@@ -65,6 +81,8 @@ test('verifies source selection and its real reply in the native Release window'
           selectedRowPreserved: true,
           selectionPersisted: true,
           priorCheckNotReusedAfterReload: true,
+          preparationUsesSelectedSource: true,
+          preparationBlocksMissingModel: true,
         },
         null,
         2,

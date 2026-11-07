@@ -36,29 +36,7 @@ export function createRun(
   if (agentSelection === 'session') snapshot = { ...snapshot, bindings: {} };
   if (snapshot.revision < 1 || checkDocument(snapshot).length || !spec.trim() || spec.length > 40000)
     throw new Error('invalid_run');
-  const terminal = snapshot.definition.nodes.find(
-    (node) => node.operation === (executionProfile ? 'actions.dispatch' : 'review.cases'),
-  );
-  if (!terminal) throw new Error('unsupported_workflow');
-  const selected = new Set<string>();
-  const lookup = new Map(snapshot.definition.nodes.map((node) => [node.id, node]));
-  function select(id: string) {
-    if (selected.has(id)) return;
-    const node = lookup.get(id);
-    if (!node) throw new Error('invalid_run');
-    selected.add(id);
-    for (const parent of node.dependsOn) select(parent);
-  }
-  select(terminal.id);
-  const plan = snapshot.definition.nodes.filter((node) => executionProfile || selected.has(node.id));
-  const supported = new Set(
-    executionProfile ? [...designOperations, ...executionOperations] : designOperations,
-  );
-  if (plan.some((node) => !supported.has(node.operation))) throw new Error('unsupported_workflow');
-  for (const operation of supported) {
-    if (operation !== 'review.custom' && plan.filter((node) => node.operation === operation).length !== 1)
-      throw new Error('unsupported_workflow');
-  }
+  const plan = selectRunPlan(snapshot, !!executionProfile);
   for (const node of plan.filter((node) => node.role)) {
     const id = snapshot.bindings[node.id] ?? defaultProfileId;
     const profile = profiles.find((profile) => profile.id === id);
@@ -82,6 +60,32 @@ export function createRun(
     artifacts: {},
     approvals: [],
   });
+}
+
+/** Select the same scope for readiness previews and actual immutable runs. Validate the graph first. */
+export function selectRunPlan(snapshot: WorkbenchDocument, execution: boolean) {
+  const terminal = snapshot.definition.nodes.find(
+    (node) => node.operation === (execution ? 'actions.dispatch' : 'review.cases'),
+  );
+  if (!terminal) throw new Error('unsupported_workflow');
+  const selected = new Set<string>();
+  const lookup = new Map(snapshot.definition.nodes.map((node) => [node.id, node]));
+  function select(id: string) {
+    if (selected.has(id)) return;
+    const node = lookup.get(id);
+    if (!node) throw new Error('invalid_run');
+    selected.add(id);
+    for (const parent of node.dependsOn) select(parent);
+  }
+  select(terminal.id);
+  const plan = snapshot.definition.nodes.filter((node) => execution || selected.has(node.id));
+  const supported = new Set(execution ? [...designOperations, ...executionOperations] : designOperations);
+  if (plan.some((node) => !supported.has(node.operation))) throw new Error('unsupported_workflow');
+  for (const operation of supported) {
+    if (operation !== 'review.custom' && plan.filter((node) => node.operation === operation).length !== 1)
+      throw new Error('unsupported_workflow');
+  }
+  return plan;
 }
 
 export async function digest(value: unknown): Promise<string> {

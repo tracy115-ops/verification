@@ -39,6 +39,7 @@ export function SessionWorkspace({
       saved={saved}
       dirty={dirty}
       openWorkflow={openWorkflow}
+      openSettings={openSettings}
       frameworks={frameworks}
     />
   );
