@@ -73,7 +73,8 @@ export async function downloadUpdate(progress: (value: UpdateProgress) => void) 
   return status(await invoke('download_update', { onEvent: channel }));
 }
 export const cancelUpdate = () => invoke<void>('cancel_update');
-export const installUpdate = () => invoke<void>('install_update');
+export const installUpdate = (backup: { id: number; sha256: string }) =>
+  invoke<void>('install_update', { backup });
 export const clearUpdateCache = () => invoke<void>('clear_update_cache');
 export const clearLogs = () => invoke<void>('clear_logs');
 export interface UpdateNetwork {

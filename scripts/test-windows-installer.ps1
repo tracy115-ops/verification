@@ -74,6 +74,8 @@ if (-not $supervisor.WaitForExit(180000)) { $supervisor.Kill(); throw 'Update su
 $result = Get-Content -LiteralPath (Join-Path $workerRoot 'last-install.json') -Raw | ConvertFrom-Json
 if ($supervisor.ExitCode -ne 0 -or $result.status -ne 'restart_started') { throw "Update supervisor failed: $($result.status), exit $($result.exit_code)" }
 if ((Get-Content -LiteralPath $sentinel -Raw).Trim() -ne 'keep-profile') { throw 'Upgrade modified the existing profile directory.' }
+$shadowReceipt = Get-Content -LiteralPath (Join-Path $env:RUNNER_TEMP 'verification-update-shadow.json') -Raw | ConvertFrom-Json
+if ((Get-FileHash -LiteralPath $shadowReceipt.path -Algorithm SHA256).Hash.ToLowerInvariant() -ne $shadowReceipt.sha256) { throw 'Upgrade modified the verified SQLite protection copy.' }
 $restartDeadline = [DateTime]::UtcNow.AddSeconds(30)
 $restarted = $null
 while ([DateTime]::UtcNow -lt $restartDeadline) {

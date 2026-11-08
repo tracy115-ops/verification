@@ -292,7 +292,11 @@ async fn verify(path: &std::path::Path, release: &Release) -> Result<(), String>
     Ok(())
 }
 #[tauri::command]
-pub async fn install_update(app: AppHandle, state: State<'_, UpdateRuntime>) -> Result<(), String> {
+pub async fn install_update(
+    app: AppHandle,
+    state: State<'_, UpdateRuntime>,
+    backup: Option<crate::update_backup::InstallBackup>,
+) -> Result<(), String> {
     if !supported() || cfg!(debug_assertions) {
         return Err("update_install_release_only".into());
     }
@@ -307,6 +311,21 @@ pub async fn install_update(app: AppHandle, state: State<'_, UpdateRuntime>) -> 
     {
         return Err("update_host_running".into());
     }
+    let shadow = app
+        .path()
+        .app_local_data_dir()
+        .map_err(|_| "shadow_unavailable")?
+        .join("personal-shadow-v1.sqlite3");
+    let backup_check = tauri::async_runtime::spawn_blocking(move || {
+        crate::update_backup::verify(&shadow, backup.as_ref())
+    })
+    .await
+    .map_err(|_| "shadow_unavailable")?;
+    if let Err(error) = backup_check {
+        crate::diagnostics::record(&app, "update.backup_failed", json!({"code":error}));
+        return Err(error);
+    }
+    crate::diagnostics::record(&app, "update.backup_verified", json!({"status":"verified"}));
     let (release, ready) = {
         let data = state.data.lock().await;
         (

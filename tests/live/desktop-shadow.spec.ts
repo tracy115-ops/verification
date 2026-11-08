@@ -56,6 +56,16 @@ test('creates, reopens and exports a real SQLite copy through the native desktop
     expect(await page.evaluate(() => localStorage.getItem('verification-workbench.conversations.v1'))).toBe(
       original,
     );
+    // No release was checked/downloaded: every handoff must remain gated here.
+    const ready = await invoke<{ ready: boolean }>('update_status');
+    expect(ready.ready).toBe(false);
+    await expect(invoke('install_update')).rejects.toThrow('update_backup_required');
+    const saved = await invoke<{ snapshots: { id: number; sha256: string }[] }>('personal_shadow_status');
+    const receipt = { id: saved.snapshots[0].id, sha256: saved.snapshots[0].sha256 };
+    await expect(
+      invoke('install_update', { backup: { ...receipt, sha256: 'a'.repeat(64) } }),
+    ).rejects.toThrow('update_backup_stale');
+    await expect(invoke('install_update', { backup: receipt })).rejects.toThrow('update_check_first');
     await section.screenshot({ path: path.join(output, 'desktop-shadow.png') });
     writeFileSync(
       path.join(output, 'summary.json'),
@@ -67,6 +77,8 @@ test('creates, reopens and exports a real SQLite copy through the native desktop
           persistedAfterReload: true,
           exportedSourceMatches: true,
           sourceUnchanged: true,
+          missingAndMismatchedBackupRejected: true,
+          validBackupPassedToPackageGate: true,
           // Used only for guarded cleanup of the audit-created file.
           auditDatabase: database,
           databaseSha256: createHash('sha256').update(readFileSync(database)).digest('hex'),

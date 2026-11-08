@@ -1,4 +1,13 @@
 export const shadowZh = {
+  updatePreparingBackup: '正在创建并校验升级前保护副本…',
+  updateFinishingBackup: '安装已取消；正在结束副本写入，不会启动安装器。',
+  updateCancelledBeforeInstall: '安装已取消，工作台继续运行。已写入的保护副本可在数据管理中查看。',
+  updateHandingOff: '保护副本已就绪，正在交接安装器…',
+  updateBackupHint:
+    '确认后先保存并校验当前个人数据副本，再启动安装。失败或取消会停止交接。副本保留最近两份，不包含团队项目或磁盘执行证据。',
+  updateBackupFailed: '升级前数据准备未完成，未启动安装器。',
+  update_backup_required: '缺少升级前保护副本，安装已停止。请重新准备安装。',
+  update_backup_stale: '升级前副本已变化或摘要不匹配，安装已停止。请重新准备安装。',
   shadowTitle: '本机数据保护副本',
   shadowRetentionHint:
     '清空或导入当前个人数据不会删除保护副本。副本独立保存在本机，创建新副本时轮换最近两份。',
@@ -23,6 +32,18 @@ export const shadowZh = {
   shadow_source_changed: '采集期间数据已变化，请停止任务、保存更改后重新创建副本。',
 };
 export const shadowEn: Record<keyof typeof shadowZh, string> = {
+  updatePreparingBackup: 'Creating and verifying a pre-update protection copy…',
+  updateFinishingBackup: 'Installation cancelled. Finishing the copy write without starting the installer.',
+  updateCancelledBeforeInstall:
+    'Installation cancelled; the workbench remains open. Any saved protection copy is available in Data management.',
+  updateHandingOff: 'Protection copy ready. Handing off to the installer…',
+  updateBackupHint:
+    'Confirmation first saves and verifies a personal data copy, then starts installation. Failure or cancellation stops handoff. The latest two copies are retained; team projects and execution evidence on disk are excluded.',
+  updateBackupFailed: 'Pre-update data preparation did not complete. The installer was not started.',
+  update_backup_required:
+    'A pre-update protection copy is required. Installation stopped. Prepare installation again.',
+  update_backup_stale:
+    'The pre-update copy changed or its digest did not match. Installation stopped. Prepare installation again.',
   shadowTitle: 'Local data protection copies',
   shadowRetentionHint:
     'Clearing or restoring current personal data does not delete protection copies. Copies remain on this device; new snapshots rotate the latest two.',

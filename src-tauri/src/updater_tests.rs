@@ -5,13 +5,25 @@ use std::{
 };
 
 #[test]
+fn install_handoff_and_copy_activity_exclude_each_other() {
+    let state = UpdateRuntime::default();
+    let copy = state.task().unwrap();
+    assert!(state.activity.try_write().is_err());
+    drop(copy);
+    let installing = state.activity.try_write().unwrap();
+    assert_eq!(state.task().unwrap_err(), "update_installing");
+    drop(installing);
+    assert!(state.task().is_ok());
+}
+
+#[test]
 fn installer_verification_future_fits_the_desktop_ipc_stack() {
     let release = release(String::new(), b"fixture");
     let future = verify(std::path::Path::new("fixture.exe"), &release);
     let bytes = std::mem::size_of_val(&future);
     println!("Installer verification future: {bytes} bytes");
     assert!(bytes < 16 * 1024, "verification future uses {bytes} bytes");
-    fn future_size<A, B, F>(_: impl FnOnce(A, B) -> F) -> usize {
+    fn future_size<A, B, C, F>(_: impl FnOnce(A, B, C) -> F) -> usize {
         std::mem::size_of::<F>()
     }
     let bytes = future_size(install_update);

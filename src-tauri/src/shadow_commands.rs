@@ -2,6 +2,8 @@ use crate::personal_shadow::{self, Status};
 use tauri::{AppHandle, Manager};
 
 async fn operate(app: AppHandle, payload: Option<String>) -> Result<Status, String> {
+    let update = app.state::<crate::updater::UpdateRuntime>();
+    let _activity = update.task()?;
     let path = app
         .path()
         .app_local_data_dir()

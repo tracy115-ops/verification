@@ -1,80 +1,23 @@
-import { useEffect, useRef, useState } from 'react';
-import { version } from '../../../package.json';
-import { hasDesktopBridge } from '../../services/agent-api';
-import * as api from '../../services/system-api';
 import { isMessageKey, useI18n } from '../../shared/i18n/context';
 import { ConfirmDialog } from './ConfirmDialog';
 import { UpdateNetworkSettings } from './UpdateNetworkSettings';
+import { useUpdateSettings } from './useUpdateSettings';
 
 export function UpdateSettings({ blocked }: { blocked: boolean }) {
   const { t, locale } = useI18n();
-  const [status, setStatus] = useState<api.UpdateStatus>({
-    currentVersion: version,
-    supported: false,
-    release: null,
-    ready: false,
-  });
-  const [busy, setBusy] = useState<'check' | 'download' | 'install' | null>(null);
-  const [error, setError] = useState('');
-  const [checked, setChecked] = useState(false);
-  const [confirm, setConfirm] = useState(false);
-  const [progress, setProgress] = useState<api.UpdateProgress>({ downloaded: 0, total: 1 });
-  const active = useRef(true);
-  useEffect(() => {
-    active.current = true;
-    if (hasDesktopBridge())
-      void api
-        .updateStatus()
-        .then((value) => {
-          if (active.current) setStatus(value);
-        })
-        .catch(() => {});
-    return () => {
-      active.current = false;
-      void api.cancelUpdate().catch(() => {});
-    };
-  }, []);
-  async function perform(kind: 'check' | 'download' | 'install') {
-    setError('');
-    setBusy(kind);
-    if (kind !== 'install') setConfirm(false);
-    try {
-      if (kind === 'install') {
-        await api.installUpdate();
-        setConfirm(false);
-      } else {
-        const value =
-          kind === 'check'
-            ? await api.checkUpdate()
-            : await api.downloadUpdate((value) => {
-                if (active.current) setProgress(value);
-              });
-        if (active.current) {
-          setStatus(value);
-          setChecked(true);
-        }
-      }
-    } catch (error) {
-      setConfirm(false);
-      if (kind === 'install')
-        void api
-          .updateStatus()
-          .then((value) => {
-            if (active.current) setStatus(value);
-          })
-          .catch(() => {});
-      if (active.current)
-        setError(
-          typeof error === 'string'
-            ? error
-            : error instanceof Error
-              ? error.message
-              : 'update_network_failed',
-        );
-    } finally {
-      if (active.current) setBusy(null);
-    }
-  }
+  const {
+    status,
+    busy,
+    error,
+    backupFailed,
+    cancelled,
+    checked,
+    confirm,
+    progress,
+    setConfirm,
+    perform,
+    cancel,
+  } = useUpdateSettings(blocked);
   const number = (value: number) =>
     new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(value / 1024 / 1024);
   return (
@@ -96,11 +39,7 @@ export function UpdateSettings({ blocked }: { blocked: boolean }) {
           {t(busy === 'check' ? 'updateChecking' : 'checkUpdates')}
         </button>
         {busy && (
-          <button
-            className="workbench-btn"
-            onClick={() => void api.cancelUpdate()}
-            disabled={busy === 'install'}
-          >
+          <button className="workbench-btn" onClick={cancel} disabled={busy === 'install'}>
             {t('cancelAction')}
           </button>
         )}
@@ -134,11 +73,18 @@ export function UpdateSettings({ blocked }: { blocked: boolean }) {
         </article>
       )}
       {blocked && <p className="wb-muted">{t('dataBusy')}</p>}
+      {cancelled && !busy && !error && <p role="status">{t('updateCancelledBeforeInstall')}</p>}
+      {busy === 'backup' && !confirm && (
+        <p role="status">{t(cancelled ? 'updateFinishingBackup' : 'updatePreparingBackup')}</p>
+      )}
       {confirm && (
-        <ConfirmDialog title={t('installUpdate')} busy={!!busy} onCancel={() => setConfirm(false)}>
+        <ConfirmDialog title={t('installUpdate')} busy={busy === 'install'} onCancel={cancel}>
           <p>{t('updateInstallConfirm')}</p>
+          <p className="wb-muted">{t('updateBackupHint')}</p>
+          {busy === 'backup' && <p role="status">{t('updatePreparingBackup')}</p>}
+          {busy === 'install' && <p role="status">{t('updateHandingOff')}</p>}
           <div className="settings-system-actions">
-            <button className="workbench-btn" onClick={() => setConfirm(false)}>
+            <button className="workbench-btn" disabled={busy === 'install'} onClick={cancel}>
               {t('cancelAction')}
             </button>
             <button
@@ -153,6 +99,12 @@ export function UpdateSettings({ blocked }: { blocked: boolean }) {
       )}
       {error && (
         <p className="wb-error" role="alert">
+          {backupFailed && (
+            <>
+              <strong>{t('updateBackupFailed')}</strong>
+              <br />
+            </>
+          )}
           {isMessageKey(error) ? t(error) : t('update_network_failed')}
         </p>
       )}

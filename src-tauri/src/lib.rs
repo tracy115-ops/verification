@@ -74,6 +74,7 @@ mod lan_discovery;
 mod personal_shadow;
 mod shadow_commands;
 mod team_client;
+mod update_backup;
 mod update_install;
 mod update_network;
 mod update_release;

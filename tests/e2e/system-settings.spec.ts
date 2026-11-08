@@ -7,7 +7,14 @@ test('uses left navigation and performs an update through progress and confirmat
       __TAURI_INTERNALS__: {
         transformCallback: () => 1,
         unregisterCallback: () => {},
-        invoke: async (command: string, args?: { onEvent: { onmessage: (v: unknown) => void } }) => {
+        invoke: async (
+          command: string,
+          args?: {
+            onEvent: { onmessage: (v: unknown) => void };
+            payload?: string;
+            backup?: { id: number; sha256: string };
+          },
+        ) => {
           const release = {
             version: '9.0.0',
             notes: 'Fixture release notes',
@@ -29,8 +36,28 @@ test('uses left navigation and performs an update through progress and confirmat
             return { ...base, release, ready: true };
           }
           if (command === 'install_update') {
+            const receipt = JSON.parse(sessionStorage.getItem('fixture-backup')!);
+            if (args?.backup?.id !== receipt.id || args?.backup?.sha256 !== receipt.sha256)
+              throw 'update_backup_stale';
             localStorage.setItem('fixture-install', 'started');
             return;
+          }
+          if (command === 'save_personal_shadow') {
+            const payload = args!.payload!;
+            const bytes = new TextEncoder().encode(payload);
+            const sha256 = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), (b) =>
+              b.toString(16).padStart(2, '0'),
+            ).join('');
+            const snapshot = {
+              id: 1,
+              sha256,
+              bytes: bytes.length,
+              sessions: 0,
+              transcripts: 0,
+              createdAt: JSON.parse(payload).createdAt,
+            };
+            sessionStorage.setItem('fixture-backup', JSON.stringify(snapshot));
+            return { schemaVersion: 1, snapshots: [snapshot] };
           }
           if (command === 'cancel_update') return;
           if (command === 'read_logs')
