@@ -1,10 +1,12 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as backup from '../../services/personal-backup';
 import { clearUpdateCache } from '../../services/system-api';
 import { hasDesktopBridge } from '../../services/agent-api';
 import { isMessageKey, useI18n } from '../../shared/i18n/context';
 import { ConfirmDialog } from './ConfirmDialog';
 import { ShadowDataSettings } from './ShadowDataSettings';
+import { ShadowRestoreDialog, type ShadowRestorePreview } from './ShadowRestoreDialog';
+import { restoreWithSafetyCopy } from '../../services/restore-preparation';
 export function DataSettings({ blocked }: { blocked: boolean }) {
   const { t, locale } = useI18n();
   const file = useRef<HTMLInputElement>(null);
@@ -12,17 +14,34 @@ export function DataSettings({ blocked }: { blocked: boolean }) {
   const [pending, setPending] = useState<backup.PersonalBackup | null>(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState(false);
+  const [shadowRestore, setShadowRestore] = useState<ShadowRestorePreview | null>(null);
+  const [restoreStage, setRestoreStage] = useState<'backup' | 'restore' | null>(null);
+  const [shadowRefresh, setShadowRefresh] = useState(0);
+  const active = useRef(true);
+  const allowed = useRef(!blocked);
+  allowed.current = !blocked;
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+    };
+  }, []);
   async function run(task: () => Promise<void>) {
     setBusy(true);
     setError('');
     try {
       await task();
     } catch (error) {
-      setError(
-        error instanceof Error ? error.message : typeof error === 'string' ? error : 'data_operation_failed',
-      );
+      if (active.current)
+        setError(
+          error instanceof Error
+            ? error.message
+            : typeof error === 'string'
+              ? error
+              : 'data_operation_failed',
+        );
     } finally {
-      setBusy(false);
+      if (active.current) setBusy(false);
     }
   }
   async function read(file: File | undefined) {
@@ -112,10 +131,44 @@ export function DataSettings({ blocked }: { blocked: boolean }) {
         {t('clearUpdateCache')}
       </button>
       {notice && <p role="status">{t('updateCacheCleared')}</p>}
-      <ShadowDataSettings blocked={busy || blocked} run={run} />
+      <ShadowDataSettings
+        key={shadowRefresh}
+        blocked={busy || blocked}
+        run={run}
+        previewRestore={(preview) => {
+          setError('');
+          setRestoreStage(null);
+          setShadowRestore(preview);
+        }}
+      />
+      {shadowRestore && (
+        <ShadowRestoreDialog
+          preview={shadowRestore}
+          busy={busy}
+          blocked={blocked}
+          stage={restoreStage}
+          error={error}
+          cancel={() => setShadowRestore(null)}
+          confirm={() =>
+            void run(async () => {
+              try {
+                await restoreWithSafetyCopy(
+                  shadowRestore.backup,
+                  () => active.current && allowed.current,
+                  setRestoreStage,
+                );
+              } catch (error) {
+                if (active.current) setShadowRefresh((value) => value + 1);
+                throw error;
+              }
+              location.reload();
+            })
+          }
+        />
+      )}
       {blocked && <p className="wb-muted">{t('dataBusy')}</p>}
       {busy && <p role="status">{t('dataWorking')}</p>}
-      {error && (
+      {error && !shadowRestore && (
         <p role="alert" className="wb-error">
           {isMessageKey(error) ? t(error) : t('data_operation_failed')}
         </p>

@@ -1,0 +1,15 @@
+{
+  "version": "0.10.2",
+  "originalIpc": true,
+  "realSqlite": true,
+  "persistedAfterReload": true,
+  "exportedSourceMatches": true,
+  "missingAndMismatchedBackupRejected": true,
+  "validBackupPassedToPackageGate": true,
+  "olderCopyRestoredThroughUi": true,
+  "safetyCopyRestoredToUndo": true,
+  "recordedWorkflowAndArtifactsRestored": true,
+  "recordedCliTurnsRestored": 4,
+  "undoRemovedRestoredCliTurns": true,
+  "sourceUnchangedDuringCopy": true
+}

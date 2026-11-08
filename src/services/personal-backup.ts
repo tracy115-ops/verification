@@ -75,9 +75,13 @@ export async function exportPersonalData(): Promise<string> {
   if (new TextEncoder().encode(result).length > limit) throw new Error('data_backup_limit');
   return result;
 }
-export async function restorePersonalData(backup: PersonalBackup): Promise<void> {
+export async function restorePersonalData(
+  backup: PersonalBackup,
+  mayContinue: () => boolean = () => true,
+): Promise<void> {
   const valid = validateBackup(backup);
   await transcriptStore.flush();
+  if (!mayContinue()) throw new Error('data_restore_blocked');
   const previous = keys.map((key) => [key, localStorage.getItem(key)] as const);
   try {
     for (const key of keys) {

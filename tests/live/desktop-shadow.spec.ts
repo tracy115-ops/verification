@@ -2,6 +2,12 @@ import { chromium, expect, test } from '@playwright/test';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
+import {
+  importRecordedDesign,
+  deleteRecordedDesign,
+  storedTurnCount,
+  storedTurns,
+} from './desktop-shadow-data';
 
 test('creates, reopens and exports a real SQLite copy through the native desktop UI', async () => {
   const endpoint = process.env.DESKTOP_AUDIT_ENDPOINT;
@@ -29,7 +35,7 @@ test('creates, reopens and exports a real SQLite copy through the native desktop
     const version = await invoke<{ currentVersion: string }>('update_status');
     if (process.env.DESKTOP_AUDIT_VERSION)
       expect(version.currentVersion).toBe(process.env.DESKTOP_AUDIT_VERSION);
-    await page.locator('.session-history-new').click();
+    const recordedTurns = await importRecordedDesign(page, output);
     const original = await page.evaluate(() =>
       localStorage.getItem('verification-workbench.conversations.v1'),
     );
@@ -48,10 +54,13 @@ test('creates, reopens and exports a real SQLite copy through the native desktop
     await open();
     await expect(section.getByRole('status')).toContainText('完整性校验通过');
     const download = page.waitForEvent('download');
-    await section.getByRole('button', { name: '导出最近副本用于恢复' }).click();
+    await section.getByRole('button', { name: '导出所选副本' }).click();
     const file = await (await download).path();
     expect(file).toBeTruthy();
     const backup = JSON.parse(readFileSync(file!, 'utf8'));
+    expect(
+      backup.transcripts.sort((a: { id: string }, b: { id: string }) => a.id.localeCompare(b.id)),
+    ).toEqual([...recordedTurns].sort((a, b) => a.id.localeCompare(b.id)));
     expect(backup.storage['verification-workbench.conversations.v1']).toBe(original);
     expect(await page.evaluate(() => localStorage.getItem('verification-workbench.conversations.v1'))).toBe(
       original,
@@ -66,6 +75,38 @@ test('creates, reopens and exports a real SQLite copy through the native desktop
       invoke('install_update', { backup: { ...receipt, sha256: 'a'.repeat(64) } }),
     ).rejects.toThrow('update_backup_stale');
     await expect(invoke('install_update', { backup: receipt })).rejects.toThrow('update_check_first');
+    // Create newer real data, restore the older copy, then undo with the automatic safety copy.
+    await page.locator('.session-history-new').click();
+    await deleteRecordedDesign(page);
+    const newer = await page.evaluate(() => localStorage.getItem('verification-workbench.conversations.v1'));
+    expect(newer).not.toBe(original);
+    await open();
+    async function restoreCopy(id: number, expected: string | null) {
+      await section.locator(`input[type=radio][value="${id}"]`).check();
+      await section.getByRole('button', { name: '预览并恢复所选副本', exact: true }).click();
+      const dialog = page.getByRole('alertdialog', { name: '恢复保护副本' });
+      await expect(dialog).toContainText('另存为保护副本');
+      await dialog.screenshot({ path: path.join(output, `restore-preview-${id}.png`) });
+      await dialog.getByRole('button', { name: '确认恢复', exact: true }).click();
+      await expect
+        .poll(async () => {
+          try {
+            return await page.evaluate(() => localStorage.getItem('verification-workbench.conversations.v1'));
+          } catch {
+            return null;
+          }
+        })
+        .toBe(expected);
+      await expect(dialog).toHaveCount(0);
+      await open();
+    }
+    await restoreCopy(receipt.id, original);
+    expect((await storedTurns(page)).sort((a, b) => a.id.localeCompare(b.id))).toEqual(
+      [...recordedTurns].sort((a, b) => a.id.localeCompare(b.id)),
+    );
+    const protectedCurrent = await invoke<{ snapshots: { id: number }[] }>('personal_shadow_status');
+    await restoreCopy(protectedCurrent.snapshots[0].id, newer);
+    expect(await storedTurnCount(page)).toBe(0);
     await section.screenshot({ path: path.join(output, 'desktop-shadow.png') });
     writeFileSync(
       path.join(output, 'summary.json'),
@@ -79,6 +120,11 @@ test('creates, reopens and exports a real SQLite copy through the native desktop
           sourceUnchanged: true,
           missingAndMismatchedBackupRejected: true,
           validBackupPassedToPackageGate: true,
+          olderCopyRestoredThroughUi: true,
+          safetyCopyRestoredToUndo: true,
+          recordedWorkflowAndArtifactsRestored: true,
+          recordedCliTurnsRestored: recordedTurns.length,
+          undoRemovedRestoredCliTurns: true,
           // Used only for guarded cleanup of the audit-created file.
           auditDatabase: database,
           databaseSha256: createHash('sha256').update(readFileSync(database)).digest('hex'),

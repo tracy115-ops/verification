@@ -6,6 +6,7 @@ import { DOCUMENT_KEY } from './repository';
 import { CONVERSATIONS_KEY } from './conversation-repository';
 import { createSession } from '../domain/runtime/chat';
 import { emptyComposerDraft } from '../domain/runtime/composer-draft';
+import { transcriptStore } from './transcript-store';
 
 it('rejects unsupported formats, auth storage and malformed business records before restoration', () => {
   const value = emptyPersonalData();
@@ -45,6 +46,27 @@ it('restores existing business data when replacing transcript storage fails', as
     expect(localStorage.getItem(DOCUMENT_KEY)).toBeNull();
   } finally {
     replacement.mockRestore();
+    localStorage.clear();
+  }
+});
+
+it('rechecks eligibility after flushing pending records and before replacing any data', async () => {
+  const original = JSON.stringify([createSession('codeagent-native')]);
+  localStorage.setItem(CONVERSATIONS_KEY, original);
+  let allowed = true;
+  const flush = vi.spyOn(transcriptStore, 'flush').mockImplementation(async () => {
+    allowed = false;
+  });
+  const replace = vi.spyOn(IndexedDbTranscripts.prototype, 'replaceAll').mockResolvedValue();
+  try {
+    await expect(restorePersonalData(emptyPersonalData(), () => allowed)).rejects.toThrow(
+      'data_restore_blocked',
+    );
+    expect(localStorage.getItem(CONVERSATIONS_KEY)).toBe(original);
+    expect(replace).not.toHaveBeenCalled();
+  } finally {
+    flush.mockRestore();
+    replace.mockRestore();
     localStorage.clear();
   }
 });

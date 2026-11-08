@@ -5,21 +5,26 @@ import {
   readPersonalShadow,
   type ShadowStatus,
 } from '../../services/personal-shadow';
-import { downloadText } from '../../services/personal-backup';
+import { downloadText, parseBackup } from '../../services/personal-backup';
+import type { ShadowRestorePreview } from './ShadowRestoreDialog';
+import { ShadowCopyList } from './ShadowCopyList';
 import { hasDesktopBridge } from '../../services/agent-api';
 import { isMessageKey, useI18n } from '../../shared/i18n/context';
 
 export function ShadowDataSettings({
   blocked,
   run,
+  previewRestore,
 }: {
   blocked: boolean;
   run: (task: () => Promise<void>) => Promise<void>;
+  previewRestore: (preview: ShadowRestorePreview) => void;
 }) {
   const { t, locale } = useI18n();
   const [status, setStatus] = useState<ShadowStatus>();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const desktop = hasDesktopBridge();
   useEffect(() => {
     if (!desktop) return;
@@ -41,20 +46,23 @@ export function ShadowDataSettings({
       active = false;
     };
   }, [desktop]);
-  const latest = status?.snapshots[0];
+  const selected = status?.snapshots.find((copy) => copy.id === selectedId) ?? status?.snapshots[0];
   const count = new Intl.NumberFormat(locale);
   async function check(create: boolean) {
+    if (create) setSelectedId(null);
     setError('');
     setStatus(undefined);
     await run(async () => setStatus(await (create ? createPersonalShadow() : readPersonalShadow())));
   }
-  async function exportCopy() {
-    if (!latest || !status) return;
+  async function exportCopy(restore = false) {
+    if (!selected || !status) return;
     const verified = status;
     setStatus(undefined);
     setError('');
     await run(async () => {
-      downloadText(`verification-shadow-${latest.id}.json`, await exportPersonalShadow(latest));
+      const text = await exportPersonalShadow(selected);
+      if (restore) previewRestore({ backup: parseBackup(text), snapshot: selected });
+      else downloadText(`verification-shadow-${selected.id}.json`, text);
       setStatus(verified);
     });
   }
@@ -80,33 +88,36 @@ export function ShadowDataSettings({
         </button>
         <button
           className="workbench-btn"
-          disabled={blocked || !latest || !desktop}
+          disabled={blocked || !selected || !desktop}
           onClick={() => void exportCopy()}
         >
           {t('shadowExport')}
         </button>
+        <button
+          className="workbench-btn wb-primary"
+          disabled={blocked || !selected || !desktop}
+          onClick={() => void exportCopy(true)}
+        >
+          {t('shadowRestorePreview')}
+        </button>
       </div>
       {!desktop && <p className="wb-muted">{t('shadowDesktop')}</p>}
-      {status && <p role="status">{t(latest ? 'shadowVerified' : 'shadowEmpty')}</p>}
-      {latest && (
+      {status && <p role="status">{t(selected ? 'shadowVerified' : 'shadowEmpty')}</p>}
+      {!!status?.snapshots.length && (
+        <ShadowCopyList
+          snapshots={status.snapshots}
+          selected={selected?.id}
+          disabled={blocked}
+          select={setSelectedId}
+        />
+      )}
+      {selected && (
         <dl className="settings-shadow-summary">
-          <dt>{t('shadowCreated')}</dt>
-          <dd>
-            {new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(
-              new Date(latest.createdAt),
-            )}
-          </dd>
-          <dt>{t('shadowRecords')}</dt>
-          <dd>
-            {count.format(latest.sessions)} / {count.format(latest.transcripts)}
-          </dd>
           <dt>{t('shadowBytes')}</dt>
-          <dd>{count.format(latest.bytes)}</dd>
-          <dt>{t('shadowRetained')}</dt>
-          <dd>{count.format(status!.snapshots.length)}</dd>
+          <dd>{count.format(selected.bytes)}</dd>
           <dt>SHA-256</dt>
           <dd>
-            <code>{latest.sha256}</code>
+            <code>{selected.sha256}</code>
           </dd>
         </dl>
       )}

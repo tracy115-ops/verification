@@ -61,7 +61,7 @@ test('creates and rechecks copies without changing personal data and clears stal
   await section.getByRole('button', { name: '创建并校验副本' }).click();
   await expect(section.getByRole('status')).toContainText('完整性校验通过');
   const download = page.waitForEvent('download');
-  await section.getByRole('button', { name: '导出最近副本用于恢复' }).click();
+  await section.getByRole('button', { name: '导出所选副本' }).click();
   expect((await download).suggestedFilename()).toBe('verification-shadow-1.json');
   expect(
     await page.evaluate(
@@ -112,7 +112,7 @@ test('creates and rechecks copies without changing personal data and clears stal
   await section.getByRole('button', { name: '重新校验已存副本' }).click();
   await expect(section.getByRole('status')).toContainText('完整性校验通过');
   await page.evaluate(() => sessionStorage.setItem('shadow.fail', '1'));
-  await section.getByRole('button', { name: '导出最近副本用于恢复' }).click();
+  await section.getByRole('button', { name: '导出所选副本' }).click();
   await expect(section.getByRole('status')).toHaveCount(0);
   await expect(page.getByRole('alert')).toContainText('保护副本损坏');
   await page.setViewportSize({ width: 900, height: 650 });

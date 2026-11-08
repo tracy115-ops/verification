@@ -417,3 +417,35 @@
   margin: 0;
   overflow-wrap: anywhere;
 }
+.settings-shadow-list {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.settings-shadow-list legend {
+  padding-bottom: 8px;
+  font-size: 12px;
+  color: var(--wb-muted);
+}
+.settings-shadow-option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--wb-border);
+  border-radius: 6px;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.settings-shadow-option:has(input:checked) {
+  border-color: var(--wb-accent);
+  background: var(--wb-accent-soft);
+}
+.settings-shadow-option small {
+  display: block;
+  margin-top: 4px;
+  color: var(--wb-muted);
+}
