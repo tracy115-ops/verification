@@ -6,6 +6,8 @@
 
 0.10.4 本地复核：235 项单测、11 项受影响的生产界面测试及实际 Release 导航专项通过；窗口更新页显示 0.10.4，[原生摘要](../examples/generated/page-audit-2026-11-08/native-0104-summary.json)。完整 73 项生产回归与 78 项 Rust 的前述基线来自 0.10.3；补丁的远端全量结果由其独立标签任务记录。
 
+最终结果：0.10.4 已[正式发布](https://github.com/tracy115-ops/verification/releases/tag/v0.10.4)。[主分支检查](https://github.com/tracy115-ops/verification/actions/runs/42479978221)与 [Windows 标签打包任务](https://github.com/tracy115-ops/verification/actions/runs/42479982687)全部成功，远端确认 235 项单测、74 项界面回归、5 项协作回归通过；安装/升级冒烟、原生契约、黑盒回归及产物上传均通过。3 项真实网络/PAC 原生用例仍显式跳过，不纳入通过项。本地补跑最终版本的 9 项开发模式样式专项（含 120 个页面组合）全部通过，生产模式另包含 40 个协作内页组合。安装包附 SHA-256 清单及构建来源信息。
+
 ## 检查范围
 
 | 页面 | 操作与连续性检查 | 自动回归入口 |
