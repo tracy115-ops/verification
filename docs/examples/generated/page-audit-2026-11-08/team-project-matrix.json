@@ -1,0 +1,246 @@
+{
+  "originalHttpService": true,
+  "freshModelCall": false,
+  "results": [
+    {
+      "id": "team-project-zh-CN-light-900-step0",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-zh-CN-light-900-step1",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-zh-CN-light-900-step2",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-zh-CN-light-900-step3",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-zh-CN-light-900-step4",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-zh-CN-light-1500-step0",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    },
+    {
+      "id": "team-project-zh-CN-light-1500-step1",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    },
+    {
+      "id": "team-project-zh-CN-light-1500-step2",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    },
+    {
+      "id": "team-project-zh-CN-light-1500-step3",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    },
+    {
+      "id": "team-project-zh-CN-light-1500-step4",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    },
+    {
+      "id": "team-project-zh-CN-dark-900-step0",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-zh-CN-dark-900-step1",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-zh-CN-dark-900-step2",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-zh-CN-dark-900-step3",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-zh-CN-dark-900-step4",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-zh-CN-dark-1500-step0",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    },
+    {
+      "id": "team-project-zh-CN-dark-1500-step1",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    },
+    {
+      "id": "team-project-zh-CN-dark-1500-step2",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    },
+    {
+      "id": "team-project-zh-CN-dark-1500-step3",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    },
+    {
+      "id": "team-project-zh-CN-dark-1500-step4",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-light-900-step0",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-light-900-step1",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-light-900-step2",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-light-900-step3",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-light-900-step4",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-light-1500-step0",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-light-1500-step1",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-light-1500-step2",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-light-1500-step3",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-light-1500-step4",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-dark-900-step0",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-dark-900-step1",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-dark-900-step2",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-dark-900-step3",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-dark-900-step4",
+      "width": 900,
+      "scrollWidth": 900,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-dark-1500-step0",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-dark-1500-step1",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-dark-1500-step2",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-dark-1500-step3",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    },
+    {
+      "id": "team-project-en-US-dark-1500-step4",
+      "width": 1500,
+      "scrollWidth": 1500,
+      "clipped": []
+    }
+  ]
+}
