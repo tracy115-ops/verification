@@ -84,7 +84,7 @@ export function SessionWorkspace({
           </div>
         )}
         <div className="session-messages" role="log" aria-label={t('sessions')}>
-          {!actions.session?.messages.length && (
+          {!actions.session?.messages.length && !activeRun && (
             <div className="session-welcome">
               <span className="wb-icon-tile">
                 <MessageSquare size={23} />

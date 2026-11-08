@@ -1,0 +1,18 @@
+{
+  "originalIpc": true,
+  "importedHistoricalDesign": true,
+  "freshModelCall": false,
+  "pages": [
+    "sessions",
+    "workflow",
+    "assets",
+    "runs",
+    "settings",
+    "team"
+  ],
+  "assetQueryRetained": true,
+  "runQueryRetained": true,
+  "frameworkDraftRetained": true,
+  "settingsSectionsVisited": 7,
+  "unhandledErrors": []
+}

@@ -112,7 +112,7 @@ test('selects a real settings source in the UI, persists it, and completes a rea
   await expect(candidate).toContainText('已选用 · 短测通过');
   await page.reload();
   await openSettings();
-  await expect(page.locator('.settings-agent-setup > section').first()).toContainText(settingsFile!);
+  await expect(page.locator('.settings-agent-setup:visible > section').first()).toContainText(settingsFile!);
   await expect(check.getByText('短对话已验证', { exact: false })).toHaveCount(0);
   expect(turns[1].request.launch?.settingsFile).toBe(settingsFile);
   expect(turns[1].request.launch?.executablePath).toBe(process.env.CLI_AUDIT_EXECUTABLE);

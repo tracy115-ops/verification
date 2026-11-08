@@ -32,7 +32,7 @@ export function Sidebar({
             aria-label={t(key)}
             className={`app-nav-item ${page === item || (item === 'assets' && page === 'cases') ? 'is-active' : ''}`}
             onClick={() => setPage(item)}
-            aria-current={page === item ? 'page' : undefined}
+            aria-current={page === item || (item === 'assets' && page === 'cases') ? 'page' : undefined}
           >
             <Icon size={19} />
             <span>{t(key)}</span>

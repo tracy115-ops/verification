@@ -55,14 +55,16 @@ test('checks the saved model on request, invalidates success after edits and rep
     .filter({ hasText: 'claude / native' });
   await expect(check.getByRole('button', { name: '发送短测试' })).toBeDisabled();
   await page.getByRole('button', { name: '读取已有模型配置', exact: true }).click();
-  await expect(page.locator('.settings-model-hints')).toContainText('D:\\Claude Config\\settings.json');
+  await expect(page.locator('.settings-model-hints:visible')).toContainText(
+    'D:\\Claude Config\\settings.json',
+  );
   await page.getByRole('button', { name: '采用此模型', exact: true }).click();
   await expect(model.getByRole('textbox')).toHaveValue('fixture-model');
   await expect(check.getByRole('button', { name: '发送短测试' })).toBeDisabled();
   await page.getByLabel('要配置的 Agent').selectOption('codex-native');
   await page.getByLabel('要配置的 Agent').selectOption('claude-native');
   await expect(model.getByRole('textbox')).toHaveValue('fixture-model');
-  await expect(page.locator('.settings-agent-setup')).toHaveCount(1);
+  await expect(page.locator('.settings-agent-setup:visible')).toHaveCount(1);
   await model.getByRole('button', { name: '保存模型' }).click();
   await expect(check).toContainText('可能产生费用');
   await check.getByRole('button', { name: '发送短测试' }).click();
@@ -86,7 +88,7 @@ test('checks the saved model on request, invalidates success after edits and rep
       await page.evaluate((theme) => {
         document.documentElement.dataset.theme = theme;
       }, theme);
-      const setup = page.locator('.settings-agent-setup');
+      const setup = page.locator('.settings-agent-setup:visible');
       expect(await setup.evaluate((element) => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
       await setup.screenshot({ path: `.runtime/agent-setup-${width}-${theme}.png` });
     }

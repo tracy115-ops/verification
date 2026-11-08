@@ -19,8 +19,10 @@ export function ReviewDialog({
   const headingId = useId();
   const { t } = useI18n();
   useEffect(() => {
-    if (open) ref.current?.showModal();
-    else ref.current?.close();
+    const dialog = ref.current;
+    if (open) dialog?.showModal();
+    else dialog?.close();
+    return () => dialog?.close();
   }, [open]);
   return (
     <dialog

@@ -1,3 +1,4 @@
+import { RetainedView } from '../../shared/components/RetainedView';
 import { useState } from 'react';
 import type { AgentProfile } from '../../domain/workflow';
 import { useI18n } from '../../shared/i18n/context';
@@ -33,17 +34,18 @@ export function NativeModels({
           ))}
         </select>
       </label>
-      {profile && (
-        <NativeAgentSetup
-          key={profile.id}
-          profile={profile}
-          save={saveProfile}
-          model={drafts[profile.id]?.base === profile.model ? drafts[profile.id].value : profile.model}
-          changeModel={(value) =>
-            setDrafts((previous) => ({ ...previous, [profile.id]: { base: profile.model, value } }))
-          }
-        />
-      )}
+      {native.map((item) => (
+        <RetainedView key={item.id} active={item.id === profile?.id}>
+          <NativeAgentSetup
+            profile={item}
+            save={saveProfile}
+            model={drafts[item.id]?.base === item.model ? drafts[item.id].value : item.model}
+            changeModel={(value) =>
+              setDrafts((previous) => ({ ...previous, [item.id]: { base: item.model, value } }))
+            }
+          />
+        </RetainedView>
+      ))}
     </section>
   );
 }

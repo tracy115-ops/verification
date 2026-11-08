@@ -1,3 +1,4 @@
+import { RetainedView } from '../../shared/components/RetainedView';
 import { Moon, Sun } from 'lucide-react';
 import type { AgentProfile } from '../../domain/workflow';
 import type { Locale, MessageKey } from '../../shared/i18n/messages';
@@ -35,6 +36,7 @@ export function SettingsPage({
   appearance,
   frameworks,
   blocked = false,
+  active = true,
 }: {
   profiles: AgentProfile[];
   addProfile: (profile: AgentProfile) => void;
@@ -44,6 +46,7 @@ export function SettingsPage({
   appearance: Appearance;
   frameworks: Frameworks;
   blocked?: boolean;
+  active?: boolean;
 }) {
   const { t } = useI18n();
   return (
@@ -61,19 +64,17 @@ export function SettingsPage({
         ))}
       </nav>
       <div className="settings-content">
-        {tab === 'updates' ? (
-          <UpdateSettings blocked={blocked} />
-        ) : tab === 'data' ? (
-          <DataSettings blocked={blocked} />
-        ) : tab === 'logs' ? (
-          <LogSettings />
-        ) : tab === 'collaboration' ? (
-          <LanSettings notify={notify} />
-        ) : tab === 'frameworks' ? (
+        {active && tab === 'updates' && <UpdateSettings blocked={blocked} />}
+        {active && tab === 'data' && <DataSettings blocked={blocked} />}
+        {active && tab === 'logs' && <LogSettings />}
+        {active && tab === 'collaboration' && <LanSettings notify={notify} />}
+        <RetainedView active={active && tab === 'frameworks'}>
           <FrameworkSettings settings={frameworks} />
-        ) : tab === 'agents' ? (
+        </RetainedView>
+        <RetainedView active={active && tab === 'agents'}>
           <AgentSettings profiles={profiles} addProfile={addProfile} notify={notify} />
-        ) : (
+        </RetainedView>
+        {tab === 'general' && (
           <section className="settings-general">
             <h2>{t('generalSettings')}</h2>
             <p className="wb-muted">{t('preferencesHint')}</p>

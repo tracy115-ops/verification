@@ -56,7 +56,7 @@ test('makes selecting configuration precede testing and preserves it across relo
     await page.getByLabel('要配置的 Agent').selectOption('claude-native');
   };
   await open();
-  const setup = page.locator('.settings-agent-setup');
+  const setup = page.locator('.settings-agent-setup:visible');
   await expect(setup.locator('h4').first()).toHaveText('1. 选择 CLI 与配置来源');
   await expect(setup.locator('.settings-config-summary').first()).toContainText('未选择独立设置文件');
   const model = setup.locator('.settings-model-row');
@@ -92,7 +92,7 @@ test('makes selecting configuration precede testing and preserves it across relo
   }
   await page.getByLabel('要配置的 Agent').selectOption('codex-native');
   await page.locator('.settings-model-row').getByRole('textbox').fill('GPT-6.1 Terra');
-  await expect(page.locator('.settings-agent-setup')).toContainText('可能是界面显示名而非模型 ID');
+  await expect(page.locator('.settings-agent-setup:visible')).toContainText('可能是界面显示名而非模型 ID');
 });
 
 test('cancels a source-initiated check through the shared connection controls', async ({ page }) => {

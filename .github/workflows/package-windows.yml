@@ -106,7 +106,10 @@ jobs:
           }
 
       - name: Build release installer with bundled collaboration service
-        run: npm.cmd run package:windows -- -- --locked
+        run: |
+          node --test scripts/package-windows-contracts.mjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node scripts/package-windows.mjs
 
       - name: Build standalone native CLI diagnostic
         run: cargo build -p agent-runtime --example turn --release --locked

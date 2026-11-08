@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { RetainedView } from '../shared/components/RetainedView';
 import { useWorkbench } from './useWorkbench';
 import { useConversations } from './useConversations';
 import { useFrameworks } from './useFrameworks';
@@ -58,7 +59,6 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
     setPage('settings');
   }
   function navigate(next: Page) {
-    if (next === 'settings') setSettingsTab('general');
     setPage(next);
   }
   return (
@@ -75,8 +75,8 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
         <Notifications workbench={workbench} page={page} />
         <div className="app-content">
           <Suspense fallback={null}>
-            {page === 'team' &&
-              (hasDesktopBridge() ? (
+            <RetainedView active={page === 'team'}>
+              {hasDesktopBridge() ? (
                 <DesktopTeamWorkspace
                   openSettings={() => {
                     setSettingsTab('collaboration');
@@ -85,7 +85,8 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
                 />
               ) : (
                 <TeamWorkspace />
-              ))}
+              )}
+            </RetainedView>
             {page === 'sessions' && (
               <SessionWorkspace
                 actions={conversations}
@@ -98,7 +99,7 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
                 openAssets={(cases) => setPage(cases ? 'cases' : 'assets')}
               />
             )}
-            {page === 'workflow' && (
+            <RetainedView active={page === 'workflow'}>
               <WorkflowEditor
                 document={workbench.document}
                 selectedId={selectedId}
@@ -108,9 +109,10 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
                 openWorkspace={(id) => setPage(workspacePage(id))}
                 openAgents={openAgents}
               />
-            )}
-            {page === 'settings' && (
+            </RetainedView>
+            <RetainedView active={page === 'settings'}>
               <SettingsPage
+                active={page === 'settings'}
                 profiles={workbench.document.profiles}
                 addProfile={workbench.addProfile}
                 notify={workbench.setNotice}
@@ -120,18 +122,18 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
                 frameworks={frameworks}
                 blocked={conversations.anyBusy || workbench.dirty}
               />
-            )}
-            {(page === 'assets' || page === 'cases') && (
+            </RetainedView>
+            <RetainedView active={page === 'assets' || page === 'cases'}>
               <AssetsWorkspace
                 updateRun={conversations.busy ? undefined : conversations.updateRun}
-                key={`${page}:${conversations.activeId}:${conversations.selectedRunId}`}
+                key={`${conversations.activeId}:${conversations.selectedRunId || conversations.session?.runs.at(-1)?.id}`}
                 session={conversations.session}
                 openSession={() => setPage('sessions')}
                 initialView={page === 'cases' ? 'cases' : 'requirements'}
                 runId={conversations.selectedRunId || conversations.session?.runs.at(-1)?.id}
               />
-            )}
-            {page === 'runs' && (
+            </RetainedView>
+            <RetainedView active={page === 'runs'}>
               <RunRecords
                 actions={conversations}
                 openAssets={(id, runId) => {
@@ -145,7 +147,7 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
                   setPage('sessions');
                 }}
               />
-            )}
+            </RetainedView>
           </Suspense>
         </div>
       </main>

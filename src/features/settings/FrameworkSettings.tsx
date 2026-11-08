@@ -1,3 +1,4 @@
+import { RetainedView } from '../../shared/components/RetainedView';
 import { useState } from 'react';
 import type { Frameworks } from '../../app/useFrameworks';
 import type { FrameworkProfile } from '../../domain/execution/types';
@@ -8,7 +9,6 @@ import { useI18n, isMessageKey } from '../../shared/i18n/context';
 export function FrameworkSettings({ settings }: { settings: Frameworks }) {
   const { t } = useI18n();
   const [selected, setSelected] = useState(settings.profiles[0]?.id ?? '');
-  const profile = settings.profiles.find((item) => item.id === selected);
   const [fresh, setFresh] = useState<FrameworkProfile | null>(null);
   return (
     <section className="settings-frameworks">
@@ -22,9 +22,9 @@ export function FrameworkSettings({ settings }: { settings: Frameworks }) {
             value={selected}
             onChange={(event) => {
               setSelected(event.target.value);
-              setFresh(null);
             }}
           >
+            {fresh && <option value={fresh.id}>{fresh.name || t('newFramework')}</option>}
             {settings.profiles.map((item) => (
               <option key={item.id} value={item.id}>
                 {item.name}
@@ -35,10 +35,15 @@ export function FrameworkSettings({ settings }: { settings: Frameworks }) {
         <button
           className="workbench-btn"
           onClick={() => {
-            setSelected('');
+            if (fresh) {
+              setSelected(fresh.id);
+              return;
+            }
+            const id = `framework-${newId()}`;
+            setSelected(id);
             setFresh({
               ...exampleFramework(),
-              id: `framework-${newId()}`,
+              id,
               name: '',
               frameworkSource: '',
               targetUrl: 'http://127.0.0.1:4320',
@@ -47,26 +52,38 @@ export function FrameworkSettings({ settings }: { settings: Frameworks }) {
         >
           {t('newFramework')}
         </button>
+        {fresh?.id === selected && (
+          <button
+            className="workbench-btn wb-text"
+            onClick={() => {
+              setFresh(null);
+              setSelected(settings.profiles[0]?.id ?? '');
+            }}
+          >
+            {t('cancelAction')}
+          </button>
+        )}
       </div>
       {settings.error && (
         <p className="wb-error" role="alert">
           {isMessageKey(settings.error) ? t(settings.error) : t('execution_invalid')}
         </p>
       )}
-      {(fresh || profile) && (
-        <FrameworkForm
-          key={(fresh ?? profile)!.id}
-          initial={(fresh ?? profile)!}
-          save={(value) => {
-            if (settings.save(value)) {
-              setSelected(value.id);
-              setFresh(null);
-              return true;
-            }
-            return false;
-          }}
-        />
-      )}
+      {[...settings.profiles, ...(fresh ? [fresh] : [])].map((profile) => (
+        <RetainedView key={profile.id} active={profile.id === selected}>
+          <FrameworkForm
+            initial={profile}
+            save={(value) => {
+              if (settings.save(value)) {
+                setSelected(value.id);
+                setFresh(null);
+                return true;
+              }
+              return false;
+            }}
+          />
+        </RetainedView>
+      ))}
     </section>
   );
 }

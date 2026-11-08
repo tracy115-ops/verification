@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Artifact, ConversationSession, WorkflowRun } from '../../domain/runtime/types';
 import { isCases, isDesign, isRequirements } from '../../domain/runtime/artifacts';
 import { useI18n } from '../../shared/i18n/context';
@@ -28,6 +28,17 @@ export function AssetsWorkspace({
 }) {
   const { t } = useI18n();
   const [view, setView] = useState<View>(initialView);
+  const requestedView = useRef(initialView);
+  useEffect(() => {
+    if (requestedView.current === initialView) return;
+    requestedView.current = initialView;
+    if (initialView === 'cases') {
+      setView('cases');
+      setMatrix(false);
+      setSelected('');
+      setQuery('');
+    }
+  }, [initialView]);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState('');
   const [matrix, setMatrix] = useState(false);

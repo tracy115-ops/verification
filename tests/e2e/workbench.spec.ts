@@ -128,7 +128,7 @@ test('uses internal CodeAgent models and independently saves models for public C
   await expect(page.locator('.settings-cli')).toHaveCount(4);
   await page.getByLabel('要配置的 Agent').selectOption('codeagent-native');
   await expect(page.locator('.settings-native-models')).toContainText('模型由 CodeAgent 内部管理');
-  await expect(page.locator('.settings-agent-setup').getByRole('textbox')).toHaveCount(0);
+  await expect(page.locator('.settings-agent-setup:visible').getByRole('textbox')).toHaveCount(0);
   await page.getByLabel('要配置的 Agent').selectOption('codex-native');
   await page
     .getByRole('textbox', { name: '模型 ID · codex / native', exact: true })

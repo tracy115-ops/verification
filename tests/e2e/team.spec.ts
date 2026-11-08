@@ -46,6 +46,12 @@ test('creates a black-box topic, edits factors and shares assignments and review
   await page.getByLabel('原文引用', { exact: true }).fill('登录失败5次后账户锁定。');
   await expect(page.getByRole('button', { name: '测试因子', exact: true })).toBeDisabled();
   await expect(page.getByRole('button', { name: '更换项目', exact: true })).toBeDisabled();
+  await page.locator('.app-settings button').click();
+  await page.locator('.app-sidebar > nav').getByRole('button', { name: '项目协作', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '可观察预期与判定依据', exact: true })).toHaveValue(
+    '第五次登录失败后，下一次登录被拒绝。',
+  );
+  await expect(page.getByRole('button', { name: '测试因子', exact: true })).toBeDisabled();
   await page.getByRole('button', { name: '保存场景与分工', exact: true }).click();
   await expect(page.getByRole('button', { name: '接受场景设计', exact: true })).toBeEnabled();
   const context = await browser.newContext({ viewport: { width: 1500, height: 1000 } });
