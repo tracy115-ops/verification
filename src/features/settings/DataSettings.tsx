@@ -4,6 +4,7 @@ import { clearUpdateCache } from '../../services/system-api';
 import { hasDesktopBridge } from '../../services/agent-api';
 import { isMessageKey, useI18n } from '../../shared/i18n/context';
 import { ConfirmDialog } from './ConfirmDialog';
+import { ShadowDataSettings } from './ShadowDataSettings';
 export function DataSettings({ blocked }: { blocked: boolean }) {
   const { t, locale } = useI18n();
   const file = useRef<HTMLInputElement>(null);
@@ -78,6 +79,7 @@ export function DataSettings({ blocked }: { blocked: boolean }) {
       {pending && (
         <ConfirmDialog title={t('dataImport')} busy={busy} onCancel={() => setPending(null)}>
           <p>{t('dataConfirm')}</p>
+          {hasDesktopBridge() && <p className="wb-muted">{t('shadowRetentionHint')}</p>}
           <div className="settings-system-actions">
             <button className="workbench-btn" disabled={busy} onClick={() => setPending(null)}>
               {t('cancelAction')}
@@ -110,6 +112,7 @@ export function DataSettings({ blocked }: { blocked: boolean }) {
         {t('clearUpdateCache')}
       </button>
       {notice && <p role="status">{t('updateCacheCleared')}</p>}
+      <ShadowDataSettings blocked={busy || blocked} run={run} />
       {blocked && <p className="wb-muted">{t('dataBusy')}</p>}
       {busy && <p role="status">{t('dataWorking')}</p>}
       {error && (

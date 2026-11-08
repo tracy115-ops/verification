@@ -50,6 +50,9 @@ pub fn run() -> tauri::Result<()> {
             team_client::team_request,
             diagnostics::read_logs,
             diagnostics::clear_logs,
+            shadow_commands::personal_shadow_status,
+            shadow_commands::save_personal_shadow,
+            shadow_commands::export_personal_shadow,
             updater::update_status,
             updater::check_update,
             updater::download_update,
@@ -68,6 +71,8 @@ mod conversations;
 mod diagnostics;
 mod executions;
 mod lan_discovery;
+mod personal_shadow;
+mod shadow_commands;
 mod team_client;
 mod update_install;
 mod update_network;

@@ -6,6 +6,7 @@
 
 | 文档 | 解决的问题 |
 | --- | --- |
+| [个人数据影子迁移](adr/0004-personal-storage-shadow-migration.md) | SQLite 副本、完整性检查、恢复导出与主仓库切换门槛 |
 | [TestAgent 产品审查与实施计划](roadmap/testagent-product-plan-2026-11.md) | 当前不合理之处、补齐特性、优先级、版本阶段与可验证交付条件 |
 | [0.9.0 发布说明](releases/0.9.0.md) | 首次/继续分析预算、运行能力提示、主动 CLI 连通检查与验收边界 |
 | [Agent 配置步骤](workflows/agent-setup.md) | CodeAgent 内置模型、其他 CLI 模型 ID、实例选择与测试结果说明 |

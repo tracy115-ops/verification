@@ -399,3 +399,21 @@
   flex-wrap: wrap;
   gap: 10px;
 }
+.settings-shadow {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--wb-border);
+}
+.settings-shadow-summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px 16px;
+  font-size: 12px;
+}
+.settings-shadow-summary dt {
+  color: var(--wb-muted);
+}
+.settings-shadow-summary dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
