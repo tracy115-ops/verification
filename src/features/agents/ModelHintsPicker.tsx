@@ -16,12 +16,13 @@ export function ModelHintsPicker({
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const generation = useRef(0);
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    // Activity reactivates effects after navigation; an invalidated read is no longer busy.
+    setBusy(false);
+    return () => {
       generation.current++;
-    },
-    [],
-  );
+    };
+  }, []);
   if (!['codex', 'claude'].includes(profile.driver)) return null;
   async function read() {
     const token = ++generation.current;

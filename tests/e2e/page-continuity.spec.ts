@@ -2,6 +2,56 @@ import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { zh } from '../../src/shared/i18n/messages';
 
+test('releases a hidden model scan and ignores its late response after a new scan', async ({ page }) => {
+  await page.addInitScript(() => {
+    let calls = 0;
+    Object.assign(globalThis, {
+      isTauri: true,
+      __TAURI_INTERNALS__: {
+        transformCallback: () => 1,
+        unregisterCallback: () => {},
+        invoke: async (command: string) => {
+          if (command === 'read_cli_model_hints') {
+            calls++;
+            if (calls === 1)
+              return new Promise((resolve) =>
+                window.addEventListener(
+                  'finish-old-model-scan',
+                  () =>
+                    resolve({
+                      status: 'found',
+                      candidates: [{ model: 'stale-source-model', source: 'old settings' }],
+                    }),
+                  { once: true },
+                ),
+              );
+            return {
+              status: 'found',
+              candidates: [{ model: 'current-source-model', source: 'current settings' }],
+            };
+          }
+          throw new Error('offline_fixture');
+        },
+      },
+    });
+  });
+  await page.goto('/');
+  await page.locator('.app-settings button').click();
+  await page.locator('.settings-navigation').getByRole('button', { name: zh.agents, exact: true }).click();
+  const read = page.getByRole('button', { name: zh.cliModelRead, exact: true });
+  await read.click();
+  await expect(page.locator('.settings-model-hints:visible button').first()).toBeDisabled();
+  await page.locator('.app-sidebar > nav').getByRole('button', { name: zh.sessions, exact: true }).click();
+  await page.locator('.app-settings button').click();
+  await expect(read).toBeEnabled();
+  await read.click();
+  const hints = page.locator('.settings-model-hints:visible');
+  await expect(hints).toContainText('current-source-model');
+  await page.evaluate(() => window.dispatchEvent(new Event('finish-old-model-scan')));
+  await expect(hints).not.toContainText('stale-source-model');
+  await expect(hints).toContainText('current-source-model');
+});
+
 test('keeps settings section and independent Agent/framework drafts across navigation', async ({ page }) => {
   await page.goto('/');
   const settings = page.locator('.app-settings button');

@@ -45,6 +45,7 @@ test('checks page continuity and native settings in an isolated actual Release W
     await go(zh.sessions);
     await page.locator('.app-settings button').click();
     await expect(name).toHaveValue('Unsaved native draft');
+    let observedVersion = '';
     for (const label of [
       zh.agents,
       zh.lan_settings,
@@ -56,6 +57,11 @@ test('checks page continuity and native settings in an isolated actual Release W
       await tabs.getByRole('button', { name: label, exact: true }).click();
       await expect(page.locator('.settings-content')).toBeVisible();
       await expect(page.getByRole('alertdialog')).toHaveCount(0);
+      if (label === zh.systemUpdates) {
+        observedVersion = (await page.locator('.settings-version-row strong').textContent())!;
+        if (process.env.DESKTOP_AUDIT_VERSION)
+          expect(observedVersion).toBe(process.env.DESKTOP_AUDIT_VERSION);
+      }
     }
     await go(zh.team);
     await expect(page.locator('.team-workspace, .lan-discovery')).toBeVisible();
@@ -64,6 +70,7 @@ test('checks page continuity and native settings in an isolated actual Release W
       path.join(output, 'summary.json'),
       JSON.stringify(
         {
+          version: observedVersion,
           originalIpc: true,
           importedHistoricalDesign: true,
           freshModelCall: false,
