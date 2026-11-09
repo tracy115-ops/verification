@@ -415,3 +415,36 @@
     max-height: 38vh;
   }
 }
+.design-quality {
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+.design-quality summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.design-quality-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+}
+.design-quality-findings {
+  max-height: 280px;
+  overflow: auto;
+  list-style: none;
+  padding: 0;
+}
+.design-quality-findings li {
+  display: grid;
+  gap: 4px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--wb-border);
+  overflow-wrap: anywhere;
+}
+.design-quality-findings .workbench-btn {
+  white-space: normal;
+  text-align: start;
+  justify-content: flex-start;
+}

@@ -3,6 +3,7 @@ import { coverageMatrix } from '../../domain/runtime/coverage-matrix';
 import type { WorkflowRun } from '../../domain/runtime/types';
 import { useI18n } from '../../shared/i18n/context';
 import type { AssetView } from './AssetsWorkspace';
+import { DesignQuality } from './DesignQuality';
 
 export function CoverageMatrix({
   run,
@@ -21,6 +22,7 @@ export function CoverageMatrix({
   );
   return (
     <section className="coverage-matrix" aria-label={t('matrixTitle')}>
+      <DesignQuality run={run} navigate={navigate} />
       <div className="coverage-matrix-toolbar">
         <input
           className="workbench-input"

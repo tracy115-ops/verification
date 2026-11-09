@@ -5,6 +5,7 @@ import { Status } from '../shared/components/Status';
 import type { Page } from './navigation';
 import type { useWorkbench } from './useWorkbench';
 import { Toast } from '../shared/components/Toast';
+import { WorkflowLibrary } from '../features/workflows/WorkflowLibrary';
 
 type WorkbenchState = ReturnType<typeof useWorkbench>;
 
@@ -34,6 +35,7 @@ export function PageHeading({ page, workbench }: { page: Page; workbench: Workbe
       </div>
       {page === 'workflow' && (
         <div className="app-page-actions">
+          <WorkflowLibrary workbench={workbench} />
           <Status tone={workbench.dirty ? 'warning' : 'neutral'}>
             {t(workbench.dirty ? 'dirty' : 'draft')}
           </Status>

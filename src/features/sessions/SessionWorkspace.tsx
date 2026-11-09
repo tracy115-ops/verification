@@ -13,6 +13,7 @@ export function SessionWorkspace({
   actions,
   profiles,
   saved,
+  workflows,
   dirty,
   openWorkflow,
   openSettings,
@@ -22,6 +23,7 @@ export function SessionWorkspace({
   actions: Conversations;
   profiles: AgentProfile[];
   saved: WorkbenchDocument | null;
+  workflows?: WorkbenchDocument[];
   dirty: boolean;
   openWorkflow: () => void;
   openSettings: () => void;
@@ -37,6 +39,7 @@ export function SessionWorkspace({
       actions={actions}
       profiles={profiles}
       saved={saved}
+      workflows={workflows}
       dirty={dirty}
       openWorkflow={openWorkflow}
       openSettings={openSettings}

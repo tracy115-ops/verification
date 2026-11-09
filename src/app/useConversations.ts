@@ -1,6 +1,6 @@
 ﻿import { useState } from 'react';
 import { useSessionTasks } from './useSessionTasks';
-import { advanceRun, retryRun } from '../domain/runtime/engine';
+import { advanceRun } from '../domain/runtime/engine';
 import { createRun } from '../domain/runtime/plan';
 import { chatRequest, createSession, message, replyMessage, workflowCommand } from '../domain/runtime/chat';
 import type { AgentPort, ConversationSession, WorkflowRun } from '../domain/runtime/types';
@@ -14,14 +14,16 @@ import { runReviewActions } from './run-review-actions';
 import { recordedAgent } from '../services/recorded-agent';
 import { transcriptStore } from '../services/transcript-store';
 import type { ChatContextMode } from '../domain/runtime/chat-context';
-import { recoverRequirementDraft } from '../services/requirement-recovery';
+import { runRetryAction } from './run-retry-action';
 import { designProposalActions } from './design-proposal-actions';
+import { invokedWorkflow } from '../domain/runtime/workflow-selection';
 
 export function useConversations(
   profiles: AgentProfile[],
   saved: WorkbenchDocument | null,
   providedPort?: AgentPort,
   providedExecutionPort?: ExecutionPort,
+  workflows?: WorkbenchDocument[],
 ) {
   const store = useConversationStore();
   const [nativePort] = useState(() => new DesktopAgentPort());
@@ -32,6 +34,9 @@ export function useConversations(
   const tasks = useSessionTasks(store.activeId);
   const { perform } = tasks;
   const { session, changeSession, updateRun, setError } = store;
+  const selectedWorkflow = session?.draft?.workflowId
+    ? (workflows?.find((item) => item.definition.id === session.draft?.workflowId) ?? null)
+    : saved;
   async function drive(run: WorkflowRun, controller: AbortController) {
     let current = run;
     await advanceRun(
@@ -73,7 +78,8 @@ export function useConversations(
     await perform(async (controller) => {
       if (current.activeTurnId) throw new Error('previous_turn_active');
       const profile = profiles.find((item) => item.id === profileId);
-      const command = workflowCommand(text, saved?.definition.id);
+      const workflow = invokedWorkflow(text, selectedWorkflow, workflows);
+      const command = workflowCommand(text, workflow?.definition.id);
       const value: ConversationSession = {
         ...current,
         profileId,
@@ -82,11 +88,11 @@ export function useConversations(
       };
       if (!profile) throw new Error('profile_missing');
       if (invoke || command.invoke) {
-        if (!saved) throw new Error('workflow_not_saved');
+        if (!workflow) throw new Error('workflow_not_saved');
         if (current.runs.some((run) => ['ready', 'running', 'awaiting_review'].includes(run.status)))
           throw new Error('run_in_progress');
         const run = createRun(
-          saved,
+          workflow,
           value.id,
           command.spec,
           profiles,
@@ -122,36 +128,6 @@ export function useConversations(
     }, current.id);
     return accepted;
   }
-  async function retry(
-    run: WorkflowRun,
-    forceBatchAnalysis = false,
-    analysisTimeoutSeconds?: number,
-    analysisBatchBudget?: number,
-  ) {
-    await perform(async (controller) => {
-      const current = store.getSession(run.sessionId);
-      if (current?.runs.find((item) => item.id === run.id) !== run) throw new Error('approval_stale');
-      if (
-        current.runs.some(
-          (other) => other.id !== run.id && ['ready', 'running', 'awaiting_review'].includes(other.status),
-        )
-      )
-        throw new Error('run_in_progress');
-      const previous = run.plan
-        .map((node) => run.steps[node.id])
-        .find((step) => ['failed', 'interrupted'].includes(step.status));
-      if (previous?.turnId) await port.cancel(previous.turnId);
-      if (previous?.executionId) await executionPort.cancel(previous.executionId);
-      const recovered = await recoverRequirementDraft(run);
-      if (controller.signal.aborted) throw new Error('execution_cancelled');
-      if (store.getSession(run.sessionId)?.runs.find((item) => item.id === run.id) !== run)
-        throw new Error('approval_stale');
-      await drive(
-        retryRun(recovered, forceBatchAnalysis, analysisTimeoutSeconds, analysisBatchBudget),
-        controller,
-      );
-    }, run.sessionId);
-  }
   async function stopRecovered() {
     if (!session?.activeTurnId) return;
     await perform(async () => {
@@ -180,6 +156,7 @@ export function useConversations(
     if (run && run.status === 'awaiting_review') updateRun(run.sessionId, { ...run, status: 'cancelled' });
   }
   return {
+    selectedWorkflow,
     ...store,
     ...designProposalActions(store, tasks, port, profiles),
     setActiveId: selectSession,
@@ -191,7 +168,7 @@ export function useConversations(
     isSessionBusy: tasks.isSessionBusy,
     send,
     newSession,
-    retry,
+    retry: runRetryAction(store, perform, port, executionPort, drive),
     cancel,
     stopRecovered,
     closeExecution,

@@ -1,7 +1,7 @@
 import { validateBackup, restorePersonalData, type PersonalBackup } from './personal-backup';
 import { createPersonalShadow } from './personal-shadow';
 import { CONVERSATIONS_KEY, decodeConversations } from './conversation-repository';
-import { DOCUMENT_KEY } from './repository';
+import { DOCUMENT_KEY, decodeWorkflowLibrary } from './repository';
 import { FRAMEWORKS_KEY } from './framework-repository';
 
 export function summarizeBackup(backup: PersonalBackup) {
@@ -10,7 +10,9 @@ export function summarizeBackup(backup: PersonalBackup) {
     sessions: sessions.length,
     runs: sessions.reduce((count, session) => count + session.runs.length, 0),
     transcripts: backup.transcripts.length,
-    workflow: !!backup.storage[DOCUMENT_KEY],
+    workflow: backup.storage[DOCUMENT_KEY]
+      ? decodeWorkflowLibrary(JSON.parse(backup.storage[DOCUMENT_KEY]!)).documents.length > 0
+      : false,
     frameworks: (JSON.parse(backup.storage[FRAMEWORKS_KEY] || '[]') as unknown[]).length,
   };
 }

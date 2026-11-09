@@ -78,6 +78,23 @@ export function selectRunPlan(snapshot: WorkbenchDocument, execution: boolean) {
     for (const parent of node.dependsOn) select(parent);
   }
   select(terminal.id);
+  // Custom reviews attached to the chosen design path must remain visible even
+  // when they are placed after the standard case-review terminal.
+  let expanded = true;
+  while (expanded) {
+    expanded = false;
+    for (const node of snapshot.definition.nodes) {
+      if (
+        node.operation === 'review.custom' &&
+        !selected.has(node.id) &&
+        node.dependsOn.length > 0 &&
+        node.dependsOn.every((id) => selected.has(id))
+      ) {
+        selected.add(node.id);
+        expanded = true;
+      }
+    }
+  }
   const plan = snapshot.definition.nodes.filter((node) => execution || selected.has(node.id));
   const supported = new Set(execution ? [...designOperations, ...executionOperations] : designOperations);
   if (plan.some((node) => !supported.has(node.operation))) throw new Error('unsupported_workflow');

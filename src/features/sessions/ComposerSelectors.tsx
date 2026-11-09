@@ -8,6 +8,7 @@ export function ComposerSelectors({
   draft,
   profiles,
   saved,
+  workflows,
   frameworks,
   canPropose,
   change,
@@ -15,6 +16,7 @@ export function ComposerSelectors({
   draft: ComposerDraft;
   profiles: AgentProfile[];
   saved: WorkbenchDocument | null;
+  workflows?: WorkbenchDocument[];
   frameworks: FrameworkProfile[];
   canPropose: boolean;
   change: (patch: Partial<ComposerDraft>) => void;
@@ -48,7 +50,15 @@ export function ComposerSelectors({
           className="workbench-select"
           value={draft.editDesign ? 'design' : draft.invoke ? 'workflow' : 'chat'}
           onChange={(event) =>
-            change({ invoke: event.target.value === 'workflow', editDesign: event.target.value === 'design' })
+            change({
+              invoke: !['chat', 'design'].includes(event.target.value),
+              editDesign: event.target.value === 'design',
+              ...(!['chat', 'design'].includes(event.target.value)
+                ? {
+                    workflowId: event.target.value === 'workflow' ? saved?.definition.id : event.target.value,
+                  }
+                : {}),
+            })
           }
         >
           <option value="chat">{t('chatMode')}</option>
@@ -60,6 +70,13 @@ export function ComposerSelectors({
           <option value="workflow" disabled={!saved}>
             {saved ? `${saved.definition.name} · r${saved.revision}` : t('noSavedWorkflow')}
           </option>
+          {(workflows ?? [])
+            .filter((item) => item.definition.id !== saved?.definition.id)
+            .map((item) => (
+              <option key={item.definition.id} value={item.definition.id}>
+                {item.definition.name} · r{item.revision}
+              </option>
+            ))}
         </select>
       </label>
       {draft.invoke && !draft.editDesign && (

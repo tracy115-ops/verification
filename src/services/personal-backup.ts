@@ -1,7 +1,6 @@
 import { decodeConversations, CONVERSATIONS_KEY } from './conversation-repository';
-import { DOCUMENT_KEY } from './repository';
+import { DOCUMENT_KEY, decodeWorkflowLibrary } from './repository';
 import { FRAMEWORKS_KEY, loadFrameworks } from './framework-repository';
-import { decodeDocument } from '../domain/document';
 import { isCliTurnRecord, type CliTurnRecord } from '../domain/runtime/transcript';
 import { IndexedDbTranscripts } from './transcript-repository';
 import { transcriptStore } from './transcript-store';
@@ -39,7 +38,7 @@ export function validateBackup(input: unknown): PersonalBackup {
       throw new Error('data_backup_invalid');
   const getItem = (key: string) => value.storage![key] ?? null;
   const sessions = decodeConversations(JSON.parse(getItem(CONVERSATIONS_KEY) ?? '[]'));
-  if (getItem(DOCUMENT_KEY)) decodeDocument(JSON.parse(getItem(DOCUMENT_KEY)!));
+  if (getItem(DOCUMENT_KEY)) decodeWorkflowLibrary(JSON.parse(getItem(DOCUMENT_KEY)!));
   loadFrameworks({ getItem });
   if (
     value.transcripts.length > 2000 ||

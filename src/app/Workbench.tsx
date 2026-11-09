@@ -44,7 +44,13 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
   const [reviewDrafts, setReviewDrafts] = useState(false);
   const workbench = useWorkbench();
   const frameworks = useFrameworks();
-  const conversations = useConversations(workbench.document.profiles, workbench.savedDocument);
+  const conversations = useConversations(
+    workbench.document.profiles,
+    workbench.savedDocument,
+    undefined,
+    undefined,
+    workbench.library,
+  );
   const [page, setPage] = useState<Page>(() =>
     document.documentElement.dataset.workspace === 'team' ? 'team' : 'sessions',
   );
@@ -120,7 +126,8 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
               <SessionWorkspace
                 actions={conversations}
                 profiles={workbench.document.profiles}
-                saved={workbench.savedDocument}
+                saved={conversations.selectedWorkflow}
+                workflows={workbench.library}
                 dirty={workbench.dirty}
                 frameworks={frameworks.profiles}
                 openWorkflow={() => setPage('workflow')}

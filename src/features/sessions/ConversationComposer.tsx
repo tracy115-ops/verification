@@ -11,11 +11,13 @@ import { ComposerInput } from './ComposerInput';
 import { ComposerSelectors } from './ComposerSelectors';
 import { prepareInvocation } from '../../domain/runtime/preparation';
 import { InvocationPreparation } from './InvocationPreparation';
+import { invokedWorkflow } from '../../domain/runtime/workflow-selection';
 
 export function ConversationComposer({
   actions,
   profiles,
   saved,
+  workflows,
   dirty,
   openWorkflow,
   openSettings,
@@ -24,6 +26,7 @@ export function ConversationComposer({
   actions: Conversations;
   profiles: AgentProfile[];
   saved: WorkbenchDocument | null;
+  workflows?: WorkbenchDocument[];
   dirty: boolean;
   openWorkflow: () => void;
   openSettings: () => void;
@@ -33,7 +36,8 @@ export function ConversationComposer({
   const fallbackProfile = actions.session?.profileId ?? profiles[0]?.id ?? '';
   const draft = actions.session?.draft ?? emptyComposerDraft(fallbackProfile);
   const { text, invoke, profileId, frameworkId, useNodeBindings, contextMode } = draft;
-  const preparation = prepareInvocation(draft, saved, profiles, frameworks);
+  const invoked = invokedWorkflow(text, saved, workflows);
+  const preparation = prepareInvocation(draft, invoked, profiles, frameworks);
   const changeDraft = (patch: Partial<ComposerDraft>) => actions.updateComposerDraft(patch, fallbackProfile);
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
   const file = useRef<HTMLInputElement>(null);
@@ -91,6 +95,7 @@ export function ConversationComposer({
         draft={draft}
         profiles={profiles}
         saved={saved}
+        workflows={workflows}
         frameworks={frameworks}
         canPropose={!!canPropose}
         change={changeDraft}
@@ -129,7 +134,7 @@ export function ConversationComposer({
       />
       <InvocationPreparation
         preparation={preparation}
-        saved={saved}
+        saved={invoked}
         openSettings={openSettings}
         openWorkflow={openWorkflow}
       />
