@@ -14,7 +14,6 @@ export function NativeModels({
   const { t } = useI18n();
   const native = profiles.filter((profile) => profile.protocol === 'native');
   const [selected, setSelected] = useState(native[0]?.id ?? '');
-  const [drafts, setDrafts] = useState<Record<string, { base: string; value: string }>>({});
   const profile = native.find((item) => item.id === selected) ?? native[0];
   return (
     <section className="settings-native-models">
@@ -36,14 +35,7 @@ export function NativeModels({
       </label>
       {native.map((item) => (
         <RetainedView key={item.id} active={item.id === profile?.id}>
-          <NativeAgentSetup
-            profile={item}
-            save={saveProfile}
-            model={drafts[item.id]?.base === item.model ? drafts[item.id].value : item.model}
-            changeModel={(value) =>
-              setDrafts((previous) => ({ ...previous, [item.id]: { base: item.model, value } }))
-            }
-          />
+          <NativeAgentSetup profile={item} save={saveProfile} open={() => setSelected(item.id)} />
         </RetainedView>
       ))}
     </section>

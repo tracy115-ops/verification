@@ -1,3 +1,6 @@
+import { useRef } from 'react';
+import { useProtectedDraft } from '../../shared/drafts/context';
+import { DraftActions } from '../settings/DraftActions';
 import type { AgentProfile } from '../../domain/workflow';
 import { useI18n } from '../../shared/i18n/context';
 import { NativeLaunchEditor } from './NativeLaunchEditor';
@@ -10,17 +13,29 @@ import { useAgentConnection } from './useAgentConnection';
 export function NativeAgentSetup({
   profile,
   save,
-  model,
-  changeModel,
+  open,
 }: {
   profile: AgentProfile;
-  save: (profile: AgentProfile) => void;
-  model: string;
-  changeModel: (model: string) => void;
+  save: (profile: AgentProfile) => boolean | void;
+  open?: () => void;
 }) {
   const { t } = useI18n();
   const internal = profile.driver === 'codeagent';
-  const dirty = !internal && model.trim() !== profile.model;
+  const input = useRef<HTMLInputElement>(null);
+  const draft = useProtectedDraft({
+    id: `agent-model:${profile.id}`,
+    initial: profile.model,
+    section: 'agents',
+    title: profile.name,
+    label: 'model',
+    open: () => {
+      open?.();
+      requestAnimationFrame(() => input.current?.focus());
+    },
+  });
+  const model = draft.value;
+  const changeModel = draft.change;
+  const dirty = !internal && draft.dirty;
   const connection = useAgentConnection(profile);
   return (
     <article className="settings-agent-setup" aria-label={profile.name}>
@@ -39,7 +54,7 @@ export function NativeAgentSetup({
             blocked={dirty || !profile.model.trim()}
           />
         )}
-        <NativeLaunchEditor key={`launch-${JSON.stringify(profile)}`} profile={profile} save={save} />
+        <NativeLaunchEditor profile={profile} save={save} open={open} />
       </section>
       <section>
         <h4>{t('agentSetupModelStep')}</h4>
@@ -57,12 +72,14 @@ export function NativeAgentSetup({
             className="settings-model-row"
             onSubmit={(event) => {
               event.preventDefault();
-              if (model.trim()) save({ ...profile, model: model.trim() });
+              if (model.trim() && !draft.conflicted && save({ ...profile, model: model.trim() }) !== false)
+                draft.reset();
             }}
           >
             <label className="wb-field">
               {t('model')} · {profile.name}
               <input
+                ref={input}
                 className="workbench-input"
                 aria-label={`${t('model')} · ${profile.name}`}
                 value={model}
@@ -76,16 +93,12 @@ export function NativeAgentSetup({
                 <small className="wb-error">{t('agentModelDisplayNameWarning')}</small>
               )}
             </label>
-            <button className="workbench-btn" disabled={!model.trim()}>
+            <button className="workbench-btn" disabled={!model.trim() || draft.conflicted}>
               {t('saveModel')}
             </button>
           </form>
         )}
-        {dirty && (
-          <p role="status" className="wb-muted">
-            {t('agentSetupUnsaved')}
-          </p>
-        )}
+        <DraftActions dirty={dirty} reset={draft.reset} conflicted={draft.conflicted} />
       </section>
       <section>
         <h4>{t('agentSetupTestStep')}</h4>

@@ -93,6 +93,7 @@ test('keeps settings section and independent Agent/framework drafts across navig
   await page.getByRole('button', { name: zh.cancelAction, exact: true }).click();
   await expect(name).toHaveValue('Unsaved original framework');
   await expect(picker.locator(`option[value="${freshProfile}"]`)).toHaveCount(0);
+  page.once('dialog', (dialog) => dialog.accept());
   await page.reload();
   await settings.click();
   await tabs.getByRole('button', { name: zh.frameworkSettings, exact: true }).click();

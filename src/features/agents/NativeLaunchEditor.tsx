@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useRef } from 'react';
+import { useProtectedDraft } from '../../shared/drafts/context';
+import { DraftActions } from '../settings/DraftActions';
 import type { AgentProfile } from '../../domain/workflow';
 import { validCliLaunch } from '../../domain/cli-launch';
 import { useI18n } from '../../shared/i18n/context';
@@ -9,14 +11,38 @@ import { ClaudeSettingsFile } from './ClaudeSettingsFile';
 export function NativeLaunchEditor({
   profile,
   save,
+  open,
 }: {
   profile: AgentProfile;
-  save: (profile: AgentProfile) => void;
+  save: (profile: AgentProfile) => boolean | void;
+  open?: () => void;
 }) {
   const { t } = useI18n();
-  const [executable, setExecutable] = useState(profile.launch?.executablePath ?? '');
-  const [directory, setDirectory] = useState(profile.launch?.configDirectory ?? '');
-  const [settingsFile, setSettingsFile] = useState(profile.launch?.settingsFile ?? '');
+  const details = useRef<HTMLDetailsElement>(null);
+  const draft = useProtectedDraft({
+    id: `agent-launch:${profile.id}`,
+    section: 'agents',
+    title: profile.name,
+    label: 'cliInstance',
+    open: () => {
+      open?.();
+      requestAnimationFrame(() => {
+        if (details.current) {
+          details.current.open = true;
+          details.current.querySelector('select')?.focus();
+        }
+      });
+    },
+    initial: {
+      executable: profile.launch?.executablePath ?? '',
+      directory: profile.launch?.configDirectory ?? '',
+      settingsFile: profile.launch?.settingsFile ?? '',
+    },
+  });
+  const { executable, directory, settingsFile } = draft.value;
+  const setExecutable = (executable: string) => draft.change((value) => ({ ...value, executable }));
+  const setDirectory = (directory: string) => draft.change((value) => ({ ...value, directory }));
+  const setSettingsFile = (settingsFile: string) => draft.change((value) => ({ ...value, settingsFile }));
   const chooser = useCliInstances(profile.driver);
   const desktop = hasDesktopBridge();
   const choices = chooser.instances.map((item) => item.executablePath);
@@ -28,6 +54,7 @@ export function NativeLaunchEditor({
   };
   return (
     <details
+      ref={details}
       className="settings-native-instance"
       onToggle={(event) => {
         if (event.currentTarget.open && desktop && !chooser.scanned && !chooser.busy && !chooser.error)
@@ -42,11 +69,11 @@ export function NativeLaunchEditor({
         className="settings-instance-form"
         onSubmit={(event) => {
           event.preventDefault();
-          if (!validCliLaunch(launch, profile.driver)) return;
+          if (draft.conflicted || !validCliLaunch(launch, profile.driver)) return;
           const next = { ...profile };
           if (Object.keys(launch).length) next.launch = launch;
           else delete next.launch;
-          save(next);
+          if (save(next) !== false) draft.reset();
         }}
       >
         <div className="settings-instance-choice">
@@ -142,9 +169,13 @@ export function NativeLaunchEditor({
             </label>
           )}
         </details>
-        <button className="workbench-btn" disabled={chooser.busy || !validCliLaunch(launch, profile.driver)}>
+        <button
+          className="workbench-btn"
+          disabled={chooser.busy || draft.conflicted || !validCliLaunch(launch, profile.driver)}
+        >
           {t('saveCliInstance')}
         </button>
+        <DraftActions dirty={draft.dirty} reset={draft.reset} conflicted={draft.conflicted} />
       </form>
     </details>
   );

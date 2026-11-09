@@ -1,0 +1,18 @@
+{
+  "version": "0.11.0",
+  "originalIpc": true,
+  "originalNativeWindowClose": true,
+  "hiddenDraftBlockedClose": true,
+  "cancelKeptWindowOpen": true,
+  "exactDraftReturnedWithFocus": true,
+  "explicitConfirmationClosedWindow": true,
+  "freshModelCall": false,
+  "locales": [
+    "zh-CN",
+    "en-US"
+  ],
+  "themes": [
+    "light",
+    "dark"
+  ]
+}

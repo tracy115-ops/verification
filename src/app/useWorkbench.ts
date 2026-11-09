@@ -76,8 +76,10 @@ export function useWorkbench() {
       saveProfiles(localStorage, profiles);
       setDocument((current) => ({ ...current, profiles }));
       setNotice('settingsSaved');
+      return true;
     } catch {
       setNotice('settingsSaveFailed');
+      return false;
     }
   }
   function importDraft(text: string) {

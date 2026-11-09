@@ -1,4 +1,5 @@
-﻿import { I18nContext } from '../shared/i18n/context';
+import { DraftProvider } from '../shared/drafts/context';
+import { I18nContext } from '../shared/i18n/context';
 import { useAppearance } from './useAppearance';
 import { Workbench } from './Workbench';
 
@@ -6,7 +7,9 @@ export function App() {
   const appearance = useAppearance();
   return (
     <I18nContext.Provider value={appearance.locale}>
-      <Workbench appearance={appearance} />
+      <DraftProvider>
+        <Workbench appearance={appearance} />
+      </DraftProvider>
     </I18nContext.Provider>
   );
 }

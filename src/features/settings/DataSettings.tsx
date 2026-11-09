@@ -1,3 +1,4 @@
+import { useDraftStore } from '../../shared/drafts/context';
 import { useEffect, useRef, useState } from 'react';
 import * as backup from '../../services/personal-backup';
 import { clearUpdateCache } from '../../services/system-api';
@@ -8,6 +9,7 @@ import { ShadowDataSettings } from './ShadowDataSettings';
 import { ShadowRestoreDialog, type ShadowRestorePreview } from './ShadowRestoreDialog';
 import { restoreWithSafetyCopy } from '../../services/restore-preparation';
 export function DataSettings({ blocked }: { blocked: boolean }) {
+  const drafts = useDraftStore();
   const { t, locale } = useI18n();
   const file = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -108,6 +110,8 @@ export function DataSettings({ blocked }: { blocked: boolean }) {
               disabled={busy || blocked}
               onClick={() =>
                 void run(async () => {
+                  if (!active.current || !allowed.current || drafts?.count())
+                    throw new Error('data_restore_blocked');
                   await backup.restorePersonalData(pending);
                   location.reload();
                 })
@@ -154,7 +158,7 @@ export function DataSettings({ blocked }: { blocked: boolean }) {
               try {
                 await restoreWithSafetyCopy(
                   shadowRestore.backup,
-                  () => active.current && allowed.current,
+                  () => active.current && allowed.current && !drafts?.count(),
                   setRestoreStage,
                 );
               } catch (error) {

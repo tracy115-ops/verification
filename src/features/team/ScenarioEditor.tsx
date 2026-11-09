@@ -1,4 +1,5 @@
-﻿import { useEffect, useState } from 'react';
+﻿import { useEffect } from 'react';
+import { useProtectedDraft } from '../../shared/drafts/context';
 import type { TeamActions } from './useTeam';
 import type { TeamScenario } from '../../domain/team/types';
 import { useI18n } from '../../shared/i18n/context';
@@ -26,34 +27,26 @@ export function ScenarioEditor({
 }) {
   const { t } = useI18n();
   const project = actions.project!;
-  const [draft, setDraft] = useState(() => initialDraft(scenario));
-  const [dirty, setDirty] = useState(false);
-  const [baseRevision, setBaseRevision] = useState(project.revision);
+  const pending = useProtectedDraft({
+    id: `team:${actions.api.serverUrl || location.origin}:${project.id}:${scenario.id}`,
+    section: 'team',
+    title: `${project.title} / ${scenario.title}`,
+    initial: { draft: initialDraft(scenario), revision: project.revision },
+  });
+  const { draft, revision: baseRevision } = pending.value;
+  const dirty = pending.dirty;
   const editable = ['admin', 'editor'].includes(actions.member?.role ?? '');
-  useEffect(() => {
-    if (!dirty) {
-      setDraft(initialDraft(scenario));
-      setBaseRevision(project.revision);
-    }
-  }, [project.revision, scenario, dirty]);
   useEffect(() => {
     onDirty(dirty);
     return () => onDirty(false);
   }, [dirty, onDirty]);
-  useEffect(() => {
-    const warn = (event: BeforeUnloadEvent) => {
-      if (dirty) event.preventDefault();
-    };
-    window.addEventListener('beforeunload', warn);
-    return () => window.removeEventListener('beforeunload', warn);
-  }, [dirty]);
   function change(patch: Partial<typeof draft>) {
-    setDraft((value) => ({ ...value, ...patch }));
-    setDirty(true);
+    pending.change((value) => ({ ...value, draft: { ...value.draft, ...patch } }));
   }
   async function save() {
-    if (await actions.command({ type: 'edit_scenario', scenarioId: scenario.id, ...draft }, baseRevision))
-      setDirty(false);
+    await pending.persist(() =>
+      actions.command({ type: 'edit_scenario', scenarioId: scenario.id, ...draft }, baseRevision),
+    );
   }
   return (
     <section className="team-scenario-editor" aria-label={t('team_scenario_details')}>
@@ -70,7 +63,7 @@ export function ScenarioEditor({
       <FactorValues actions={actions} draft={draft} change={change} editable={editable && !actions.busy} />
       {editable && (
         <div className="team-actions">
-          <button className="workbench-btn" disabled={!dirty || actions.busy} onClick={() => setDirty(false)}>
+          <button className="workbench-btn" disabled={!dirty || actions.busy} onClick={pending.reset}>
             {t('team_discard_draft')}
           </button>
           <button

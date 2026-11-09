@@ -1,3 +1,4 @@
+import { useDraftCount } from '../../shared/drafts/context';
 import { RetainedView } from '../../shared/components/RetainedView';
 import { Moon, Sun } from 'lucide-react';
 import type { AgentProfile } from '../../domain/workflow';
@@ -37,6 +38,7 @@ export function SettingsPage({
   frameworks,
   blocked = false,
   active = true,
+  reviewDrafts,
 }: {
   profiles: AgentProfile[];
   addProfile: (profile: AgentProfile) => void;
@@ -47,8 +49,10 @@ export function SettingsPage({
   frameworks: Frameworks;
   blocked?: boolean;
   active?: boolean;
+  reviewDrafts?: () => void;
 }) {
   const { t } = useI18n();
+  const draftCount = useDraftCount();
   return (
     <div className="settings-page">
       <nav className="settings-navigation" aria-label={t('settings')}>
@@ -64,6 +68,15 @@ export function SettingsPage({
         ))}
       </nav>
       <div className="settings-content">
+        {draftCount > 0 && (tab === 'data' || tab === 'updates') && (
+          <div className="settings-draft-warning" role="status">
+            <span>{t('draftScopeHint')}</span>
+            <button className="workbench-btn" onClick={reviewDrafts}>
+              {t('draftReview')}
+            </button>
+          </div>
+        )}
+
         {active && tab === 'updates' && <UpdateSettings blocked={blocked} />}
         {active && tab === 'data' && <DataSettings blocked={blocked} />}
         {active && tab === 'logs' && <LogSettings />}

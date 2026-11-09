@@ -3,6 +3,31 @@
   margin: auto;
   padding: 28px;
 }
+.settings-draft-actions,
+.settings-draft-warning {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+.settings-draft-warning {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--wb-border);
+}
+.settings-pending-drafts {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.settings-pending-drafts li {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--wb-border);
+  overflow-wrap: anywhere;
+}
 .settings-shell > h2 {
   margin: 28px 0 15px;
   font-size: 16px;

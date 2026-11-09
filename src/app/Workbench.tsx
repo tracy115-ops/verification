@@ -1,3 +1,7 @@
+import { useDraftCount, useDraftStore } from '../shared/drafts/context';
+import { useWindowProtection } from './useWindowProtection';
+import { PendingDrafts } from '../features/settings/PendingDrafts';
+import { useI18n } from '../shared/i18n/context';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { RetainedView } from '../shared/components/RetainedView';
 import { useWorkbench } from './useWorkbench';
@@ -34,6 +38,10 @@ const DesktopTeamWorkspace = lazy(() =>
 );
 
 export function Workbench({ appearance }: { appearance: Appearance }) {
+  const { t } = useI18n();
+  const drafts = useDraftStore();
+  const draftCount = useDraftCount();
+  const [reviewDrafts, setReviewDrafts] = useState(false);
   const workbench = useWorkbench();
   const frameworks = useFrameworks();
   const conversations = useConversations(workbench.document.profiles, workbench.savedDocument);
@@ -47,13 +55,7 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
   }, [page, workbench.setNotice]);
   const [settingsTab, setSettingsTab] = useState<SettingsTab>('general');
   const [selectedId, setSelectedId] = useState('design_scenarios');
-  useEffect(() => {
-    const warn = (event: BeforeUnloadEvent) => {
-      if (workbench.dirty || conversations.anyBusy) event.preventDefault();
-    };
-    window.addEventListener('beforeunload', warn);
-    return () => window.removeEventListener('beforeunload', warn);
-  }, [workbench.dirty, conversations.anyBusy]);
+  const protection = useWindowProtection(() => !!drafts?.count() || workbench.dirty || conversations.anyBusy);
   function openAgents() {
     setSettingsTab('agents');
     setPage('settings');
@@ -64,7 +66,34 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
   return (
     <div className="app-shell">
       <Sidebar page={page} setPage={navigate} conversations={conversations} />
-      <main className="app-main">
+      <main className="app-main" data-close-protection={protection.ready ? 'ready' : 'pending'}>
+        {protection.unavailable && (
+          <p className="wb-error" role="status">
+            {t('draftProtectionFailed')}
+          </p>
+        )}
+        {(reviewDrafts || protection.closing) && (
+          <PendingDrafts
+            close={() => {
+              setReviewDrafts(false);
+              protection.dismiss();
+            }}
+            closing={protection.closing}
+            quit={() => void protection.close()}
+            workflowDirty={workbench.dirty}
+            running={conversations.anyBusy}
+            error={protection.error}
+            openWorkflow={() => setPage('workflow')}
+            navigate={(section) => {
+              if (section === 'team') setPage('team');
+              else {
+                setSettingsTab(section);
+                setPage('settings');
+              }
+            }}
+          />
+        )}
+
         {page !== 'assets' && page !== 'cases' && <Titlebar page={page} busy={conversations.busy} />}
         {page !== 'sessions' &&
           page !== 'assets' &&
@@ -120,7 +149,8 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
                 setTab={setSettingsTab}
                 appearance={appearance}
                 frameworks={frameworks}
-                blocked={conversations.anyBusy || workbench.dirty}
+                blocked={conversations.anyBusy || workbench.dirty || draftCount > 0}
+                reviewDrafts={() => setReviewDrafts(true)}
               />
             </RetainedView>
             <RetainedView active={page === 'assets' || page === 'cases'}>

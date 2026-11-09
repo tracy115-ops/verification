@@ -1,3 +1,4 @@
+import { useDraftStore } from '../../shared/drafts/context';
 import { useEffect, useRef, useState } from 'react';
 import { version } from '../../../package.json';
 import { hasDesktopBridge } from '../../services/agent-api';
@@ -6,6 +7,7 @@ import { installWithRecovery } from '../../services/update-preparation';
 
 type Busy = 'check' | 'download' | 'backup' | 'install' | null;
 export function useUpdateSettings(blocked: boolean) {
+  const drafts = useDraftStore();
   const [status, setStatus] = useState<api.UpdateStatus>({
     currentVersion: version,
     supported: false,
@@ -46,7 +48,7 @@ export function useUpdateSettings(blocked: boolean) {
     void api.cancelUpdate().catch(() => {});
   }
   async function perform(kind: 'check' | 'download' | 'install') {
-    if (running.current || (kind === 'install' && !allowed.current)) return;
+    if (running.current || (kind === 'install' && (!allowed.current || !!drafts?.count()))) return;
     running.current = true;
     setError('');
     setBackupFailed(false);
@@ -60,7 +62,7 @@ export function useUpdateSettings(blocked: boolean) {
         preparation.current = controller;
         await installWithRecovery(
           controller.signal,
-          () => active.current && allowed.current,
+          () => active.current && allowed.current && !drafts?.count(),
           (value) => {
             stage = value;
             if (active.current) setBusy(value);

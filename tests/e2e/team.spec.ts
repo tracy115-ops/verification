@@ -47,6 +47,15 @@ test('creates a black-box topic, edits factors and shares assignments and review
   await expect(page.getByRole('button', { name: '测试因子', exact: true })).toBeDisabled();
   await expect(page.getByRole('button', { name: '更换项目', exact: true })).toBeDisabled();
   await page.locator('.app-settings button').click();
+  expect(
+    await page.evaluate(() => {
+      const event = new Event('beforeunload', { cancelable: true });
+      window.dispatchEvent(event);
+      return event.defaultPrevented;
+    }),
+  ).toBe(true);
+  await page.locator('.settings-navigation').getByRole('button', { name: '数据管理', exact: true }).click();
+  await expect(page.getByRole('button', { name: '清空个人数据', exact: true })).toBeDisabled();
   await page.locator('.app-sidebar > nav').getByRole('button', { name: '项目协作', exact: true }).click();
   await expect(page.getByRole('textbox', { name: '可观察预期与判定依据', exact: true })).toHaveValue(
     '第五次登录失败后，下一次登录被拒绝。',

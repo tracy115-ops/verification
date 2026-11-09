@@ -1,5 +1,7 @@
 import { RetainedView } from '../../shared/components/RetainedView';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { useDraftStore, useProtectedDraft } from '../../shared/drafts/context';
+import { DraftActions } from './DraftActions';
 import type { Frameworks } from '../../app/useFrameworks';
 import type { FrameworkProfile } from '../../domain/execution/types';
 import { exampleFramework } from '../../domain/execution/presets';
@@ -8,6 +10,7 @@ import { useI18n, isMessageKey } from '../../shared/i18n/context';
 
 export function FrameworkSettings({ settings }: { settings: Frameworks }) {
   const { t } = useI18n();
+  const store = useDraftStore();
   const [selected, setSelected] = useState(settings.profiles[0]?.id ?? '');
   const [fresh, setFresh] = useState<FrameworkProfile | null>(null);
   return (
@@ -56,6 +59,7 @@ export function FrameworkSettings({ settings }: { settings: Frameworks }) {
           <button
             className="workbench-btn wb-text"
             onClick={() => {
+              if (fresh) store?.discard(`framework:${fresh.id}`);
               setFresh(null);
               setSelected(settings.profiles[0]?.id ?? '');
             }}
@@ -73,6 +77,7 @@ export function FrameworkSettings({ settings }: { settings: Frameworks }) {
         <RetainedView key={profile.id} active={profile.id === selected}>
           <FrameworkForm
             initial={profile}
+            open={() => setSelected(profile.id)}
             save={(value) => {
               if (settings.save(value)) {
                 setSelected(value.id);
@@ -90,34 +95,67 @@ export function FrameworkSettings({ settings }: { settings: Frameworks }) {
 function FrameworkForm({
   initial,
   save,
+  open,
 }: {
   initial: FrameworkProfile;
+  open: () => void;
   save: (value: FrameworkProfile) => boolean;
 }) {
   const { t } = useI18n();
-  const [value, setValue] = useState(initial);
+  const input = useRef<HTMLInputElement>(null);
+  const draft = useProtectedDraft({
+    id: `framework:${initial.id}`,
+    section: 'frameworks',
+    title: initial.name,
+    label: initial.name ? 'frameworkSettings' : 'newFramework',
+    open: () => {
+      open();
+      requestAnimationFrame(() => input.current?.focus());
+    },
+    initial: { value: initial, reading: false },
+  });
+  const { value, reading } = draft.value;
+  const generation = useRef(0);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState(false);
   function change(patch: Partial<FrameworkProfile>) {
-    setValue((current) => ({ ...current, ...patch }));
+    draft.change((current) => ({ ...current, value: { ...current.value, ...patch } }));
     setSaved(false);
   }
   async function read(file?: File) {
     if (!file) return;
+    const token = ++generation.current;
+    const originalSource = value.frameworkSource;
+    draft.change((current) => ({ ...current, reading: true }));
     try {
       if (file.size > 60000) throw new Error('too_large');
-      change({ frameworkSource: await file.text() });
+      const source = await file.text();
+      if (token !== generation.current || draft.current()?.reading === false) return;
+      if (!draft.current()) return;
+      if (draft.current()?.value.frameworkSource !== originalSource) {
+        draft.change((current) => ({ ...current, reading: false }));
+        return;
+      }
+      draft.change((current) => ({ reading: false, value: { ...current.value, frameworkSource: source } }));
+      setSaved(false);
       setError(false);
     } catch {
-      setError(true);
+      if (token === generation.current && draft.current()?.reading) {
+        draft.change((current) => ({ ...current, reading: false }));
+        setError(true);
+      }
     }
   }
+
   return (
     <form
       className="settings-framework-form"
       onSubmit={(event) => {
         event.preventDefault();
-        setSaved(save(value));
+        if (reading || draft.conflicted) return;
+        const success = save(value);
+        setSaved(success);
+        if (success) draft.reset();
       }}
     >
       <div className="settings-fields">
@@ -127,6 +165,7 @@ function FrameworkForm({
             className="workbench-input"
             required
             maxLength={200}
+            ref={input}
             value={value.name}
             onChange={(event) => change({ name: event.target.value })}
           />
@@ -197,9 +236,10 @@ function FrameworkForm({
       </label>
       <p className="wb-banner">{t('trustedFrameworkHint')}</p>
       {error && <p className="wb-error">{t('framework_read_failed')}</p>}
-      <button className="workbench-btn wb-primary" type="submit">
+      <button className="workbench-btn wb-primary" type="submit" disabled={reading || draft.conflicted}>
         {t('saveFramework')}
       </button>
+      <DraftActions dirty={draft.dirty} reset={draft.reset} conflicted={draft.conflicted} />
       {saved && <p role="status">{t('settingsSaved')}</p>}
     </form>
   );

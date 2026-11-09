@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useProtectedDraft } from '../../shared/drafts/context';
+import { DraftActions } from '../settings/DraftActions';
+import { useRef, useState } from 'react';
 import { newId } from '../../shared/id';
 import { Plus } from 'lucide-react';
 import { profileIsCompatible, type AgentProfile, type DriverId, type Protocol } from '../../domain/workflow';
@@ -12,10 +14,11 @@ const protocolOptions: Record<DriverId, Protocol[]> = {
   pi: ['native', 'openai-responses', 'anthropic-messages', 'openai-completions'],
 };
 
-export function ProfileForm({ addProfile }: { addProfile: (profile: AgentProfile) => void }) {
+export function ProfileForm({ addProfile }: { addProfile: (profile: AgentProfile) => boolean | void }) {
   const { t } = useI18n();
   const [error, setError] = useState(false);
-  const [profile, setProfile] = useState<AgentProfile>({
+  const input = useRef<HTMLInputElement>(null);
+  const [initial, setInitial] = useState<AgentProfile>(() => ({
     id: `agent-${newId()}`,
     name: '',
     driver: 'codex',
@@ -23,7 +26,16 @@ export function ProfileForm({ addProfile }: { addProfile: (profile: AgentProfile
     baseUrl: '',
     model: '',
     credentialRef: '',
+  }));
+  const draft = useProtectedDraft({
+    id: 'agent-new',
+    section: 'agents',
+    title: '',
+    label: 'addProfile',
+    initial,
   });
+  const profile = draft.value;
+  const setProfile = draft.change;
   function changeDriver(value: string) {
     if (value !== 'codeagent' && value !== 'claude' && value !== 'codex' && value !== 'pi') return;
     setProfile({
@@ -48,9 +60,10 @@ export function ProfileForm({ addProfile }: { addProfile: (profile: AgentProfile
       setError(true);
       return;
     }
-    addProfile(profile);
+    if (addProfile(profile) === false) return;
+    draft.reset();
     setError(false);
-    setProfile({ ...profile, id: `agent-${newId()}`, name: '' });
+    setInitial({ ...profile, id: `agent-${newId()}`, name: '' });
   }
   return (
     <form className="settings-profile-form" onSubmit={submit}>
@@ -65,6 +78,7 @@ export function ProfileForm({ addProfile }: { addProfile: (profile: AgentProfile
           <input
             className="workbench-input"
             required
+            ref={input}
             value={profile.name}
             onChange={(event) => setProfile({ ...profile, name: event.target.value })}
           />
@@ -136,6 +150,7 @@ export function ProfileForm({ addProfile }: { addProfile: (profile: AgentProfile
           {t('invalidProfile')}
         </p>
       )}
+      <DraftActions dirty={draft.dirty} reset={draft.reset} />
       <button className="workbench-btn wb-primary" type="submit">
         <Plus size={15} />
         {t('addProfile')}

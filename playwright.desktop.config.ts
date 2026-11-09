@@ -8,6 +8,7 @@ export default defineConfig({
     '**/desktop-source.spec.ts',
     '**/desktop-shadow.spec.ts',
     '**/desktop-navigation.spec.ts',
+    '**/desktop-close.spec.ts',
   ],
   timeout: 1_800_000,
   retries: 0,

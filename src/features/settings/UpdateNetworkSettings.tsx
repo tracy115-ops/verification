@@ -1,3 +1,5 @@
+import { useProtectedDraft } from '../../shared/drafts/context';
+import { DraftActions } from './DraftActions';
 import { useEffect, useState } from 'react';
 import * as api from '../../services/system-api';
 import { hasDesktopBridge } from '../../services/agent-api';
@@ -8,7 +10,15 @@ export function UpdateNetworkSettings({ disabled }: { disabled: boolean }) {
     config: { mode: 'system', address: '' },
     source: 'unknown',
   });
-  const [config, setConfig] = useState(info.config);
+  const draft = useProtectedDraft({
+    id: 'update-network',
+    section: 'updates',
+    title: '',
+    label: 'updateNetworkSettings',
+    initial: info.config,
+  });
+  const config = draft.value;
+  const setConfig = draft.change;
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -19,7 +29,6 @@ export function UpdateNetworkSettings({ disabled }: { disabled: boolean }) {
         .then((value) => {
           if (active) {
             setInfo(value);
-            setConfig(value.config);
           }
         })
         .catch(() => {});
@@ -31,7 +40,10 @@ export function UpdateNetworkSettings({ disabled }: { disabled: boolean }) {
     setBusy(true);
     setError('');
     try {
-      setInfo(await api.saveUpdateNetwork(config));
+      if (draft.conflicted) return;
+      await draft.persist(async () => {
+        setInfo(await api.saveUpdateNetwork(config));
+      });
     } catch (error) {
       setError(typeof error === 'string' ? error : 'update_proxy_failed');
     } finally {
@@ -78,11 +90,17 @@ export function UpdateNetworkSettings({ disabled }: { disabled: boolean }) {
         )}
         <button
           className="workbench-btn"
-          disabled={disabled || busy || !hasDesktopBridge()}
+          disabled={disabled || busy || draft.conflicted || !hasDesktopBridge()}
           onClick={() => void save()}
         >
           {t('updateProxySave')}
         </button>
+        <DraftActions
+          dirty={draft.dirty}
+          reset={draft.reset}
+          conflicted={draft.conflicted}
+          busy={draft.saving}
+        />
         {error && (
           <p className="wb-error" role="alert">
             {isMessageKey(error) ? t(error) : t('update_proxy_failed')}
