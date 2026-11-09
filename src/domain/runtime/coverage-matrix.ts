@@ -1,6 +1,7 @@
 import { isCases, isDesign, isRequirements } from './artifacts';
 import { personalCoverage } from './case-coverage';
 import type { WorkflowRun } from './types';
+import { scopedCases } from './case-scope';
 
 export function coverageMatrix(run: WorkflowRun) {
   const artifacts = Object.values(run.artifacts);
@@ -9,7 +10,9 @@ export function coverageMatrix(run: WorkflowRun) {
       ?.value;
   const baseline = pick('RequirementBaseline', 'RequirementBaselineDraft');
   const design = pick('TestDesign', 'TestDesignDraft');
-  const cases = pick('TestCaseSet', 'TestCaseSetDraft');
+  const rawCases = pick('TestCaseSet', 'TestCaseSetDraft');
+  const casesGenerated = isCases(rawCases);
+  const cases = isCases(rawCases) ? scopedCases(run, rawCases) : rawCases;
   return (isRequirements(baseline) ? baseline.requirements : []).map((requirement) => {
     const factors = isDesign(design)
       ? (design.factors ?? []).filter((item) => item.requirementIds.includes(requirement.id))
@@ -49,6 +52,7 @@ export function coverageMatrix(run: WorkflowRun) {
       notRun,
       skipped,
       gap,
+      casesGenerated,
     };
   });
 }

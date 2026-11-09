@@ -13,6 +13,7 @@ import { ClarificationReview, SavedClarifications } from './ClarificationReview'
 import { CaseScopeReview } from './CaseScopeReview';
 import { AnalysisBudgetSummary } from './AnalysisBudgetSummary';
 import { DESIGN_ATTEMPT_BATCH_LIMIT } from '../../domain/runtime/analysis-budget';
+import { DesignRepairButton } from '../reviews/DesignRepairButton';
 
 export function RunReview({
   run,
@@ -132,6 +133,9 @@ export function RunReview({
                     </>
                   )}
                 </>
+              )}
+              {pending.operation === 'review.coverage' && (
+                <DesignRepairButton run={run} actions={actions} onPrepared={() => setReviewOpen(false)} />
               )}
               {reviewArtifact && <ArtifactPanel artifact={reviewArtifact} />}
               {pending.operation === 'review.cases' && (

@@ -85,3 +85,29 @@ it('separates indirect scenario links and does not require a standalone factor f
     expect(unrelated.passed).toBe(0);
   }
 });
+
+it('does not count excluded draft cases or imply measured execution before cases exist', () => {
+  const run = fixtureRun();
+  run.artifacts = {
+    requirements: { type: 'RequirementBaseline', value: requirements, digest: 'r' },
+    design: { type: 'TestDesign', value: design, digest: 'd' },
+  };
+  expect(coverageMatrix(run)[0]).toMatchObject({ casesGenerated: false, passed: 0 });
+  run.artifacts.cases = { type: 'TestCaseSetDraft', value: cases, digest: 'c' };
+  const review = run.plan.find((node) => node.operation === 'review.cases')!;
+  run.reviewExclusions = [
+    {
+      nodeId: review.id,
+      issue: `case:${cases.cases[0].id}`,
+      reason: 'Deferred with approval',
+      recordedAt: new Date().toISOString(),
+    },
+  ];
+  expect(coverageMatrix(run)[0]).toMatchObject({
+    casesGenerated: true,
+    cases: [],
+    passed: 0,
+    mapped: 0,
+    gap: true,
+  });
+});

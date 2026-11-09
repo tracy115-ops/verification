@@ -430,6 +430,23 @@
   flex-wrap: wrap;
   gap: 12px 24px;
 }
+.design-quality-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.design-quality-filters [aria-pressed='true'] {
+  border-color: var(--wb-accent);
+  background: var(--wb-accent-soft);
+  color: var(--wb-accent);
+}
+.design-repair-action {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  margin: 12px 0;
+}
 .design-quality-findings {
   max-height: 280px;
   overflow: auto;

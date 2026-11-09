@@ -131,5 +131,35 @@ export function designProposalActions(store: Store, tasks: Tasks, port: AgentPor
       }));
     }, selected.sessionId);
   }
-  return { proposeDesign, decideDesignProposal };
+  function prepareDesignRepair(run: WorkflowRun, instruction: string) {
+    const session = store.getSession(run.sessionId);
+    const current = session?.runs.find((item) => item.id === run.id);
+    if (
+      !session ||
+      current !== run ||
+      ['ready', 'running'].includes(run.status) ||
+      tasks.isSessionBusy(session.id) ||
+      session.activeTurnId
+    )
+      return false;
+    const draft = store.getComposerDraft(session.id);
+    const text = draft?.text.trim()
+      ? draft.text.endsWith(instruction)
+        ? draft.text
+        : `${draft.text}\n\n${instruction}`
+      : instruction;
+    if (text.length > 40000) {
+      store.setError('prompt_too_large');
+      return false;
+    }
+    const id = store.updateComposerDraft(
+      { text, invoke: false, editDesign: true },
+      session.profileId,
+      session.id,
+    );
+    if (!id) return false;
+    store.setActiveId(id);
+    return true;
+  }
+  return { proposeDesign, decideDesignProposal, prepareDesignRepair };
 }

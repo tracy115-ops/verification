@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { coverageMatrix } from '../../domain/runtime/coverage-matrix';
 import type { WorkflowRun } from '../../domain/runtime/types';
 import { useI18n } from '../../shared/i18n/context';
@@ -8,11 +9,15 @@ import { DesignQuality } from './DesignQuality';
 export function CoverageMatrix({
   run,
   navigate,
+  repair,
 }: {
   run: WorkflowRun;
   navigate: (view: AssetView, id: string) => void;
+  repair?: ReactNode;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const number = new Intl.NumberFormat(locale);
+  const ratio = (value: number, total: number) => `${number.format(value)} / ${number.format(total)}`;
   const [query, setQuery] = useState('');
   const [gapsOnly, setGapsOnly] = useState(false);
   const rows = coverageMatrix(run).filter(
@@ -22,7 +27,7 @@ export function CoverageMatrix({
   );
   return (
     <section className="coverage-matrix" aria-label={t('matrixTitle')}>
-      <DesignQuality run={run} navigate={navigate} />
+      <DesignQuality run={run} navigate={navigate} repair={repair} />
       <div className="coverage-matrix-toolbar">
         <input
           className="workbench-input"
@@ -85,7 +90,13 @@ export function CoverageMatrix({
                       </div>
                     ) : (
                       <span className="wb-muted">
-                        {t(kind === 'factors' ? 'matrixNoFactor' : 'matrixMissing')}
+                        {t(
+                          kind === 'factors'
+                            ? 'matrixNoFactor'
+                            : kind === 'cases' && !row.casesGenerated
+                              ? 'qualityPending'
+                              : 'matrixMissing',
+                        )}
                       </span>
                     )}
                     {kind === 'cases' && row.indirectCases.length > 0 && (
@@ -106,16 +117,18 @@ export function CoverageMatrix({
                     )}
                   </td>
                 ))}
+                <td>{row.cases.length ? ratio(row.declared, row.cases.length) : '—'}</td>
+                <td>{row.cases.length ? ratio(row.mapped, row.cases.length) : '—'}</td>
                 <td>
-                  {row.declared} / {row.cases.length}
-                </td>
-                <td>
-                  {row.mapped} / {row.cases.length}
-                </td>
-                <td>
-                  <span>
-                    {t('matrixPassed')}: {row.passed} / {row.cases.length}
-                  </span>
+                  {row.cases.length ? (
+                    <span>
+                      {t('matrixPassed')}: {ratio(row.passed, row.cases.length)}
+                    </span>
+                  ) : (
+                    <span className="wb-muted">
+                      {t(row.casesGenerated ? 'matrixNoLinkedCases' : 'qualityPending')}
+                    </span>
+                  )}
                   {row.failed > 0 && (
                     <p className="wb-error">
                       {t('matrixFailed')}: {row.failed}

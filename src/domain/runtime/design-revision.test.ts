@@ -99,3 +99,24 @@ it('rejects invalid references, running edits and duplicate factor IDs without c
   ).rejects.toThrow('artifact_invalid');
   expect(run).toEqual(snapshot);
 });
+
+it('invalidates every descendant after imported nodes are reordered, preserving only the history and upstream approval', async () => {
+  const initial = await completed();
+  initial.plan.reverse();
+  const oldCases = latestArtifact(initial, 'TestCaseSet');
+  const next = await reviseDesign(
+    initial,
+    { ...design, strategy: 'Reordered design' },
+    'Correct missing boundary',
+  );
+  expect(oldCases).toBeDefined();
+  expect(latestArtifact(next, 'TestCaseSet')).toBeUndefined();
+  expect(latestArtifact(next, 'TestCaseSetDraft')).toBeUndefined();
+  expect(next.approvals).toHaveLength(1);
+  expect(next.artifacts['history.design.1'].value).toMatchObject({
+    artifacts: initial.artifacts,
+    approvals: initial.approvals,
+  });
+  for (const node of next.plan.filter((node) => ['cases.generate', 'review.cases'].includes(node.operation)))
+    expect(next.steps[node.id]).toEqual({ status: 'pending', attempts: 0 });
+});

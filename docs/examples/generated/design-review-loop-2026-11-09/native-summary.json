@@ -1,0 +1,11 @@
+{
+  "version": "0.13.0",
+  "originalIpc": true,
+  "historicalFixture": true,
+  "injectedMissingLink": true,
+  "freshModelCall": false,
+  "originalDraftRetained": true,
+  "manuallyRepaired": true,
+  "reorderedDescendantsInvalidated": true,
+  "unhandledErrors": []
+}

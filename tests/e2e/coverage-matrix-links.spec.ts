@@ -74,7 +74,8 @@ test('shows indirect cases without counting them as direct requirement coverage'
   await expect(direct).toContainText('未关联独立因子');
   await expect(direct).toContainText('未运行: 1');
   await expect(indirect).toContainText('经场景间接关联（不计入统计） · 1');
-  await expect(indirect).toContainText('通过: 0 / 0');
+  await expect(indirect).toContainText('暂无可统计用例');
+  await expect(indirect).not.toContainText('通过: 0 / 0');
   await indirect.locator('summary').click();
   await indirect.getByRole('button', { name: 'C1', exact: true }).click();
   await expect(page.locator('.assets-detail')).toContainText('Only R1 is directly mapped');

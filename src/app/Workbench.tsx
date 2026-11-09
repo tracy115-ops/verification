@@ -162,6 +162,7 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
             </RetainedView>
             <RetainedView active={page === 'assets' || page === 'cases'}>
               <AssetsWorkspace
+                actions={conversations}
                 updateRun={conversations.busy ? undefined : conversations.updateRun}
                 key={`${conversations.activeId}:${conversations.selectedRunId || conversations.session?.runs.at(-1)?.id}`}
                 session={conversations.session}

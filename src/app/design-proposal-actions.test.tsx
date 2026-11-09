@@ -14,6 +14,54 @@ import { digest } from '../domain/runtime/plan';
 
 beforeEach(() => localStorage.clear());
 afterEach(cleanup);
+
+it('prepares focused design repair without sending, overwriting existing text or accepting stale task state', async () => {
+  const app = await setup({
+    cancel: async () => {},
+    send: async () => {
+      throw new Error('No model call expected');
+    },
+  });
+  const run = app.result.current.session!.runs[0];
+  act(() =>
+    app.result.current.updateComposerDraft(
+      { text: '保留已有备注', profileId: 'codeagent-native' },
+      'codeagent-native',
+    ),
+  );
+  act(() => {
+    expect(app.result.current.prepareDesignRepair(run, '补齐边界场景')).toBe(true);
+  });
+  const draft = app.result.current.session!.draft!;
+  expect(draft).toMatchObject({
+    text: '保留已有备注\n\n补齐边界场景',
+    editDesign: true,
+    invoke: false,
+    profileId: 'codeagent-native',
+  });
+  expect(app.result.current.session!.messages).toEqual([]);
+  act(() => {
+    expect(app.result.current.prepareDesignRepair(run, '补齐边界场景')).toBe(true);
+  });
+  expect(app.result.current.session!.draft!.text).toBe(draft.text);
+  act(() => app.result.current.updateRun(run.sessionId, { ...run, errorCode: 'newer_state' }));
+  act(() => {
+    expect(app.result.current.prepareDesignRepair(run, '过期请求')).toBe(false);
+  });
+  expect(app.result.current.session!.draft!.text).toBe(draft.text);
+});
+
+it('keeps a full composer draft when focused repair would exceed the input limit', async () => {
+  const app = await setup();
+  const run = app.result.current.session!.runs[0];
+  const text = 'x'.repeat(39999);
+  act(() => app.result.current.updateComposerDraft({ text }, 'codeagent-native'));
+  act(() => {
+    expect(app.result.current.prepareDesignRepair(run, 'overflow')).toBe(false);
+  });
+  expect(app.result.current.session!.draft!.text).toBe(text);
+  expect(app.result.current.error).toBe('prompt_too_large');
+});
 async function setup(port?: AgentPort) {
   const run = await completedProposalRun();
   localStorage.setItem(

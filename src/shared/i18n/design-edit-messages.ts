@@ -13,7 +13,7 @@ export const designEditZh = {
   designSave: '保存并重新评审',
   designRevisionHint:
     '保存后重新评审场景覆盖。原有用例、脚本、审批和执行结果将归档，不再作为当前版本的覆盖证据。',
-  designInvalid: '请补全字段；检查 ID、需求关联、原文引用及因子水平映射。最多保留 10 次设计修订。',
+  designInvalid: '请补全字段；检查 ID、需求关联、原文引用及因子水平映射。',
   designNoLevel: '不关联',
   agentApi: 'Agent 接口接入',
   agentApiHint:
@@ -34,8 +34,7 @@ export const designEditEn = {
   designSave: 'Save for review',
   designRevisionHint:
     'Saving reopens coverage review. Existing cases, scripts, approvals and execution results are archived and no longer count as current coverage evidence.',
-  designInvalid:
-    'Complete all fields; check IDs, requirement links, exact quotes and factor mappings. At most 10 design revisions are retained.',
+  designInvalid: 'Complete all fields; check IDs, requirement links, exact quotes and factor mappings.',
   designNoLevel: 'Unlinked',
   agentApi: 'Agent API integration',
   agentApiHint:

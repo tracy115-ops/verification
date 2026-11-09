@@ -4,6 +4,8 @@ import { reviewDigest } from './approvals';
 import { digest } from './plan';
 import type { DesignArtifact, WorkflowRun } from './types';
 import { pauseForReview } from './deadline';
+import { descendants } from './descendants';
+import { isDesignProposal } from './design-proposal-schema';
 
 /** Reopen the coverage gate; never reuse downstream approvals or execution evidence. */
 export async function reviseDesign(
@@ -21,8 +23,7 @@ export async function reviseDesign(
     throw new Error('approval_invalid');
   const revisions = Object.values(initial.artifacts).filter((item) => item.type === 'DesignRevision');
   const run = structuredClone(initial);
-  const affected = new Set([review.id]);
-  for (const node of run.plan) if (node.dependsOn.some((id) => affected.has(id))) affected.add(node.id);
+  const affected = descendants(run.plan, [review.id]);
   const archive = {
     version: 1,
     source: attribution ? 'agent_approved' : 'human',
@@ -43,6 +44,16 @@ export async function reviseDesign(
     value: archive,
     digest: await digest(archive),
   };
+  for (const [key, artifact] of Object.entries(run.artifacts)) {
+    if (
+      artifact.type !== 'DesignChangeProposal' ||
+      !isDesignProposal(artifact.value) ||
+      artifact.value.status !== 'pending'
+    )
+      continue;
+    const value = { ...artifact.value, status: 'stale', decidedAt: archive.at };
+    run.artifacts[key] = { ...artifact, value, digest: await digest(value) };
+  }
   for (const node of run.plan) {
     if (!affected.has(node.id)) continue;
     run.steps[node.id] = { status: 'pending', attempts: 0 };

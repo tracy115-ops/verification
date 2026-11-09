@@ -128,3 +128,16 @@ it('allows repeated manual revisions and resets an expired resumed deadline for 
   expect(run.resumedAt).toBeUndefined();
   expect(runDeadline(run)).toBeGreaterThan(Date.now());
 });
+
+it('marks pending proposals stale after manual revision and preserves their original status in history', async () => {
+  const run = await completedProposalRun();
+  const proposal = await createDesignProposal(run, addedScenarioPatch, '补充设计', crypto.randomUUID());
+  const key = `proposal.design.${proposal.id}`;
+  run.artifacts[key] = { type: 'DesignChangeProposal', value: proposal, digest: 'previous' };
+  const next = await reviseDesign(run, { ...design, strategy: 'A revised strategy' }, 'Human clarification');
+  expect(next.artifacts[key].value).toMatchObject({ status: 'stale', decidedAt: next.createdAt });
+  expect(next.artifacts[key].digest).not.toBe('previous');
+  expect(next.artifacts['history.design.1'].value).toMatchObject({
+    artifacts: { [key]: { value: { status: 'pending' } } },
+  });
+});

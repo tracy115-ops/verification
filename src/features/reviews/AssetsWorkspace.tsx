@@ -10,6 +10,8 @@ import { RunContributionExport } from './RunContributionExport';
 import { personalCoverage } from '../../domain/runtime/case-coverage';
 import { DesignEditActions } from './DesignEditor';
 import { CoverageMatrix } from './CoverageMatrix';
+import type { Conversations } from '../../app/useConversations';
+import { DesignRepairButton } from './DesignRepairButton';
 
 export type AssetView = 'requirements' | 'factors' | 'scenarios' | 'cases';
 type View = AssetView;
@@ -19,12 +21,14 @@ export function AssetsWorkspace({
   runId,
   updateRun,
   openSession,
+  actions,
 }: {
   session?: ConversationSession;
   initialView?: View;
   runId?: string;
   updateRun?: UpdateRun;
   openSession: () => void;
+  actions?: Conversations;
 }) {
   const { t } = useI18n();
   const [view, setView] = useState<View>(initialView);
@@ -96,6 +100,7 @@ export function AssetsWorkspace({
           {matrix ? (
             <CoverageMatrix
               run={run}
+              repair={actions && <DesignRepairButton run={run} actions={actions} onPrepared={openSession} />}
               navigate={(next, id) => {
                 setMatrix(false);
                 setView(next);
