@@ -6,5 +6,6 @@
 - `editor-dark-en.png`：英文深色、900×780，步骤与断言。
 - `proposal-approved.png`：离线协议夹具提出用例修改，经界面审核合入。
 - `case-assertions-native.png`、`case-saved-native.png`、`native-summary.json`：0.14.0 Release 原生窗口的编辑、保存及摘要，原始 IPC 未替换，无未捕获界面错误。
+- `native-0.14.1-summary.json`：弹窗生命周期修复后的 0.14.1 Release 原生窗口重新验收通过；仍使用历史输入，不提交模型调用。
 
 输入为 `../cli-transcript-2026-10-28/run.json` 的历史运行；提议测试使用明确构造的状态码断言。截图由生产构建及原生 Release 自动化生成，本次没有调用新模型，也没有对真实业务接口执行这些断言。
