@@ -25,3 +25,9 @@
 ## 后续门槛
 
 尚未完成用例条目的人工/Agent 增量修改、类型化约束组合、事务化个人主存储及独立题目真实 Agent 盲测。不能将本轮结构检查和既有脚本回放等同于这些工作已经完成。
+
+## GitHub 发布结果
+
+- 源码 `41c6b2d`，标签 `v0.13.0`；[源码检查](https://github.com/tracy115-ops/verification/actions/runs/42570592427)成功，日志确认 250 个单测和 90 项界面测试通过。
+- [Windows 打包](https://github.com/tracy115-ops/verification/actions/runs/42570612947)成功，包含生产界面/协作、原生契约、重复执行、Release 安装包、安装升级及黑盒冒烟检查。
+- [0.13.0 Release](https://github.com/tracy115-ops/verification/releases/tag/v0.13.0)于 `2026-11-09T06:19:49Z` 发布，安装包为 `Verification-Workbench-0.13.0-build.58.1-41c6b2d-windows-x64-setup.exe`，同时提供构建信息、校验摘要和独立诊断工具。
