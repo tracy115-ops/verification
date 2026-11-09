@@ -49,7 +49,9 @@ export function DesignRevisionViewer({ run, artifact }: { run: WorkflowRun; arti
   const current = items[selected];
   return (
     <section className="design-revision-viewer">
-      <p className="wb-banner">{t('designRevisionReadonly')}</p>
+      <p className="wb-banner">
+        {t(artifact.type === 'CaseRevision' ? 'caseRevisionReadonly' : 'designRevisionReadonly')}
+      </p>
       <nav className="assets-tabs" aria-label={t('designRevisionArtifacts')}>
         {items.map((item, i) => (
           <button

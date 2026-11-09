@@ -1,5 +1,6 @@
 import { useDraftCount, useDraftStore } from '../shared/drafts/context';
 import { useWindowProtection } from './useWindowProtection';
+import { useCaseEditing } from './useCaseEditing';
 import { PendingDrafts } from '../features/settings/PendingDrafts';
 import { useI18n } from '../shared/i18n/context';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
@@ -55,6 +56,7 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
     document.documentElement.dataset.workspace === 'team' ? 'team' : 'sessions',
   );
   const previousPage = useRef(page);
+  const caseEditing = useCaseEditing(conversations, () => setPage('cases'));
   useEffect(() => {
     if (previousPage.current !== page) workbench.setNotice(null);
     previousPage.current = page;
@@ -73,6 +75,7 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
     <div className="app-shell">
       <Sidebar page={page} setPage={navigate} conversations={conversations} />
       <main className="app-main" data-close-protection={protection.ready ? 'ready' : 'pending'}>
+        {caseEditing.editor}
         {protection.unavailable && (
           <p className="wb-error" role="status">
             {t('draftProtectionFailed')}
@@ -92,6 +95,7 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
             openWorkflow={() => setPage('workflow')}
             navigate={(section) => {
               if (section === 'team') setPage('team');
+              else if (section === 'cases') setPage('cases');
               else {
                 setSettingsTab(section);
                 setPage('settings');
@@ -162,6 +166,8 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
             </RetainedView>
             <RetainedView active={page === 'assets' || page === 'cases'}>
               <AssetsWorkspace
+                openCaseEditor={caseEditing.open}
+                caseFocus={caseEditing.focus}
                 actions={conversations}
                 updateRun={conversations.busy ? undefined : conversations.updateRun}
                 key={`${conversations.activeId}:${conversations.selectedRunId || conversations.session?.runs.at(-1)?.id}`}

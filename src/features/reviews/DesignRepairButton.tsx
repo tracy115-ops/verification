@@ -8,16 +8,18 @@ export function DesignRepairButton({
   run,
   actions,
   onPrepared,
+  kind = 'design',
 }: {
   run: WorkflowRun;
   actions: Conversations;
   onPrepared: () => void;
+  kind?: 'design' | 'cases';
 }) {
   const { t } = useI18n();
   const [error, setError] = useState(false);
   const quality = designQuality(run);
   const findings = quality.findings.filter(
-    (item) => item.state === 'open' && item.stage === 'review.coverage',
+    (item) => item.state === 'open' && item.stage === (kind === 'cases' ? 'review.cases' : 'review.coverage'),
   );
   if (!quality.designGenerated || !findings.length) return null;
   return (
@@ -26,14 +28,18 @@ export function DesignRepairButton({
         className="workbench-btn"
         disabled={actions.isSessionBusy(run.sessionId)}
         onClick={() => {
-          const instruction = `${t('qualityRepairPrompt')}\n\n${t('qualityRepairFocus')}\n${findings
+          const instruction = `${t(kind === 'cases' ? 'qualityCaseRepairPrompt' : 'qualityRepairPrompt')}\n\n${t('qualityRepairFocus')}\n${findings
             .slice(0, 10)
             .map(
               (item) =>
                 `- ${item.id ? `${item.id} · ` : ''}${item.text.length > 240 ? `${item.text.slice(0, 240)}…` : item.text}`,
             )
             .join('\n')}`;
-          if (!actions.prepareDesignRepair(run, instruction)) {
+          if (
+            !(kind === 'cases'
+              ? actions.prepareCaseRepair(run, instruction)
+              : actions.prepareDesignRepair(run, instruction))
+          ) {
             setError(true);
             return;
           }
@@ -42,7 +48,7 @@ export function DesignRepairButton({
           onPrepared();
         }}
       >
-        {t('qualityRepair')}
+        {t(kind === 'cases' ? 'qualityCaseRepair' : 'qualityRepair')}
       </button>
       <small className="wb-muted">{t('qualityRepairHint')}</small>
       {error && (

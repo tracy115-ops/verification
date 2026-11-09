@@ -12,6 +12,8 @@ import { DesignEditActions } from './DesignEditor';
 import { CoverageMatrix } from './CoverageMatrix';
 import type { Conversations } from '../../app/useConversations';
 import { DesignRepairButton } from './DesignRepairButton';
+import { CaseEditActions } from './CaseEditActions';
+import type { CaseFocus, OpenCaseEditor } from './case-editor-types';
 
 export type AssetView = 'requirements' | 'factors' | 'scenarios' | 'cases';
 type View = AssetView;
@@ -22,6 +24,8 @@ export function AssetsWorkspace({
   updateRun,
   openSession,
   actions,
+  openCaseEditor,
+  caseFocus,
 }: {
   session?: ConversationSession;
   initialView?: View;
@@ -29,6 +33,8 @@ export function AssetsWorkspace({
   updateRun?: UpdateRun;
   openSession: () => void;
   actions?: Conversations;
+  openCaseEditor?: OpenCaseEditor;
+  caseFocus?: CaseFocus;
 }) {
   const { t } = useI18n();
   const [view, setView] = useState<View>(initialView);
@@ -47,6 +53,14 @@ export function AssetsWorkspace({
   const [selected, setSelected] = useState('');
   const [matrix, setMatrix] = useState(false);
   const run = session?.runs.find((item) => item.id === runId) ?? session?.runs.at(-1);
+  const focus = caseFocus?.runId === run?.id && caseFocus?.sessionId === session?.id ? caseFocus : undefined;
+  useEffect(() => {
+    if (!focus) return;
+    setView('cases');
+    setMatrix(false);
+    setSelected(focus.id);
+    setQuery('');
+  }, [focus]);
   const title = session
     ? session.title.replace(/^#+\s*/, '').split('\n')[0] || t('untitledSession')
     : t('assetsTitle');
@@ -100,7 +114,14 @@ export function AssetsWorkspace({
           {matrix ? (
             <CoverageMatrix
               run={run}
-              repair={actions && <DesignRepairButton run={run} actions={actions} onPrepared={openSession} />}
+              repair={
+                actions && (
+                  <>
+                    <DesignRepairButton run={run} actions={actions} onPrepared={openSession} />
+                    <DesignRepairButton kind="cases" run={run} actions={actions} onPrepared={openSession} />
+                  </>
+                )
+              }
               navigate={(next, id) => {
                 setMatrix(false);
                 setView(next);
@@ -110,6 +131,8 @@ export function AssetsWorkspace({
             />
           ) : (
             <TaskAssets
+              openCaseEditor={openCaseEditor}
+              focusCase={focus}
               updateRun={updateRun}
               run={run}
               view={view}
@@ -140,6 +163,8 @@ export function TaskAssets({
   navigate,
   artifactOverride,
   updateRun,
+  openCaseEditor,
+  focusCase,
 }: {
   run: WorkflowRun;
   view: View;
@@ -150,9 +175,14 @@ export function TaskAssets({
   navigate: (kind: 'requirements' | 'scenarios' | 'cases', id: string) => void;
   artifactOverride?: Artifact;
   updateRun?: UpdateRun;
+  openCaseEditor?: OpenCaseEditor;
+  focusCase?: CaseFocus;
 }) {
   const { t } = useI18n();
   const [coverageFilter, setCoverageFilter] = useState('all');
+  useEffect(() => {
+    if (focusCase) setCoverageFilter('all');
+  }, [focusCase]);
   const all = Object.values(run.artifacts);
   const types =
     view === 'requirements'
@@ -213,6 +243,9 @@ export function TaskAssets({
     <div className="assets-body">
       <div className="assets-list">
         <div className="assets-list-heading">
+          {view === 'cases' && isCases(value) && !artifactOverride && (
+            <CaseEditActions run={run} currentId={current?.id} open={openCaseEditor} />
+          )}
           <strong>
             {t('assetItems')} · {filtered.length} / {items.length}
           </strong>

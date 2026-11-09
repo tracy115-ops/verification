@@ -1,6 +1,7 @@
 import Ajv2020 from 'ajv/dist/2020.js';
 import { factorSchema, scenarioSchema } from './artifacts';
 import type { DesignArtifact } from './types';
+import { proposalEnvelope, validProposalMetadata, type ProposalRecord } from './proposal-envelope';
 
 type Factor = NonNullable<DesignArtifact['factors']>[number];
 type Scenario = DesignArtifact['scenarios'][number];
@@ -11,16 +12,7 @@ export interface DesignPatch {
   scenarios: Change<Scenario>[];
   questions: string[];
 }
-export interface DesignProposal {
-  version: 1;
-  id: string;
-  runId: string;
-  turnId: string;
-  baseDigest: string;
-  instruction: string;
-  createdAt: string;
-  decidedAt?: string;
-  status: 'pending' | 'applied' | 'dismissed' | 'stale';
+export interface DesignProposal extends ProposalRecord {
   patch: DesignPatch;
   before: { factors: Factor[]; scenarios: Scenario[] };
 }
@@ -39,34 +31,14 @@ export const designPatchSchema = record({
   scenarios: list(change({ ...scenarioSchema, required: [...scenarioSchema.required, 'factorLevels'] })),
   questions: list(text),
 });
-const properties = {
-  version: { const: 1 },
-  id: { ...text, maxLength: 80 },
-  runId: { ...text, maxLength: 80 },
-  turnId: { ...text, maxLength: 80 },
-  baseDigest: { type: 'string', pattern: '^[a-f0-9]{64}$' },
-  instruction: { ...text, maxLength: 40000 },
-  createdAt: text,
-  decidedAt: text,
-  status: { enum: ['pending', 'applied', 'dismissed', 'stale'] },
-  patch: designPatchSchema,
-  before: record({ factors: list(factorSchema), scenarios: list(scenarioSchema) }),
-};
 const ajv = new Ajv2020({ strict: false, allErrors: true });
 export const isDesignPatch = ajv.compile<DesignPatch>(designPatchSchema);
 const validateProposal = ajv.compile<DesignProposal>(
-  record(
-    properties,
-    Object.keys(properties).filter((key) => key !== 'decidedAt'),
+  proposalEnvelope(
+    designPatchSchema,
+    record({ factors: list(factorSchema), scenarios: list(scenarioSchema) }),
   ),
 );
 export function isDesignProposal(value: unknown): value is DesignProposal {
-  return (
-    validateProposal(value) &&
-    value.id === value.turnId &&
-    Number.isFinite(Date.parse(value.createdAt)) &&
-    (value.status === 'pending'
-      ? value.decidedAt === undefined
-      : typeof value.decidedAt === 'string' && Number.isFinite(Date.parse(value.decidedAt)))
-  );
+  return validateProposal(value) && validProposalMetadata(value);
 }

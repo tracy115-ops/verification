@@ -26,6 +26,8 @@ export function artifactLabel(artifact: Artifact, t: (key: MessageKey) => string
     VerdictBundle: 'artifactVerdict',
     ImplementationRevision: 'artifactPreviousScript',
     DesignRevision: 'designRevisionSnapshot',
+    CaseRevision: 'caseRevisionSnapshot',
+    CaseChangeProposal: 'caseProposalTitle',
     DesignChangeProposal: 'designProposalTitle',
     ImplementationClarifications: 'scriptQuestions',
   };

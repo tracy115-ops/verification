@@ -1,4 +1,5 @@
 import { draftEn, draftZh } from './draft-messages';
+import { caseEditEn, caseEditZh } from './case-edit-messages';
 import { workflowLibraryEn, workflowLibraryZh } from './workflow-library-messages';
 import { designQualityEn, designQualityZh } from './design-quality-messages';
 import { conversationEn, conversationZh } from './conversation-messages';
@@ -18,6 +19,7 @@ import { lanEn, lanZh } from './lan-messages';
 import { collaborationEn, collaborationZh } from './collaboration-messages';
 
 export const zh = {
+  ...caseEditZh,
   ...workflowLibraryZh,
   ...designQualityZh,
   ...draftZh,
@@ -200,6 +202,7 @@ export const zh = {
 } as const;
 
 export const en: Record<keyof typeof zh, string> = {
+  ...caseEditEn,
   ...workflowLibraryEn,
   ...designQualityEn,
   ...draftEn,

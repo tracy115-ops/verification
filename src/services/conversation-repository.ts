@@ -1,5 +1,6 @@
 import Ajv2020 from 'ajv/dist/2020.js';
 import { decodeDocument } from '../domain/document';
+import { isCaseProposal } from '../domain/runtime/case-proposal-schema';
 import { checkWorkflow } from '../domain/workflow';
 import type { ConversationSession } from '../domain/runtime/types';
 import { frameworkSchema } from '../domain/execution/schema';
@@ -246,6 +247,13 @@ export function decodeConversations(value: unknown): ConversationSession[] {
   for (const session of sessions) {
     for (const run of session.runs) {
       for (const [key, artifact] of Object.entries(run.artifacts)) {
+        if (
+          artifact.type === 'CaseChangeProposal' &&
+          (!isCaseProposal(artifact.value) ||
+            artifact.value.runId !== run.id ||
+            key !== `proposal.cases.${artifact.value.id}`)
+        )
+          throw new Error('session_storage_invalid');
         if (
           artifact.type === 'DesignChangeProposal' &&
           (!isDesignProposal(artifact.value) ||

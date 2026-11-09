@@ -36,3 +36,27 @@ it('opens the dedicated review workspace and supports returning to the conversat
   show.mockRestore();
   hide.mockRestore();
 });
+
+it('keeps a saving dialog open when Escape or the close button is used', () => {
+  Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+    configurable: true,
+    value() {
+      this.open = true;
+    },
+  });
+  Object.defineProperty(HTMLDialogElement.prototype, 'close', {
+    configurable: true,
+    value() {
+      this.open = false;
+    },
+  });
+  const close = vi.fn();
+  render(
+    <ReviewDialog open busy close={close}>
+      <p>Saving</p>
+    </ReviewDialog>,
+  );
+  expect((screen.getByRole('button', { name: '返回对话' }) as HTMLButtonElement).disabled).toBe(true);
+  fireEvent(screen.getByRole('dialog'), new Event('cancel', { bubbles: false, cancelable: true }));
+  expect(close).not.toHaveBeenCalled();
+});

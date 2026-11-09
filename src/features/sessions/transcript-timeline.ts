@@ -59,7 +59,7 @@ export function transcriptTimeline(session: ConversationSession, turns: CliTurnR
               : undefined
           : undefined;
       if (
-        ['ImplementationRevision', 'DesignRevision'].includes(artifact.type) &&
+        ['ImplementationRevision', 'DesignRevision', 'CaseRevision'].includes(artifact.type) &&
         value &&
         typeof value === 'object' &&
         typeof at === 'string' &&

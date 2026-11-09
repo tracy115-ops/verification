@@ -14,7 +14,7 @@ export function RunDecisions({
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<'clarifications' | 'exclusions' | 'revisions'>('exclusions');
   const revisions = Object.entries(run.artifacts).filter(([, item]) =>
-    ['ImplementationRevision', 'DesignRevision'].includes(item.type),
+    ['ImplementationRevision', 'DesignRevision', 'CaseRevision'].includes(item.type),
   );
   const count = (run.clarifications?.length ?? 0) + (run.reviewExclusions?.length ?? 0) + revisions.length;
   if (!count) return null;
@@ -67,8 +67,14 @@ export function RunDecisions({
                   openArtifact(key);
                 }}
               >
-                {t(item.type === 'DesignRevision' ? 'designRevisionSnapshot' : 'artifactPreviousScript')} ·{' '}
-                {index + 1}
+                {t(
+                  item.type === 'CaseRevision'
+                    ? 'caseRevisionSnapshot'
+                    : item.type === 'DesignRevision'
+                      ? 'designRevisionSnapshot'
+                      : 'artifactPreviousScript',
+                )}{' '}
+                · {index + 1}
               </button>
             ))}
         </div>

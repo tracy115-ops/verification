@@ -8,12 +8,14 @@ export function ReviewDialog({
   children,
   title = 'reviewRequired',
   closeLabel = 'closeReview',
+  busy = false,
 }: {
   open: boolean;
   close: () => void;
   children: ReactNode;
   title?: MessageKey;
   closeLabel?: MessageKey;
+  busy?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const headingId = useId();
@@ -29,12 +31,15 @@ export function ReviewDialog({
       ref={ref}
       aria-labelledby={headingId}
       className="session-review-dialog"
-      onCancel={close}
+      onCancel={(event) => {
+        event.preventDefault();
+        if (!busy) close();
+      }}
       onClose={close}
     >
       <header>
         <h2 id={headingId}>{t(title)}</h2>
-        <button className="workbench-btn" onClick={close}>
+        <button className="workbench-btn" disabled={busy} onClick={close}>
           {t(closeLabel)}
         </button>
       </header>

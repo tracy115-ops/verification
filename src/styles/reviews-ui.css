@@ -465,3 +465,92 @@
   text-align: start;
   justify-content: flex-start;
 }
+.case-editor-form,
+.case-editor-content {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.session-review-dialog:has(> .case-editor-form) {
+  width: min(920px, calc(100vw - 48px));
+  overflow: hidden;
+}
+.case-editor-form {
+  padding: 20px 24px 0;
+  max-height: calc(86vh - 80px);
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+.case-editor-form > p {
+  margin: 0;
+}
+.case-editor-form .modal-actions {
+  position: sticky;
+  bottom: 0;
+  background: var(--wb-surface);
+  padding-block: 12px;
+  border-top: 1px solid var(--wb-border);
+}
+.case-editor-details {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+.case-editor-content {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.case-editor-steps,
+.case-draft-notice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.case-editor-steps [aria-current='step'] {
+  border-color: var(--wb-accent);
+  color: var(--wb-accent);
+  background: var(--wb-accent-soft);
+}
+.case-editor-options {
+  display: grid;
+  gap: 8px;
+  max-height: 240px;
+  overflow: auto;
+  margin-top: 12px;
+}
+.case-editor-form fieldset {
+  min-width: 0;
+}
+.case-editor-form .collab-check {
+  align-items: start;
+  overflow-wrap: anywhere;
+}
+.design-proposal-diff {
+  display: grid;
+  grid-template-columns: minmax(180px, 28%) minmax(0, 1fr);
+  gap: 16px;
+}
+.design-proposal-diff > nav {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+.design-proposal-diff > nav button {
+  white-space: normal;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 900px) {
+  .design-proposal-diff {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 700px) {
+  .case-editor-details {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .case-editor-form {
+    padding-inline: 16px;
+  }
+}

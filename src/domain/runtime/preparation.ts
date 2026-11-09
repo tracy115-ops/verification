@@ -31,7 +31,7 @@ export function prepareInvocation(
   profiles: AgentProfile[],
   frameworks: FrameworkProfile[],
 ): WorkflowPreparation | undefined {
-  if (draft.editDesign) return;
+  if (draft.editDesign || draft.editCases) return;
   let command;
   try {
     command = workflowCommand(draft.text, saved?.definition.id);

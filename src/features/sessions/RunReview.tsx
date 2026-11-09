@@ -137,6 +137,14 @@ export function RunReview({
               {pending.operation === 'review.coverage' && (
                 <DesignRepairButton run={run} actions={actions} onPrepared={() => setReviewOpen(false)} />
               )}
+              {pending.operation === 'review.cases' && (
+                <DesignRepairButton
+                  kind="cases"
+                  run={run}
+                  actions={actions}
+                  onPrepared={() => setReviewOpen(false)}
+                />
+              )}
               {reviewArtifact && <ArtifactPanel artifact={reviewArtifact} />}
               {pending.operation === 'review.cases' && (
                 <CaseScopeReview

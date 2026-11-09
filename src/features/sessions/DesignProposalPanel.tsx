@@ -33,7 +33,7 @@ export function DesignProposalPanel({ run, actions }: { run: WorkflowRun; action
           className="workbench-btn wb-text"
           onClick={() =>
             actions.updateComposerDraft(
-              { editDesign: true, invoke: false },
+              { editDesign: true, editCases: false, invoke: false },
               actions.session?.profileId ?? run.defaultProfileId,
             )
           }

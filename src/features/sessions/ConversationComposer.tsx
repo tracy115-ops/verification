@@ -45,9 +45,20 @@ export function ConversationComposer({
     actions.session?.runs.find((item) => item.id === actions.selectedRunId) ?? actions.session?.runs.at(-1);
   const canPropose =
     run && Object.values(run.artifacts).some((item) => ['TestDesign', 'TestDesignDraft'].includes(item.type));
+  const canProposeCases =
+    run &&
+    Object.values(run.artifacts).some((item) => ['TestCaseSet', 'TestCaseSetDraft'].includes(item.type));
   async function send() {
     if (actions.busy || !hasDesktopBridge() || !text.trim()) return;
     if (preparation?.issues.length) return;
+    if (draft.editCases) {
+      if (!run || !canProposeCases) {
+        actions.setError('case_proposal_invalid');
+        return;
+      }
+      await actions.proposeCases(run, text, profileId);
+      return;
+    }
     if (draft.editDesign) {
       if (!run || !canPropose) {
         actions.setError('design_proposal_unavailable');
@@ -98,9 +109,10 @@ export function ConversationComposer({
         workflows={workflows}
         frameworks={frameworks}
         canPropose={!!canPropose}
+        canProposeCases={!!canProposeCases}
         change={changeDraft}
       />
-      {!invoke && !draft.editDesign && (
+      {!invoke && !draft.editDesign && !draft.editCases && (
         <ChatContextControl
           messages={actions.session?.messages ?? []}
           draft={text}
@@ -130,7 +142,13 @@ export function ConversationComposer({
         disabled={false}
         change={(text) => changeDraft({ text })}
         send={send}
-        placeholderKey={draft.editDesign ? 'designProposalPlaceholder' : 'composerPlaceholder'}
+        placeholderKey={
+          draft.editCases
+            ? 'caseProposalPlaceholder'
+            : draft.editDesign
+              ? 'designProposalPlaceholder'
+              : 'composerPlaceholder'
+        }
       />
       <InvocationPreparation
         preparation={preparation}
@@ -139,6 +157,7 @@ export function ConversationComposer({
         openWorkflow={openWorkflow}
       />
       {draft.editDesign && <small className="wb-muted">{t('designProposalModeHint')}</small>}
+      {draft.editCases && <small className="wb-muted">{t('caseProposalModeHint')}</small>}
       {actions.busy && <small className="wb-muted">{t('composerDraftWhileRunning')}</small>}
       {attachmentError === actions.activeId && (
         <p className="wb-error" role="alert">
@@ -173,7 +192,15 @@ export function ConversationComposer({
             onClick={() => void send()}
           >
             <Send size={15} />
-            {t(draft.editDesign ? 'designProposalGenerate' : invoke ? 'invokeWorkflow' : 'sendMessage')}
+            {t(
+              draft.editCases
+                ? 'caseProposalGenerate'
+                : draft.editDesign
+                  ? 'designProposalGenerate'
+                  : invoke
+                    ? 'invokeWorkflow'
+                    : 'sendMessage',
+            )}
           </button>
         )}
       </div>

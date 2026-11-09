@@ -1,5 +1,5 @@
 import type { MessageKey } from '../i18n/messages';
-export type DraftSection = 'agents' | 'frameworks' | 'updates' | 'team';
+export type DraftSection = 'agents' | 'frameworks' | 'updates' | 'team' | 'cases';
 export interface DraftEntry {
   id: string;
   section: DraftSection;

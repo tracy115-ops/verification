@@ -5,7 +5,7 @@ import { digest } from './plan';
 import type { DesignArtifact, WorkflowRun } from './types';
 import { pauseForReview } from './deadline';
 import { descendants } from './descendants';
-import { isDesignProposal } from './design-proposal-schema';
+import { staleProposals } from './stale-proposals';
 
 /** Reopen the coverage gate; never reuse downstream approvals or execution evidence. */
 export async function reviseDesign(
@@ -33,7 +33,9 @@ export async function reviseDesign(
     createdAt: initial.createdAt,
     status: initial.status,
     artifacts: Object.fromEntries(
-      Object.entries(initial.artifacts).filter(([, item]) => item.type !== 'DesignRevision'),
+      Object.entries(initial.artifacts).filter(
+        ([, item]) => !['DesignRevision', 'CaseRevision', 'ImplementationRevision'].includes(item.type),
+      ),
     ),
     steps: initial.steps,
     approvals: initial.approvals,
@@ -44,16 +46,7 @@ export async function reviseDesign(
     value: archive,
     digest: await digest(archive),
   };
-  for (const [key, artifact] of Object.entries(run.artifacts)) {
-    if (
-      artifact.type !== 'DesignChangeProposal' ||
-      !isDesignProposal(artifact.value) ||
-      artifact.value.status !== 'pending'
-    )
-      continue;
-    const value = { ...artifact.value, status: 'stale', decidedAt: archive.at };
-    run.artifacts[key] = { ...artifact, value, digest: await digest(value) };
-  }
+  await staleProposals(run, archive.at, ['DesignChangeProposal', 'CaseChangeProposal']);
   for (const node of run.plan) {
     if (!affected.has(node.id)) continue;
     run.steps[node.id] = { status: 'pending', attempts: 0 };

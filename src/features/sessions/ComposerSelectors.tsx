@@ -11,6 +11,7 @@ export function ComposerSelectors({
   workflows,
   frameworks,
   canPropose,
+  canProposeCases = false,
   change,
 }: {
   draft: ComposerDraft;
@@ -19,6 +20,7 @@ export function ComposerSelectors({
   workflows?: WorkbenchDocument[];
   frameworks: FrameworkProfile[];
   canPropose: boolean;
+  canProposeCases?: boolean;
   change: (patch: Partial<ComposerDraft>) => void;
 }) {
   const { t } = useI18n();
@@ -48,12 +50,13 @@ export function ComposerSelectors({
         <span className="wb-sr-only">{t('savedWorkflow')}</span>
         <select
           className="workbench-select"
-          value={draft.editDesign ? 'design' : draft.invoke ? 'workflow' : 'chat'}
+          value={draft.editCases ? 'cases' : draft.editDesign ? 'design' : draft.invoke ? 'workflow' : 'chat'}
           onChange={(event) =>
             change({
-              invoke: !['chat', 'design'].includes(event.target.value),
+              invoke: !['chat', 'design', 'cases'].includes(event.target.value),
               editDesign: event.target.value === 'design',
-              ...(!['chat', 'design'].includes(event.target.value)
+              editCases: event.target.value === 'cases',
+              ...(!['chat', 'design', 'cases'].includes(event.target.value)
                 ? {
                     workflowId: event.target.value === 'workflow' ? saved?.definition.id : event.target.value,
                   }
@@ -65,6 +68,11 @@ export function ComposerSelectors({
           {(canPropose || draft.editDesign) && (
             <option value="design" disabled={!canPropose}>
               {t('designProposalMode')}
+            </option>
+          )}
+          {(canProposeCases || draft.editCases) && (
+            <option value="cases" disabled={!canProposeCases}>
+              {t('caseProposalMode')}
             </option>
           )}
           <option value="workflow" disabled={!saved}>

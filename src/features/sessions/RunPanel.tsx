@@ -16,6 +16,7 @@ import { RequirementQuoteRepair } from './RequirementQuoteRepair';
 import { canRetryAnalysis } from '../../domain/runtime/analysis-retry';
 import { AnalysisRetryControls } from './AnalysisRetryControls';
 import { DesignProposalPanel } from './DesignProposalPanel';
+import { CaseProposalPanel } from './CaseProposalPanel';
 import { AnalysisBudgetSummary } from './AnalysisBudgetSummary';
 
 export function RunPanel({
@@ -57,6 +58,7 @@ export function RunPanel({
       <CurrentStep run={run} />
       <AnalysisBudgetSummary run={run} />
       <DesignProposalPanel run={run} actions={actions} />
+      <CaseProposalPanel run={run} actions={actions} />
       {run.status === 'failed' &&
         ['source_quote_invalid', 'source_quote_ambiguous'].includes(run.errorCode ?? '') && (
           <RequirementQuoteRepair key={run.id} run={run} actions={actions} />

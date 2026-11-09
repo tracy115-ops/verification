@@ -62,20 +62,17 @@ export const generatedDesignSchema = {
     },
   },
 };
-export const caseSchema = record({
-  cases: list(
-    record({
-      id,
-      title: text,
-      scenarioIds: list(id),
-      requirementIds: list(id),
-      preconditions: list(text, 0),
-      steps: list(text),
-      expected: text,
-      assertions: list(text),
-    }),
-  ),
+export const caseItemSchema = record({
+  id,
+  title: text,
+  scenarioIds: list(id),
+  requirementIds: list(id),
+  preconditions: list(text, 0),
+  steps: list(text),
+  expected: text,
+  assertions: list(text),
 });
+export const caseSchema = record({ cases: list(caseItemSchema) });
 export const designIncrementSchema = {
   ...generatedDesignSchema,
   properties: {

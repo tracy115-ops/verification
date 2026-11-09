@@ -179,9 +179,11 @@ function DecisionEntry({
       {entry.kind === 'revision' && (
         <button className="workbench-btn wb-text" onClick={() => openArtifact(entry.run, entry.artifactKey)}>
           {t(
-            entry.run.artifacts[entry.artifactKey]?.type === 'DesignRevision'
-              ? 'designRevisionSnapshot'
-              : 'artifactPreviousScript',
+            entry.run.artifacts[entry.artifactKey]?.type === 'CaseRevision'
+              ? 'caseRevisionSnapshot'
+              : entry.run.artifacts[entry.artifactKey]?.type === 'DesignRevision'
+                ? 'designRevisionSnapshot'
+                : 'artifactPreviousScript',
           )}
         </button>
       )}

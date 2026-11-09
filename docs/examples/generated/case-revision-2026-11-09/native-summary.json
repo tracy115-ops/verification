@@ -1,0 +1,10 @@
+{
+  "version": "0.14.0",
+  "originalIpc": true,
+  "historicalFixture": true,
+  "freshModelCall": false,
+  "draftRetained": true,
+  "caseRevisionSaved": true,
+  "caseReviewReopened": true,
+  "unhandledErrors": []
+}

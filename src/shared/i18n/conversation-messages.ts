@@ -181,7 +181,8 @@ export const conversationZh = {
   saveSessionName: '保存名称',
   cancelSessionAction: '取消',
   confirmDeleteSession: '确认删除',
-  sessionDeleteHint: '将删除此会话及其中的任务、产物记录。磁盘上的原始执行证据不会被删除。此操作不可撤销。',
+  sessionDeleteHint:
+    '将删除此会话及其中的任务、产物记录和未保存用例草稿。磁盘上的原始执行证据不会被删除。此操作不可撤销。',
   sessionDeleteBlocked: '请先停止或处理未结束的任务，再删除会话。',
   sessionManageFailed: '操作未完成。请检查名称或未结束的任务。',
   untitledSession: '新会话',
@@ -524,7 +525,7 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
   cancelSessionAction: 'Cancel',
   confirmDeleteSession: 'Confirm deletion',
   sessionDeleteHint:
-    'Deletes this conversation and its task and artifact records. Raw execution evidence on disk is retained. This cannot be undone.',
+    'Deletes this conversation, its task and artifact records, and unsaved case drafts. Raw execution evidence on disk is retained. This cannot be undone.',
   sessionDeleteBlocked: 'Stop or reconcile unfinished tasks before deleting this conversation.',
   sessionManageFailed: 'Action could not complete. Check the name or unfinished tasks.',
   untitledSession: 'New conversation',

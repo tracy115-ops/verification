@@ -1,5 +1,7 @@
 # 验证 Agent 设计档案
 
+0.14.0 增量：[人工与 Agent 用例修订](design/case-revision-and-proposals.md)，涵盖三步编辑、增量提议审核、草稿保护与下游失效；[验收记录](research/case-revision-validation-2026-11-09.md)持续记录本地结果与发布状态。
+
 0.11.0 增量：[未保存修改与桌面关闭保护](design/unsaved-draft-protection.md)，覆盖当前窗口草稿、保存失败、覆盖操作门禁与原生关闭请求；不代表主仓库迁移完成。
 
 最近验收：[2026-11-08 页面功能、样式与连续性检查](research/page-continuity-audit-2026-11-08.md)，覆盖主页面、七个设置分区、协作与跨页状态；明确区分界面契约和真实环境边界。
