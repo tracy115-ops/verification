@@ -5,7 +5,12 @@ import { en, zh } from '../../src/shared/i18n/messages';
 test('guards an actual native close with a hidden draft and closes after explicit confirmation', async () => {
   test.setTimeout(60_000);
   const endpoint = process.env.DESKTOP_AUDIT_ENDPOINT;
-  test.skip(!endpoint, 'An isolated native Release window is required.');
+  test.skip(
+    !endpoint ||
+      process.env.DESKTOP_AUDIT_ALLOW_CLOSE !== '1' ||
+      process.env.DESKTOP_AUDIT_CLOSE_MODE === 'clean',
+    'Explicit opt-in to close an isolated audit window is required.',
+  );
   const browser = await chromium.connectOverCDP(endpoint!);
   const page = browser.contexts()[0].pages()[0];
   const output = '.runtime/native-close';
@@ -73,6 +78,48 @@ test('guards an actual native close with a hidden draft and closes after explici
           locales: ['zh-CN', 'en-US'],
           themes: ['light', 'dark'],
         },
+        null,
+        2,
+      ),
+    );
+  } finally {
+    await browser.close().catch(() => {});
+  }
+});
+
+test('closes an actual clean native window without an unnecessary confirmation', async () => {
+  test.setTimeout(30_000);
+  const endpoint = process.env.DESKTOP_AUDIT_ENDPOINT;
+  test.skip(
+    !endpoint ||
+      process.env.DESKTOP_AUDIT_ALLOW_CLOSE !== '1' ||
+      process.env.DESKTOP_AUDIT_CLOSE_MODE !== 'clean',
+    'A separate clean audit window and explicit close opt-in are required.',
+  );
+  const browser = await chromium.connectOverCDP(endpoint!);
+  const page = browser.contexts()[0].pages()[0];
+  try {
+    expect(page.url()).toContain('tauri.localhost');
+    await expect(page.locator('.app-main')).toHaveAttribute('data-close-protection', 'ready');
+    await expect(page.getByRole('alertdialog')).toHaveCount(0);
+    const closed = page.waitForEvent('close');
+    await page
+      .evaluate(() =>
+        (
+          window as unknown as {
+            __TAURI_INTERNALS__: { invoke: (command: string, args: unknown) => Promise<void> };
+          }
+        ).__TAURI_INTERNALS__.invoke('plugin:window|close', { label: 'main' }),
+      )
+      .catch((error) => {
+        if (!page.isClosed()) throw error;
+      });
+    await closed;
+    mkdirSync('.runtime/native-close', { recursive: true });
+    writeFileSync(
+      '.runtime/native-close/clean-summary.json',
+      JSON.stringify(
+        { originalIpc: true, originalNativeWindowClose: true, cleanCloseWithoutConfirmation: true },
         null,
         2,
       ),

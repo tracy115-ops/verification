@@ -1,0 +1,5 @@
+{
+  "originalIpc": true,
+  "originalNativeWindowClose": true,
+  "cleanCloseWithoutConfirmation": true
+}

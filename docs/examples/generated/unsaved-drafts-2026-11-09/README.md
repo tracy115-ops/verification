@@ -6,5 +6,8 @@
 - [英文深色关闭确认](native-close-en-dark.png)：取消第一次关闭，在界面切换语言和主题后再次关闭；条目标签实时翻译，原始输入保持不变。
 - [窄屏修改列表](review-en-dark-900.png)：生产浏览器构建的修改处理入口，覆盖框架和模型的两个独立草稿。
 - [原生摘要](native-summary.json)：原始窗口 close 请求、取消、返回具体输入并聚焦，以及明确确认后窗口确实关闭。
+- [无修改正常关闭](native-clean-summary.json)：补充使用另一个独立 Release 窗口验证，无修改时直接关闭，不增加确认。
 
 测试入口：`tests/live/desktop-close.spec.ts`。它检查关闭事件、窗口存活、控件值及聚焦，最后等待实际窗口关闭；不把浏览器的模拟 IPC 当作原生生命周期验收。设计与边界见[未保存修改与关闭保护](../../../design/unsaved-draft-protection.md)。
+
+关闭测试会销毁窗口，必须只连接隔离的测试实例并设置 `DESKTOP_AUDIT_ALLOW_CLOSE=1`；空白窗口专项另设 `DESKTOP_AUDIT_CLOSE_MODE=clean`，使用单独新启动的实例。默认跳过关闭测试，避免整套原生测试共用端点时提前销毁窗口。此开关和空白窗口专项是标签创建后的测试补充，不改变 0.11.0 应用代码。
