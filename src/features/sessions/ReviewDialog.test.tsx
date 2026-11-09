@@ -2,6 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import { ReviewDialog } from './ReviewDialog';
+import { StrictMode } from 'react';
 
 afterEach(cleanup);
 it('opens the dedicated review workspace and supports returning to the conversation', () => {
@@ -59,4 +60,34 @@ it('keeps a saving dialog open when Escape or the close button is used', () => {
   expect((screen.getByRole('button', { name: '返回对话' }) as HTMLButtonElement).disabled).toBe(true);
   fireEvent(screen.getByRole('dialog'), new Event('cancel', { bubbles: false, cancelable: true }));
   expect(close).not.toHaveBeenCalled();
+});
+
+it('ignores a queued native close event after StrictMode reopens the dialog', () => {
+  Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+    configurable: true,
+    value() {
+      this.open = true;
+    },
+  });
+  Object.defineProperty(HTMLDialogElement.prototype, 'close', {
+    configurable: true,
+    value() {
+      this.open = false;
+    },
+  });
+  const close = vi.fn();
+  render(
+    <StrictMode>
+      <ReviewDialog open close={close}>
+        <p>Review</p>
+      </ReviewDialog>
+    </StrictMode>,
+  );
+  const dialog = screen.getByRole('dialog') as HTMLDialogElement;
+  expect(dialog.open).toBe(true);
+  fireEvent(dialog, new Event('close', { bubbles: false }));
+  expect(close).not.toHaveBeenCalled();
+  dialog.close();
+  fireEvent(dialog, new Event('close', { bubbles: false }));
+  expect(close).toHaveBeenCalledOnce();
 });

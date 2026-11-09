@@ -35,7 +35,10 @@ export function ReviewDialog({
         event.preventDefault();
         if (!busy) close();
       }}
-      onClose={close}
+      onClose={(event) => {
+        // Effect replay can queue a close event before reopening this same dialog.
+        if (!event.currentTarget.open) close();
+      }}
     >
       <header>
         <h2 id={headingId}>{t(title)}</h2>
