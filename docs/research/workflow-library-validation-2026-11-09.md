@@ -10,6 +10,13 @@
 - 实际 0.12.0 Release WebView 原生测试通过：原始 IPC、两个流程的保存和刷新后选择恢复、六个页面及七个设置分区导航、中英文与明暗主题、版本读取，未捕获未处理页面错误。测试实例使用独立 WebView 数据目录，不进行模型调用或替换用户安装。
 - 真实 HTTP/SQLite 协作测试 5 项通过，包含独立 Agent 成员提交、角色权限、增量评审、脚本映射失效、版本冲突，以及 40 个协作布局状态。
 - 单测额外覆盖：旧单流程迁移、独立修订、重复/缺失 ID 拒绝、存储失败保留、旧新备份校验、模板删除后运行快照保留，以及末端人工复核进入设计运行计划。
+- 本地 `cargo test --workspace --locked` 通过（3 项网络/PAC 现场检查为显式忽略）；`npm run verify:workflow` 的 2 项真实 Python 执行闭环通过。
+
+## GitHub 发布结果
+
+- 应用源码提交 `a33963e`，标签 `v0.12.0`；[源码检查](https://github.com/tracy115-ops/verification/actions/runs/42557638903)成功，确认 243 个单测和 87 项界面测试通过。
+- [Windows 打包](https://github.com/tracy115-ops/verification/actions/runs/42557649036)成功：生产 UI/协作、原生运行时契约、三次重复执行契约、Release 安装包、安装与升级、种子黑盒回归均通过。
+- [0.12.0 Release](https://github.com/tracy115-ops/verification/releases/tag/v0.12.0)于 `2026-11-09T03:57:21Z` 发布；包含 `Verification-Workbench-0.12.0-build.57.1-a33963e-windows-x64-setup.exe`、独立诊断工具、构建信息和 SHA-256 文件。
 
 ## 证据边界
 
