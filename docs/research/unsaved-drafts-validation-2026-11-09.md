@@ -26,3 +26,9 @@
 - 初轮完整生产回归 80 项通过；补充国际化、CLI 路径独立草稿与文件竞争后，最终全量 83 项全部通过。远端结果由对应标签流水线记录，安装冒烟不与本地 UI 证明混同。
 
 本地已完成 236 项单测、5 项真实协作回归和 78 项 Rust 测试；3 项真实网络/PAC 用例显式跳过。当前窗口草稿不落盘，用户明确允许关闭/刷新、强杀或断电后，不承诺恢复这些未提交输入。已提交的协作写入以服务端修订和审计为准。
+
+## 最终发布
+
+0.11.0 已[正式发布](https://github.com/tracy115-ops/verification/releases/tag/v0.11.0)，应用提交为 `7ce8a11`。[主分支检查](https://github.com/tracy115-ops/verification/actions/runs/42553533926)与 [Windows 打包任务](https://github.com/tracy115-ops/verification/actions/runs/42553540354)均成功，包含全量界面/协作、原生契约、安装升级冒烟、黑盒回归及 Release 产物上传。安装包随附 SHA-256 清单和构建来源。
+
+标签后的 `51646ca` 只补充独立关闭测试的启用开关、无修改正常关闭专项及证据，其[主分支检查](https://github.com/tracy115-ops/verification/actions/runs/42554113816)也成功；没有改变已发布的应用代码或移动原标签。
