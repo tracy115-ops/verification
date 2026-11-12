@@ -13,6 +13,7 @@ import { Titlebar, PageHeading, DocumentBar, Notifications } from './WorkbenchCh
 import { workspacePage, type Page } from './navigation';
 import type { Appearance, SettingsTab } from '../features/settings/SettingsPage';
 import { hasDesktopBridge } from '../services/agent-api';
+import { ConversationStorageStatus } from './ConversationStorageStatus';
 
 const WorkflowEditor = lazy(() =>
   import('../features/workflows/WorkflowEditor').then((module) => ({ default: module.WorkflowEditor })),
@@ -75,6 +76,7 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
     <div className="app-shell">
       <Sidebar page={page} setPage={navigate} conversations={conversations} />
       <main className="app-main" data-close-protection={protection.ready ? 'ready' : 'pending'}>
+        <ConversationStorageStatus />
         {caseEditing.editor}
         {protection.unavailable && (
           <p className="wb-error" role="status">

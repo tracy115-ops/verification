@@ -3,6 +3,7 @@ import type { ConversationSession, WorkflowRun } from '../domain/runtime/types';
 import { loadConversations, saveConversations } from '../services/conversation-repository';
 import { emptyComposerDraft, type ComposerDraft } from '../domain/runtime/composer-draft';
 import { createSession } from '../domain/runtime/chat';
+import { conversationStorage } from '../services/conversation-storage';
 
 const activeSessionKey = 'verification-workbench.active-conversation';
 
@@ -18,7 +19,7 @@ function restoredSelection(sessions: ConversationSession[]) {
 
 function initialState() {
   try {
-    return { sessions: loadConversations(localStorage), error: null as string | null };
+    return { sessions: loadConversations(conversationStorage()), error: null as string | null };
   } catch {
     return { sessions: [], error: 'session_storage_invalid' };
   }
@@ -42,7 +43,7 @@ export function useConversationStore() {
   useEffect(() => {
     if (initial.error) return;
     try {
-      saveConversations(localStorage, sessions);
+      saveConversations(conversationStorage(), sessions);
     } catch {
       setError('session_storage_full');
     }

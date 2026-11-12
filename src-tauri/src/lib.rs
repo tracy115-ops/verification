@@ -53,6 +53,8 @@ pub fn run() -> tauri::Result<()> {
             shadow_commands::personal_shadow_status,
             shadow_commands::save_personal_shadow,
             shadow_commands::export_personal_shadow,
+            conversation_store_commands::read_conversation_store,
+            conversation_store_commands::write_conversation_store,
             updater::update_status,
             updater::check_update,
             updater::download_update,
@@ -67,6 +69,8 @@ pub fn run() -> tauri::Result<()> {
 mod cli_progress;
 mod cli_settings;
 mod collaboration;
+mod conversation_store;
+mod conversation_store_commands;
 mod conversations;
 mod diagnostics;
 mod executions;

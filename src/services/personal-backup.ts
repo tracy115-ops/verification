@@ -4,9 +4,12 @@ import { FRAMEWORKS_KEY, loadFrameworks } from './framework-repository';
 import { isCliTurnRecord, type CliTurnRecord } from '../domain/runtime/transcript';
 import { IndexedDbTranscripts } from './transcript-repository';
 import { transcriptStore } from './transcript-store';
+import { conversationStorage, flushConversationStorage } from './conversation-storage';
 
 const keys = [CONVERSATIONS_KEY, DOCUMENT_KEY, FRAMEWORKS_KEY] as const;
 const limit = 20 * 1024 * 1024;
+const storageFor = (key: string) => (key === CONVERSATIONS_KEY ? conversationStorage() : localStorage);
+export const personalStorageItem = (key: string) => storageFor(key).getItem(key);
 export interface PersonalBackup {
   formatVersion: 1;
   createdAt: string;
@@ -57,15 +60,16 @@ export function parseBackup(text: string): PersonalBackup {
     throw new Error('data_backup_invalid');
   }
 }
-export async function exportPersonalData(): Promise<string> {
+export async function exportPersonalData(allowUncommitted = false): Promise<string> {
+  if (!allowUncommitted) await flushConversationStorage();
   await transcriptStore.flush();
-  const sessions = decodeConversations(JSON.parse(localStorage.getItem(CONVERSATIONS_KEY) ?? '[]'));
+  const sessions = decodeConversations(JSON.parse(personalStorageItem(CONVERSATIONS_KEY) ?? '[]'));
   const records = await new IndexedDbTranscripts().readAll();
   const result = JSON.stringify(
     validateBackup({
       formatVersion: 1,
       createdAt: new Date().toISOString(),
-      storage: Object.fromEntries(keys.map((key) => [key, localStorage.getItem(key)])),
+      storage: Object.fromEntries(keys.map((key) => [key, personalStorageItem(key)])),
       transcripts: records.filter((record) => sessions.some((session) => session.id === record.sessionId)),
     }),
     null,
@@ -79,19 +83,22 @@ export async function restorePersonalData(
   mayContinue: () => boolean = () => true,
 ): Promise<void> {
   const valid = validateBackup(backup);
+  await flushConversationStorage();
   await transcriptStore.flush();
   if (!mayContinue()) throw new Error('data_restore_blocked');
-  const previous = keys.map((key) => [key, localStorage.getItem(key)] as const);
+  const previous = keys.map((key) => [key, personalStorageItem(key)] as const);
   try {
     for (const key of keys) {
       const value = valid.storage[key];
-      if (value === null) localStorage.removeItem(key);
-      else localStorage.setItem(key, value);
+      if (value === null) storageFor(key).removeItem(key);
+      else storageFor(key).setItem(key, value);
     }
+    await flushConversationStorage();
     await new IndexedDbTranscripts().replaceAll(valid.transcripts);
   } catch {
-    for (const key of keys) localStorage.removeItem(key);
-    for (const [key, value] of previous) if (value !== null) localStorage.setItem(key, value);
+    for (const key of keys) storageFor(key).removeItem(key);
+    for (const [key, value] of previous) if (value !== null) storageFor(key).setItem(key, value);
+    await flushConversationStorage();
     throw new Error('data_restore_failed');
   }
 }
@@ -105,7 +112,7 @@ export function emptyPersonalData(): PersonalBackup {
 }
 export function personalDataBytes(): number {
   return keys.reduce(
-    (total, key) => total + new TextEncoder().encode(localStorage.getItem(key) ?? '').length,
+    (total, key) => total + new TextEncoder().encode(personalStorageItem(key) ?? '').length,
     0,
   );
 }

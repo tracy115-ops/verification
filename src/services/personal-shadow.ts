@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import { exportPersonalData, parseBackup } from './personal-backup';
+import { exportPersonalData, parseBackup, personalStorageItem } from './personal-backup';
 
 export interface ShadowSnapshot {
   id: number;
@@ -64,7 +64,7 @@ export async function createPersonalShadow() {
   const payload = await exportPersonalData();
   const backup = parseBackup(payload);
   // A navigation or another writer must not silently change the source during collection.
-  if (Object.entries(backup.storage).some(([key, text]) => localStorage.getItem(key) !== text))
+  if (Object.entries(backup.storage).some(([key, text]) => personalStorageItem(key) !== text))
     throw new Error('shadow_source_changed');
   const bytes = new TextEncoder().encode(payload);
   const sha256 = await digest(bytes);

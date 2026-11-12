@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AgentEvent } from '../domain/runtime/types';
 import { isCliProgress, type CliProgress } from '../domain/runtime/cli-progress';
+import { assertConversationStorageHealthy } from '../services/conversation-storage';
 
 export function useSessionTasks(activeId: string) {
   const controllers = useRef(new Map<string, AbortController>());
@@ -23,6 +24,7 @@ export function useSessionTasks(activeId: string) {
     setProgress((value) => ({ ...value, [id]: undefined }));
     setErrors((value) => ({ ...value, [id]: null }));
     try {
+      assertConversationStorageHealthy();
       await task(controller);
     } catch (error) {
       setErrors((value) => ({

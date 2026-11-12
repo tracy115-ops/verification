@@ -1,0 +1,10 @@
+{
+  "version": "0.15.0",
+  "originalIpc": true,
+  "historicalFixture": true,
+  "freshModelCall": false,
+  "databaseMainRead": true,
+  "oldBrowserSourceRetained": true,
+  "composerAndRunRetained": true,
+  "artifactOrderAndApprovalsRetained": true
+}

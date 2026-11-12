@@ -6,6 +6,7 @@ import { hasDesktopBridge } from '../../services/agent-api';
 import { isMessageKey, useI18n } from '../../shared/i18n/context';
 import { ConfirmDialog } from './ConfirmDialog';
 import { ShadowDataSettings } from './ShadowDataSettings';
+import { ConversationStoreSettings } from './ConversationStoreSettings';
 import { ShadowRestoreDialog, type ShadowRestorePreview } from './ShadowRestoreDialog';
 import { restoreWithSafetyCopy } from '../../services/restore-preparation';
 export function DataSettings({ blocked }: { blocked: boolean }) {
@@ -56,6 +57,7 @@ export function DataSettings({ blocked }: { blocked: boolean }) {
   return (
     <section className="settings-system-panel">
       <h2>{t('dataManagement')}</h2>
+      <ConversationStoreSettings blocked={blocked || busy} />
       <p className="wb-muted">{t('dataScope')}</p>
       <p>
         {t('dataBytes')} · {new Intl.NumberFormat(locale).format(backup.personalDataBytes())} B

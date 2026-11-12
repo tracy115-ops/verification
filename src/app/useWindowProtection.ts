@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { hasDesktopBridge } from '../services/agent-api';
+import { hasPendingConversationWrites, flushConversationStorage } from '../services/conversation-storage';
 
 export function useWindowProtection(needsProtection: () => boolean) {
   const latest = useRef(needsProtection);
@@ -11,7 +12,7 @@ export function useWindowProtection(needsProtection: () => boolean) {
   const [unavailable, setUnavailable] = useState(false);
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => {
-      if (latest.current()) {
+      if (latest.current() || hasPendingConversationWrites()) {
         event.preventDefault();
         event.returnValue = '';
       }
@@ -26,6 +27,14 @@ export function useWindowProtection(needsProtection: () => boolean) {
             if (latest.current()) {
               event.preventDefault();
               setClosing(true);
+            } else if (hasPendingConversationWrites()) {
+              event.preventDefault();
+              void flushConversationStorage()
+                .then(() => getCurrentWindow().destroy())
+                .catch(() => {
+                  setError(true);
+                  setClosing(true);
+                });
             }
           })
           .then((stop) => {
@@ -49,6 +58,7 @@ export function useWindowProtection(needsProtection: () => boolean) {
   }, []);
   async function close() {
     try {
+      await flushConversationStorage();
       await getCurrentWindow().destroy();
     } catch {
       setError(true);
