@@ -35,6 +35,15 @@ export async function storageFixture(page: Page, enabled = false) {
               const value = JSON.parse(localStorage.getItem('fixture.native')!);
               if (value.revision !== args?.expectedRevision) throw new Error('store_conflict');
               if (localStorage.getItem('fixture.write.error')) throw new Error('store_unavailable');
+              if (localStorage.getItem('fixture.write.pause'))
+                await new Promise<void>((resolve) => {
+                  const timer = setInterval(() => {
+                    if (!localStorage.getItem('fixture.write.pause')) {
+                      clearInterval(timer);
+                      resolve();
+                    }
+                  }, 25);
+                });
               value.revision++;
               value.payload = args!.payload;
               localStorage.setItem('fixture.native', JSON.stringify(value));

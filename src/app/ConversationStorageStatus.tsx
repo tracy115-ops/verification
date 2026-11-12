@@ -12,7 +12,7 @@ export function ConversationStorageStatus() {
   const { t } = useI18n();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
-  if (state.phase !== 'error') return null;
+  if (!state.error) return null;
   async function run(task: () => Promise<void>) {
     setBusy(true);
     setError(false);

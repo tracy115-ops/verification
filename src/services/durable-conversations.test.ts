@@ -43,6 +43,27 @@ it('keeps failed data in memory, blocks flush and retries the same expected revi
   ]);
   expect(store.snapshot().phase).toBe('saved');
 });
+it('retains the failed-storage guard until a retry is actually acknowledged', async () => {
+  let acknowledge!: (revision: number) => void;
+  const commit = vi
+    .fn()
+    .mockRejectedValueOnce(new Error('store_unavailable'))
+    .mockImplementationOnce(
+      () =>
+        new Promise<number>((resolve) => {
+          acknowledge = resolve;
+        }),
+    );
+  const store = new DurableConversations('[]', 1, commit);
+  store.setItem(key, '[1]');
+  await expect(store.flush()).rejects.toThrow('store_unavailable');
+  const retry = store.retry();
+  await vi.waitFor(() => expect(commit).toHaveBeenCalledTimes(2));
+  expect(store.snapshot().error).toBe('store_unavailable');
+  acknowledge(2);
+  await retry;
+  expect(store.snapshot()).toEqual({ revision: 2, phase: 'saved', error: null });
+});
 it('does not rebase a conflicting writer or report an invalid acknowledgement as saved', async () => {
   for (const result of [Promise.reject(new Error('store_conflict')), Promise.resolve(100)]) {
     const commit = vi.fn(() => result);

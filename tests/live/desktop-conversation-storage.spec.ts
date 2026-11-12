@@ -124,7 +124,7 @@ test('reads committed data after restarting the isolated native process', async 
     expect(restored.runs[0].approvals).toEqual(original.approvals);
     await page.getByRole('button', { name: '在线升级', exact: true }).click();
     const version = await page.locator('.settings-version-row strong').textContent();
-    expect(version).toBe('0.15.0');
+    expect(version).toBe(process.env.DESKTOP_AUDIT_VERSION ?? '0.15.0');
     writeFileSync(
       path.join(output, 'restart-summary.json'),
       JSON.stringify(

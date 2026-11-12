@@ -46,21 +46,21 @@ export class DurableConversations {
   removeItem(key: string) {
     this.setItem(key, '[]');
   }
-  private start() {
-    if (this.worker || this.pending === null || this.state.error) return;
+  private start(retry = false) {
+    if (this.worker || this.pending === null || (this.state.error && !retry)) return;
     this.publish({ phase: 'saving' });
     this.worker = Promise.resolve()
       .then(async () => {
         while (this.pending !== null) {
           const text = this.pending;
           this.pending = null;
-          if (text === this.committed) continue;
+          if (text === this.committed && !this.state.error) continue;
           try {
             const revision = await this.commit(text, this.state.revision);
             if (!Number.isSafeInteger(revision) || revision !== this.state.revision + 1)
               throw new Error('store_invalid');
             this.committed = text;
-            this.publish({ revision });
+            this.publish({ revision, error: null });
           } catch (error) {
             const code = error instanceof Error ? error.message : String(error);
             this.pending = this.value;
@@ -87,8 +87,7 @@ export class DurableConversations {
     if (this.state.error) throw new Error(this.state.error);
   }
   async retry() {
-    this.publish({ error: null });
-    this.start();
+    this.start(true);
     await this.flush();
   }
 }

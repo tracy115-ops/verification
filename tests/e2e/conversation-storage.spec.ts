@@ -111,3 +111,58 @@ test('does not initialize SQLite if the protective backup fails', async ({ page 
     await page.evaluate(() => localStorage.getItem('verification-workbench.conversation-store.v1')),
   ).toBeNull();
 });
+
+test('explicitly falls back to the old browser copy and reconnects without replacing SQLite', async ({
+  page,
+}) => {
+  await storageFixture(page, true);
+  await page.goto('/');
+  await expect(page.locator('.session-title')).toHaveText('数据库会话');
+  const original = await page.evaluate(() => localStorage.getItem('fixture.native'));
+  await page.evaluate(() => localStorage.setItem('fixture.read.error', 'store_corrupt'));
+  await page.reload();
+  await page.getByRole('button', { name: '打开旧浏览器副本', exact: true }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: '打开旧浏览器副本', exact: true }).click();
+  await expect(page.locator('.session-title')).toHaveText('浏览器迁移前会话');
+  expect(await page.evaluate(() => localStorage.getItem('fixture.native'))).toBe(original);
+  expect(
+    await page.evaluate(() => localStorage.getItem('verification-workbench.conversation-store.v1')),
+  ).toBeNull();
+  await page.evaluate(() => localStorage.removeItem('fixture.read.error'));
+  await openStorageSettings(page);
+  await page.getByRole('button', { name: '检查并迁移会话' }).click();
+  const confirm = page.getByRole('alertdialog');
+  await expect(confirm).toContainText('发现已有 SQLite 会话库');
+  await confirm.getByRole('button', { name: '保护数据并启用' }).click();
+  await expect(page.locator('.session-title')).toHaveText('数据库会话');
+  expect(await page.evaluate(() => localStorage.getItem('fixture.native'))).toBe(original);
+});
+
+test('blocks new Agent calls throughout a delayed storage retry until the commit is acknowledged', async ({
+  page,
+}) => {
+  await storageFixture(page, true);
+  await page.goto('/');
+  await expect(page.locator('.session-title')).toHaveText('数据库会话');
+  await page.evaluate(() => localStorage.setItem('fixture.write.error', 'true'));
+  await renameFirst(page, '等待重试确认');
+  const warning = page.locator('.conversation-storage-warning');
+  await expect(warning).toBeVisible();
+  await page.locator('.session-composer textarea').fill('你好');
+  await page.evaluate(() => {
+    localStorage.removeItem('fixture.write.error');
+    localStorage.setItem('fixture.write.pause', 'true');
+  });
+  await warning.getByRole('button', { name: '重试保存' }).click();
+  await expect(warning).toBeVisible();
+  await expect(warning.getByRole('button', { name: '重试保存' })).toBeDisabled();
+  await page.getByRole('button', { name: '发送消息', exact: true }).click();
+  expect(await page.evaluate(() => localStorage.getItem('fixture.cli'))).toBeNull();
+  await page.evaluate(() => localStorage.removeItem('fixture.write.pause'));
+  await expect(warning).toHaveCount(0);
+  expect(
+    await page.evaluate(
+      () => JSON.parse(JSON.parse(localStorage.getItem('fixture.native')!).payload)[0].title,
+    ),
+  ).toBe('等待重试确认');
+});
