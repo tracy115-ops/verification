@@ -12,6 +12,7 @@ import { ComposerSelectors } from './ComposerSelectors';
 import { prepareInvocation } from '../../domain/runtime/preparation';
 import { InvocationPreparation } from './InvocationPreparation';
 import { invokedWorkflow } from '../../domain/runtime/workflow-selection';
+import { getFrameworkInspection } from '../../services/framework-inspection-api';
 
 export function ConversationComposer({
   actions,
@@ -37,7 +38,9 @@ export function ConversationComposer({
   const draft = actions.session?.draft ?? emptyComposerDraft(fallbackProfile);
   const { text, invoke, profileId, frameworkId, useNodeBindings, contextMode } = draft;
   const invoked = invokedWorkflow(text, saved, workflows);
-  const preparation = prepareInvocation(draft, invoked, profiles, frameworks);
+  const selectedFramework = frameworks.find((item) => item.id === frameworkId);
+  const inspection = selectedFramework ? getFrameworkInspection(selectedFramework)?.report : undefined;
+  const preparation = prepareInvocation(draft, invoked, profiles, frameworks, inspection);
   const changeDraft = (patch: Partial<ComposerDraft>) => actions.updateComposerDraft(patch, fallbackProfile);
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
   const file = useRef<HTMLInputElement>(null);

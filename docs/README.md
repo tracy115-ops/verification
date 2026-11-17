@@ -1,5 +1,7 @@
 # 验证 Agent 设计档案
 
+0.16.0 正在验证：[框架接入静态检查](design/framework-admission.md)，导入后检查语法、规模和入口声明，明确问题阻止完整流程发送；不等同于多文件 SDK 或运行能力验证。
+
 0.15.1 已发布：[桌面会话事务主存储](adr/0005-transactional-conversation-primary.md)，显式保护迁移、SQLite 主读写、版本冲突及提交失败恢复；[专项验收](research/conversation-storage-validation-2026-11-12.md)。流程、全局配置和日志仍有独立迁移工作。
 
 0.14.1 已发布：[人工与 Agent 用例修订](design/case-revision-and-proposals.md)，涵盖三步编辑、增量提议审核、草稿保护与下游失效，并修复开发模式弹窗问题；[验收记录](research/case-revision-validation-2026-11-09.md)记录本地与远端结果及验证边界。

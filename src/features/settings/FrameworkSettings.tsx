@@ -7,6 +7,7 @@ import type { FrameworkProfile } from '../../domain/execution/types';
 import { exampleFramework } from '../../domain/execution/presets';
 import { newId } from '../../shared/id';
 import { useI18n, isMessageKey } from '../../shared/i18n/context';
+import { FrameworkInspection } from './FrameworkInspection';
 
 export function FrameworkSettings({ settings }: { settings: Frameworks }) {
   const { t } = useI18n();
@@ -103,6 +104,7 @@ function FrameworkForm({
 }) {
   const { t } = useI18n();
   const input = useRef<HTMLInputElement>(null);
+  const sourceInput = useRef<HTMLTextAreaElement>(null);
   const draft = useProtectedDraft({
     id: `framework:${initial.id}`,
     section: 'frameworks',
@@ -215,6 +217,8 @@ function FrameworkForm({
       <label className="wb-field">
         {t('frameworkSource')}
         <textarea
+          ref={sourceInput}
+          aria-label={t('frameworkSource')}
           className="workbench-textarea wb-code"
           required
           maxLength={60000}
@@ -234,6 +238,18 @@ function FrameworkForm({
           }}
         />
       </label>
+      <FrameworkInspection
+        value={value}
+        disabled={reading}
+        openLine={(line) => {
+          const field = sourceInput.current;
+          if (!field) return;
+          const lines = field.value.split('\n');
+          const start = lines.slice(0, line - 1).reduce((sum, text) => sum + text.length + 1, 0);
+          field.focus();
+          field.setSelectionRange(start, start + (lines[line - 1]?.length ?? 0));
+        }}
+      />
       <p className="wb-banner">{t('trustedFrameworkHint')}</p>
       {error && <p className="wb-error">{t('framework_read_failed')}</p>}
       <button className="workbench-btn wb-primary" type="submit" disabled={reading || draft.conflicted}>

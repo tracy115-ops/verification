@@ -52,6 +52,31 @@ fn root(app: &AppHandle) -> Result<PathBuf, String> {
 }
 
 #[tauri::command]
+pub async fn inspect_framework(
+    app: AppHandle,
+    state: State<'_, ExecutionRuntime>,
+    request: execution_runtime::FrameworkInspectionRequest,
+    on_event: Channel<ExecutionEvent>,
+) -> Result<execution_runtime::FrameworkInspection, String> {
+    let updates = app.state::<crate::updater::UpdateRuntime>();
+    let _activity = updates.task()?;
+    let id = request.id.clone();
+    let folder = root(&app)?.join("framework-inspections");
+    let cancel = state.reserve(&id)?;
+    let result = execution_runtime::inspect_framework(&folder, request, cancel, |event| {
+        on_event.send(event).is_ok()
+    })
+    .await;
+    state.finish(&id);
+    crate::diagnostics::record(
+        &app,
+        "framework.inspected",
+        serde_json::json!({"inspectionId": id, "status": if result.is_ok() {"completed"} else {"failed"}, "errorCode":result.as_ref().err()}),
+    );
+    result
+}
+
+#[tauri::command]
 pub async fn preflight_python(
     app: AppHandle,
     state: State<'_, ExecutionRuntime>,

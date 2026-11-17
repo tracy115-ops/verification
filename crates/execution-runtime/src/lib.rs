@@ -1,4 +1,5 @@
 mod evidence;
+mod inspection;
 mod process;
 #[cfg(test)]
 mod test_support;
@@ -6,6 +7,10 @@ mod test_support;
 mod tests;
 mod types;
 mod validation;
+pub use inspection::{
+    FrameworkCheck, FrameworkHint, FrameworkInspection, FrameworkInspectionRequest,
+    inspect_framework,
+};
 use std::path::{Path, PathBuf};
 use tokio::sync::oneshot;
 pub use types::*;

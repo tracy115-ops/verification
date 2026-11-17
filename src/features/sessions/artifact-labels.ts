@@ -21,6 +21,7 @@ export function artifactLabel(artifact: Artifact, t: (key: MessageKey) => string
   if (isReport(value)) return t('artifactReportCount').replace('{count}', number(value.candidates.length));
   const keys: Record<string, MessageKey> = {
     DocumentRevision: 'artifactSource',
+    FrameworkInspection: 'frameworkInspectionTitle',
     ExecutionPlan: 'executionReview',
     ExecutionAuthorization: 'artifactAuthorization',
     VerdictBundle: 'artifactVerdict',

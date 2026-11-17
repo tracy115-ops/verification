@@ -18,6 +18,7 @@ import { runRetryAction } from './run-retry-action';
 import { designProposalActions } from './design-proposal-actions';
 import { invokedWorkflow } from '../domain/runtime/workflow-selection';
 import { caseProposalActions } from './case-proposal-actions';
+import { frameworkInspectionArtifact } from '../services/framework-inspection-api';
 
 export function useConversations(
   profiles: AgentProfile[],
@@ -101,6 +102,10 @@ export function useConversations(
           framework,
           useNodeBindings ? 'bindings' : 'session',
         );
+        if (run.scope === 'verification' && run.executionProfile) {
+          const inspection = await frameworkInspectionArtifact(run.executionProfile);
+          if (inspection) run.artifacts['framework.inspection'] = inspection;
+        }
         value.runs = [...value.runs, run];
         setSelectedRunId(run.id);
         changeSession(value);

@@ -8,7 +8,7 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: 'list',
-  outputDir: '.runtime/playwright',
+  outputDir: production ? '.runtime/playwright-production' : '.runtime/playwright',
   use: {
     baseURL,
     viewport: { width: 1500, height: 960 },

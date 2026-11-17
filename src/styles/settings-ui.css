@@ -505,3 +505,33 @@
   border-bottom: 1px solid var(--wb-border);
   overflow-wrap: anywhere;
 }
+.settings-framework-inspection {
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius);
+  padding: 16px;
+  overflow-wrap: anywhere;
+}
+.settings-framework-inspection > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.settings-framework-inspection h3 {
+  margin: 0;
+}
+.settings-framework-inspection summary {
+  margin-top: 12px;
+  cursor: pointer;
+}
+.framework-inspection-checks {
+  list-style: none;
+  padding: 0;
+}
+.framework-inspection-checks li {
+  display: grid;
+  gap: 6px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--wb-border);
+}

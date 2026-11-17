@@ -40,6 +40,7 @@ pub fn run() -> tauri::Result<()> {
             conversations::send_cli_turn,
             conversations::cancel_cli_turn,
             executions::preflight_python,
+            executions::inspect_framework,
             executions::execute_python,
             executions::cancel_python,
             collaboration::start_collaboration,

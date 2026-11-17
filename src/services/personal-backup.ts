@@ -5,6 +5,7 @@ import { isCliTurnRecord, type CliTurnRecord } from '../domain/runtime/transcrip
 import { IndexedDbTranscripts } from './transcript-repository';
 import { transcriptStore } from './transcript-store';
 import { conversationStorage, flushConversationStorage } from './conversation-storage';
+import { clearFrameworkInspections } from './framework-inspection-api';
 
 const keys = [CONVERSATIONS_KEY, DOCUMENT_KEY, FRAMEWORKS_KEY] as const;
 const limit = 20 * 1024 * 1024;
@@ -95,6 +96,7 @@ export async function restorePersonalData(
     }
     await flushConversationStorage();
     await new IndexedDbTranscripts().replaceAll(valid.transcripts);
+    clearFrameworkInspections();
   } catch {
     for (const key of keys) storageFor(key).removeItem(key);
     for (const [key, value] of previous) if (value !== null) storageFor(key).setItem(key, value);

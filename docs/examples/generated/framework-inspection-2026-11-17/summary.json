@@ -1,0 +1,15 @@
+{
+  "identifier": "dev.verification.workbench.audit016framework",
+  "originalIpc": true,
+  "realPython": true,
+  "frameworkImported": false,
+  "freshModelCall": false,
+  "targetRequests": false,
+  "topLevelRaiseNotExecuted": true,
+  "syntaxErrorLocated": true,
+  "dynamicExportUnverified": true,
+  "missingEntryBlocked": true,
+  "savedSourceRetained": true,
+  "sessionCheckExpiresOnReload": true,
+  "errors": []
+}

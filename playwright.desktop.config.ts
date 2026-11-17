@@ -4,6 +4,7 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/live',
   testMatch: [
+    '**/desktop-framework-inspection.spec.ts',
     '**/desktop-conversation-storage.spec.ts',
     '**/desktop-cases.spec.ts',
     '**/desktop-quality.spec.ts',

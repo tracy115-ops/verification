@@ -82,6 +82,16 @@ export function InvocationPreparation({
             {preparation.framework.name} · {preparation.framework.targetUrl}
             <br />
             {t('preparationTargetUnknown')}
+            <br />
+            {t(
+              preparation.frameworkInspection === 'checked'
+                ? 'frameworkInspectChecked'
+                : preparation.frameworkInspection === 'unverified'
+                  ? 'frameworkInspectUnknown'
+                  : preparation.frameworkInspection === 'blocked'
+                    ? 'frameworkInspectBlocked'
+                    : 'frameworkInspectUnchecked',
+            )}
           </p>
         ) : !preparation.execution && preparation.stepCount > 0 ? (
           <p>{t('preparationDesignOnly')}</p>

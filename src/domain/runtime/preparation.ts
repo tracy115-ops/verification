@@ -5,6 +5,7 @@ import { decodeFramework } from '../execution/validation';
 import { nativeAgentFields } from './profile';
 import { selectRunPlan } from './plan';
 import { workflowCommand } from './chat';
+import { frameworkInspectionState, type FrameworkInspection } from '../execution/framework-inspection';
 
 export interface PreparationIssue {
   code: string;
@@ -22,6 +23,7 @@ export interface WorkflowPreparation {
   agents: PreparedAgent[];
   framework?: FrameworkProfile;
   execution?: boolean;
+  frameworkInspection?: ReturnType<typeof frameworkInspectionState>;
   issues: PreparationIssue[];
 }
 
@@ -30,6 +32,7 @@ export function prepareInvocation(
   saved: WorkbenchDocument | null,
   profiles: AgentProfile[],
   frameworks: FrameworkProfile[],
+  inspection?: FrameworkInspection,
 ): WorkflowPreparation | undefined {
   if (draft.editDesign || draft.editCases) return;
   let command;
@@ -59,6 +62,9 @@ export function prepareInvocation(
     else {
       try {
         result.framework = decodeFramework(framework);
+        result.frameworkInspection = frameworkInspectionState(inspection);
+        if (result.frameworkInspection === 'blocked')
+          result.issues.push({ code: 'framework_inspection_blocked' });
       } catch (error) {
         result.issues.push({ code: error instanceof Error ? error.message : 'execution_invalid' });
       }

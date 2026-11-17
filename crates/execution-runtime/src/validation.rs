@@ -22,6 +22,19 @@ pub fn valid_uuid(value: &str) -> bool {
             }
         })
 }
+pub(crate) fn validate_python_command(command: &str) -> Result<(), String> {
+    let name = Path::new(command)
+        .file_name()
+        .and_then(|value| value.to_str())
+        .unwrap_or_default()
+        .to_ascii_lowercase();
+    if !["python", "python3", "python.exe", "python3.exe"].contains(&name.as_str())
+        || command.chars().any(char::is_control)
+    {
+        return Err("python_invalid".into());
+    }
+    Ok(())
+}
 pub fn validate(payload: &ExecutionPayload) -> Result<(), String> {
     let profile = &payload.profile;
     if ![&payload.session_id, &payload.run_id, &payload.execution_id]
@@ -39,16 +52,7 @@ pub fn validate(payload: &ExecutionPayload) -> Result<(), String> {
     {
         return Err("execution_invalid".into());
     }
-    let name = Path::new(&profile.python_command)
-        .file_name()
-        .and_then(|value| value.to_str())
-        .unwrap_or_default()
-        .to_ascii_lowercase();
-    if !["python", "python3", "python.exe", "python3.exe"].contains(&name.as_str())
-        || profile.python_command.chars().any(char::is_control)
-    {
-        return Err("python_invalid".into());
-    }
+    validate_python_command(&profile.python_command)?;
     let url = url::Url::parse(&profile.target_url).map_err(|_| "target_invalid")?;
     if !["http", "https"].contains(&url.scheme())
         || url.host_str().is_none()
