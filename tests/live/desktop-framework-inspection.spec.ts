@@ -19,6 +19,12 @@ test('inspects frameworks through original desktop IPC without executing their c
     );
     expect(identifier).toBe(process.env.DESKTOP_INSPECTION_IDENTIFIER);
     expect(identifier).toMatch(/^dev\.verification\.workbench\.audit/);
+    const version = await page.evaluate(() =>
+      (
+        window as unknown as { __TAURI_INTERNALS__: { invoke: (command: string) => Promise<string> } }
+      ).__TAURI_INTERNALS__.invoke('plugin:app|version'),
+    );
+    if (process.env.DESKTOP_AUDIT_VERSION) expect(version).toBe(process.env.DESKTOP_AUDIT_VERSION);
     await page.getByRole('button', { name: '设置', exact: true }).click();
     await page.getByRole('button', { name: '测试框架与执行', exact: true }).click();
     const source = page.getByRole('textbox', { name: 'framework.py 源码', exact: true });
@@ -26,6 +32,7 @@ test('inspects frameworks through original desktop IPC without executing their c
     const inspect = report.getByRole('button', { name: '检查当前框架', exact: true });
     // Success with this top-level raise proves the framework was not imported.
     const text =
+      '# source context\n'.repeat(120) +
       'import unittest\nraise RuntimeError("MUST_NOT_EXECUTE")\nclass BlackBoxCase(unittest.TestCase):\n    def setUp(self):\n        raise RuntimeError("MUST_NOT_RESET")\n';
     await page
       .locator('input[type=file]')
@@ -35,13 +42,21 @@ test('inspects frameworks through original desktop IPC without executing their c
     await expect(report).toContainText('语法及入口声明检查完成');
     await report.locator('summary').click();
     await expect(report).toContainText('发现 setUp 声明');
-    await report.getByRole('button', { name: '第 3 行', exact: true }).click();
+    await report.getByRole('button', { name: '第 123 行', exact: true }).click();
     await expect(source).toBeFocused();
     expect(
       await source.evaluate((field: HTMLTextAreaElement) =>
         field.value.slice(field.selectionStart, field.selectionEnd),
       ),
     ).toBe('class BlackBoxCase(unittest.TestCase):');
+    const position = await source.evaluate((field: HTMLTextAreaElement) => ({
+      top: field.scrollTop,
+      height: field.clientHeight,
+      target: 122 * Number.parseFloat(getComputedStyle(field).lineHeight),
+    }));
+    expect(position.target).toBeGreaterThanOrEqual(position.top);
+    expect(position.target).toBeLessThan(position.top + position.height);
+    await source.screenshot({ path: path.join(output, 'distant-line-native.png') });
     await report.screenshot({ path: path.join(output, 'declarations-native.png') });
     await source.fill('import unittest\nclass BlackBoxCase(\n');
     await expect(report).toContainText('尚未检查当前源码与解释器');
@@ -80,6 +95,8 @@ test('inspects frameworks through original desktop IPC without executing their c
       JSON.stringify(
         {
           identifier,
+          version,
+          distantLineVisible: true,
           originalIpc: true,
           realPython: true,
           frameworkImported: false,

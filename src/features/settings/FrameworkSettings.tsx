@@ -220,6 +220,7 @@ function FrameworkForm({
           ref={sourceInput}
           aria-label={t('frameworkSource')}
           className="workbench-textarea wb-code"
+          wrap="off"
           required
           maxLength={60000}
           value={value.frameworkSource}
@@ -248,6 +249,9 @@ function FrameworkForm({
           const start = lines.slice(0, line - 1).reduce((sum, text) => sum + text.length + 1, 0);
           field.focus();
           field.setSelectionRange(start, start + (lines[line - 1]?.length ?? 0));
+          const lineHeight = Number.parseFloat(getComputedStyle(field).lineHeight);
+          field.scrollTop = Math.max(0, (line - 1) * lineHeight - field.clientHeight / 2);
+          field.scrollLeft = 0;
         }}
       />
       <p className="wb-banner">{t('trustedFrameworkHint')}</p>

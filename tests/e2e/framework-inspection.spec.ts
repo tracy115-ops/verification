@@ -41,7 +41,9 @@ async function setup(page: Page) {
                 code: 'entry',
                 status: missing ? 'error' : 'ok',
                 reason: missing ? 'entry_missing' : 'entry_declared',
-                line: missing ? null : 2,
+                line: missing
+                  ? null
+                  : source.split('\n').findIndex((line) => line.startsWith('class BlackBoxCase')) + 1,
               },
             ],
           };
@@ -76,6 +78,20 @@ test('inspects imported source, locates its entry and invalidates applicability 
       field.value.slice(field.selectionStart, field.selectionEnd),
     ),
   ).toBe('class BlackBoxCase(unittest.TestCase):');
+  await source.fill('# source context\n'.repeat(120) + text);
+  await report.getByRole('button', { name: '检查当前框架', exact: true }).click();
+  await expect(report).toContainText('语法及入口声明检查完成');
+  await report.locator('summary').click();
+  await report.getByRole('button', { name: '第 122 行', exact: true }).click();
+  const position = await source.evaluate((field: HTMLTextAreaElement) => ({
+    top: field.scrollTop,
+    height: field.clientHeight,
+    target: 121 * Number.parseFloat(getComputedStyle(field).lineHeight),
+    selected: field.value.slice(field.selectionStart, field.selectionEnd),
+  }));
+  expect(position.selected).toBe('class BlackBoxCase(unittest.TestCase):');
+  expect(position.target).toBeGreaterThanOrEqual(position.top);
+  expect(position.target).toBeLessThan(position.top + position.height);
   await source.fill('import unittest\n');
   await expect(report).toContainText('尚未检查当前源码与解释器');
   await report.getByRole('button', { name: '检查当前框架', exact: true }).click();
