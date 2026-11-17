@@ -31,7 +31,11 @@
 
 补测发现原实现只设置选区，浏览器保留了旧的滚动位置，远处的行可能不可见。修正为按物理行显示源码并显式将目标行滚入视区、恢复行首可见。增加 120 行上下文的第 122/123 行测试，断言选区和实际视区坐标。
 
-0.16.1 的 `npm run check`（282 项单元测试）、开发/生产框架定向回归各 4 项、隔离 Release 原生检查 1 项通过。原生 IPC 核对版本为 0.16.1、标识为 `dev.verification.workbench.audit0161framework`。截图及摘要见[长源码验收资产](../examples/generated/framework-line-navigation-2026-11-17/README.md)。远端补丁检查与打包结果在完成后补记。
+0.16.1 的 `npm run check`（282 项单元测试）、开发/生产框架定向回归各 4 项、隔离 Release 原生检查 1 项通过。原生 IPC 核对版本为 0.16.1、标识为 `dev.verification.workbench.audit0161framework`。截图及摘要见[长源码验收资产](../examples/generated/framework-line-navigation-2026-11-17/README.md)。之后停止自有审计进程、恢复正常 Release 编译，并核对二进制不再包含两次审计标识。
+
+应用提交 `6c10c75` 的 [Checks 44017218923](https://github.com/tracy115-ops/verification/actions/runs/44017218923) 与 [Windows 打包 44017245880](https://github.com/tracy115-ops/verification/actions/runs/44017245880) 均成功。远端包括 282 项单元测试、107 项开发界面测试、5 项协作测试、89 项 Rust 测试（另 4 项显式忽略），以及生产界面、重复执行契约、安装升级冒烟检查。
+
+[v0.16.1](https://github.com/tracy115-ops/verification/releases/tag/v0.16.1) 于 2026-11-17T04:44:53Z 正式发布，安装包为 `Verification-Workbench-0.16.1-build.64.1-6c10c75-windows-x64-setup.exe`，同时提供 CLI 诊断工具、构建元数据及 SHA256SUMS。GitHub 返回安装包摘要 `eb70cb0ccb0370a09cc3036d7492630d1d773db6fe1fa34a9131b8df23b4d239`。发布成功不扩大上述模型、SDK 和目标环境验证边界。
 
 普通测试：`npm run check`、`npm run test:e2e`、`npm run test:e2e:production`、`npm run test:team:e2e`、`cargo test --workspace --locked`、`npm run verify:workflow`。
 
