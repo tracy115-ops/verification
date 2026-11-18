@@ -31,6 +31,10 @@
 
 0.17.1 也将工作流内容语言传给判定 Agent。使用更新后的生产提示构造函数、原始证据和真实 Codex 驱动单独复验了判定阶段。输出中文候选，仍关联相同的两条失败方法和用例。原始桌面报告保持原样，独立复验结果保存在 `verdict-locale-replay.json`。
 
+使用 0.17.1 Release 重新打开同一份原生任务，切换两条失败方法，摘要分别显示 6 与 4、13 与 4。复验截图为 `final-report-corrected.png`。
+
+0.17.0 本地通过 294 项单元测试、开发和生产界面各 108 项、5 项协作和 Rust 工作区测试。0.17.1 本地通过 294 项单元测试、生产构建及 3 项生产界面定向回归。单元测试曾在并发负载下因个别执行超时失败，限制为 6 个 worker 并将单测时限设为 20 秒后复跑全部通过。仓库测试配置未变更。
+
 ## 复验入口
 
 使用隔离标识 `dev.verification.workbench.auditquotaflow` 编译 Release。以 `node scripts/serve-quota-fixture.mjs --defect release_replay` 启动本机目标。用 `scripts/start-desktop-audit.mjs` 启动应用后，将返回的 loopback 地址传给 `scripts/audit-quota-workflow.mjs --endpoint`。通过 `configure`、`start`、`status`、`review` 查看原生流程。确认节点时通过 `approve` 指定操作和已核对的评审理由。生成结果位于 `.runtime/quota-flow`。

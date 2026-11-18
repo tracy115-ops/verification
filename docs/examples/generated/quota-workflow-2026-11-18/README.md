@@ -9,3 +9,4 @@
 - `replays.json` 记录同一脚本在正确参考和四个单缺陷变体上的回放。对照和变体由验收方设置。
 - `provenance.json`、`review-decisions.json` 和 `SHA256SUMS.json` 记录运行来源、评审及文件摘要。
 - 截图依次展示场景、用例评审及最终报告。原始报告截图保留了验收时遇到的多行断言摘要显示问题。
+- `final-report-corrected.png` 为同一报告在 0.17.1 重新打开后的截图，显示并发方法的实际值 13 与期望值 4。
