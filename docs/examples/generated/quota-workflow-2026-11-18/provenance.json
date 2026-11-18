@@ -1,0 +1,15 @@
+{
+  "runId": "7ff95ef8-13c3-4dcb-b7a5-d53ad3f9a2b7",
+  "desktop": "0.16.1 initial, 0.17.0 resumed",
+  "originalIpc": true,
+  "driver": "codex",
+  "cliVersion": "0.169.0",
+  "requestedModel": "gpt-6-sol",
+  "specSha256": "c6c2eaa21eb43e41a77b5ae263fc6bac9b160be74c6c003df427cc8742179768",
+  "scriptSha256": "9fedadce0adaedbf6ff6488061a677112ecdc83d86ddc70f7104132d56a75902",
+  "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+  "planDigest": "d81093eabdd8115ae7ba112bbec47dc141e18c34f214f2236dd453fe4fe4e4b7",
+  "approvals": 4,
+  "completedSteps": 13,
+  "requestResponseRecords": 162
+}

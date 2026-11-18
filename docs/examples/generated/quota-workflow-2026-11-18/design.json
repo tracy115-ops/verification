@@ -1,0 +1,493 @@
+{
+  "strategy": "以每个测试的独立初态为起点，设计 13 条黑盒场景，覆盖输入等价类与边界、身份权限、租户隔离、配额守恒、预留状态旅程和声明的并发行为。保存服务返回的 id，用 GET /quota、GET /holds/{id} 及操作响应比较前后状态。错误响应只断言状态码；并发场景使用最多四个请求的 self.client.parallel，检查逐项响应和最终状态。",
+  "scenarios": [
+    {
+      "id": "S01",
+      "title": "缺省、指定及无效身份的初态查询",
+      "requirementIds": [
+        "AUTH",
+        "QUOTA_INITIAL"
+      ],
+      "dimension": "身份等价类；在独立初态分别省略 user、指定 player-a 和 player-b，以及传入 None 和其他身份。",
+      "expected": "前三种请求的 GET /quota 均返回 200，响应为 {available:4, consumed:0}；省略 user 按 player-a 处理。后两种返回 401。",
+      "factorLevels": [
+        {
+          "factorId": "F_IDENTITY",
+          "level": "省略 user"
+        },
+        {
+          "factorId": "F_IDENTITY",
+          "level": "player-a"
+        },
+        {
+          "factorId": "F_IDENTITY",
+          "level": "player-b"
+        },
+        {
+          "factorId": "F_IDENTITY",
+          "level": "None"
+        },
+        {
+          "factorId": "F_IDENTITY",
+          "level": "其他身份"
+        }
+      ]
+    },
+    {
+      "id": "S02",
+      "title": "有效输入上下边界与租户初态配额",
+      "requirementIds": [
+        "HOLD_INPUT",
+        "HOLD_CREATE",
+        "QUOTA_INITIAL",
+        "QUOTA_INVARIANT",
+        "TENANT_ISOLATION"
+      ],
+      "dimension": "输入边界；player-a 以 units=1、单字符 ASCII 字母数字 key 创建预留，player-b 以 units=4、32 字符 ASCII 字母数字 key 创建预留。",
+      "expected": "两次创建各返回 201 和包含服务生成 id、正确 owner、units、key、active 状态的预留。两租户 GET /quota 分别为 {available:3, consumed:0} 和 {available:0, consumed:0}；各自的 active units 与配额相加均为 4。",
+      "factorLevels": [
+        {
+          "factorId": "F_IDENTITY",
+          "level": "player-a"
+        },
+        {
+          "factorId": "F_IDENTITY",
+          "level": "player-b"
+        },
+        {
+          "factorId": "F_UNITS",
+          "level": "整数下边界 1"
+        },
+        {
+          "factorId": "F_UNITS",
+          "level": "整数上边界 4"
+        },
+        {
+          "factorId": "F_KEY",
+          "level": "单字符 ASCII 字母或数字"
+        },
+        {
+          "factorId": "F_KEY",
+          "level": "32 字符 ASCII 字母或数字"
+        },
+        {
+          "factorId": "F_CAPACITY",
+          "level": "available 足够"
+        }
+      ]
+    },
+    {
+      "id": "S03",
+      "title": "无效 units 与 key 不改变状态",
+      "requirementIds": [
+        "HOLD_INPUT",
+        "HOLD_INVALID",
+        "QUOTA_INITIAL",
+        "TENANT_ISOLATION"
+      ],
+      "dimension": "无效输入等价类及边界；逐次提交布尔值、小数、小于 1、大于 4、非 number、缺失或 null 的 units，以及空、33 字符、非 ASCII 字母数字字符、缺失或 null 的 key；另一字段均取有效值。",
+      "expected": "每次 POST /holds 均返回 400。每次请求前后两个租户的配额及已有预留状态相同；从初态执行时，两租户配额始终为 {available:4, consumed:0}。",
+      "factorLevels": [
+        {
+          "factorId": "F_UNITS",
+          "level": "布尔值"
+        },
+        {
+          "factorId": "F_UNITS",
+          "level": "非整数 JSON number"
+        },
+        {
+          "factorId": "F_UNITS",
+          "level": "小于 1"
+        },
+        {
+          "factorId": "F_UNITS",
+          "level": "大于 4"
+        },
+        {
+          "factorId": "F_UNITS",
+          "level": "非 JSON number"
+        },
+        {
+          "factorId": "F_UNITS",
+          "level": "缺失或 null"
+        },
+        {
+          "factorId": "F_KEY",
+          "level": "空字符串"
+        },
+        {
+          "factorId": "F_KEY",
+          "level": "超过 32 字符"
+        },
+        {
+          "factorId": "F_KEY",
+          "level": "含非 ASCII 字母数字字符"
+        },
+        {
+          "factorId": "F_KEY",
+          "level": "缺失或 null"
+        }
+      ]
+    },
+    {
+      "id": "S04",
+      "title": "配额不足的 key 在释放后仍可使用",
+      "requirementIds": [
+        "HOLD_INPUT",
+        "HOLD_CREATE",
+        "HOLD_INSUFFICIENT",
+        "RELEASE_ACTIVE",
+        "QUOTA_INVARIANT"
+      ],
+      "dimension": "拒绝后的恢复旅程；先以 units=3 创建预留，再以新 key 请求 units=2；释放首个预留后，以被拒绝的 key 重试 units=2。",
+      "expected": "首个请求返回 201，available 从 4 降至 1；第二个请求返回 409，配额和预留状态不变且该 key 未保存。释放返回 200、状态为 released，available 恢复至 4；重试返回 201、新建 active 预留，available 为 2。各状态点满足配额守恒。",
+      "factorLevels": [
+        {
+          "factorId": "F_UNITS",
+          "level": "有效内部整数 2 或 3"
+        },
+        {
+          "factorId": "F_KEY",
+          "level": "单字符 ASCII 字母或数字"
+        },
+        {
+          "factorId": "F_CAPACITY",
+          "level": "available 足够"
+        },
+        {
+          "factorId": "F_CAPACITY",
+          "level": "available 不足"
+        }
+      ]
+    },
+    {
+      "id": "S05",
+      "title": "active 预留的幂等重试与不同 units 冲突",
+      "requirementIds": [
+        "HOLD_CREATE",
+        "HOLD_IDEMPOTENT",
+        "HOLD_KEY_CONFLICT",
+        "HOLD_GET",
+        "QUOTA_INVARIANT"
+      ],
+      "dimension": "重放与变更输入；创建 units=1 的预留，以同 key、同 units 重试，再以同 key、不同有效 units 请求，最后查询原预留和配额。",
+      "expected": "创建返回 201；同值重试返回 200、相同 id 和当前 active 预留；不同有效 units 返回 409。两次后续请求均不再次扣减配额，原预留仍为 active，available 为 3，consumed 为 0。",
+      "factorLevels": [
+        {
+          "factorId": "F_HOLD_STATE",
+          "level": "active"
+        }
+      ]
+    },
+    {
+      "id": "S06",
+      "title": "释放后的重复释放、重放及禁止消费",
+      "requirementIds": [
+        "HOLD_CREATE",
+        "HOLD_IDEMPOTENT",
+        "RELEASE_ACTIVE",
+        "RELEASE_REPEAT",
+        "CONSUME_RELEASED",
+        "QUOTA_INVARIANT"
+      ],
+      "dimension": "状态转换序列；创建预留，释放，再次释放，以原 key 和 units 重试创建，随后尝试消费该预留。",
+      "expected": "首次释放返回 200、同一 id 和 released 状态，available 恢复相应 units；再次释放返回 200、同一 released 预留且不重复恢复。原请求重放返回 200、同一 released 预留且不扣减配额；消费返回 409，预留及配额保持不变。",
+      "factorLevels": [
+        {
+          "factorId": "F_HOLD_STATE",
+          "level": "released"
+        }
+      ]
+    },
+    {
+      "id": "S07",
+      "title": "消费后的重复消费、重放及禁止释放",
+      "requirementIds": [
+        "HOLD_CREATE",
+        "HOLD_IDEMPOTENT",
+        "CONSUME_ACTIVE",
+        "CONSUME_REPEAT",
+        "RELEASE_CONSUMED",
+        "QUOTA_INVARIANT"
+      ],
+      "dimension": "状态转换序列；创建预留，消费，再次消费，以原 key 和 units 重试创建，随后尝试释放该预留。",
+      "expected": "首次消费返回 200、同一 id 和 consumed 状态，consumed 增加相应 units、available 不变；再次消费返回 200、同一 consumed 预留且不重复增加 consumed。原请求重放返回 200、同一 consumed 预留且不改变配额；释放返回 409，预留及配额保持不变。",
+      "factorLevels": [
+        {
+          "factorId": "F_HOLD_STATE",
+          "level": "consumed"
+        }
+      ]
+    },
+    {
+      "id": "S08",
+      "title": "相同 key 跨租户独立并拒绝跨租户查询",
+      "requirementIds": [
+        "HOLD_KEY_TENANTS",
+        "TENANT_ISOLATION",
+        "HOLD_GET",
+        "RELEASE_ACTIVE",
+        "QUOTA_INVARIANT"
+      ],
+      "dimension": "租户关系；两个租户用相同 key 分别创建预留，交叉查询对方的 id，再仅释放 player-a 的预留。",
+      "expected": "两个创建请求各返回 201，分别归属请求租户并形成独立预留。交叉 GET 均返回 403 且不改变状态。释放 player-a 预留后，仅 player-a 的预留变为 released 且 available 恢复；player-b 的预留和配额保持不变。",
+      "factorLevels": [
+        {
+          "factorId": "F_IDENTITY",
+          "level": "player-a"
+        },
+        {
+          "factorId": "F_IDENTITY",
+          "level": "player-b"
+        },
+        {
+          "factorId": "F_TARGET",
+          "level": "其他租户已有预留"
+        }
+      ]
+    },
+    {
+      "id": "S09",
+      "title": "查询、释放和消费的所有权与不存在 id",
+      "requirementIds": [
+        "HOLD_GET",
+        "RELEASE_ACCESS",
+        "CONSUME_ACCESS",
+        "HOLD_CREATE",
+        "TENANT_ISOLATION"
+      ],
+      "dimension": "权限与存在性；创建预留并保存运行时 id；所有者查询，另一租户分别查询、释放、消费该 id；两个租户对不存在的 id 分别执行查询、释放、消费。",
+      "expected": "所有者 GET 返回 200 和当前预留；另一租户的三种操作均返回 403；不存在 id 的三种操作均返回 404。查询和所有拒绝请求均不改变任一租户的配额或已有预留。",
+      "factorLevels": [
+        {
+          "factorId": "F_TARGET",
+          "level": "本人已有预留"
+        },
+        {
+          "factorId": "F_TARGET",
+          "level": "其他租户已有预留"
+        },
+        {
+          "factorId": "F_TARGET",
+          "level": "不存在的 id"
+        }
+      ]
+    },
+    {
+      "id": "S10",
+      "title": "同 key 同 units 的并发创建",
+      "requirementIds": [
+        "CONCURRENT_SAME_KEY",
+        "HOLD_IDEMPOTENT",
+        "HOLD_CREATE",
+        "QUOTA_INVARIANT"
+      ],
+      "dimension": "并发历史；同一租户以相同有效 key 和 units=1 并发提交四个 POST /holds。",
+      "expected": "四个响应中恰有一个 201、其余为 200，均指向同一 id 和同一 active 预留；available 仅减少 1，最终为 3，consumed 为 0。",
+      "factorLevels": [
+        {
+          "factorId": "F_CONCURRENT_CREATE",
+          "level": "同租户同 key 同 units"
+        }
+      ]
+    },
+    {
+      "id": "S11",
+      "title": "不同 key 竞争不足配额",
+      "requirementIds": [
+        "CONCURRENT_CAPACITY",
+        "HOLD_CREATE",
+        "HOLD_INSUFFICIENT",
+        "QUOTA_INVARIANT"
+      ],
+      "dimension": "并发容量；独立初态下以两个不同有效 key、各 units=3，并发提交 POST /holds。",
+      "expected": "一个请求返回 201 并创建 active 预留，另一个返回 409；成功预留总量为 3，不超出初始配额。最终 available 为 1、consumed 为 0，满足配额守恒；被拒绝请求不保存其 key。",
+      "factorLevels": [
+        {
+          "factorId": "F_CONCURRENT_CAPACITY",
+          "level": "不同 key 竞争不足以同时满足的配额"
+        }
+      ]
+    },
+    {
+      "id": "S12",
+      "title": "同一 active 预留的并发重复释放",
+      "requirementIds": [
+        "CONCURRENT_TRANSITIONS",
+        "RELEASE_ACTIVE",
+        "RELEASE_REPEAT",
+        "QUOTA_INVARIANT"
+      ],
+      "dimension": "并发状态转换；先创建 active 预留，再对其 id 并发提交四次 release。",
+      "expected": "各响应均返回 200、同一 id 和 released 状态；最终预留为 released，available 仅恢复一次对应 units，consumed 不变，配额守恒。",
+      "factorLevels": [
+        {
+          "factorId": "F_CONCURRENT_TRANSITION",
+          "level": "并发重复 release"
+        }
+      ]
+    },
+    {
+      "id": "S13",
+      "title": "同一 active 预留的并发重复消费",
+      "requirementIds": [
+        "CONCURRENT_TRANSITIONS",
+        "CONSUME_ACTIVE",
+        "CONSUME_REPEAT",
+        "QUOTA_INVARIANT"
+      ],
+      "dimension": "并发状态转换；先创建 active 预留，再对其 id 并发提交四次 consume。",
+      "expected": "各响应均返回 200、同一 id 和 consumed 状态；最终预留为 consumed，consumed 仅增加一次对应 units，available 保持创建后的值，配额守恒。",
+      "factorLevels": [
+        {
+          "factorId": "F_CONCURRENT_TRANSITION",
+          "level": "并发重复 consume"
+        }
+      ]
+    }
+  ],
+  "gaps": [],
+  "factors": [
+    {
+      "id": "F_IDENTITY",
+      "name": "请求身份",
+      "requirementIds": [
+        "AUTH",
+        "HOLD_KEY_TENANTS",
+        "TENANT_ISOLATION"
+      ],
+      "levels": [
+        "省略 user",
+        "player-a",
+        "player-b",
+        "None",
+        "其他身份"
+      ],
+      "sourceQuote": "身份由框架参数 user 指定：player-a、player-b 为两个独立租户，缺省 player-a，None 或其他身份返回 401。"
+    },
+    {
+      "id": "F_UNITS",
+      "name": "创建预留的 units",
+      "requirementIds": [
+        "HOLD_INPUT",
+        "HOLD_INVALID",
+        "HOLD_CREATE",
+        "HOLD_INSUFFICIENT"
+      ],
+      "levels": [
+        "整数下边界 1",
+        "整数上边界 4",
+        "有效内部整数 2 或 3",
+        "布尔值",
+        "非整数 JSON number",
+        "小于 1",
+        "大于 4",
+        "非 JSON number",
+        "缺失或 null"
+      ],
+      "sourceQuote": "units 必须是 JSON number 整数，范围 1 到 4；布尔值不算整数。"
+    },
+    {
+      "id": "F_KEY",
+      "name": "创建预留的 key",
+      "requirementIds": [
+        "HOLD_INPUT",
+        "HOLD_INVALID",
+        "HOLD_CREATE",
+        "HOLD_INSUFFICIENT"
+      ],
+      "levels": [
+        "单字符 ASCII 字母或数字",
+        "32 字符 ASCII 字母或数字",
+        "空字符串",
+        "超过 32 字符",
+        "含非 ASCII 字母数字字符",
+        "缺失或 null"
+      ],
+      "sourceQuote": "key 必须是 1 到 32 个 ASCII 字母或数字。"
+    },
+    {
+      "id": "F_CAPACITY",
+      "name": "创建时的可用配额",
+      "requirementIds": [
+        "HOLD_CREATE",
+        "HOLD_INSUFFICIENT"
+      ],
+      "levels": [
+        "available 足够",
+        "available 不足"
+      ],
+      "sourceQuote": "有效且 available 足够则返回 201 和 {id,owner,units,key,state:\"active\"}，available 减少 units。"
+    },
+    {
+      "id": "F_HOLD_STATE",
+      "name": "已有预留的当前状态",
+      "requirementIds": [
+        "HOLD_IDEMPOTENT",
+        "HOLD_KEY_CONFLICT",
+        "RELEASE_ACTIVE",
+        "RELEASE_REPEAT",
+        "RELEASE_CONSUMED",
+        "CONSUME_ACTIVE",
+        "CONSUME_REPEAT",
+        "CONSUME_RELEASED"
+      ],
+      "levels": [
+        "active",
+        "released",
+        "consumed"
+      ],
+      "sourceQuote": "成功预留后，用相同 key、相同 units 再次 POST /holds 返回 200 和当前同一预留，不再扣减配额；即使预留已 released 或 consumed 也如此。"
+    },
+    {
+      "id": "F_TARGET",
+      "name": "预留 id 的所有权和存在性",
+      "requirementIds": [
+        "HOLD_GET",
+        "RELEASE_ACCESS",
+        "CONSUME_ACCESS"
+      ],
+      "levels": [
+        "本人已有预留",
+        "其他租户已有预留",
+        "不存在的 id"
+      ],
+      "sourceQuote": "GET /holds/{id}：本人返回 200 和当前预留，不存在返回 404，其他租户返回 403；不得改变状态。"
+    },
+    {
+      "id": "F_CONCURRENT_CREATE",
+      "name": "并发创建的同 key 关系",
+      "requirementIds": [
+        "CONCURRENT_SAME_KEY"
+      ],
+      "levels": [
+        "同租户同 key 同 units"
+      ],
+      "sourceQuote": "同一租户、同 key、同 units 的并发预留只能创建一条，首次 201、其他 200；"
+    },
+    {
+      "id": "F_CONCURRENT_CAPACITY",
+      "name": "并发创建的配额竞争",
+      "requirementIds": [
+        "CONCURRENT_CAPACITY"
+      ],
+      "levels": [
+        "不同 key 竞争不足以同时满足的配额"
+      ],
+      "sourceQuote": "不同 key 竞争不足以同时满足的配额，不得超卖。"
+    },
+    {
+      "id": "F_CONCURRENT_TRANSITION",
+      "name": "并发重复状态转换",
+      "requirementIds": [
+        "CONCURRENT_TRANSITIONS"
+      ],
+      "levels": [
+        "并发重复 release",
+        "并发重复 consume"
+      ],
+      "sourceQuote": "并发重复 release 或 consume 都只能改变一次配额，响应与最终状态须符合 R4、R5。"
+    }
+  ]
+}

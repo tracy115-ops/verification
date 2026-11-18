@@ -1,0 +1,196 @@
+{
+  "requirements": [
+    {
+      "id": "AUTH",
+      "text": "仅支持指定的租户身份；缺省身份为 player-a，无效身份返回 401。",
+      "quote": "身份由框架参数 user 指定：player-a、player-b 为两个独立租户，缺省 player-a，None 或其他身份返回 401。",
+      "acceptanceCriteria": [
+        "省略 user 时以 player-a 身份处理请求。",
+        "user 为 None 或其他非指定身份时返回 401。"
+      ]
+    },
+    {
+      "id": "QUOTA_INITIAL",
+      "text": "每个租户初始配额为 4，配额查询返回规定的初始值。",
+      "quote": "每个租户初始配额为 4。GET /quota 返回 200，JSON 为 {available:4, consumed:0}。",
+      "acceptanceCriteria": [
+        "初态下，各租户 GET /quota 均返回 200，available 为 4、consumed 为 0。"
+      ]
+    },
+    {
+      "id": "QUOTA_INVARIANT",
+      "text": "配额的可用量、有效预留量和已消费量始终守恒。",
+      "quote": "available 是未使用且未预留的配额，consumed 是已消费的配额；任意时刻 available、该租户所有 active 预留的 units 之和、consumed 三者之和必须为 4。",
+      "acceptanceCriteria": [
+        "每次状态变化后，单个租户的 available 加所有 active 预留的 units 之和再加 consumed 等于 4。"
+      ]
+    },
+    {
+      "id": "TENANT_ISOLATION",
+      "text": "两个租户的配额和预留状态相互独立。",
+      "quote": "租户之间互不影响。",
+      "acceptanceCriteria": [
+        "一个租户的预留、释放和消费不改变另一租户的配额或预留状态。"
+      ]
+    },
+    {
+      "id": "HOLD_INPUT",
+      "text": "创建预留的 units 和 key 必须符合规定格式与范围。",
+      "quote": "units 必须是 JSON number 整数，范围 1 到 4；布尔值不算整数。key 必须是 1 到 32 个 ASCII 字母或数字。",
+      "acceptanceCriteria": [
+        "接受 1 至 4 的 JSON 整数 units，以及长度 1 至 32、仅含 ASCII 字母或数字的 key。",
+        "将布尔值、非整数、越界 units 和不符合长度或字符规则的 key 视为无效输入。"
+      ]
+    },
+    {
+      "id": "HOLD_INVALID",
+      "text": "无效的创建预留输入返回 400，且不改变状态。",
+      "quote": "输入无效返回 400 且不改变任何状态。",
+      "acceptanceCriteria": [
+        "无效输入返回 400；请求前后各租户配额及预留状态相同。"
+      ]
+    },
+    {
+      "id": "HOLD_CREATE",
+      "text": "配额充足时创建有效预留，并扣减相应可用配额。",
+      "quote": "有效且 available 足够则返回 201 和 {id,owner,units,key,state:\"active\"}，available 减少 units。",
+      "acceptanceCriteria": [
+        "有效请求且 available 不小于 units 时返回 201；响应包含服务生成的 id、owner、请求的 units 和 key，以及 active 状态。",
+        "该租户 available 减少请求的 units。"
+      ]
+    },
+    {
+      "id": "HOLD_INSUFFICIENT",
+      "text": "配额不足时拒绝创建预留，且不占用 key 或改变状态。",
+      "quote": "有效但配额不足返回 409，且不保存该 key、不改变状态。",
+      "acceptanceCriteria": [
+        "有效请求的 units 大于 available 时返回 409。",
+        "随后该 key 仍可用于创建预留；拒绝请求不改变任何状态。"
+      ]
+    },
+    {
+      "id": "HOLD_IDEMPOTENT",
+      "text": "同一租户以相同 key 和 units 重试时返回当前的同一预留，不重复扣减配额。",
+      "quote": "成功预留后，用相同 key、相同 units 再次 POST /holds 返回 200 和当前同一预留，不再扣减配额；即使预留已 released 或 consumed 也如此。",
+      "acceptanceCriteria": [
+        "active、released 或 consumed 状态下的相同 key 和 units 重试均返回 200，id 与原预留相同，状态为该预留的当前状态。",
+        "重试不改变配额。"
+      ]
+    },
+    {
+      "id": "HOLD_KEY_CONFLICT",
+      "text": "同一租户以已有 key 和不同的有效 units 请求时返回冲突且不改变状态。",
+      "quote": "相同 key、不同有效 units 返回 409 且不改变状态。",
+      "acceptanceCriteria": [
+        "同一租户使用已有 key 和不同有效 units 时返回 409；原预留及配额保持不变。"
+      ]
+    },
+    {
+      "id": "HOLD_KEY_TENANTS",
+      "text": "不同租户可以使用相同 key 创建各自的预留。",
+      "quote": "不同租户使用同一个 key 应创建各自独立的预留。",
+      "acceptanceCriteria": [
+        "player-a 和 player-b 使用相同 key 时，各自获得独立预留；一方的后续状态变化不影响另一方。"
+      ]
+    },
+    {
+      "id": "HOLD_GET",
+      "text": "查询预留按所有权和存在性返回对应状态码，且不改变状态。",
+      "quote": "GET /holds/{id}：本人返回 200 和当前预留，不存在返回 404，其他租户返回 403；不得改变状态。",
+      "acceptanceCriteria": [
+        "所有者查询已有预留返回 200 和该预留的当前状态；不存在的 id 返回 404；其他租户查询已有预留返回 403。",
+        "查询不改变任一租户的状态。"
+      ]
+    },
+    {
+      "id": "RELEASE_ACTIVE",
+      "text": "所有者释放 active 预留时，预留变为 released，可用配额恢复。",
+      "quote": "本人 active 预留变为 released，返回 200 和当前预留，available 恢复 units。",
+      "acceptanceCriteria": [
+        "所有者释放 active 预留返回 200 和同一预留的 released 状态；available 增加该预留的 units。"
+      ]
+    },
+    {
+      "id": "RELEASE_REPEAT",
+      "text": "重复释放已 released 的预留是幂等操作。",
+      "quote": "再次 release 返回 200 和同一 released 预留，不得重复恢复配额。",
+      "acceptanceCriteria": [
+        "再次释放返回 200、相同 id 和 released 状态；available 不再增加。"
+      ]
+    },
+    {
+      "id": "RELEASE_CONSUMED",
+      "text": "已 consumed 的预留不可释放。",
+      "quote": "本人 consumed 预留 release 返回 409，所有状态保持不变。",
+      "acceptanceCriteria": [
+        "所有者释放 consumed 预留返回 409；预留和配额状态保持不变。"
+      ]
+    },
+    {
+      "id": "RELEASE_ACCESS",
+      "text": "释放操作对其他租户和不存在的预留分别返回 403、404，且不改变状态。",
+      "quote": "R4：POST /holds/{id}/release 无需 body。本人 active 预留变为 released，返回 200 和当前预留，available 恢复 units。再次 release 返回 200 和同一 released 预留，不得重复恢复配额。本人 consumed 预留 release 返回 409，所有状态保持不变。其他租户返回 403，不存在返回 404，均不能改变任何租户的状态。",
+      "acceptanceCriteria": [
+        "其他租户释放已有预留返回 403；释放不存在的预留返回 404；两种请求均不改变任何租户状态。"
+      ]
+    },
+    {
+      "id": "CONSUME_ACTIVE",
+      "text": "所有者消费 active 预留时，预留变为 consumed，已消费量增加而可用量不变。",
+      "quote": "本人 active 预留变为 consumed，返回 200 和当前预留，consumed 增加 units，available 不变。",
+      "acceptanceCriteria": [
+        "所有者消费 active 预留返回 200 和同一预留的 consumed 状态；consumed 增加该预留的 units，available 不变。"
+      ]
+    },
+    {
+      "id": "CONSUME_REPEAT",
+      "text": "重复消费已 consumed 的预留是幂等操作。",
+      "quote": "再次 consume 返回 200 和同一 consumed 预留，不得重复消费。",
+      "acceptanceCriteria": [
+        "再次消费返回 200、相同 id 和 consumed 状态；consumed 不再增加。"
+      ]
+    },
+    {
+      "id": "CONSUME_RELEASED",
+      "text": "已 released 的预留不可消费。",
+      "quote": "本人 released 预留 consume 返回 409，所有状态保持不变。",
+      "acceptanceCriteria": [
+        "所有者消费 released 预留返回 409；预留和配额状态保持不变。"
+      ]
+    },
+    {
+      "id": "CONSUME_ACCESS",
+      "text": "消费操作对其他租户和不存在的预留分别返回 403、404，且不改变状态。",
+      "quote": "R5：POST /holds/{id}/consume 无需 body。本人 active 预留变为 consumed，返回 200 和当前预留，consumed 增加 units，available 不变。再次 consume 返回 200 和同一 consumed 预留，不得重复消费。本人 released 预留 consume 返回 409，所有状态保持不变。其他租户返回 403，不存在返回 404，均不能改变任何租户的状态。",
+      "acceptanceCriteria": [
+        "其他租户消费已有预留返回 403；消费不存在的预留返回 404；两种请求均不改变任何租户状态。"
+      ]
+    },
+    {
+      "id": "CONCURRENT_SAME_KEY",
+      "text": "同租户、同 key、同 units 的并发请求只创建一个预留。",
+      "quote": "同一租户、同 key、同 units 的并发预留只能创建一条，首次 201、其他 200；",
+      "acceptanceCriteria": [
+        "并发请求的响应包含一个 201，其余为 200，并指向同一预留；配额仅扣减一次。"
+      ]
+    },
+    {
+      "id": "CONCURRENT_CAPACITY",
+      "text": "不同 key 的并发预留不能使租户配额超卖。",
+      "quote": "不同 key 竞争不足以同时满足的配额，不得超卖。",
+      "acceptanceCriteria": [
+        "竞争请求完成后，成功预留的 units 总量不超过可用配额，且配额守恒。"
+      ]
+    },
+    {
+      "id": "CONCURRENT_TRANSITIONS",
+      "text": "并发重复释放或消费只能产生一次相应配额变化，响应及最终状态符合各自的操作规则。",
+      "quote": "并发重复 release 或 consume 都只能改变一次配额，响应与最终状态须符合 R4、R5。",
+      "acceptanceCriteria": [
+        "同一 active 预留的并发重复 release 均按释放规则响应，最终只恢复一次 units。",
+        "同一 active 预留的并发重复 consume 均按消费规则响应，最终只增加一次 consumed。"
+      ]
+    }
+  ],
+  "questions": []
+}

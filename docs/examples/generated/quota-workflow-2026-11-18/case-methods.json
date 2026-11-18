@@ -1,0 +1,86 @@
+[
+  {
+    "testName": "test_identity_and_initial_quota",
+    "caseIds": [
+      "B1-C01"
+    ]
+  },
+  {
+    "testName": "test_valid_boundaries_and_tenant_quotas",
+    "caseIds": [
+      "B1-C02"
+    ]
+  },
+  {
+    "testName": "test_invalid_units_preserve_both_quotas",
+    "caseIds": [
+      "B1-C03"
+    ]
+  },
+  {
+    "testName": "test_invalid_keys_preserve_both_quotas",
+    "caseIds": [
+      "B1-C04"
+    ]
+  },
+  {
+    "testName": "test_rejected_key_succeeds_after_release",
+    "caseIds": [
+      "B2-C04_rejected_key_recovery"
+    ]
+  },
+  {
+    "testName": "test_active_key_replay_and_conflict",
+    "caseIds": [
+      "B2-C05_active_key_replay_conflict"
+    ]
+  },
+  {
+    "testName": "test_released_hold_replays_and_rejects_consume",
+    "caseIds": [
+      "B2-C06_released_hold_replay"
+    ]
+  },
+  {
+    "testName": "test_consumed_hold_replays_and_rejects_release",
+    "caseIds": [
+      "B3-C_S07"
+    ]
+  },
+  {
+    "testName": "test_shared_key_isolated_across_tenants",
+    "caseIds": [
+      "B3-C_S08"
+    ]
+  },
+  {
+    "testName": "test_hold_access_and_missing_id",
+    "caseIds": [
+      "B3-C_S09"
+    ]
+  },
+  {
+    "testName": "test_concurrent_same_key_creates_one_hold",
+    "caseIds": [
+      "B4-C10_ConcurrentSameKey"
+    ]
+  },
+  {
+    "testName": "test_concurrent_capacity_rejects_without_saving_key",
+    "caseIds": [
+      "B4-C11_ConcurrentCapacity"
+    ]
+  },
+  {
+    "testName": "test_concurrent_release_restores_quota_once",
+    "caseIds": [
+      "B4-C12_ConcurrentRelease"
+    ]
+  },
+  {
+    "testName": "test_concurrent_consume_counts_once",
+    "caseIds": [
+      "B5-C13_concurrent_consume"
+    ]
+  }
+]

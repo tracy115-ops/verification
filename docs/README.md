@@ -1,5 +1,7 @@
 # 验证 Agent 设计档案
 
+租户配额题目完成真实桌面 13 节点验收。报告、生成脚本和正确参考及四个预设缺陷变体的结果已归档。[本轮流程验收](research/quota-workflow-validation-2026-11-18.md)
+
 0.16.1 已发布：[框架接入静态检查](design/framework-admission.md)，导入后检查语法、规模和入口声明，明确问题阻止完整流程发送，并修复长源码跳行定位；[专项验收](research/framework-inspection-validation-2026-11-17.md)。不等同于多文件 SDK 或运行能力验证。
 
 0.15.1 已发布：[桌面会话事务主存储](adr/0005-transactional-conversation-primary.md)，显式保护迁移、SQLite 主读写、版本冲突及提交失败恢复；[专项验收](research/conversation-storage-validation-2026-11-12.md)。流程、全局配置和日志仍有独立迁移工作。

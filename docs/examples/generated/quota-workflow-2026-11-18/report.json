@@ -1,0 +1,30 @@
+{
+  "status": "candidates_found",
+  "counts": {
+    "passed": 12,
+    "failed": 2,
+    "error": 0,
+    "skipped": 0
+  },
+  "candidates": [
+    {
+      "id": "release-replay-overcredits-quota",
+      "title": "Repeated release increases available quota more than once",
+      "explanation": "Both failed assertions show a released hold being credited repeatedly. In the sequential test, a 2-unit hold restores available quota from 2 to 4 on its first release, then a second release raises it to 6 instead of leaving it at 4. In the concurrent test, four releases of a 3-unit hold leave available quota at 13 instead of 4. The observed behavior violates repeat-release idempotency and quota conservation; the underlying cause is not established.",
+      "testNames": [
+        "test_released_hold_replays_and_rejects_consume",
+        "test_concurrent_release_restores_quota_once"
+      ],
+      "caseIds": [
+        "B2-C06_released_hold_replay",
+        "B4-C12_ConcurrentRelease"
+      ]
+    }
+  ],
+  "notes": [
+    "These candidates are based on the two failed assertions in this execution. The other tests passed, but this execution does not establish complete coverage."
+  ],
+  "action": "review_candidates",
+  "policy": "report_only",
+  "evidenceDigest": "80007020f4fa9572a3e4a1c6df259f7bdb462f7624633486cc735ad3c0a957b4"
+}

@@ -1,0 +1,316 @@
+{
+  "sourceResultSha256": "80007020f4fa9572a3e4a1c6df259f7bdb462f7624633486cc735ad3c0a957b4",
+  "details": {
+    "test_concurrent_release_restores_quota_once": [
+      "Traceback (most recent call last):\n  File \"[local]/case.py\", line 57, in testPartExecutor\n    yield\n  File \"[local]/case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"[local]/case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"[local]/test_generated.py\", line 340, in test_concurrent_release_restores_quota_once\n    self.assertEqual(quota.body, {\"available\": 4, \"consumed\": 0})\nAssertionError: {'available': 13, 'consumed': 0} != {'available': 4, 'consumed': 0}\n- {'available': 13, 'consumed': 0}\n?               ^^\n\n+ {'available': 4, 'consumed': 0}\n?               ^\n\n"
+    ],
+    "test_released_hold_replays_and_rejects_consume": [
+      "Traceback (most recent call last):\n  File \"[local]/case.py\", line 57, in testPartExecutor\n    yield\n  File \"[local]/case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"[local]/case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"[local]/test_generated.py\", line 143, in test_released_hold_replays_and_rejects_consume\n    self.assertEqual(quota.body, {\"available\": 4, \"consumed\": 0})\nAssertionError: {'available': 6, 'consumed': 0} != {'available': 4, 'consumed': 0}\n- {'available': 6, 'consumed': 0}\n?               ^\n\n+ {'available': 4, 'consumed': 0}\n?               ^\n\n"
+    ]
+  },
+  "requests": [
+    {
+      "request": {
+        "body": {},
+        "headers": null,
+        "method": "POST",
+        "path": "/__fixture/reset",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "reset": true
+        },
+        "status": 200
+      },
+      "test": "test_generated.TestTenantQuota.test_concurrent_release_restores_quota_once"
+    },
+    {
+      "request": {
+        "body": {
+          "key": "Release12",
+          "units": 3
+        },
+        "headers": null,
+        "method": "POST",
+        "path": "/holds",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "id": "hold-1",
+          "key": "Release12",
+          "owner": "player-a",
+          "state": "active",
+          "units": 3
+        },
+        "status": 201
+      },
+      "test": "test_generated.TestTenantQuota.test_concurrent_release_restores_quota_once"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/quota",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "available": 1,
+          "consumed": 0
+        },
+        "status": 200
+      },
+      "test": "test_generated.TestTenantQuota.test_concurrent_release_restores_quota_once"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "POST",
+        "path": "/holds/hold-1/release",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "id": "hold-1",
+          "key": "Release12",
+          "owner": "player-a",
+          "state": "released",
+          "units": 3
+        },
+        "status": 200
+      },
+      "test": "test_generated.TestTenantQuota.test_concurrent_release_restores_quota_once"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "POST",
+        "path": "/holds/hold-1/release",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "id": "hold-1",
+          "key": "Release12",
+          "owner": "player-a",
+          "state": "released",
+          "units": 3
+        },
+        "status": 200
+      },
+      "test": "test_generated.TestTenantQuota.test_concurrent_release_restores_quota_once"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "POST",
+        "path": "/holds/hold-1/release",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "id": "hold-1",
+          "key": "Release12",
+          "owner": "player-a",
+          "state": "released",
+          "units": 3
+        },
+        "status": 200
+      },
+      "test": "test_generated.TestTenantQuota.test_concurrent_release_restores_quota_once"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "POST",
+        "path": "/holds/hold-1/release",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "id": "hold-1",
+          "key": "Release12",
+          "owner": "player-a",
+          "state": "released",
+          "units": 3
+        },
+        "status": 200
+      },
+      "test": "test_generated.TestTenantQuota.test_concurrent_release_restores_quota_once"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/holds/hold-1",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "id": "hold-1",
+          "key": "Release12",
+          "owner": "player-a",
+          "state": "released",
+          "units": 3
+        },
+        "status": 200
+      },
+      "test": "test_generated.TestTenantQuota.test_concurrent_release_restores_quota_once"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/quota",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "available": 13,
+          "consumed": 0
+        },
+        "status": 200
+      },
+      "test": "test_generated.TestTenantQuota.test_concurrent_release_restores_quota_once"
+    },
+    {
+      "request": {
+        "body": {},
+        "headers": null,
+        "method": "POST",
+        "path": "/__fixture/reset",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "reset": true
+        },
+        "status": 200
+      },
+      "test": "test_generated.TestTenantQuota.test_released_hold_replays_and_rejects_consume"
+    },
+    {
+      "request": {
+        "body": {
+          "key": "A",
+          "units": 2
+        },
+        "headers": null,
+        "method": "POST",
+        "path": "/holds",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "id": "hold-1",
+          "key": "A",
+          "owner": "player-a",
+          "state": "active",
+          "units": 2
+        },
+        "status": 201
+      },
+      "test": "test_generated.TestTenantQuota.test_released_hold_replays_and_rejects_consume"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/quota",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "available": 2,
+          "consumed": 0
+        },
+        "status": 200
+      },
+      "test": "test_generated.TestTenantQuota.test_released_hold_replays_and_rejects_consume"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "POST",
+        "path": "/holds/hold-1/release",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "id": "hold-1",
+          "key": "A",
+          "owner": "player-a",
+          "state": "released",
+          "units": 2
+        },
+        "status": 200
+      },
+      "test": "test_generated.TestTenantQuota.test_released_hold_replays_and_rejects_consume"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/quota",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "available": 4,
+          "consumed": 0
+        },
+        "status": 200
+      },
+      "test": "test_generated.TestTenantQuota.test_released_hold_replays_and_rejects_consume"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "POST",
+        "path": "/holds/hold-1/release",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "id": "hold-1",
+          "key": "A",
+          "owner": "player-a",
+          "state": "released",
+          "units": 2
+        },
+        "status": 200
+      },
+      "test": "test_generated.TestTenantQuota.test_released_hold_replays_and_rejects_consume"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/quota",
+        "user": "player-a"
+      },
+      "response": {
+        "body": {
+          "available": 6,
+          "consumed": 0
+        },
+        "status": 200
+      },
+      "test": "test_generated.TestTenantQuota.test_released_hold_replays_and_rejects_consume"
+    }
+  ]
+}

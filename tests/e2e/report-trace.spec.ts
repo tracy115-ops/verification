@@ -5,6 +5,13 @@ test('reviews a real recorded candidate through HTTP evidence, cases and source,
   page,
 }) => {
   const run = reportRunFixture();
+  const evidence = Object.values(run.artifacts).find((item) => item.type === 'EvidenceBundle')!.value as {
+    results: { status: string; details: string[] }[];
+  };
+  const failure = evidence.results.find((result) => result.status === 'failed')!;
+  failure.details = failure.details.map(
+    (detail) => `${detail.trimEnd()}\n- actual\n+ expected\n?         ^\n`,
+  );
   await page.addInitScript((run) => {
     if (!localStorage.getItem('verification-workbench.conversations.v1')) {
       localStorage.setItem(
@@ -30,7 +37,7 @@ test('reviews a real recorded candidate through HTTP evidence, cases and source,
   await expect(trace.getByRole('combobox', { name: '关联测试方法' })).toHaveValue(
     'test_cap_1_invalid_returns_400',
   );
-  await expect(trace).toContainText('AssertionError: 400 != 201');
+  await expect(trace.locator('.candidate-failure-summary')).toHaveText('AssertionError: 400 != 201');
   await expect(trace.locator('.session-request-evidence')).toHaveCount(2);
   await expect(trace.locator('.session-request-evidence').last()).toContainText('POST /rooms');
   await trace

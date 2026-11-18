@@ -1,0 +1,20 @@
+{
+  "candidates": [
+    {
+      "id": "release-repeat-quota",
+      "title": "重复释放同一预留时可用配额被重复恢复",
+      "explanation": "两个失败断言均显示：预留已处于 released 状态后，再次释放仍增加了 available。顺序重复释放测试中，首次释放后配额为 {\"available\":4,\"consumed\":0}，第二次释放后变为 {\"available\":6,\"consumed\":0}，与预期的 {\"available\":4,\"consumed\":0} 不符。并发重复释放测试中，四次 release 后配额为 {\"available\":13,\"consumed\":0}，预期为 {\"available\":4,\"consumed\":0}。这与要求“再次 release 返回 200 和同一 released 预留，不得重复恢复配额。”及“并发重复 release 或 consume 都只能改变一次配额，响应与最终状态须符合 R4、R5。”不符。现有证据支持将两次失败归为重复释放的配额变化问题，但不足以确认具体根因。",
+      "testNames": [
+        "test_released_hold_replays_and_rejects_consume",
+        "test_concurrent_release_restores_quota_once"
+      ],
+      "caseIds": [
+        "B2-C06_released_hold_replay",
+        "B4-C12_ConcurrentRelease"
+      ]
+    }
+  ],
+  "notes": [
+    "仅依据本次执行中两个 failed 断言提出候选缺陷；其余测试虽通过，但不能据此认定需求已被完整覆盖。"
+  ]
+}

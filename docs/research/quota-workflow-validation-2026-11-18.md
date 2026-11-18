@@ -13,8 +13,28 @@
 
 真实生成的设计包括 23 条需求、9 个因子、13 个场景。场景关联了全部已提取需求和已声明的因子水平。评审重点核对重放后配额、被拒绝操作的前后状态、租户独立性及并发配额守恒。覆盖数字限于本次设计基线。
 
+## 执行结果
+
+用例节点恢复后完成 5 批，共 14 条用例。真实 CLI 生成 14 个 unittest 方法，逐条绑定已确认的用例。Python 预检通过，最长方法 38 行。桌面完成 13 个节点和 4 次确认，记录 162 条请求响应。重复释放和并发重复释放分别观察到可用配额 6 和 13，期望均为 4。判定 Agent 将两次失败归为一个待复核候选。该报告提供了准确的预期与实际值，但正文使用英文。另有一条用例在拒绝消费后只复查配额，缺少对预留状态的直接复查。
+
+| 本机目标 | 通过 | 断言失败 | 执行错误或跳过 |
+| --- | ---: | ---: | ---: |
+| 正确参考 | 14 | 0 | 0 |
+| 重复释放增加配额 | 12 | 2 | 0 |
+| 拒绝消费却变更配额 | 13 | 1 | 0 |
+| 租户复用了同一幂等键空间 | 13 | 1 | 0 |
+| 并发预留打破配额约束 | 12 | 2 | 0 |
+
+同一份脚本和框架通过原生执行器在五个独立的 loopback 目标复跑。各目标先分别生成预检摘要。桌面结果只对应重复释放目标。脚本、摘要、关键请求记录和验收截图见[原生验收产物](../examples/generated/quota-workflow-2026-11-18/README.md)。
+
+真实报告复核发现，Python 多行断言末尾可能是差异对齐符号。报告摘要现优先提取 `AssertionError`，详情仍保留完整输出。
+
+0.17.1 也将工作流内容语言传给判定 Agent。使用更新后的生产提示构造函数、原始证据和真实 Codex 驱动单独复验了判定阶段。输出中文候选，仍关联相同的两条失败方法和用例。原始桌面报告保持原样，独立复验结果保存在 `verdict-locale-replay.json`。
+
 ## 复验入口
 
 使用隔离标识 `dev.verification.workbench.auditquotaflow` 编译 Release。以 `node scripts/serve-quota-fixture.mjs --defect release_replay` 启动本机目标。用 `scripts/start-desktop-audit.mjs` 启动应用后，将返回的 loopback 地址传给 `scripts/audit-quota-workflow.mjs --endpoint`。通过 `configure`、`start`、`status`、`review` 查看原生流程。确认节点时通过 `approve` 指定操作和已核对的评审理由。生成结果位于 `.runtime/quota-flow`。
 
 默认流程仍要求单文件 unittest、Python 预检和执行计划确认。内部 CodeAgent、多文件 SDK 及独立外部题目仍需专项验收。
+
+完成桌面任务后运行 `cargo build -p execution-runtime --example local --locked` 再执行 `node scripts/replay-quota-audit.mjs`，可复跑对照和变体。

@@ -1,0 +1,30 @@
+[
+  {
+    "at": "2026-11-17T05:55:08.467Z",
+    "actor": "Codex audit operator",
+    "operation": "review.requirements",
+    "digest": "b965d14ebf65075436dd5396b6451b54b7aa15a68dd1a1dfdea87a6f718fbf01",
+    "reason": "Reviewed 23 obligations against R1-R6: quota conservation, validation, tenant-scoped replay, ownership, terminal transitions and concurrent rules retained; only two ambiguous quotes expanded through UI, no expected behavior invented."
+  },
+  {
+    "at": "2026-11-17T06:22:22.113Z",
+    "actor": "Codex audit operator",
+    "operation": "review.coverage",
+    "digest": "93b0ecfdf3d26d78affbea9d8f99bcfd9a1934b964d9e835ab54e3b6fdbdbd0a",
+    "reason": "Reviewed 13 scenarios and 9 factors against all 23 obligations: no unmapped requirement or declared level. Scope includes terminal replay, rejected-operation state preservation, tenant key isolation, insufficient-quota recovery and bounded concurrent histories. This is a prioritized campaign, not exhaustive coverage certification."
+  },
+  {
+    "at": "2026-11-18T01:05:06.262Z",
+    "actor": "Codex audit operator",
+    "operation": "review.cases",
+    "digest": "3e8688d4433bf95f6823dd15055faef568760ac2ff4c460e13a42974db80b79d",
+    "reason": "Reviewed all 14 cases: retain state and quota assertions for replay, rejected transitions, tenant key isolation, and four bounded concurrent scenarios. This is a prioritized campaign; B2-C06 observes quota after rejected consumption, with direct hold-state requery still a useful follow-up."
+  },
+  {
+    "at": "2026-11-18T01:08:06.009Z",
+    "actor": "Codex audit operator",
+    "operation": "review.execution",
+    "digest": "eb9378faa28099a852c0273d5a50d0b4a02812c47deefa073245e7901a27a137",
+    "reason": "Reviewed all 14 methods and one-to-one case mappings. The AST contains only the trusted framework import, fixture requests and assertions. Preflight confirmed Python 3.11.15 and bound the script and framework digests to the dedicated loopback fixture on port 4325."
+  }
+]

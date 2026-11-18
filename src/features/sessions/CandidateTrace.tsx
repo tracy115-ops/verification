@@ -29,7 +29,14 @@ export function CandidateTrace({
   const current = trace.tests.find((item) => item.testName === selected) ?? trace.tests[0];
   const failureSummary = current?.result?.details
     .slice(0, 3)
-    .map((text) => text.trim().split(/\r?\n/).at(-1))
+    .map((text) => {
+      const lines = text.trimEnd().split(/\r?\n/).reverse();
+      return (
+        lines.find((line) => /^AssertionError(?::|$)/.test(line)) ??
+        lines.find((line) => line.trim() && !/^[+\-?] /.test(line)) ??
+        ''
+      );
+    })
     .join('\n');
   return (
     <section className="candidate-trace" aria-label={t('candidateTraceTitle')}>
@@ -84,7 +91,7 @@ export function CandidateTrace({
           )}
           {!!current.result?.details.length && (
             <>
-              <pre className="candidate-failure-summary">{failureSummary}</pre>
+              {failureSummary && <pre className="candidate-failure-summary">{failureSummary}</pre>}
               <details>
                 <summary>{t('assertionDetails')}</summary>
                 <pre>{current.result.details.join('\n')}</pre>

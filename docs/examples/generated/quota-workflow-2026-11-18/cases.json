@@ -1,0 +1,421 @@
+{
+  "cases": [
+    {
+      "id": "B1-C01",
+      "title": "缺省、有效及无效身份查询独立初态配额",
+      "scenarioIds": [
+        "S01"
+      ],
+      "requirementIds": [
+        "AUTH",
+        "QUOTA_INITIAL"
+      ],
+      "preconditions": [
+        "setUp 已恢复独立初态。"
+      ],
+      "steps": [
+        "省略 user 调用 GET /quota。",
+        "分别以 user=\"player-a\"、user=\"player-b\" 调用 GET /quota。",
+        "分别以 user=None 和一个非 player-a、player-b 的身份调用 GET /quota。"
+      ],
+      "expected": "省略 user 按 player-a 处理；前三次查询均返回 200 和 {available:4, consumed:0}。两种无效身份均返回 401。",
+      "assertions": [
+        "分别断言前三个响应的状态码为 200，响应体为 {available:4, consumed:0}。",
+        "分别断言两个无效身份请求的状态码为 401。"
+      ]
+    },
+    {
+      "id": "B1-C02",
+      "title": "两个租户分别以有效输入边界创建预留",
+      "scenarioIds": [
+        "S02"
+      ],
+      "requirementIds": [
+        "HOLD_INPUT",
+        "HOLD_CREATE",
+        "QUOTA_INITIAL",
+        "QUOTA_INVARIANT",
+        "TENANT_ISOLATION"
+      ],
+      "preconditions": [
+        "setUp 已恢复两个租户各有 4 单位可用配额的独立初态。"
+      ],
+      "steps": [
+        "查询 player-a 和 player-b 的 GET /quota，记录初态。",
+        "以 player-a 提交 POST /holds，body 为 {units:1,key:\"A\"}；保存返回的 id。",
+        "以 player-b 提交 POST /holds，body 为 {units:4,key:\"B1234567890123456789012345678901\"}；保存返回的 id。",
+        "再次分别查询两个租户的 GET /quota。"
+      ],
+      "expected": "两次创建各返回 201，预留分别属于对应租户，units 和 key 与请求相同，state 为 active，并包含服务生成的 id。player-a 最终配额为 {available:3, consumed:0}，player-b 为 {available:0, consumed:0}；各租户的 available 加本次 active 预留 units 加 consumed 均为 4。",
+      "assertions": [
+        "两个初态配额响应均为 200，响应体均为 {available:4, consumed:0}。",
+        "两个创建响应均为 201；分别断言响应体包含 id，且 owner、units、key、state 与对应请求及 active 状态一致。",
+        "分别断言最终配额响应为 200，响应体为 {available:3, consumed:0} 和 {available:0, consumed:0}。",
+        "用各自保存的预留 units 与最终配额核对守恒关系，并断言两个创建响应的 id 不同。"
+      ]
+    },
+    {
+      "id": "B1-C03",
+      "title": "无效 units 均被拒绝且不改变两租户配额",
+      "scenarioIds": [
+        "S03"
+      ],
+      "requirementIds": [
+        "HOLD_INPUT",
+        "HOLD_INVALID",
+        "QUOTA_INITIAL",
+        "TENANT_ISOLATION"
+      ],
+      "preconditions": [
+        "setUp 已恢复独立初态；每次请求均使用有效 key \"K1\"，除非该次检查 units 缺失。"
+      ],
+      "steps": [
+        "分别查询两个租户的 GET /quota 并记录结果。",
+        "以 player-a 逐次提交 units 为 true、1.5、0、5、字符串 \"2\"、null 的 POST /holds；另提交一次缺失 units 的 body。",
+        "每次提交后分别查询 player-a 和 player-b 的 GET /quota。"
+      ],
+      "expected": "每次无效输入均返回 400，且两个租户的配额始终为 {available:4, consumed:0}。",
+      "assertions": [
+        "断言初态两租户配额响应均为 200，响应体均为 {available:4, consumed:0}。",
+        "逐次断言每个无效输入响应的状态码为 400。",
+        "逐次断言随后两个租户的 GET /quota 均返回 200，响应体与各自初态相同。"
+      ]
+    },
+    {
+      "id": "B1-C04",
+      "title": "无效 key 的长度、字符及缺失边界",
+      "scenarioIds": [
+        "S03"
+      ],
+      "requirementIds": [
+        "HOLD_INPUT",
+        "HOLD_INVALID",
+        "QUOTA_INITIAL",
+        "TENANT_ISOLATION"
+      ],
+      "preconditions": [
+        "setUp 已恢复独立初态；每次请求均使用有效 units=1，除非该次检查 key 缺失。"
+      ],
+      "steps": [
+        "分别查询两个租户的 GET /quota 并记录结果。",
+        "以 player-a 逐次提交 key 为空字符串、33 个 ASCII 字母数字字符、含下划线的字符串、含非 ASCII 字符的字符串、null 的 POST /holds；另提交一次缺失 key 的 body。",
+        "每次提交后分别查询 player-a 和 player-b 的 GET /quota。"
+      ],
+      "expected": "每次无效输入均返回 400，且两个租户的配额始终为 {available:4, consumed:0}。",
+      "assertions": [
+        "断言初态两租户配额响应均为 200，响应体均为 {available:4, consumed:0}。",
+        "逐次断言每个无效输入响应的状态码为 400。",
+        "逐次断言随后两个租户的 GET /quota 均返回 200，响应体与各自初态相同。"
+      ]
+    },
+    {
+      "id": "B2-C04_rejected_key_recovery",
+      "title": "配额不足时拒绝新 key，释放后该 key 可成功创建预留",
+      "scenarioIds": [
+        "S04"
+      ],
+      "requirementIds": [
+        "HOLD_INPUT",
+        "HOLD_CREATE",
+        "HOLD_INSUFFICIENT",
+        "RELEASE_ACTIVE",
+        "QUOTA_INVARIANT"
+      ],
+      "preconditions": [
+        "测试从独立初态开始；player-a 的 available 为 4、consumed 为 0。"
+      ],
+      "steps": [
+        "以 player-a 调用 GET /quota，记录初始配额。",
+        "以 player-a 调用 POST /holds，body 为 {\"units\":3,\"key\":\"A\"}；保存返回的 id。",
+        "调用 GET /quota，记录首次创建后的配额。",
+        "以 player-a 调用 POST /holds，body 为 {\"units\":2,\"key\":\"B\"}；随后调用 GET /quota。",
+        "以 player-a 调用 POST /holds/{id}/release，使用保存的 id；随后调用 GET /quota。",
+        "以 player-a 重试 POST /holds，body 为 {\"units\":2,\"key\":\"B\"}；保存新返回的 id，并调用 GET /quota。"
+      ],
+      "expected": "首次创建成功，配额不足的请求被拒绝且不改变状态。释放首个预留后，先前被拒绝的 key 可创建新的 active 预留。所有观察点均满足 available、active 预留 units 之和与 consumed 之和为 4。",
+      "assertions": [
+        "初始 GET /quota 返回 200，body 为 {\"available\":4,\"consumed\":0}。",
+        "首次 POST 返回 201；body 包含服务生成的 id，以及 owner=\"player-a\"、units=3、key=\"A\"、state=\"active\"；随后配额为 available=1、consumed=0。",
+        "key=\"B\" 的首次 POST 返回 409；随后配额仍为 available=1、consumed=0。",
+        "release 返回 200，body 的 id 与首次创建的 id 相同，state=\"released\"；随后配额为 available=4、consumed=0。",
+        "key=\"B\" 的重试返回 201；body 包含与首个预留不同的 id，以及 owner=\"player-a\"、units=2、key=\"B\"、state=\"active\"；最终配额为 available=2、consumed=0。"
+      ]
+    },
+    {
+      "id": "B2-C05_active_key_replay_conflict",
+      "title": "active 预留的同值重试复用原 id，不同 units 请求冲突",
+      "scenarioIds": [
+        "S05"
+      ],
+      "requirementIds": [
+        "HOLD_CREATE",
+        "HOLD_IDEMPOTENT",
+        "HOLD_KEY_CONFLICT",
+        "HOLD_GET",
+        "QUOTA_INVARIANT"
+      ],
+      "preconditions": [
+        "测试从独立初态开始；player-a 的 available 为 4、consumed 为 0。"
+      ],
+      "steps": [
+        "以 player-a 调用 POST /holds，body 为 {\"units\":1,\"key\":\"A\"}；保存返回的 id。",
+        "以 player-a 用相同 body 再次调用 POST /holds，并调用 GET /quota。",
+        "以 player-a 调用 POST /holds，body 为 {\"units\":2,\"key\":\"A\"}，再调用 GET /quota。",
+        "以 player-a 调用 GET /holds/{id}，使用首次创建时保存的 id。"
+      ],
+      "expected": "同 key、同 units 的重试返回同一 active 预留；同 key、不同有效 units 的请求返回冲突。两次后续请求均不再次扣减配额，也不改变原预留。",
+      "assertions": [
+        "首次 POST 返回 201；body 包含服务生成的 id，以及 owner=\"player-a\"、units=1、key=\"A\"、state=\"active\"。",
+        "同值重试返回 200，body 的 id 与首次创建的 id 相同，owner、units、key 和 state 与首次返回一致。",
+        "同值重试后的 GET /quota 返回 200，body 为 {\"available\":3,\"consumed\":0}。",
+        "不同 units 的 POST 返回 409；之后 GET /quota 仍返回 200，body 为 {\"available\":3,\"consumed\":0}。",
+        "GET /holds/{id} 返回 200，body 的 id 与首次创建的 id 相同，owner=\"player-a\"、units=1、key=\"A\"、state=\"active\"。"
+      ]
+    },
+    {
+      "id": "B2-C06_released_hold_replay",
+      "title": "释放后的重复释放和创建重放不改变配额，消费被拒绝",
+      "scenarioIds": [
+        "S06"
+      ],
+      "requirementIds": [
+        "HOLD_CREATE",
+        "HOLD_IDEMPOTENT",
+        "RELEASE_ACTIVE",
+        "RELEASE_REPEAT",
+        "CONSUME_RELEASED",
+        "QUOTA_INVARIANT"
+      ],
+      "preconditions": [
+        "测试从独立初态开始；player-a 的 available 为 4、consumed 为 0。"
+      ],
+      "steps": [
+        "以 player-a 调用 POST /holds，body 为 {\"units\":2,\"key\":\"A\"}；保存返回的 id，并调用 GET /quota。",
+        "以 player-a 调用 POST /holds/{id}/release；随后调用 GET /quota。",
+        "以 player-a 再次调用 POST /holds/{id}/release；随后调用 GET /quota。",
+        "以 player-a 用原 body {\"units\":2,\"key\":\"A\"} 重试 POST /holds；随后调用 GET /quota。",
+        "以 player-a 调用 POST /holds/{id}/consume；随后调用 GET /quota。"
+      ],
+      "expected": "首次释放将预留变为 released 并恢复 2 单位 available。重复释放和原创建请求的重放均返回同一 released 预留，不重复改变配额。消费 released 预留返回 409，状态和配额保持不变。",
+      "assertions": [
+        "创建返回 201；body 包含服务生成的 id，以及 owner=\"player-a\"、units=2、key=\"A\"、state=\"active\"；随后 GET /quota 返回 available=2、consumed=0。",
+        "首次 release 返回 200，body 的 id 与创建时相同、state=\"released\"；随后 GET /quota 返回 available=4、consumed=0。",
+        "再次 release 返回 200，body 的 id 与创建时相同、state=\"released\"；随后 GET /quota 仍返回 available=4、consumed=0。",
+        "原创建请求重放返回 200，body 的 id 与创建时相同，owner=\"player-a\"、units=2、key=\"A\"、state=\"released\"；随后 GET /quota 仍返回 available=4、consumed=0。",
+        "consume 返回 409；随后 GET /quota 仍返回 available=4、consumed=0。"
+      ]
+    },
+    {
+      "id": "B3-C_S07",
+      "title": "消费后重复消费、重放创建请求并拒绝释放",
+      "scenarioIds": [
+        "S07"
+      ],
+      "requirementIds": [
+        "HOLD_CREATE",
+        "HOLD_IDEMPOTENT",
+        "CONSUME_ACTIVE",
+        "CONSUME_REPEAT",
+        "RELEASE_CONSUMED",
+        "QUOTA_INVARIANT"
+      ],
+      "preconditions": [
+        "独立初态；player-a 的 available 为 4、consumed 为 0。"
+      ],
+      "steps": [
+        "以 player-a 发送 POST /holds，body 为 {\"units\":2,\"key\":\"ConsumeReplay1\"}，保存返回的 id；查询 GET /quota。",
+        "对保存的 id 发送 POST /holds/{id}/consume；查询 GET /holds/{id} 和 GET /quota。",
+        "再次发送 POST /holds/{id}/consume；查询 GET /quota。",
+        "以原 key 和 units 再次发送 POST /holds；查询 GET /quota。",
+        "发送 POST /holds/{id}/release；查询 GET /holds/{id} 和 GET /quota。"
+      ],
+      "expected": "创建后预留为 active，available 为 2、consumed 为 0。首次消费后同一预留为 consumed，available 为 2、consumed 为 2。重复消费和原请求重放均返回同一 consumed 预留，配额不再变化。释放 consumed 预留返回 409，预留及配额保持不变。",
+      "assertions": [
+        "创建返回 201，响应包含服务生成的 id、owner 为 player-a、units 为 2、key 为 ConsumeReplay1、state 为 active；创建后的配额为 {available:2,consumed:0}。",
+        "首次消费返回 200，响应和随后 GET 均为保存的 id 且 state 为 consumed；配额为 {available:2,consumed:2}。",
+        "重复消费返回 200、同一 id 且 state 为 consumed；配额仍为 {available:2,consumed:2}。",
+        "原请求重放返回 200、同一 id 且 state 为 consumed；配额仍为 {available:2,consumed:2}。",
+        "释放返回 409；随后 GET 的预留仍为 consumed，配额仍为 {available:2,consumed:2}。"
+      ]
+    },
+    {
+      "id": "B3-C_S08",
+      "title": "相同 key 跨租户独立，交叉查询被拒绝且释放仅影响所属租户",
+      "scenarioIds": [
+        "S08"
+      ],
+      "requirementIds": [
+        "HOLD_KEY_TENANTS",
+        "TENANT_ISOLATION",
+        "HOLD_GET",
+        "RELEASE_ACTIVE",
+        "QUOTA_INVARIANT"
+      ],
+      "preconditions": [
+        "独立初态；player-a 和 player-b 各有 available 4、consumed 0。"
+      ],
+      "steps": [
+        "player-a 以 {\"units\":2,\"key\":\"SharedKey1\"} 发送 POST /holds，保存 id_a。",
+        "player-b 以 {\"units\":3,\"key\":\"SharedKey1\"} 发送 POST /holds，保存 id_b；分别查询两名租户的 GET /quota。",
+        "player-a 查询 GET /holds/{id_b}，player-b 查询 GET /holds/{id_a}；再次查询两名租户的配额及各自预留。",
+        "player-a 对 id_a 发送 POST /holds/{id_a}/release；分别查询两名租户的配额及各自预留。"
+      ],
+      "expected": "相同 key 在两个租户中分别创建独立的 active 预留。交叉查询均返回 403，且不改变预留或配额。释放后仅 player-a 的预留变为 released、available 恢复为 4；player-b 的预留保持 active，available 保持 1。",
+      "assertions": [
+        "两次创建各返回 201；id_a 与 id_b 不同，响应的 owner 分别为 player-a、player-b，key 均为 SharedKey1，units 分别为 2、3，state 均为 active。",
+        "创建后 player-a 配额为 {available:2,consumed:0}，player-b 配额为 {available:1,consumed:0}。",
+        "两次交叉 GET 均返回 403；各自 GET 仍返回 200 和原 active 预留，双方配额均未变化。",
+        "释放 id_a 返回 200、同一 id 且 state 为 released；随后 player-a 配额为 {available:4,consumed:0}，player-b 配额仍为 {available:1,consumed:0}，id_b 仍为 active。"
+      ]
+    },
+    {
+      "id": "B3-C_S09",
+      "title": "预留查询与状态操作的所有权及不存在 id",
+      "scenarioIds": [
+        "S09"
+      ],
+      "requirementIds": [
+        "HOLD_GET",
+        "RELEASE_ACCESS",
+        "CONSUME_ACCESS",
+        "HOLD_CREATE",
+        "TENANT_ISOLATION"
+      ],
+      "preconditions": [
+        "独立初态；两个租户的配额各为 {available:4,consumed:0}。",
+        "为不存在目标选用经 GET 返回 404 确认的 id。"
+      ],
+      "steps": [
+        "player-a 以 {\"units\":1,\"key\":\"OwnerCheck1\"} 创建预留并保存 id；查询双方 GET /quota。",
+        "player-a 查询 GET /holds/{id}。",
+        "player-b 分别查询 GET /holds/{id}、发送 POST /holds/{id}/release 和 POST /holds/{id}/consume。",
+        "player-a 和 player-b 各自对不存在的 id 执行 GET /holds/{id}、POST /holds/{id}/release、POST /holds/{id}/consume。",
+        "再次以 player-a 查询已创建的预留，并查询两个租户的配额。"
+      ],
+      "expected": "所有者查询返回当前 active 预留。另一租户对该 id 的查询、释放和消费均返回 403；两个租户对不存在 id 的三种操作均返回 404。所有查询及拒绝请求均不改变已有预留或任一租户的配额。",
+      "assertions": [
+        "创建返回 201，响应包含服务生成的 id、owner 为 player-a、units 为 1、key 为 OwnerCheck1、state 为 active；此后 player-a 配额为 {available:3,consumed:0}，player-b 为 {available:4,consumed:0}。",
+        "player-a 对已创建预留的 GET 返回 200、同一 id 且 state 为 active。",
+        "player-b 对该 id 的 GET、release、consume 均返回 403。",
+        "两个租户对不存在 id 的 GET、release、consume 均返回 404。",
+        "最终 player-a 的 GET 仍返回同一 active 预留；player-a 配额仍为 {available:3,consumed:0}，player-b 仍为 {available:4,consumed:0}。"
+      ]
+    },
+    {
+      "id": "B4-C10_ConcurrentSameKey",
+      "title": "同租户同 key 同 units 并发创建仅产生一条预留",
+      "scenarioIds": [
+        "S10"
+      ],
+      "requirementIds": [
+        "CONCURRENT_SAME_KEY",
+        "HOLD_IDEMPOTENT",
+        "HOLD_CREATE",
+        "QUOTA_INVARIANT"
+      ],
+      "preconditions": [
+        "每个测试由框架恢复独立初态；player-a 的 available 为 4、consumed 为 0。"
+      ],
+      "steps": [
+        "用 self.client.parallel 同时提交四个相同请求：player-a POST /holds，body 均为 {\"units\":1,\"key\":\"SameKey10\"}；保存四个响应。",
+        "从成功响应保存服务生成的 id，调用 player-a GET /holds/{id} 和 GET /quota。"
+      ],
+      "expected": "恰有一个创建响应为 201，其余三个为 200；四个响应及查询结果均指向同一条 active 预留。最终 available 为 3、consumed 为 0。",
+      "assertions": [
+        "四个响应的状态码排序后为 [200,200,200,201]，body 的 id 均相同。",
+        "四个响应的预留字段均为 owner=player-a、units=1、key=SameKey10、state=active。",
+        "GET /holds/{id} 返回 200，body 与并发响应中的当前预留一致。",
+        "GET /quota 返回 200，available=3、consumed=0；available 加 active 预留 units 加 consumed 等于 4。"
+      ]
+    },
+    {
+      "id": "B4-C11_ConcurrentCapacity",
+      "title": "不同 key 并发竞争配额时不超卖且失败 key 未保存",
+      "scenarioIds": [
+        "S11"
+      ],
+      "requirementIds": [
+        "CONCURRENT_CAPACITY",
+        "HOLD_CREATE",
+        "HOLD_INSUFFICIENT",
+        "QUOTA_INVARIANT"
+      ],
+      "preconditions": [
+        "每个测试由框架恢复独立初态；player-a 的 available 为 4、consumed 为 0。"
+      ],
+      "steps": [
+        "用 self.client.parallel 同时提交 player-a 的两个 POST /holds 请求，body 分别为 {\"units\":3,\"key\":\"CapA11\"} 和 {\"units\":3,\"key\":\"CapB11\"}；保留请求与响应的对应关系。",
+        "保存返回 201 的预留 id，调用 player-a GET /holds/{id} 和 GET /quota。",
+        "将返回 409 的请求所用 key 改以 units=1 再次提交 POST /holds；保存新预留 id，并再次查询 GET /quota。"
+      ],
+      "expected": "并发请求恰有一个返回 201、一个返回 409；初次竞争后仅有一条 units=3 的 active 预留，available 为 1、consumed 为 0。被拒绝的 key 未保存，因此随后用该 key 创建 units=1 预留返回 201；最终 available 为 0、consumed 为 0。",
+      "assertions": [
+        "两个并发响应的状态码排序后为 [201,409]；仅检查 409 的状态码。",
+        "201 响应及其 GET 查询均显示同一 id、owner=player-a、units=3、对应的 key、state=active。",
+        "首次 GET /quota 返回 200，available=1、consumed=0；available 加已确认的 active 预留 units 加 consumed 等于 4。",
+        "使用被拒绝 key 和 units=1 的后续 POST 返回 201，body 显示新 id、owner=player-a、units=1、该 key、state=active。",
+        "最终 GET /quota 返回 200，available=0、consumed=0；available 加两条 active 预留的 units 加 consumed 等于 4。"
+      ]
+    },
+    {
+      "id": "B4-C12_ConcurrentRelease",
+      "title": "同一 active 预留并发重复释放只恢复一次配额",
+      "scenarioIds": [
+        "S12"
+      ],
+      "requirementIds": [
+        "CONCURRENT_TRANSITIONS",
+        "RELEASE_ACTIVE",
+        "RELEASE_REPEAT",
+        "QUOTA_INVARIANT"
+      ],
+      "preconditions": [
+        "每个测试由框架恢复独立初态；先以 player-a 创建 units=3 的 active 预留，并保存服务返回的 id。"
+      ],
+      "steps": [
+        "提交 player-a POST /holds，body 为 {\"units\":3,\"key\":\"Release12\"}；确认返回 201，并保存 id。",
+        "调用 player-a GET /quota，记录释放前的 available 和 consumed。",
+        "用 self.client.parallel 对该 id 同时提交四个 player-a POST /holds/{id}/release 请求；保存四个响应。",
+        "调用 player-a GET /holds/{id} 和 GET /quota。"
+      ],
+      "expected": "四次 release 均返回 200 和同一条 released 预留。available 从 1 恢复至 4，仅恢复一次 units=3；consumed 始终为 0。",
+      "assertions": [
+        "创建响应的预留字段为 owner=player-a、units=3、key=Release12、state=active；释放前 GET /quota 返回 available=1、consumed=0。",
+        "四个并发 release 响应均为 200，body 均包含所保存的同一 id 和 state=released。",
+        "GET /holds/{id} 返回 200，显示同一预留为 released。",
+        "最终 GET /quota 返回 200，available=4、consumed=0；available 加 active 预留 units 之和加 consumed 等于 4。"
+      ]
+    },
+    {
+      "id": "B5-C13_concurrent_consume",
+      "title": "同一 active 预留并发消费四次仅计入一次",
+      "scenarioIds": [
+        "S13"
+      ],
+      "requirementIds": [
+        "CONCURRENT_TRANSITIONS",
+        "CONSUME_ACTIVE",
+        "CONSUME_REPEAT",
+        "QUOTA_INVARIANT"
+      ],
+      "preconditions": [
+        "每个测试由 setUp 恢复独立初态；player-a 的初始配额为 available=4、consumed=0。",
+        "通过 self.client.call 和 self.client.parallel 发起请求；并发请求数不超过 4，使用服务返回的预留 id。"
+      ],
+      "steps": [
+        "以 player-a 调用 POST /holds，提交 {\"units\":3,\"key\":\"ConsumeOnce\"}；确认创建成功并保存响应中的 id。",
+        "调用 GET /quota，记录创建后的配额。",
+        "通过 self.client.parallel 同时对该 id 发起四个 POST /holds/{id}/consume 请求，保留四个独立响应。",
+        "调用 GET /holds/{id} 和 GET /quota，读取最终预留及配额。"
+      ],
+      "expected": "创建返回 201，预留为 active，创建后 available=1、consumed=0。四个消费响应均为 200，均返回同一 id 且状态为 consumed。最终预留为 consumed，available=1、consumed=3；消费仅计入一次，配额守恒。",
+      "assertions": [
+        "创建响应的 owner 为 player-a、units 为 3、key 为 ConsumeOnce、state 为 active，且 id 可用于后续请求。",
+        "创建后的 GET /quota 返回 200，body 为 {\"available\":1,\"consumed\":0}。",
+        "四个并发响应各自返回 200；每个响应的 id 均等于保存的 id，state 均为 consumed。",
+        "最终 GET /holds/{id} 返回 200，id、owner、units、key 与创建的预留一致，state 为 consumed。",
+        "最终 GET /quota 返回 200，available=1、consumed=3；available 与 consumed 之和为 4，且无 active 预留。"
+      ]
+    }
+  ]
+}
