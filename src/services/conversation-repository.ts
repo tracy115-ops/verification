@@ -86,6 +86,23 @@ const step = {
         },
       },
     },
+    designQuoteIssues: {
+      type: 'array',
+      maxItems: 20,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['factorId', 'requirementIds'],
+        properties: {
+          factorId: { type: 'string', minLength: 1, maxLength: 80 },
+          requirementIds: {
+            type: 'array',
+            maxItems: 8,
+            items: { type: 'string', minLength: 1, maxLength: 80 },
+          },
+        },
+      },
+    },
   },
 };
 const run = {
@@ -281,7 +298,10 @@ export function decodeConversations(value: unknown): ConversationSession[] {
       for (const node of run.plan) {
         if (run.steps[node.id].analysisBatchBudget !== undefined && node.operation !== 'scenarios.design')
           throw new Error('session_storage_invalid');
-        if (run.steps[node.id].designMappingIssues && node.operation !== 'scenarios.design')
+        if (
+          (run.steps[node.id].designMappingIssues || run.steps[node.id].designQuoteIssues) &&
+          node.operation !== 'scenarios.design'
+        )
           throw new Error('session_storage_invalid');
         if (
           (run.steps[node.id].forceBatchAnalysis ||

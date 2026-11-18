@@ -19,11 +19,16 @@ export function InvocationPreparation({
   const { t, locale } = useI18n();
   const connections = useSyncExternalStore(subscribeConnections, connectionSnapshot);
   if (!preparation) return null;
+  const summary = preparation.issues.some((issue) => issue.code !== 'preparation_spec_missing')
+    ? 'preparationBlocked'
+    : preparation.issues.length
+      ? 'preparation_spec_missing'
+      : 'preparationReady';
   const count = new Intl.NumberFormat(locale);
   return (
     <details className="session-preparation">
       <summary>
-        {t('preparationTitle')} · {t(preparation.issues.length ? 'preparationBlocked' : 'preparationReady')}
+        {t('preparationTitle')} · {t(summary)}
       </summary>
       <div className="session-preparation-body">
         <p>

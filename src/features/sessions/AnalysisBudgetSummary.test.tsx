@@ -9,6 +9,26 @@ import type { Conversations } from '../../app/useConversations';
 vi.mock('../../services/agent-api', () => ({ hasDesktopBridge: () => true }));
 afterEach(cleanup);
 
+it('does not display hypothetical pending batches while a single-call analysis runs or has failed', () => {
+  const run = fixtureRun();
+  const node = run.plan.find((item) => item.operation === 'scenarios.design')!;
+  run.artifacts.baseline = {
+    type: 'RequirementBaseline',
+    digest: 'a'.repeat(64),
+    value: {
+      requirements: [{ id: 'R1', text: 'Rule', quote: 'Rule', acceptanceCriteria: ['Defined'] }],
+      questions: [],
+    },
+  };
+  run.steps[node.id].turnId = crypto.randomUUID();
+  for (const status of ['running', 'failed'] as const) {
+    run.steps[node.id].status = status;
+    render(<AnalysisBudgetSummary run={run} />);
+    expect(screen.queryByText('设计分析预算')).toBeNull();
+    cleanup();
+  }
+});
+
 it('shows pending relationships and a budget pause without claiming design completion', () => {
   const run = fixtureRun();
   const node = run.plan.find((item) => item.operation === 'scenarios.design')!;

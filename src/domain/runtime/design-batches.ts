@@ -6,6 +6,7 @@ import { callAnalysis, scopedTask, type AnalysisContext } from './analysis-call'
 import { mergeDesigns, prefixDesign } from './analysis-merge';
 import { latestArtifact } from './bindings';
 import { designMappingIssues } from './design-mapping';
+import { designQuoteIssues } from './design-source-quotes';
 import { DESIGN_ATTEMPT_BATCH_LIMIT } from './analysis-budget';
 
 function validateBatch(
@@ -78,8 +79,13 @@ export async function generateDesignBatches(
     try {
       value = prefixDesign(validateBatch(parsed, baseline, group), index);
       delete run.steps[node.id].designMappingIssues;
+      delete run.steps[node.id].designQuoteIssues;
     } catch (error) {
       run.steps[node.id].designMappingIssues = designMappingIssues(parsed);
+      run.steps[node.id].designQuoteIssues = designQuoteIssues(parsed, {
+        ...baseline,
+        requirements: group.requirements,
+      });
       throw error;
     }
     validateBatch(value, baseline, group);

@@ -154,7 +154,7 @@ export function ConversationComposer({
         }
       />
       <InvocationPreparation
-        preparation={preparation}
+        preparation={actions.busy && !text.trim() ? undefined : preparation}
         saved={invoked}
         openSettings={openSettings}
         openWorkflow={openWorkflow}

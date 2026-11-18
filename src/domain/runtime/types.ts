@@ -50,6 +50,7 @@ export interface StepState {
   analysisBatchBudget?: number;
   errorCode?: string;
   designMappingIssues?: { scenarioId: string; factorId: string; requirementIds: string[] }[];
+  designQuoteIssues?: { factorId: string; requirementIds: string[] }[];
 }
 
 export interface AnalysisCheckpoint {

@@ -79,7 +79,7 @@ it('rejects duplicate IDs, unknown references, invented factor quotes and no-op 
       ...addedScenarioPatch,
       factors: [{ action: 'update', value: { ...design.factors[0], sourceQuote: '不存在的规则' } }],
     }),
-  ).toThrow('artifact_invalid');
+  ).toThrow('design_factor_quote_invalid');
   expect(() =>
     mergeDesignPatch(run, { summary: 'empty', factors: [], scenarios: [], questions: [] }),
   ).toThrow('design_proposal_empty');

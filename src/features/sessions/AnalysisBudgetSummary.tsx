@@ -11,6 +11,8 @@ export function AnalysisBudgetSummary({ run }: { run: WorkflowRun }) {
   const checkpoint = node && run.steps[node.id].analysis;
   if (!node || (checkpoint && checkpoint.kind !== 'design')) return null;
   if (!checkpoint && run.steps[node.id].status === 'succeeded') return null;
+  // Once a single-call request has started, its hypothetical batch plan is not progress.
+  if (!checkpoint && run.steps[node.id].turnId) return null;
   const completed = new Set(checkpoint?.completed.map((item) => item.index) ?? []);
   const number = (n: number) => new Intl.NumberFormat(locale).format(n);
   let pending: { left: string[]; right: string[] }[] = [];

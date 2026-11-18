@@ -1,5 +1,6 @@
 import { retryRun } from '../domain/runtime/engine';
 import { recoverRequirementDraft } from '../services/requirement-recovery';
+import { recoverDesignDiagnostics } from '../services/design-diagnostic-recovery';
 import type { AgentPort, WorkflowRun } from '../domain/runtime/types';
 import type { useConversationStore } from './useConversationStore';
 import type { useSessionTasks } from './useSessionTasks';
@@ -32,7 +33,7 @@ export function runRetryAction(
         .find((step) => ['failed', 'interrupted'].includes(step.status));
       if (previous?.turnId) await port.cancel(previous.turnId);
       if (previous?.executionId) await executionPort.cancel(previous.executionId);
-      const recovered = await recoverRequirementDraft(run);
+      const recovered = await recoverDesignDiagnostics(await recoverRequirementDraft(run));
       if (controller.signal.aborted) throw new Error('execution_cancelled');
       if (store.getSession(run.sessionId)?.runs.find((item) => item.id === run.id) !== run)
         throw new Error('approval_stale');

@@ -1,6 +1,6 @@
 import type { WorkflowNode } from '../workflow';
 import { newId } from '../../shared/id';
-import { parseArtifact } from './artifacts';
+import { parseArtifact, decodeRequirements } from './artifacts';
 import { resolveInputs } from './bindings';
 import { reviewIssues, taskFor, validateTaskArtifact } from './handlers';
 import { digest } from './plan';
@@ -26,6 +26,7 @@ import { extractRequirementBatches } from './requirement-batches';
 import { generateDesignBatches } from './design-batches';
 import { retryNode, canRetryAnalysis, canRetryAnalysisInBatches } from './analysis-retry';
 import { designMappingIssues } from './design-mapping';
+import { designQuoteIssues } from './design-source-quotes';
 export { reviewDigest } from './approvals';
 
 async function storeOutput(run: WorkflowRun, node: WorkflowNode, value: unknown) {
@@ -136,8 +137,15 @@ export async function advanceRun(
         try {
           await storeOutput(run, node, validateTaskArtifact(run, node, parsed));
           delete step.designMappingIssues;
+          delete step.designQuoteIssues;
         } catch (error) {
-          if (node.operation === 'scenarios.design') step.designMappingIssues = designMappingIssues(parsed);
+          if (node.operation === 'scenarios.design') {
+            step.designMappingIssues = designMappingIssues(parsed);
+            step.designQuoteIssues = designQuoteIssues(
+              parsed,
+              decodeRequirements(latestArtifact(run, 'RequirementBaseline'), run.spec),
+            );
+          }
           if (
             node.operation === 'requirements.extract' &&
             isRequirements(parsed) &&

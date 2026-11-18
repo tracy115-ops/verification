@@ -18,6 +18,7 @@ import { scopedCases } from './case-scope';
 import { quoteIssues } from './source-quotes';
 import { deepTestingGuidance } from './deep-testing';
 import { designMappingInstruction } from './design-mapping';
+import { designQuoteInstruction } from './design-source-quotes';
 
 export function taskFor(run: WorkflowRun, node: WorkflowNode, inputs: Record<string, unknown>) {
   if (['tests.implement', 'verdicts.evaluate'].includes(node.operation))
@@ -36,6 +37,7 @@ export function taskFor(run: WorkflowRun, node: WorkflowNode, inputs: Record<str
       : [];
   const taskInputs = { ...inputs };
   const mappingIssues = run.steps[node.id].designMappingIssues ?? [];
+  const sourceQuoteIssues = run.steps[node.id].designQuoteIssues ?? [];
   for (const [key, contract] of Object.entries(node.inputs)) {
     const value = taskInputs[key];
     if (
@@ -63,6 +65,16 @@ export function taskFor(run: WorkflowRun, node: WorkflowNode, inputs: Record<str
     ...(node.operation === 'scenarios.design'
       ? {
           mappingInstruction: designMappingInstruction,
+          sourceQuoteInstruction: designQuoteInstruction,
+          ...(sourceQuoteIssues.length
+            ? {
+                sourceQuoteFeedback: {
+                  code: 'design_factor_quote_invalid',
+                  issues: sourceQuoteIssues.slice(0, 5),
+                  instruction: designQuoteInstruction,
+                },
+              }
+            : {}),
           ...(mappingIssues.length
             ? {
                 validationFeedback: {

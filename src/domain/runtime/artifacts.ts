@@ -124,21 +124,8 @@ export function decodeDesign(
     for (const factor of design.factors) {
       fail(unique(factor.requirementIds) && factor.requirementIds.every((id) => ids.has(id)));
       fail(unique(factor.levels));
-      const linked = requirements.requirements.filter((item) => factor.requirementIds.includes(item.id));
-      let original = linked.some((item) => item.quote.includes(factor.sourceQuote))
-        ? factor.sourceQuote
-        : undefined;
-      if (original === undefined) {
-        for (const item of linked) {
-          try {
-            original = quoteMatcher(item.quote)(factor.sourceQuote);
-            break;
-          } catch {
-            /* Try another explicitly linked requirement. */
-          }
-        }
-      }
-      if (original === undefined) throw new Error('artifact_invalid');
+      const original = matchingFactorQuote(factor, requirements);
+      if (original === undefined) throw new Error('design_factor_quote_invalid');
       factor.sourceQuote = original;
     }
   }
@@ -155,6 +142,21 @@ export function decodeDesign(
     }
   }
   return design;
+}
+
+export function matchingFactorQuote(
+  factor: NonNullable<DesignArtifact['factors']>[number],
+  requirements: RequirementArtifact,
+): string | undefined {
+  const linked = requirements.requirements.filter((item) => factor.requirementIds.includes(item.id));
+  if (linked.some((item) => item.quote.includes(factor.sourceQuote))) return factor.sourceQuote;
+  for (const item of linked) {
+    try {
+      return quoteMatcher(item.quote)(factor.sourceQuote);
+    } catch {
+      // A quote must belong to an explicitly linked requirement.
+    }
+  }
 }
 
 export function decodeCases(

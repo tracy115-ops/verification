@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createOrderTarget } from '../../tests/fixtures/blackbox/order-target.mjs';
+import { loopbackJson } from './loopback-json.mjs';
 
 /** Normal paths intentionally avoid replay, rejection and concurrency. */
 export async function normalOrderPaths(defect) {
@@ -11,14 +12,8 @@ export async function normalOrderPaths(defect) {
   const base = `http://127.0.0.1:${target.address().port}`;
   const evidence = [];
   async function call(method, route, body) {
-    const response = await fetch(base + route, {
-      method,
-      headers: { 'Content-Type': 'application/json', 'X-Player': 'user-a' },
-      body: body === undefined ? undefined : JSON.stringify(body),
-      signal: AbortSignal.timeout(3000),
-      redirect: 'error',
-    });
-    const value = await response.json();
+    const response = await loopbackJson(base + route, method, body, 'user-a');
+    const value = response.body;
     evidence.push({
       request: { method, path: route, body },
       response: { status: response.status, body: value },

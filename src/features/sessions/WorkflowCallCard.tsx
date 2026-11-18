@@ -111,6 +111,18 @@ export function WorkflowCallCard({
       />
       {repaired && <p className="wb-muted">{t('quoteRepairApplied')}</p>}
       {error && !repaired && <p className="wb-error">{isMessageKey(error) ? t(error) : t('cli_failed')}</p>}
+      {!!error && !!node && !!run.steps[node.id]?.designQuoteIssues?.length && (
+        <div className="wb-error">
+          <p>{t('designQuoteIssueList')}</p>
+          <ul>
+            {run.steps[node.id].designQuoteIssues!.map((issue) => (
+              <li key={issue.factorId}>
+                <code>{issue.factorId}</code> · {issue.requirementIds.join(', ')}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {!!turn.activities.length && (
         <details>
           <summary>

@@ -61,7 +61,7 @@ it('validates factor levels and their source against linked requirements', () =>
   ).toThrow('artifact_invalid');
   expect(() =>
     decodeDesign({ ...design, factors: [{ ...factor, sourceQuote: 'invented' }] }, requirements),
-  ).toThrow('artifact_invalid');
+  ).toThrow('design_factor_quote_invalid');
   expect(() =>
     decodeDesign({ ...design, factors: [{ ...factor, levels: ['5', '5'] }] }, requirements),
   ).toThrow('artifact_invalid');

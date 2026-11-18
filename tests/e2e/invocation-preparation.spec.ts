@@ -61,6 +61,11 @@ test('shows actual workflow Agent and blocks invalid configuration without losin
   await expect(check).toContainText('当前配置尚未做短对话测试');
   await composer.getByRole('combobox', { name: '会话 Agent' }).selectOption('codeagent-native');
   await expect(check.locator('summary')).toContainText('本地配置齐备');
+  await input.fill('');
+  await expect(check.locator('summary')).toContainText('请先输入本次测试需求 Spec');
+  await expect(check.locator('summary')).not.toContainText('配置待补齐');
+  await expect(send).toBeDisabled();
+  await input.fill('房间人数限制为2至8，覆盖边界。');
   await expect(check).toContainText('仅设计评审');
   await expect(send).toBeEnabled();
   // A malformed slash command must not crash React or silently create a task.
@@ -102,4 +107,5 @@ test('shows actual workflow Agent and blocks invalid configuration without losin
     .poll(() => page.evaluate(() => Number(sessionStorage.getItem('preparation.calls') || 0)))
     .toBe(1);
   await expect(input).toHaveValue('');
+  await expect(check).toHaveCount(0);
 });
