@@ -1,5 +1,5 @@
 import { isCases, isDesign, isRequirements } from '../runtime/artifacts.ts';
-import { isEvidence, isExecutionPlan, isImplementation } from '../execution/schema.ts';
+import { linkedExecution } from '../runtime/execution-link.ts';
 import type { WorkflowRun, CaseArtifact, DesignArtifact, RequirementArtifact } from '../runtime/types.ts';
 import type { TeamProject } from './types.ts';
 import type { CaseDefinition, ContributionInput, ContributionItem, ScriptInput } from './collaboration.ts';
@@ -128,10 +128,7 @@ export function importRunContribution(
 export function runScriptContribution(run: WorkflowRun): ScriptInput | null {
   const bundle = runContribution(run);
   if (!bundle) return null;
-  const all = Object.values(run.artifacts).map((item) => item.value);
-  const implementation = all.find((value) => isImplementation(value));
-  const plan = all.find((value) => isExecutionPlan(value));
-  const evidence = all.find((value) => isEvidence(value));
+  const { implementation, plan, evidence } = linkedExecution(run);
   if (!implementation) return null;
   const mappings = bundle.cases.cases
     .map((item) => ({
@@ -148,10 +145,7 @@ export function runScriptContribution(run: WorkflowRun): ScriptInput | null {
     name: `test_${run.id.slice(0, 8)}.py`,
     source: implementation.script,
     mappings,
-    ...(plan &&
-    evidence &&
-    plan.payload.implementation.script === implementation.script &&
-    evidence.planDigest === plan.digest
+    ...(plan && evidence
       ? {
           execution: {
             runId: run.id,

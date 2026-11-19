@@ -40,6 +40,8 @@ it('keeps declarations separate from mapped scripts and passing evidence', () =>
 it('separates indirect scenario links and does not require a standalone factor for every rule', async () => {
   const run = fixtureRun();
   const plan = await fixturePlan();
+  run.id = plan.payload.runId;
+  run.sessionId = plan.payload.sessionId;
   run.artifacts = {
     requirements: {
       type: 'RequirementBaseline',

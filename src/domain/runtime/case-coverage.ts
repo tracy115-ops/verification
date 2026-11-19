@@ -1,4 +1,4 @@
-import { isEvidence, isExecutionPlan, isImplementation } from '../execution/schema';
+import { linkedExecution } from './execution-link';
 import { canonical } from '../team/collaboration';
 import type { CaseArtifact, WorkflowRun } from './types';
 
@@ -32,16 +32,9 @@ export function coverageEvents(run: WorkflowRun): CoverageEvent[] {
   );
 }
 export function personalCoverage(run: WorkflowRun, item: CaseArtifact['cases'][number]) {
-  const all = Object.values(run.artifacts).map((artifact) => artifact.value);
-  const implementation = all.find((value) => isImplementation(value));
-  const plan = all.find((value) => isExecutionPlan(value));
-  const evidence = all.find((value) => isEvidence(value));
+  const { implementation, plan, evidence } = linkedExecution(run);
   const tests = implementation?.tests.filter((test) => test.caseIds.includes(item.id)) ?? [];
-  const mapped =
-    !!tests.length &&
-    !!plan &&
-    plan.payload.implementation.script === implementation?.script &&
-    tests.every((test) => plan.testNames.includes(test.testName));
+  const mapped = !!tests.length && !!plan && tests.every((test) => plan.testNames.includes(test.testName));
   const claim = coverageEvents(run)
     .filter((event) => event.caseId === item.id)
     .at(-1);
@@ -54,7 +47,7 @@ export function personalCoverage(run: WorkflowRun, item: CaseArtifact['cases'][n
         ? 'stale'
         : 'uncovered';
   const results =
-    mapped && evidence?.planDigest === plan?.digest
+    mapped && evidence
       ? tests.map(
           (test) => evidence.results.find((result) => result.testName === test.testName)?.status ?? 'not_run',
         )

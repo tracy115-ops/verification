@@ -14,6 +14,8 @@ import { verificationRun, verificationPorts } from '../execution/fixtures.test-s
 import { reviseDesign } from './design-revision';
 import { design } from './fixtures.test-support';
 import { decodeConversations } from '../../services/conversation-repository';
+import { personalCoverage } from './case-coverage';
+import { runScriptContribution } from '../team/run-contribution';
 
 it('preserves requirements/design while archiving cases and invalidating reordered descendants', async () => {
   const run = await completedProposalRun();
@@ -148,6 +150,11 @@ it('invalidates script mappings, execution approval and evidence after changing 
   }
   expect(run.status).toBe('completed');
   expect(latestArtifact(run, 'EvidenceBundle')).toBeDefined();
+  expect(personalCoverage(run, caseContext(run).cases.cases[0])).toMatchObject({
+    status: 'mapped',
+    execution: 'passed',
+  });
+  expect(runScriptContribution(run)).toHaveProperty('execution');
   run.plan.reverse();
   const value = caseContext(run).cases;
   value.cases = value.cases.map((item) => ({ ...item, title: `${item.title} clarified` }));
@@ -162,4 +169,9 @@ it('invalidates script mappings, execution approval and evidence after changing 
     expect(latestArtifact(next, type)).toBeUndefined();
   expect(next.approvals).toHaveLength(2);
   expect(next.artifacts['history.cases.1'].value).toMatchObject({ artifacts: run.artifacts });
+  expect(personalCoverage(next, value.cases[0])).toMatchObject({
+    status: 'uncovered',
+    execution: 'not_run',
+  });
+  expect(runScriptContribution(next)).toBeNull();
 });
