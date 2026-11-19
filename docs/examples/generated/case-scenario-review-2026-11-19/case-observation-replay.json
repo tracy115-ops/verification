@@ -1,0 +1,40 @@
+{
+  "cases": [
+    {
+      "id": "C_S06_01",
+      "title": "释放后重复释放、原请求重放及消费被拒绝",
+      "scenarioIds": [
+        "S06"
+      ],
+      "requirementIds": [
+        "HOLD_CREATE",
+        "HOLD_IDEMPOTENT",
+        "RELEASE_ACTIVE",
+        "RELEASE_REPEAT",
+        "CONSUME_RELEASED",
+        "QUOTA_INVARIANT"
+      ],
+      "preconditions": [
+        "本测试从框架恢复的独立初态开始；使用缺省身份 player-a，初始 available 为 4、consumed 为 0。"
+      ],
+      "steps": [
+        "GET /quota，保存初始配额响应。",
+        "POST /holds，提交 {\"units\":2,\"key\":\"ReleaseReplay1\"}；保存服务返回的 id，并用 GET /holds/{id} 和 GET /quota 读取创建后的状态。",
+        "POST /holds/{id}/release；用 GET /holds/{id} 和 GET /quota 读取首次释放后的状态。",
+        "再次 POST /holds/{id}/release；用 GET /holds/{id} 和 GET /quota 读取重复释放后的状态。",
+        "以相同的 units 和 key 再次 POST /holds；用 GET /holds/{id} 和 GET /quota 读取重放后的状态。",
+        "保存当前预留和配额响应，POST /holds/{id}/consume；随后再次用 GET /holds/{id} 和 GET /quota 读取状态。"
+      ],
+      "expected": "创建成功后 available 为 2；首次释放使该预留变为 released，available 恢复为 4。重复释放和原请求重放均返回同一 released 预留，不再改变配额。消费 released 预留返回 409，预留及配额均保持不变。整个旅程中 available、active 预留 units 之和与 consumed 之和为 4。",
+      "assertions": [
+        "初始 GET /quota 返回 200，响应为 {\"available\":4,\"consumed\":0}。",
+        "创建返回 201，响应包含服务生成的 id、owner 为 player-a、units 为 2、key 为 ReleaseReplay1、state 为 active；创建后 GET /holds/{id} 返回 200 和同一预留，GET /quota 返回 available 为 2、consumed 为 0。",
+        "首次释放返回 200，响应 id 与创建时相同、state 为 released；随后 GET /holds/{id} 返回同一 released 预留，GET /quota 返回 available 为 4、consumed 为 0。",
+        "重复释放返回 200 和同一 released 预留；随后读取的预留及配额分别与首次释放后的读取结果相同。",
+        "原请求重放返回 200 和同一 id 的 released 预留；随后读取的预留及配额分别与重放前的结果相同。",
+        "消费返回 409；消费后的 GET /holds/{id} 与 GET /quota 均返回 200，响应分别与消费前保存的预留和配额相同。",
+        "在各次配额读取时，available 加该租户 active 预留的 units 之和再加 consumed 均为 4。"
+      ]
+    }
+  ]
+}

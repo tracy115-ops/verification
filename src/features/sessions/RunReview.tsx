@@ -7,13 +7,13 @@ import { useI18n } from '../../shared/i18n/context';
 import { hasDesktopBridge } from '../../services/agent-api';
 import { isExecutionPlan } from '../../domain/execution/schema';
 import { ReviewDialog } from './ReviewDialog';
-import { ArtifactPanel } from './ArtifactPanel';
 import { ExecutionReview } from './ExecutionReview';
 import { ClarificationReview, SavedClarifications } from './ClarificationReview';
 import { CaseScopeReview } from './CaseScopeReview';
 import { AnalysisBudgetSummary } from './AnalysisBudgetSummary';
 import { DESIGN_ATTEMPT_BATCH_LIMIT } from '../../domain/runtime/analysis-budget';
 import { DesignRepairButton } from '../reviews/DesignRepairButton';
+import { ReviewArtifactPreview } from './CaseScenarioReview';
 
 export function RunReview({
   run,
@@ -145,7 +145,15 @@ export function RunReview({
                   onPrepared={() => setReviewOpen(false)}
                 />
               )}
-              {reviewArtifact && <ArtifactPanel artifact={reviewArtifact} />}
+              {reviewArtifact && (
+                <ReviewArtifactPreview
+                  run={run}
+                  artifact={reviewArtifact}
+                  inputs={reviewInputs}
+                  actions={actions}
+                  close={() => setReviewOpen(false)}
+                />
+              )}
               {pending.operation === 'review.cases' && (
                 <CaseScopeReview
                   key={run.steps[pending.id].reviewDigest}

@@ -37,6 +37,8 @@ export const deepTestingGuidance = {
   ],
   design:
     'Prioritize a small set of high-risk journeys and distinct counterexamples, not a Cartesian product. In existing scenario fields, cite requirementIds, identify the method in dimension, state the required action sequence and observable expected relation. Preserve real in-scope uncertainty as gaps; never claim execution.',
+  cases:
+    'For each scenario expectation, include the concrete observation in steps and the corresponding check in assertions. When the contract says rejection leaves state unchanged, capture the relevant state before the rejected operation and read it again afterward. Check both the affected resource and any contractually related aggregate, if observable. A status code or unchanged aggregate alone does not establish unchanged resource state. Use only observations supported by the source and available interfaces.',
   implementation:
     'Put each stateful journey in one independent test method, using the provided framework reset between methods. Save runtime IDs and before/after observations in local variables. Assert setup outcomes, exercise the approved sequence, and assert both declared responses and observable effects. Use only supported framework calls and bounded parallelism. Map methods to approved cases; do not silently add a discovery campaign outside those cases.',
 } as const;

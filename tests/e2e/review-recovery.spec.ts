@@ -28,6 +28,14 @@ const design = {
       expected: 'Locked',
       factorLevels: [{ factorId: 'F1', level: '5' }],
     },
+    {
+      id: 'S2',
+      title: 'Before fifth failure',
+      requirementIds: ['R1'],
+      dimension: 'boundary',
+      expected: 'Not yet locked',
+      factorLevels: [{ factorId: 'F1', level: '5' }],
+    },
   ],
   gaps: [],
 };
@@ -42,6 +50,16 @@ const cases = {
       steps: ['Submit five incorrect passwords'],
       expected: 'Locked',
       assertions: ['Account state is locked'],
+    },
+    {
+      id: 'C2',
+      title: 'Observe state after four failures',
+      scenarioIds: ['S2'],
+      requirementIds: ['R1'],
+      preconditions: ['Active account'],
+      steps: ['Submit four incorrect passwords', 'Read account state'],
+      expected: 'Not yet locked',
+      assertions: ['Account state remains active'],
     },
   ],
 };
@@ -124,6 +142,34 @@ test('resumes design reviews after two-day waits and reloads without repeating c
     await page.clock.setSystemTime(new Date(Date.parse(run.reviewPausedAt) + 48 * 3600_000));
     await page.reload();
     await panel.getByRole('button', { name: '打开评审工作区', exact: true }).click();
+    if (gate === 2) {
+      const comparison = page.getByRole('region', { name: '按场景核对用例', exact: true });
+      const selector = comparison.getByRole('combobox', { name: '按场景核对用例' });
+      await expect(comparison).toContainText('Account state is locked');
+      await expect(comparison).not.toContainText('Account state remains active');
+      await selector.selectOption('S2');
+      await expect(comparison).toContainText('Not yet locked');
+      await expect(comparison).toContainText('Account state remains active');
+      await expect(comparison).not.toContainText('Account state is locked');
+      await expect(comparison.getByText('Read account state', { exact: true })).not.toBeVisible();
+      await comparison.locator('summary').click();
+      await expect(comparison.getByText('Read account state', { exact: true })).toBeVisible();
+      await comparison.locator('summary').click();
+      await page.setViewportSize({ width: 900, height: 650 });
+      for (const theme of ['light', 'dark']) {
+        await page.evaluate((theme) => {
+          document.documentElement.dataset.theme = theme;
+        }, theme);
+        expect(await comparison.evaluate((element) => element.scrollWidth <= element.clientWidth + 1)).toBe(
+          true,
+        );
+        await comparison.screenshot({ path: `.runtime/case-scenario-review-${theme}.png` });
+      }
+      await comparison.getByRole('button', { name: '补充当前场景的用例断言' }).click();
+      await expect(page.getByRole('dialog')).not.toBeVisible();
+      await expect(page.locator('.session-composer textarea')).toHaveValue(/场景 S2/);
+      await panel.getByRole('button', { name: '打开评审工作区', exact: true }).click();
+    }
     await page.getByRole('dialog').getByRole('button', { name: '确认并继续', exact: true }).click();
     await expect
       .poll(async () => {

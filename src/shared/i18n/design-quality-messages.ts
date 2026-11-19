@@ -1,4 +1,10 @@
 export const designQualityZh = {
+  caseScenarioReview: '按场景核对用例',
+  caseScenarioExpected: '场景预期',
+  caseScenarioReviewHint: '对照下方断言。若规则要求拒绝后状态不变，核对是否读取并比较了受影响对象的状态。',
+  caseScenarioRepair: '补充当前场景的用例断言',
+  caseScenarioRepairPrompt:
+    '请复核场景 {id} 的场景预期与关联用例断言，仅提议必要的增量修改。若契约规定拒绝后状态不变，检查操作前后受影响对象的可观察状态，及契约明确要求的相关计数或余额。保留无关用例，不新增契约未规定的预期。若已有充分断言，请说明依据。',
   qualityTitle: '设计缺口检查',
   qualityHint:
     '按已声明的因子水平和关联关系检查；不代表组合覆盖充分或已验证业务正确性。请继续评审边界、状态转换、权限、并发、失败恢复和可观测判定依据。',
@@ -29,6 +35,13 @@ export const designQualityZh = {
     '当前任务已变化、正在调用 Agent，或合并后输入过长。原输入已保留，请返回会话检查后重试。',
 };
 export const designQualityEn: Record<keyof typeof designQualityZh, string> = {
+  caseScenarioReview: 'Review cases by scenario',
+  caseScenarioExpected: 'Scenario expectation',
+  caseScenarioReviewHint:
+    'Compare the assertions below. If a rejected operation must preserve state, check whether the case reads and compares the state of the affected resource.',
+  caseScenarioRepair: 'Improve assertions for this scenario',
+  caseScenarioRepairPrompt:
+    'Compare scenario {id} with the assertions in its linked cases. Propose only necessary revisions. When the contract requires state to remain unchanged after rejection, check observable resource state before and after the operation, plus any counts or balances required by the contract. Preserve unrelated cases and avoid inventing expectations. If assertions already suffice, explain why.',
   qualityTitle: 'Design gap checks',
   qualityHint:
     'Checks declared factor levels and links only; this does not certify combination coverage or business correctness. Review boundaries, state transitions, permissions, concurrency, failure recovery and observable oracles.',

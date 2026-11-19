@@ -768,6 +768,20 @@
 .session-review-card .wb-banner p {
   margin-bottom: 7px;
 }
+.session-case-scenario-review {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  margin-block: 12px;
+}
+.session-case-scenario-review > .wb-banner,
+.session-case-scenario-review > p {
+  margin: 0;
+}
+.session-case-scenario-review > button {
+  justify-self: start;
+}
 .session-clarifications {
   display: flex;
   flex-direction: column;
