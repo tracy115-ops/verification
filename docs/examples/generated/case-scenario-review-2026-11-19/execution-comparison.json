@@ -1,0 +1,121 @@
+[
+  {
+    "suite": "original",
+    "variant": "reference",
+    "caseId": "B2-C06_released_hold_replay",
+    "testName": "test_released_hold_replays_and_rejects_consume",
+    "status": "passed",
+    "total": 14,
+    "scriptSha256": "9fedadce0adaedbf6ff6488061a677112ecdc83d86ddc70f7104132d56a75902",
+    "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+    "rawEvidenceSha256": "566682e169888a5fa7a0ba9bd0fbf10efd714b845c89f3dcf0ea50aa786d77da"
+  },
+  {
+    "suite": "original",
+    "variant": "rejected_consume_record_mutation",
+    "caseId": "B2-C06_released_hold_replay",
+    "testName": "test_released_hold_replays_and_rejects_consume",
+    "status": "passed",
+    "total": 14,
+    "scriptSha256": "9fedadce0adaedbf6ff6488061a677112ecdc83d86ddc70f7104132d56a75902",
+    "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+    "rawEvidenceSha256": "00c5af1864ba27d049deb9144652297a73d1a5f216526665381ca13ef5774432"
+  },
+  {
+    "suite": "followup",
+    "variant": "reference",
+    "caseId": "C_S06_01",
+    "testName": "test_release_repeat_replay_and_rejected_consume",
+    "status": "passed",
+    "total": 1,
+    "scriptSha256": "59fd28b627bcf6f842d929572673171ed8e4cb407c95018bb972d29283adf548",
+    "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+    "rawEvidenceSha256": "97286c67bd0d476a4eed0a8c6e76c672f7d04694b15b8ee8bfdee09f8b3db22f",
+    "observation": {
+      "rejectedStatus": 409,
+      "before": {
+        "body": {
+          "id": "hold-1",
+          "key": "ReleaseReplay1",
+          "owner": "player-a",
+          "state": "released",
+          "units": 2
+        },
+        "status": 200
+      },
+      "after": {
+        "body": {
+          "id": "hold-1",
+          "key": "ReleaseReplay1",
+          "owner": "player-a",
+          "state": "released",
+          "units": 2
+        },
+        "status": 200
+      },
+      "quotaBefore": {
+        "body": {
+          "available": 4,
+          "consumed": 0
+        },
+        "status": 200
+      },
+      "quotaAfter": {
+        "body": {
+          "available": 4,
+          "consumed": 0
+        },
+        "status": 200
+      }
+    }
+  },
+  {
+    "suite": "followup",
+    "variant": "rejected_consume_record_mutation",
+    "caseId": "C_S06_01",
+    "testName": "test_release_repeat_replay_and_rejected_consume",
+    "status": "failed",
+    "total": 1,
+    "scriptSha256": "59fd28b627bcf6f842d929572673171ed8e4cb407c95018bb972d29283adf548",
+    "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+    "rawEvidenceSha256": "aa8fd49010b9907d80b21ca2563359e6666ebb791cce917728dfb3f7ac20d288",
+    "observation": {
+      "rejectedStatus": 409,
+      "before": {
+        "body": {
+          "id": "hold-1",
+          "key": "ReleaseReplay1",
+          "owner": "player-a",
+          "state": "released",
+          "units": 2
+        },
+        "status": 200
+      },
+      "after": {
+        "body": {
+          "id": "hold-1",
+          "key": "ChangedAfterReject",
+          "owner": "player-a",
+          "state": "released",
+          "units": 2
+        },
+        "status": 200
+      },
+      "quotaBefore": {
+        "body": {
+          "available": 4,
+          "consumed": 0
+        },
+        "status": 200
+      },
+      "quotaAfter": {
+        "body": {
+          "available": 4,
+          "consumed": 0
+        },
+        "status": 200
+      }
+    },
+    "assertion": "AssertionError: {'id'[31 chars], 'units': 2, 'key': 'ChangedAfterReject', 'state': 'released'} != {'id'[31 chars], 'units': 2, 'key': 'ReleaseReplay1', 'state': 'released'}"
+  }
+]

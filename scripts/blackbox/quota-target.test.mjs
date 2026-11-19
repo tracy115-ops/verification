@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'vitest';
-import { createQuotaTarget, quotaDefects } from '../../tests/fixtures/blackbox/quota-target.mjs';
+import {
+  createQuotaTarget,
+  quotaDefects,
+  quotaObservationDefect,
+} from '../../tests/fixtures/blackbox/quota-target.mjs';
 import { loopbackJson } from './loopback-json.mjs';
 
 async function withTarget(defect, check) {
@@ -82,5 +86,23 @@ test('an insufficient allocation does not retain its key', async () => {
     assert.equal((await call('POST', '/holds', { units: 1, key: 'Retry' })).status, 409);
     await call('POST', `/holds/${first.body.id}/release`);
     assert.equal((await call('POST', '/holds', { units: 1, key: 'Retry' })).status, 201);
+  });
+});
+
+test.each([null, quotaObservationDefect])('rejected consume observation on %s', async (defect) => {
+  await withTarget(defect, async (call) => {
+    const created = await call('POST', '/holds', { units: 2, key: 'Original' });
+    assert.equal(created.status, 201);
+    const path = `/holds/${created.body.id}`;
+    assert.equal((await call('POST', `${path}/release`)).status, 200);
+    const before = await call('GET', path);
+    const quota = await call('GET', '/quota');
+    assert.equal(before.body.state, 'released');
+    assert.equal((await call('POST', `${path}/consume`)).status, 409);
+    assert.deepEqual(await call('GET', '/quota'), quota);
+    assert.deepEqual(await call('GET', path), {
+      ...before,
+      body: { ...before.body, key: defect ? 'ChangedAfterReject' : 'Original' },
+    });
   });
 });

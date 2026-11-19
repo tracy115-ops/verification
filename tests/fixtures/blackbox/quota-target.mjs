@@ -6,10 +6,12 @@ export const quotaDefects = [
   'tenant_key_scope',
   'reserve_race',
 ];
+export const quotaObservationDefect = 'rejected_consume_record_mutation';
 
 /** Maintainer-only controlled target. Never supply implementation or variant names to the Agent. */
 export function createQuotaTarget(defect = null) {
-  if (defect !== null && !quotaDefects.includes(defect)) throw new Error('unknown_quota_defect');
+  if (defect !== null && defect !== quotaObservationDefect && !quotaDefects.includes(defect))
+    throw new Error('unknown_quota_defect');
   let quotas, holds, keys, sequence;
   function reset() {
     quotas = new Map(['player-a', 'player-b'].map((user) => [user, { available: 4, consumed: 0 }]));
@@ -65,6 +67,7 @@ export function createQuotaTarget(defect = null) {
     } else {
       if (hold.state === 'released') {
         if (defect === 'rejected_consume_mutation') quota.available -= hold.units;
+        if (defect === quotaObservationDefect) hold.key = 'ChangedAfterReject';
         fail(response, 409);
         return;
       }
