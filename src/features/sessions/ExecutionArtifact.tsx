@@ -3,6 +3,7 @@ import { isEvidence, isImplementation, isReport } from '../../domain/execution/s
 import { useI18n } from '../../shared/i18n/context';
 import { Status } from '../../shared/components/Status';
 import { ReportCandidates } from './ReportCandidates';
+import type { ReviewCandidate } from '../../domain/runtime/candidate-review';
 
 function download(name: string, text: string, type: string) {
   const url = URL.createObjectURL(new Blob([text], { type }));
@@ -16,10 +17,12 @@ export function ExecutionArtifact({
   artifact,
   expandSource = false,
   run,
+  saveReview,
 }: {
   artifact: Artifact;
   expandSource?: boolean;
   run?: WorkflowRun;
+  saveReview?: ReviewCandidate;
 }) {
   const { t, locale } = useI18n();
   const value = artifact.value;
@@ -97,7 +100,13 @@ export function ExecutionArtifact({
               ))}
             </details>
           )}
-          <ReportCandidates key={artifact.digest} report={value} run={run} />
+          <ReportCandidates
+            key={artifact.digest}
+            report={value}
+            run={run}
+            reportDigest={artifact.digest}
+            saveReview={saveReview}
+          />
           {!!value.notes.length && (
             <details>
               <summary>{t('candidateReportNotes')}</summary>

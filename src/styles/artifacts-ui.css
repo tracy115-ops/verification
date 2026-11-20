@@ -12,6 +12,8 @@
   overflow: auto;
 }
 .report-candidate-list > button {
+  display: grid;
+  gap: 6px;
   text-align: start;
   white-space: normal;
   overflow-wrap: anywhere;
@@ -19,6 +21,37 @@
 .report-candidate-detail,
 .candidate-trace {
   min-width: 0;
+}
+.candidate-review {
+  margin-block: 12px 20px;
+  padding: 12px;
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius);
+}
+.candidate-review-state {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+.candidate-review details {
+  margin-top: 12px;
+}
+.candidate-review form {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+.candidate-review form > button {
+  justify-self: start;
+}
+.candidate-review-note {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.candidate-review time {
+  display: block;
+  margin-top: 4px;
+  color: var(--wb-muted);
 }
 .candidate-trace-tabs {
   display: flex;

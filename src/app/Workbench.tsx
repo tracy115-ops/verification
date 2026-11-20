@@ -98,6 +98,7 @@ export function Workbench({ appearance }: { appearance: Appearance }) {
             navigate={(section) => {
               if (section === 'team') setPage('team');
               else if (section === 'cases') setPage('cases');
+              else if (section === 'runs') setPage('runs');
               else {
                 setSettingsTab(section);
                 setPage('settings');

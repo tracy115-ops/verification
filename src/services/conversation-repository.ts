@@ -8,6 +8,7 @@ import { decodeFramework } from '../domain/execution/validation';
 import { caseSchema, requirementIncrementSchema, designIncrementSchema } from '../domain/runtime/artifacts';
 import { composerDraftSchema } from '../domain/runtime/composer-draft';
 import { isDesignProposal } from '../domain/runtime/design-proposal-schema';
+import { candidateReviewEvents } from '../domain/runtime/candidate-review';
 
 export const CONVERSATIONS_KEY = 'verification-workbench.conversations.v1';
 const string = { type: 'string' };
@@ -253,6 +254,7 @@ function validateOwnership(sessions: ConversationSession[]) {
       if (!run.id || run.sessionId !== session.id || runIds.has(run.id))
         throw new Error('session_storage_invalid');
       runIds.add(run.id);
+      candidateReviewEvents(run);
     }
   }
 }

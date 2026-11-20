@@ -1,0 +1,17 @@
+{
+  "version": "0.19.0",
+  "identifier": "dev.verification.workbench.auditreview019",
+  "source": "historical native quota report",
+  "reportPreserved": true,
+  "persistedAfterReload": true,
+  "review": {
+    "runId": "7ff95ef8-13c3-4dcb-b7a5-d53ad3f9a2b7",
+    "sessionId": "9904f18c-7cf5-409b-825f-833d440e63bf",
+    "reportDigest": "bcafd7dba162ee75a2c76188214a172d8120f2fefc6a0e746332a598e1033192",
+    "evidenceDigest": "80007020f4fa9572a3e4a1c6df259f7bdb462f7624633486cc735ad3c0a957b4",
+    "candidateId": "release-replay-overcredits-quota",
+    "status": "confirmed",
+    "note": "复核历史配额执行证据，实际余额与题目中的守恒规则不符。",
+    "at": "2026-11-20T09:51:11.912Z"
+  }
+}

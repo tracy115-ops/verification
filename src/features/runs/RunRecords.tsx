@@ -109,6 +109,7 @@ export function RunRecords({
             run={current.run}
             title={current.session.title}
             busy={actions.isSessionBusy?.(current.session.id) ?? actions.busy}
+            saveReview={actions.saveCandidateReview}
             openSession={() => openSession(current.session.id, current.run.id)}
             openAssets={() => openAssets(current.session.id, current.run.id)}
           />

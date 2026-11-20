@@ -9,6 +9,7 @@ import { RunReport } from '../sessions/RunReport';
 import { RunArtifactViewer } from '../sessions/RunArtifactViewer';
 import { nodeLabel } from '../workflows/node-label';
 import { useTranscript } from '../sessions/useTranscript';
+import type { ReviewCandidate } from '../../domain/runtime/candidate-review';
 
 export function RunDetails({
   run,
@@ -16,12 +17,14 @@ export function RunDetails({
   busy,
   openSession,
   openAssets,
+  saveReview,
 }: {
   run: WorkflowRun;
   title: string;
   busy: boolean;
   openSession: () => void;
   openAssets: () => void;
+  saveReview?: ReviewCandidate;
 }) {
   const { t, locale } = useI18n();
   const [artifact, setArtifact] = useState<string | null>(null);
@@ -77,7 +80,7 @@ export function RunDetails({
         >
           {t('assetsTitle')}
         </button>
-        <RunReport artifact={report} run={run} />
+        <RunReport artifact={report} run={run} saveReview={busy ? undefined : saveReview} />
       </div>
       {current && (
         <div className="run-current">

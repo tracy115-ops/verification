@@ -19,6 +19,7 @@ import { designProposalActions } from './design-proposal-actions';
 import { invokedWorkflow } from '../domain/runtime/workflow-selection';
 import { caseProposalActions } from './case-proposal-actions';
 import { frameworkInspectionArtifact } from '../services/framework-inspection-api';
+import { candidateReviewActions } from './candidate-review-actions';
 
 export function useConversations(
   profiles: AgentProfile[],
@@ -166,6 +167,7 @@ export function useConversations(
     ...store,
     ...designProposalActions(store, tasks, port, profiles),
     ...caseProposalActions(store, tasks, port, profiles),
+    ...candidateReviewActions(store, tasks),
     setActiveId: selectSession,
     busy: tasks.busy,
     anyBusy: tasks.anyBusy,

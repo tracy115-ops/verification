@@ -1,21 +1,19 @@
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import type { WorkflowRun } from '../../src/domain/runtime/types';
 import type { ExecutionPlan } from '../../src/domain/execution/types';
 
 // Persistence fixture assembled around real archived native results; no live inference.
 export function reportRunFixture(): WorkflowRun {
-  const root = new URL('../../docs/examples/generated/native-desktop-2026-11-06/', import.meta.url);
-  const read = (name: string): unknown => JSON.parse(readFileSync(new URL(name, root), 'utf8'));
+  const root = resolve('docs/examples/generated/native-desktop-2026-11-06');
+  const read = (name: string): unknown => JSON.parse(readFileSync(resolve(root, name), 'utf8'));
   const run = JSON.parse(
-    readFileSync(
-      new URL('../../docs/examples/generated/cli-transcript-2026-10-28/run.json', import.meta.url),
-      'utf8',
-    ),
+    readFileSync('docs/examples/generated/cli-transcript-2026-10-28/run.json', 'utf8'),
   ) as WorkflowRun;
   const plan = read('execution-plan.json') as ExecutionPlan;
   run.id = plan.payload.runId;
   run.sessionId = plan.payload.sessionId;
-  run.spec = readFileSync(new URL('source.txt', root), 'utf8');
+  run.spec = readFileSync(resolve(root, 'source.txt'), 'utf8');
   run.scope = 'verification';
   run.executionProfile = plan.payload.profile;
   run.plan = structuredClone(run.snapshot.definition.nodes);

@@ -4,8 +4,17 @@ import { useI18n } from '../../shared/i18n/context';
 import { ReviewDialog } from './ReviewDialog';
 import { ExecutionArtifact } from './ExecutionArtifact';
 import type { Artifact, WorkflowRun } from '../../domain/runtime/types';
+import type { ReviewCandidate } from '../../domain/runtime/candidate-review';
 
-export function RunReport({ artifact, run }: { artifact: Artifact | undefined; run?: WorkflowRun }) {
+export function RunReport({
+  artifact,
+  run,
+  saveReview,
+}: {
+  artifact: Artifact | undefined;
+  run?: WorkflowRun;
+  saveReview?: ReviewCandidate;
+}) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   if (!artifact || !isReport(artifact.value)) return null;
@@ -21,7 +30,7 @@ export function RunReport({ artifact, run }: { artifact: Artifact | undefined; r
         closeLabel="designClose"
       >
         <section className="session-review-card">
-          <ExecutionArtifact artifact={artifact} run={run} />
+          <ExecutionArtifact artifact={artifact} run={run} saveReview={saveReview} />
         </section>
       </ReviewDialog>
     </>
