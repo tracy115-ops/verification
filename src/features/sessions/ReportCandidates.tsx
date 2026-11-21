@@ -4,6 +4,7 @@ import type { VerificationReport } from '../../domain/execution/types';
 import { useI18n } from '../../shared/i18n/context';
 import { CandidateTrace } from './CandidateTrace';
 import { CandidateReview } from './CandidateReview';
+import { CandidateReproduction } from './CandidateReproduction';
 import { candidateReviews, type ReviewCandidate } from '../../domain/runtime/candidate-review';
 
 export function ReportCandidates({
@@ -57,6 +58,12 @@ export function ReportCandidates({
       </nav>
       <div className="report-candidate-detail">
         <h4>{candidate.title}</h4>
+        <CandidateReproduction
+          key={`export:${reportDigest}:${candidate.id}`}
+          run={run}
+          reportDigest={reportDigest}
+          candidateId={candidate.id}
+        />
         <CandidateReview
           key={`${reportDigest}:${candidate.id}`}
           run={run}

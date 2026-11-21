@@ -1,4 +1,7 @@
 export const runZh = {
+  candidateReproductionExport: '导出复现资料',
+  candidateReproductionScope: '包含完整已批准脚本、框架、原文与执行证据',
+  candidate_reproduction_unavailable: '复现资料不完整或与本次执行不匹配，请检查原始脚本、框架和证据。',
   candidateReviewTitle: '人工复核',
   candidateReviewPending: '待复核',
   candidate_review_needs_evidence: '待补证据',
@@ -44,6 +47,10 @@ export const runZh = {
   runDesignOnly: '本次仅进行测试设计；未执行测试。产物可逐节点打开核对。',
 };
 export const runEn = {
+  candidateReproductionExport: 'Export reproduction bundle',
+  candidateReproductionScope: 'Includes the full approved script, framework, source and execution evidence',
+  candidate_reproduction_unavailable:
+    'Reproduction inputs are incomplete or do not match this execution. Check the original script, framework and evidence.',
   candidateReviewTitle: 'Human review',
   candidateReviewPending: 'Awaiting review',
   candidate_review_needs_evidence: 'Needs evidence',

@@ -1,0 +1,157 @@
+{
+  "source": "archived native CLI generated room suite",
+  "override": "targetUrl only for controlled fixture",
+  "repetitionsPerTarget": 3,
+  "results": [
+    {
+      "target": "reference",
+      "attempt": 1,
+      "results": [
+        {
+          "testName": "test_cap_1_invalid_returns_400",
+          "status": "passed"
+        },
+        {
+          "testName": "test_cap_2_valid_returns_201",
+          "status": "passed"
+        },
+        {
+          "testName": "test_cap_8_valid_returns_201",
+          "status": "passed"
+        },
+        {
+          "testName": "test_cap_9_invalid_returns_400",
+          "status": "passed"
+        }
+      ],
+      "scriptSha256": "29ab4ed7342f108c36354a0d0e54af9c473eb2a787d3eadfb9435efed8274d51",
+      "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+      "rawEvidenceSha256": "09440df311f05579d739df5bcc75aa744853722426b47b8553f3d05796aa9253"
+    },
+    {
+      "target": "reference",
+      "attempt": 2,
+      "results": [
+        {
+          "testName": "test_cap_1_invalid_returns_400",
+          "status": "passed"
+        },
+        {
+          "testName": "test_cap_2_valid_returns_201",
+          "status": "passed"
+        },
+        {
+          "testName": "test_cap_8_valid_returns_201",
+          "status": "passed"
+        },
+        {
+          "testName": "test_cap_9_invalid_returns_400",
+          "status": "passed"
+        }
+      ],
+      "scriptSha256": "29ab4ed7342f108c36354a0d0e54af9c473eb2a787d3eadfb9435efed8274d51",
+      "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+      "rawEvidenceSha256": "09440df311f05579d739df5bcc75aa744853722426b47b8553f3d05796aa9253"
+    },
+    {
+      "target": "reference",
+      "attempt": 3,
+      "results": [
+        {
+          "testName": "test_cap_1_invalid_returns_400",
+          "status": "passed"
+        },
+        {
+          "testName": "test_cap_2_valid_returns_201",
+          "status": "passed"
+        },
+        {
+          "testName": "test_cap_8_valid_returns_201",
+          "status": "passed"
+        },
+        {
+          "testName": "test_cap_9_invalid_returns_400",
+          "status": "passed"
+        }
+      ],
+      "scriptSha256": "29ab4ed7342f108c36354a0d0e54af9c473eb2a787d3eadfb9435efed8274d51",
+      "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+      "rawEvidenceSha256": "09440df311f05579d739df5bcc75aa744853722426b47b8553f3d05796aa9253"
+    },
+    {
+      "target": "defect",
+      "attempt": 1,
+      "results": [
+        {
+          "testName": "test_cap_1_invalid_returns_400",
+          "status": "failed"
+        },
+        {
+          "testName": "test_cap_2_valid_returns_201",
+          "status": "passed"
+        },
+        {
+          "testName": "test_cap_8_valid_returns_201",
+          "status": "passed"
+        },
+        {
+          "testName": "test_cap_9_invalid_returns_400",
+          "status": "passed"
+        }
+      ],
+      "scriptSha256": "29ab4ed7342f108c36354a0d0e54af9c473eb2a787d3eadfb9435efed8274d51",
+      "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+      "rawEvidenceSha256": "1dfd8aa6eaad413dfd9cb7f5ed5435319335dac5a82162b45551ae44a9f854d6"
+    },
+    {
+      "target": "defect",
+      "attempt": 2,
+      "results": [
+        {
+          "testName": "test_cap_1_invalid_returns_400",
+          "status": "failed"
+        },
+        {
+          "testName": "test_cap_2_valid_returns_201",
+          "status": "passed"
+        },
+        {
+          "testName": "test_cap_8_valid_returns_201",
+          "status": "passed"
+        },
+        {
+          "testName": "test_cap_9_invalid_returns_400",
+          "status": "passed"
+        }
+      ],
+      "scriptSha256": "29ab4ed7342f108c36354a0d0e54af9c473eb2a787d3eadfb9435efed8274d51",
+      "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+      "rawEvidenceSha256": "1dfd8aa6eaad413dfd9cb7f5ed5435319335dac5a82162b45551ae44a9f854d6"
+    },
+    {
+      "target": "defect",
+      "attempt": 3,
+      "results": [
+        {
+          "testName": "test_cap_1_invalid_returns_400",
+          "status": "failed"
+        },
+        {
+          "testName": "test_cap_2_valid_returns_201",
+          "status": "passed"
+        },
+        {
+          "testName": "test_cap_8_valid_returns_201",
+          "status": "passed"
+        },
+        {
+          "testName": "test_cap_9_invalid_returns_400",
+          "status": "passed"
+        }
+      ],
+      "scriptSha256": "29ab4ed7342f108c36354a0d0e54af9c473eb2a787d3eadfb9435efed8274d51",
+      "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+      "rawEvidenceSha256": "1dfd8aa6eaad413dfd9cb7f5ed5435319335dac5a82162b45551ae44a9f854d6"
+    }
+  ]
+}

@@ -33,6 +33,16 @@
   flex-wrap: wrap;
   gap: 8px 16px;
 }
+.candidate-reproduction {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+.candidate-reproduction > p {
+  flex-basis: 100%;
+  margin: 0;
+}
 .candidate-review details {
   margin-top: 12px;
 }

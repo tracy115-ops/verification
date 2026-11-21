@@ -9,6 +9,7 @@ import type { FrameworkProfile } from '../domain/execution/types';
 import { newId } from '../shared/id';
 import { digest } from '../domain/runtime/plan';
 import type { Artifact } from '../domain/runtime/types';
+import { sha256Text as sourceDigest } from '../shared/sha256';
 
 type Input = Pick<FrameworkProfile, 'pythonCommand' | 'frameworkSource'>;
 export interface InspectionRecord {
@@ -42,12 +43,6 @@ export async function frameworkInspectionArtifact(input: Input): Promise<Artifac
   if (!record) return;
   const value = { ...record, pythonCommand: input.pythonCommand };
   return { type: 'FrameworkInspection', value, digest: await digest(value) };
-}
-async function sourceDigest(source: string) {
-  return Array.from(
-    new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(source))),
-    (byte) => byte.toString(16).padStart(2, '0'),
-  ).join('');
 }
 export async function inspectFramework(input: Input, signal: AbortSignal): Promise<InspectionRecord> {
   if (!hasDesktopBridge()) throw new Error('desktopRequired');

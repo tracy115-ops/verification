@@ -1,0 +1,397 @@
+{
+  "source": "archived native CLI generated quota suite",
+  "override": "targetUrl only for controlled fixture",
+  "repetitionsPerTarget": 3,
+  "results": [
+    {
+      "target": "reference",
+      "attempt": 1,
+      "results": [
+        {
+          "testName": "test_active_key_replay_and_conflict",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_capacity_rejects_without_saving_key",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_consume_counts_once",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_release_restores_quota_once",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_same_key_creates_one_hold",
+          "status": "passed"
+        },
+        {
+          "testName": "test_consumed_hold_replays_and_rejects_release",
+          "status": "passed"
+        },
+        {
+          "testName": "test_hold_access_and_missing_id",
+          "status": "passed"
+        },
+        {
+          "testName": "test_identity_and_initial_quota",
+          "status": "passed"
+        },
+        {
+          "testName": "test_invalid_keys_preserve_both_quotas",
+          "status": "passed"
+        },
+        {
+          "testName": "test_invalid_units_preserve_both_quotas",
+          "status": "passed"
+        },
+        {
+          "testName": "test_rejected_key_succeeds_after_release",
+          "status": "passed"
+        },
+        {
+          "testName": "test_released_hold_replays_and_rejects_consume",
+          "status": "passed"
+        },
+        {
+          "testName": "test_shared_key_isolated_across_tenants",
+          "status": "passed"
+        },
+        {
+          "testName": "test_valid_boundaries_and_tenant_quotas",
+          "status": "passed"
+        }
+      ],
+      "scriptSha256": "9fedadce0adaedbf6ff6488061a677112ecdc83d86ddc70f7104132d56a75902",
+      "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+      "rawEvidenceSha256": "1591a957213d7ba6561699195514cc409485f98d7464076c05c1351d68030c6e"
+    },
+    {
+      "target": "reference",
+      "attempt": 2,
+      "results": [
+        {
+          "testName": "test_active_key_replay_and_conflict",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_capacity_rejects_without_saving_key",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_consume_counts_once",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_release_restores_quota_once",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_same_key_creates_one_hold",
+          "status": "passed"
+        },
+        {
+          "testName": "test_consumed_hold_replays_and_rejects_release",
+          "status": "passed"
+        },
+        {
+          "testName": "test_hold_access_and_missing_id",
+          "status": "passed"
+        },
+        {
+          "testName": "test_identity_and_initial_quota",
+          "status": "passed"
+        },
+        {
+          "testName": "test_invalid_keys_preserve_both_quotas",
+          "status": "passed"
+        },
+        {
+          "testName": "test_invalid_units_preserve_both_quotas",
+          "status": "passed"
+        },
+        {
+          "testName": "test_rejected_key_succeeds_after_release",
+          "status": "passed"
+        },
+        {
+          "testName": "test_released_hold_replays_and_rejects_consume",
+          "status": "passed"
+        },
+        {
+          "testName": "test_shared_key_isolated_across_tenants",
+          "status": "passed"
+        },
+        {
+          "testName": "test_valid_boundaries_and_tenant_quotas",
+          "status": "passed"
+        }
+      ],
+      "scriptSha256": "9fedadce0adaedbf6ff6488061a677112ecdc83d86ddc70f7104132d56a75902",
+      "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+      "rawEvidenceSha256": "566682e169888a5fa7a0ba9bd0fbf10efd714b845c89f3dcf0ea50aa786d77da"
+    },
+    {
+      "target": "reference",
+      "attempt": 3,
+      "results": [
+        {
+          "testName": "test_active_key_replay_and_conflict",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_capacity_rejects_without_saving_key",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_consume_counts_once",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_release_restores_quota_once",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_same_key_creates_one_hold",
+          "status": "passed"
+        },
+        {
+          "testName": "test_consumed_hold_replays_and_rejects_release",
+          "status": "passed"
+        },
+        {
+          "testName": "test_hold_access_and_missing_id",
+          "status": "passed"
+        },
+        {
+          "testName": "test_identity_and_initial_quota",
+          "status": "passed"
+        },
+        {
+          "testName": "test_invalid_keys_preserve_both_quotas",
+          "status": "passed"
+        },
+        {
+          "testName": "test_invalid_units_preserve_both_quotas",
+          "status": "passed"
+        },
+        {
+          "testName": "test_rejected_key_succeeds_after_release",
+          "status": "passed"
+        },
+        {
+          "testName": "test_released_hold_replays_and_rejects_consume",
+          "status": "passed"
+        },
+        {
+          "testName": "test_shared_key_isolated_across_tenants",
+          "status": "passed"
+        },
+        {
+          "testName": "test_valid_boundaries_and_tenant_quotas",
+          "status": "passed"
+        }
+      ],
+      "scriptSha256": "9fedadce0adaedbf6ff6488061a677112ecdc83d86ddc70f7104132d56a75902",
+      "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+      "rawEvidenceSha256": "566682e169888a5fa7a0ba9bd0fbf10efd714b845c89f3dcf0ea50aa786d77da"
+    },
+    {
+      "target": "defect",
+      "attempt": 1,
+      "results": [
+        {
+          "testName": "test_active_key_replay_and_conflict",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_capacity_rejects_without_saving_key",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_consume_counts_once",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_release_restores_quota_once",
+          "status": "failed"
+        },
+        {
+          "testName": "test_concurrent_same_key_creates_one_hold",
+          "status": "passed"
+        },
+        {
+          "testName": "test_consumed_hold_replays_and_rejects_release",
+          "status": "passed"
+        },
+        {
+          "testName": "test_hold_access_and_missing_id",
+          "status": "passed"
+        },
+        {
+          "testName": "test_identity_and_initial_quota",
+          "status": "passed"
+        },
+        {
+          "testName": "test_invalid_keys_preserve_both_quotas",
+          "status": "passed"
+        },
+        {
+          "testName": "test_invalid_units_preserve_both_quotas",
+          "status": "passed"
+        },
+        {
+          "testName": "test_rejected_key_succeeds_after_release",
+          "status": "passed"
+        },
+        {
+          "testName": "test_released_hold_replays_and_rejects_consume",
+          "status": "failed"
+        },
+        {
+          "testName": "test_shared_key_isolated_across_tenants",
+          "status": "passed"
+        },
+        {
+          "testName": "test_valid_boundaries_and_tenant_quotas",
+          "status": "passed"
+        }
+      ],
+      "scriptSha256": "9fedadce0adaedbf6ff6488061a677112ecdc83d86ddc70f7104132d56a75902",
+      "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+      "rawEvidenceSha256": "6deba2668f8ae7cb81dead0c628e2dd7285e03c19e8ccf3389f608bd4a460730"
+    },
+    {
+      "target": "defect",
+      "attempt": 2,
+      "results": [
+        {
+          "testName": "test_active_key_replay_and_conflict",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_capacity_rejects_without_saving_key",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_consume_counts_once",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_release_restores_quota_once",
+          "status": "failed"
+        },
+        {
+          "testName": "test_concurrent_same_key_creates_one_hold",
+          "status": "passed"
+        },
+        {
+          "testName": "test_consumed_hold_replays_and_rejects_release",
+          "status": "passed"
+        },
+        {
+          "testName": "test_hold_access_and_missing_id",
+          "status": "passed"
+        },
+        {
+          "testName": "test_identity_and_initial_quota",
+          "status": "passed"
+        },
+        {
+          "testName": "test_invalid_keys_preserve_both_quotas",
+          "status": "passed"
+        },
+        {
+          "testName": "test_invalid_units_preserve_both_quotas",
+          "status": "passed"
+        },
+        {
+          "testName": "test_rejected_key_succeeds_after_release",
+          "status": "passed"
+        },
+        {
+          "testName": "test_released_hold_replays_and_rejects_consume",
+          "status": "failed"
+        },
+        {
+          "testName": "test_shared_key_isolated_across_tenants",
+          "status": "passed"
+        },
+        {
+          "testName": "test_valid_boundaries_and_tenant_quotas",
+          "status": "passed"
+        }
+      ],
+      "scriptSha256": "9fedadce0adaedbf6ff6488061a677112ecdc83d86ddc70f7104132d56a75902",
+      "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+      "rawEvidenceSha256": "6deba2668f8ae7cb81dead0c628e2dd7285e03c19e8ccf3389f608bd4a460730"
+    },
+    {
+      "target": "defect",
+      "attempt": 3,
+      "results": [
+        {
+          "testName": "test_active_key_replay_and_conflict",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_capacity_rejects_without_saving_key",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_consume_counts_once",
+          "status": "passed"
+        },
+        {
+          "testName": "test_concurrent_release_restores_quota_once",
+          "status": "failed"
+        },
+        {
+          "testName": "test_concurrent_same_key_creates_one_hold",
+          "status": "passed"
+        },
+        {
+          "testName": "test_consumed_hold_replays_and_rejects_release",
+          "status": "passed"
+        },
+        {
+          "testName": "test_hold_access_and_missing_id",
+          "status": "passed"
+        },
+        {
+          "testName": "test_identity_and_initial_quota",
+          "status": "passed"
+        },
+        {
+          "testName": "test_invalid_keys_preserve_both_quotas",
+          "status": "passed"
+        },
+        {
+          "testName": "test_invalid_units_preserve_both_quotas",
+          "status": "passed"
+        },
+        {
+          "testName": "test_rejected_key_succeeds_after_release",
+          "status": "passed"
+        },
+        {
+          "testName": "test_released_hold_replays_and_rejects_consume",
+          "status": "failed"
+        },
+        {
+          "testName": "test_shared_key_isolated_across_tenants",
+          "status": "passed"
+        },
+        {
+          "testName": "test_valid_boundaries_and_tenant_quotas",
+          "status": "passed"
+        }
+      ],
+      "scriptSha256": "9fedadce0adaedbf6ff6488061a677112ecdc83d86ddc70f7104132d56a75902",
+      "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+      "rawEvidenceSha256": "1be1c7e59838b42eb3e33002d7cad9b2cfc3e46493267aedf916f7811bba505e"
+    }
+  ]
+}
