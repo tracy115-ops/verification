@@ -1,0 +1,17 @@
+{
+  "version": "0.21.0",
+  "source": "archived reviewed room design/script with real native baseline and replays",
+  "originalPreserved": true,
+  "cancelled": true,
+  "cancellationExecutionId": "f5234029-003d-49db-b439-9839c68a0695",
+  "retryRequiredFreshApproval": true,
+  "freshExecutionIds": 4,
+  "modelTurnsCreated": 0,
+  "observation": "intermittent",
+  "executionIds": [
+    "0f4df55f-f7c6-4d4c-b0a0-6e82a741086e",
+    "150ac30a-2768-47c5-9673-286fb604b587",
+    "f5234029-003d-49db-b439-9839c68a0695",
+    "da95f422-0b78-4019-9c11-48867d3f74d3"
+  ]
+}

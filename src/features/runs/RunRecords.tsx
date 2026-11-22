@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Play } from 'lucide-react';
 import type { Conversations } from '../../app/useConversations';
 import { useI18n } from '../../shared/i18n/context';
 import { RunState } from '../sessions/RunSummary';
 import { RunDetails } from './RunDetails';
+import { reproductionSource } from '../../domain/runtime/reproduction-source';
 
 export function RunRecords({
   actions,
@@ -18,6 +19,9 @@ export function RunRecords({
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('all');
   const [selected, setSelected] = useState(actions.selectedRunId);
+  useEffect(() => {
+    setSelected(actions.selectedRunId);
+  }, [actions.selectedRunId]);
   const records = actions.sessions
     .flatMap((session) => session.runs.map((run) => ({ session, run })))
     .sort((a, b) => Date.parse(b.run.createdAt) - Date.parse(a.run.createdAt));
@@ -27,7 +31,7 @@ export function RunRecords({
         (filter === 'attention'
           ? ['failed', 'interrupted', 'awaiting_review'].includes(run.status)
           : run.status === filter)) &&
-      `${session.title} ${run.snapshot.definition.name} ${run.id} ${run.errorCode ?? ''}`
+      `${session.title} ${run.snapshot.definition.name} ${run.id} ${run.errorCode ?? ''} ${reproductionSource(run)?.candidateTitle ?? ''}`
         .toLocaleLowerCase()
         .includes(query.toLocaleLowerCase()),
   );
@@ -86,7 +90,8 @@ export function RunRecords({
             >
               <strong>{session.title.replace(/^#+\s*/, '').split('\n')[0]}</strong>
               <small>
-                {run.snapshot.definition.name} · r{run.snapshot.revision}
+                {reproductionSource(run) ? t('reproductionTitle') : run.snapshot.definition.name} · r
+                {run.snapshot.revision}
               </small>
               <div>
                 <RunState run={run} />
@@ -110,6 +115,8 @@ export function RunRecords({
             title={current.session.title}
             busy={actions.isSessionBusy?.(current.session.id) ?? actions.busy}
             saveReview={actions.saveCandidateReview}
+            startReproduction={actions.startReproduction}
+            siblings={current.session.runs}
             openSession={() => openSession(current.session.id, current.run.id)}
             openAssets={() => openAssets(current.session.id, current.run.id)}
           />

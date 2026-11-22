@@ -4,6 +4,7 @@ import { useI18n } from '../../shared/i18n/context';
 import { Status } from '../../shared/components/Status';
 import { ReportCandidates } from './ReportCandidates';
 import type { ReviewCandidate } from '../../domain/runtime/candidate-review';
+import type { StartReproduction } from '../../domain/runtime/reproduction-run';
 
 function download(name: string, text: string, type: string) {
   const url = URL.createObjectURL(new Blob([text], { type }));
@@ -18,11 +19,13 @@ export function ExecutionArtifact({
   expandSource = false,
   run,
   saveReview,
+  startReproduction,
 }: {
   artifact: Artifact;
   expandSource?: boolean;
   run?: WorkflowRun;
   saveReview?: ReviewCandidate;
+  startReproduction?: StartReproduction;
 }) {
   const { t, locale } = useI18n();
   const value = artifact.value;
@@ -106,6 +109,7 @@ export function ExecutionArtifact({
             run={run}
             reportDigest={artifact.digest}
             saveReview={saveReview}
+            startReproduction={startReproduction}
           />
           {!!value.notes.length && (
             <details>

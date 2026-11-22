@@ -1,4 +1,23 @@
 export const runZh = {
+  reproductionCurrentResults: '本次完整脚本结果',
+  reproductionStopExecution: '停止执行',
+  reproductionStart: '预检并准备复跑',
+  reproductionStartAgain: '再次准备复跑',
+  reproductionTitle: '复跑观察',
+  reproductionComplete: '本次复跑已完成',
+  reproductionInherited: '沿用原产物',
+  reproductionInheritedHint: '沿用原任务已评审的设计和完整脚本，从环境预检开始重新执行。',
+  reproductionStatisticsHint:
+    '统计同一候选、脚本、框架、目标和 Python 环境的匹配执行证据。原始报告单独保留。',
+  reproductionEvidence: '查看本次执行证据',
+  reproduction_not_run: '尚无复跑结果',
+  reproduction_observed_failure: '观察到一次失败',
+  reproduction_repeated_failure: '多次复跑均失败',
+  reproduction_intermittent: '复跑结果不一致',
+  reproduction_not_reproduced: '复跑未重现原失败',
+  reproduction_inconclusive: '存在错误或跳过，待核对',
+  reproduction_unavailable: '原任务或执行资料不完整，无法准备复跑。',
+  reproduction_readonly: '复跑沿用已批准脚本。请返回原设计任务修改需求、场景或用例。',
   candidateReproductionExport: '导出复现资料',
   candidateReproductionScope: '包含完整已批准脚本、框架、原文与执行证据',
   candidate_reproduction_unavailable: '复现资料不完整或与本次执行不匹配，请检查原始脚本、框架和证据。',
@@ -47,6 +66,28 @@ export const runZh = {
   runDesignOnly: '本次仅进行测试设计；未执行测试。产物可逐节点打开核对。',
 };
 export const runEn = {
+  reproductionCurrentResults: 'Full suite results for this execution',
+  reproductionStopExecution: 'Stop execution',
+  reproductionStart: 'Prepare replay',
+  reproductionStartAgain: 'Prepare another replay',
+  reproductionTitle: 'Replay observations',
+  reproductionComplete: 'Replay completed',
+  reproductionInherited: 'Inherited artifact',
+  reproductionInheritedHint:
+    'Reuses the original reviewed design and full script, starting with a fresh environment preflight.',
+  reproductionStatisticsHint:
+    'Counts matching evidence for the same candidate, script, framework, target and Python environment. The original report is retained separately.',
+  reproductionEvidence: 'View this execution evidence',
+  reproduction_not_run: 'No replay results yet',
+  reproduction_observed_failure: 'One replay failed',
+  reproduction_repeated_failure: 'Failed in repeated replays',
+  reproduction_intermittent: 'Replay outcomes differ',
+  reproduction_not_reproduced: 'Original failure not observed',
+  reproduction_inconclusive: 'Errors or skips require review',
+  reproduction_unavailable:
+    'The original task or execution inputs are incomplete. Replay cannot be prepared.',
+  reproduction_readonly:
+    'Replay uses the approved script. Return to the original design task to change requirements, scenarios or cases.',
   candidateReproductionExport: 'Export reproduction bundle',
   candidateReproductionScope: 'Includes the full approved script, framework, source and execution evidence',
   candidate_reproduction_unavailable:

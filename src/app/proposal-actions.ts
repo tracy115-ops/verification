@@ -41,6 +41,7 @@ export function proposalActions<T extends ProposalRecord>(
     if (!session || !run || tasks.isSessionBusy(session.id) || !instruction.trim()) return false;
     let accepted = false;
     await tasks.perform(async (controller) => {
+      if (run.artifacts['reproduction.source']) throw new Error('reproduction_readonly');
       config.context(run);
       if (session.activeTurnId) throw new Error('previous_turn_active');
       if (config.list(run).filter((item) => item.status === 'pending').length >= 20)

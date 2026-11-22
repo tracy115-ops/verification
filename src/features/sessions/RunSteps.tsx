@@ -7,6 +7,7 @@ import { isDesign } from '../../domain/runtime/artifacts';
 import { CASE_BATCH_SIZE } from '../../domain/runtime/case-batches';
 import { FileText } from 'lucide-react';
 import { artifactLabel } from './artifact-labels';
+import { reproductionSource } from '../../domain/runtime/reproduction-source';
 
 const labels = {
   pending: 'pendingStep',
@@ -18,6 +19,7 @@ const labels = {
 } as const;
 export function RunSteps({ run, openArtifact }: { run: WorkflowRun; openArtifact?: (key: string) => void }) {
   const { t, locale } = useI18n();
+  const inherited = new Set(reproductionSource(run)?.inheritedNodeIds);
   const design = latestArtifact(run, 'TestDesign');
   const total = isDesign(design) ? Math.ceil(design.scenarios.length / CASE_BATCH_SIZE) : 0;
   return (
@@ -101,7 +103,7 @@ export function RunSteps({ run, openArtifact }: { run: WorkflowRun; openArtifact
                                 : 'neutral'
                           }
                         >
-                          {t(labels[step.status])}
+                          {t(inherited.has(node.id) ? 'reproductionInherited' : labels[step.status])}
                         </Status>
                       </div>
                       {openArtifact &&

@@ -6,17 +6,20 @@ import { CandidateTrace } from './CandidateTrace';
 import { CandidateReview } from './CandidateReview';
 import { CandidateReproduction } from './CandidateReproduction';
 import { candidateReviews, type ReviewCandidate } from '../../domain/runtime/candidate-review';
+import type { StartReproduction } from '../../domain/runtime/reproduction-run';
 
 export function ReportCandidates({
   report,
   run,
   reportDigest,
   saveReview,
+  startReproduction,
 }: {
   report: VerificationReport;
   run?: WorkflowRun;
   reportDigest: string;
   saveReview?: ReviewCandidate;
+  startReproduction?: StartReproduction;
 }) {
   const { t } = useI18n();
   const [selected, setSelected] = useState('');
@@ -63,6 +66,7 @@ export function ReportCandidates({
           run={run}
           reportDigest={reportDigest}
           candidateId={candidate.id}
+          startReproduction={startReproduction}
         />
         <CandidateReview
           key={`${reportDigest}:${candidate.id}`}

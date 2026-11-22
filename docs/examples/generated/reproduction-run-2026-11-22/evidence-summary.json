@@ -1,0 +1,118 @@
+[
+  {
+    "runId": "c87577a6-aca2-41f2-896c-1a48b84b55d8",
+    "status": "completed",
+    "executionId": "4eca1510-e87d-4627-8e2d-566c91fabaf5",
+    "planDigest": "d2e80a31cbb914143eace63555e1ed123a002ef17166585d88892a33fd724f65",
+    "scriptSha256": "29ab4ed7342f108c36354a0d0e54af9c473eb2a787d3eadfb9435efed8274d51",
+    "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+    "results": [
+      {
+        "testName": "test_cap_1_invalid_returns_400",
+        "status": "failed"
+      },
+      {
+        "testName": "test_cap_2_valid_returns_201",
+        "status": "passed"
+      },
+      {
+        "testName": "test_cap_8_valid_returns_201",
+        "status": "passed"
+      },
+      {
+        "testName": "test_cap_9_invalid_returns_400",
+        "status": "passed"
+      }
+    ],
+    "retryOutcomes": []
+  },
+  {
+    "runId": "877fb0d7-695f-4793-a202-ad8745b952cf",
+    "status": "completed",
+    "executionId": "0f4df55f-f7c6-4d4c-b0a0-6e82a741086e",
+    "planDigest": "0836d990c5698f03b4df856c1b887124b5bf9eeab0cf778f24ac0496618ef4af",
+    "scriptSha256": "29ab4ed7342f108c36354a0d0e54af9c473eb2a787d3eadfb9435efed8274d51",
+    "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+    "results": [
+      {
+        "testName": "test_cap_1_invalid_returns_400",
+        "status": "failed"
+      },
+      {
+        "testName": "test_cap_2_valid_returns_201",
+        "status": "passed"
+      },
+      {
+        "testName": "test_cap_8_valid_returns_201",
+        "status": "passed"
+      },
+      {
+        "testName": "test_cap_9_invalid_returns_400",
+        "status": "passed"
+      }
+    ],
+    "retryOutcomes": []
+  },
+  {
+    "runId": "fe59a06e-1b1f-4c5f-9ad1-17f15f28f85a",
+    "status": "completed",
+    "executionId": "150ac30a-2768-47c5-9673-286fb604b587",
+    "planDigest": "9fde3ec113e0142cb786bf99cb7cbf93994163a9312d9cbc8f61ce2c9ffb2c74",
+    "scriptSha256": "29ab4ed7342f108c36354a0d0e54af9c473eb2a787d3eadfb9435efed8274d51",
+    "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+    "results": [
+      {
+        "testName": "test_cap_1_invalid_returns_400",
+        "status": "failed"
+      },
+      {
+        "testName": "test_cap_2_valid_returns_201",
+        "status": "passed"
+      },
+      {
+        "testName": "test_cap_8_valid_returns_201",
+        "status": "passed"
+      },
+      {
+        "testName": "test_cap_9_invalid_returns_400",
+        "status": "passed"
+      }
+    ],
+    "retryOutcomes": []
+  },
+  {
+    "runId": "6db41e05-2570-49f7-94ee-4b09eda2f525",
+    "status": "completed",
+    "executionId": "da95f422-0b78-4019-9c11-48867d3f74d3",
+    "planDigest": "9ce084584a0b26dc1165b7a49469dbcd828b72996141ca539092d406ff5e94b7",
+    "scriptSha256": "29ab4ed7342f108c36354a0d0e54af9c473eb2a787d3eadfb9435efed8274d51",
+    "frameworkSha256": "65bd11ab5e9b87ce1aedad647ce549bc1275b487bc35845524162fa01e0412b1",
+    "results": [
+      {
+        "testName": "test_cap_1_invalid_returns_400",
+        "status": "passed"
+      },
+      {
+        "testName": "test_cap_2_valid_returns_201",
+        "status": "passed"
+      },
+      {
+        "testName": "test_cap_8_valid_returns_201",
+        "status": "passed"
+      },
+      {
+        "testName": "test_cap_9_invalid_returns_400",
+        "status": "passed"
+      }
+    ],
+    "retryOutcomes": [
+      {
+        "version": 1,
+        "executionId": "f5234029-003d-49db-b439-9839c68a0695",
+        "status": "cancelled",
+        "errorCode": "execution_cancelled",
+        "recordedAt": "2026-11-22T12:49:57.388Z"
+      }
+    ]
+  }
+]

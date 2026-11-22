@@ -5,6 +5,7 @@ import type { AgentPort, WorkflowRun } from '../domain/runtime/types';
 import type { useConversationStore } from './useConversationStore';
 import type { useSessionTasks } from './useSessionTasks';
 import type { ExecutionPort } from '../domain/execution/types';
+import { recordExecutionRetry } from '../domain/runtime/execution-retry';
 
 export function runRetryAction(
   store: ReturnType<typeof useConversationStore>,
@@ -33,7 +34,9 @@ export function runRetryAction(
         .find((step) => ['failed', 'interrupted'].includes(step.status));
       if (previous?.turnId) await port.cancel(previous.turnId);
       if (previous?.executionId) await executionPort.cancel(previous.executionId);
-      const recovered = await recoverDesignDiagnostics(await recoverRequirementDraft(run));
+      const recovered = await recordExecutionRetry(
+        await recoverDesignDiagnostics(await recoverRequirementDraft(run)),
+      );
       if (controller.signal.aborted) throw new Error('execution_cancelled');
       if (store.getSession(run.sessionId)?.runs.find((item) => item.id === run.id) !== run)
         throw new Error('approval_stale');

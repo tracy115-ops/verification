@@ -18,6 +18,7 @@ import { AnalysisRetryControls } from './AnalysisRetryControls';
 import { DesignProposalPanel } from './DesignProposalPanel';
 import { CaseProposalPanel } from './CaseProposalPanel';
 import { AnalysisBudgetSummary } from './AnalysisBudgetSummary';
+import { ReproductionSummary } from './ReproductionSummary';
 
 export function RunPanel({
   run,
@@ -54,10 +55,17 @@ export function RunPanel({
         {run.status === 'awaiting_review' && <small>{t('runReviewBudgetPaused')}</small>}
       </div>
       <RunSummary value={report} />
+      <ReproductionSummary
+        run={run}
+        siblings={actions.session?.runs ?? [run]}
+        startReproduction={actions.busy ? undefined : actions.startReproduction}
+        openArtifact={setSelectedArtifact}
+      />
       <RunReport
         run={run}
         artifact={Object.values(run.artifacts).find((item) => isReport(item.value))}
         saveReview={actions.busy ? undefined : actions.saveCandidateReview}
+        startReproduction={actions.busy ? undefined : actions.startReproduction}
       />
       <CurrentStep run={run} />
       <AnalysisBudgetSummary run={run} />
@@ -75,7 +83,13 @@ export function RunPanel({
       {actions.busy && (
         <button className="workbench-btn" onClick={() => actions.cancel()}>
           <Square size={14} />
-          {t('stopGeneration')}
+          {t(
+            run.plan.some(
+              (node) => node.operation === 'targets.execute' && run.steps[node.id].status === 'running',
+            )
+              ? 'reproductionStopExecution'
+              : 'stopGeneration',
+          )}
         </button>
       )}
       {run.errorCode && (
@@ -108,7 +122,14 @@ export function RunPanel({
         )}
       {failedExecution && (
         <div className="session-execution-recovery">
-          <p>{t('noExecutionRetry')}</p>
+          <p>{t('executionRetryPlanHint')}</p>
+          <button
+            className="workbench-btn wb-primary"
+            disabled={!hasDesktopBridge() || actions.busy}
+            onClick={() => void actions.retry(run)}
+          >
+            {t('executionRetryPreflight')}
+          </button>
           <button
             className="workbench-btn"
             disabled={!hasDesktopBridge() || actions.busy}

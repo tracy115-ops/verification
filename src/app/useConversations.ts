@@ -20,6 +20,7 @@ import { invokedWorkflow } from '../domain/runtime/workflow-selection';
 import { caseProposalActions } from './case-proposal-actions';
 import { frameworkInspectionArtifact } from '../services/framework-inspection-api';
 import { candidateReviewActions } from './candidate-review-actions';
+import { reproductionActions } from './reproduction-actions';
 
 export function useConversations(
   profiles: AgentProfile[],
@@ -168,6 +169,7 @@ export function useConversations(
     ...designProposalActions(store, tasks, port, profiles),
     ...caseProposalActions(store, tasks, port, profiles),
     ...candidateReviewActions(store, tasks),
+    ...reproductionActions(store, tasks, drive, setSelectedRunId),
     setActiveId: selectSession,
     busy: tasks.busy,
     anyBusy: tasks.anyBusy,

@@ -127,6 +127,7 @@ export function useConversationStore() {
     setError,
     changeSession,
     getSession,
+    getSessions: () => latestSessions.current,
     patchSession,
     updateComposerDraft,
     getComposerDraft,

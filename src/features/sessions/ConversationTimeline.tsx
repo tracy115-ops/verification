@@ -14,6 +14,9 @@ import { ScriptQuestions } from './ScriptQuestions';
 import { nodeLabel } from '../workflows/node-label';
 import { useTranscriptScroll } from './useTranscriptScroll';
 import { PendingAgentReply } from './AgentReplyStatus';
+import { reproductionSource } from '../../domain/runtime/reproduction-source';
+import { ReproductionSummary } from './ReproductionSummary';
+import { hasDesktopBridge } from '../../services/agent-api';
 
 export function ConversationTimeline({
   actions,
@@ -43,6 +46,7 @@ export function ConversationTimeline({
   const missingHistory =
     !loading &&
     activeRun &&
+    !reproductionSource(activeRun) &&
     !turns.some((item) => item.runId === activeRun.id) &&
     ['completed', 'failed', 'interrupted'].includes(activeRun.status);
   const report = activeRun && Object.entries(activeRun.artifacts).find(([, item]) => isReport(item.value));
@@ -70,6 +74,14 @@ export function ConversationTimeline({
           ),
         )}
       {missingHistory && <p className="session-transcript-notice">{t('legacyTranscriptMissing')}</p>}
+      {activeRun && reproductionSource(activeRun) && (
+        <ReproductionSummary
+          run={activeRun}
+          siblings={actions.session?.runs ?? [activeRun]}
+          compact
+          openArtifact={(key) => openArtifact(activeRun, key)}
+        />
+      )}
       {activeRun?.status === 'awaiting_review' && (
         <section className="session-current-interaction">
           <h3>{t('currentReviewInConversation')}</h3>
@@ -87,14 +99,7 @@ export function ConversationTimeline({
           </p>
           <button
             className="workbench-btn"
-            disabled={
-              actions.busy ||
-              activeRun.plan.some(
-                (node) =>
-                  node.operation === 'targets.execute' &&
-                  ['failed', 'interrupted'].includes(activeRun.steps[node.id].status),
-              )
-            }
+            disabled={actions.busy || !hasDesktopBridge()}
             onClick={() => void actions.retry(activeRun)}
           >
             {t(activeRun.errorCode === 'analysis_budget_paused' ? 'analysisContinueBudget' : 'retryStep')}

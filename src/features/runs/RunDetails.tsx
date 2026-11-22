@@ -10,6 +10,9 @@ import { RunArtifactViewer } from '../sessions/RunArtifactViewer';
 import { nodeLabel } from '../workflows/node-label';
 import { useTranscript } from '../sessions/useTranscript';
 import type { ReviewCandidate } from '../../domain/runtime/candidate-review';
+import type { StartReproduction } from '../../domain/runtime/reproduction-run';
+import { ReproductionSummary } from '../sessions/ReproductionSummary';
+import { reproductionSource } from '../../domain/runtime/reproduction-source';
 
 export function RunDetails({
   run,
@@ -18,6 +21,8 @@ export function RunDetails({
   openSession,
   openAssets,
   saveReview,
+  startReproduction,
+  siblings,
 }: {
   run: WorkflowRun;
   title: string;
@@ -25,6 +30,8 @@ export function RunDetails({
   openSession: () => void;
   openAssets: () => void;
   saveReview?: ReviewCandidate;
+  startReproduction?: StartReproduction;
+  siblings: WorkflowRun[];
 }) {
   const { t, locale } = useI18n();
   const [artifact, setArtifact] = useState<string | null>(null);
@@ -80,7 +87,12 @@ export function RunDetails({
         >
           {t('assetsTitle')}
         </button>
-        <RunReport artifact={report} run={run} saveReview={busy ? undefined : saveReview} />
+        <RunReport
+          artifact={report}
+          run={run}
+          saveReview={busy ? undefined : saveReview}
+          startReproduction={busy ? undefined : startReproduction}
+        />
       </div>
       {current && (
         <div className="run-current">
@@ -112,7 +124,13 @@ export function RunDetails({
           : t('runTimeUnknown')}
       </p>
       <RunSummary value={report?.value} />
-      {!report && (
+      <ReproductionSummary
+        run={run}
+        siblings={siblings}
+        startReproduction={busy ? undefined : startReproduction}
+        openArtifact={setArtifact}
+      />
+      {!report && !reproductionSource(run) && (
         <p className="wb-muted">
           {t(
             run.scope === 'design'

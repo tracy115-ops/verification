@@ -43,6 +43,21 @@
   flex-basis: 100%;
   margin: 0;
 }
+.reproduction-summary {
+  min-width: 0;
+  padding: 12px;
+  border-bottom: 1px solid var(--wb-border);
+}
+.reproduction-summary > strong,
+.reproduction-results code {
+  overflow-wrap: anywhere;
+}
+.reproduction-results article {
+  display: grid;
+  gap: 8px;
+  padding-block: 12px;
+  border-top: 1px solid var(--wb-border);
+}
 .candidate-review details {
   margin-top: 12px;
 }

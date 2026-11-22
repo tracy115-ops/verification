@@ -27,6 +27,7 @@ import { generateDesignBatches } from './design-batches';
 import { retryNode, canRetryAnalysis, canRetryAnalysisInBatches } from './analysis-retry';
 import { designMappingIssues } from './design-mapping';
 import { designQuoteIssues } from './design-source-quotes';
+import { resetExecutionRetry } from './execution-retry';
 export { reviewDigest } from './approvals';
 
 async function storeOutput(run: WorkflowRun, node: WorkflowNode, value: unknown) {
@@ -254,6 +255,13 @@ export function retryRun(
   const run = structuredClone(initial);
   const node = retryNode(run);
   if (!node) throw new Error('invalid_run');
+  if (node.operation === 'targets.execute') {
+    resetExecutionRetry(run);
+    renewRunBudget(run);
+    delete run.errorCode;
+    run.status = 'ready';
+    return run;
+  }
   if (analysisBatchBudget !== undefined) {
     if (
       node.operation !== 'scenarios.design' ||

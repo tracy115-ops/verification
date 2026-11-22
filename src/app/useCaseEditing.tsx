@@ -15,7 +15,11 @@ export function useCaseEditing(actions: Conversations, navigate: () => void) {
     navigate();
     setTarget(value);
   }
-  const open: OpenCaseEditor = (run, sourceId, mode) =>
+  const open: OpenCaseEditor = (run, sourceId, mode) => {
+    if (run.artifacts['reproduction.source']) {
+      actions.setError('reproduction_readonly');
+      return;
+    }
     reopen({
       sessionId: run.sessionId,
       runId: run.id,
@@ -23,6 +27,7 @@ export function useCaseEditing(actions: Conversations, navigate: () => void) {
       mode,
       id: mode === 'edit' && sourceId ? sourceId : `TC_${newId().slice(0, 8)}`,
     });
+  };
   useEffect(() => {
     if (target && !actions.sessions.some((item) => item.id === target.sessionId)) setTarget(null);
     for (const entry of drafts?.snapshot() ?? []) {

@@ -1,5 +1,6 @@
 import type { CliTurnRecord } from '../../domain/runtime/transcript';
 import type { ConversationMessage, ConversationSession, WorkflowRun } from '../../domain/runtime/types';
+import { reproductionSource } from '../../domain/runtime/reproduction-source';
 
 export type TimelineEntry =
   | { id: string; at: string; kind: 'message'; message: ConversationMessage }
@@ -26,7 +27,8 @@ export function transcriptTimeline(session: ConversationSession, turns: CliTurnR
     if (run) entries.push({ id: turn.id, at: turn.startedAt, kind: 'turn', turn, run });
   }
   for (const run of session.runs) {
-    for (const approval of run.approvals)
+    const source = reproductionSource(run);
+    for (const approval of run.approvals.filter((item) => !source?.inheritedNodeIds.includes(item.nodeId)))
       entries.push({
         id: `${run.id}:approval:${approval.nodeId}:${approval.digest}`,
         at: approval.approvedAt,
@@ -35,13 +37,13 @@ export function transcriptTimeline(session: ConversationSession, turns: CliTurnR
         nodeId: approval.nodeId,
       });
     const decisions = new Map<string, Extract<TimelineEntry, { kind: 'clarifications' | 'exclusions' }>>();
-    for (const item of run.clarifications ?? []) {
+    for (const item of source ? [] : (run.clarifications ?? [])) {
       const id = `${run.id}:clarifications:${item.recordedAt.slice(0, 19)}`;
       const group = decisions.get(id) ?? { id, at: item.recordedAt, kind: 'clarifications', run, items: [] };
       group.items.push({ question: item.question, answer: item.answer });
       decisions.set(id, group);
     }
-    for (const item of run.reviewExclusions ?? []) {
+    for (const item of source ? [] : (run.reviewExclusions ?? [])) {
       const id = `${run.id}:exclusions:${item.nodeId}:${item.recordedAt.slice(0, 19)}`;
       const group = decisions.get(id) ?? { id, at: item.recordedAt, kind: 'exclusions', run, items: [] };
       group.items.push({ question: item.issue, answer: item.reason });

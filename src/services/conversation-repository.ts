@@ -9,8 +9,10 @@ import { caseSchema, requirementIncrementSchema, designIncrementSchema } from '.
 import { composerDraftSchema } from '../domain/runtime/composer-draft';
 import { isDesignProposal } from '../domain/runtime/design-proposal-schema';
 import { candidateReviewEvents } from '../domain/runtime/candidate-review';
+import { reproductionSource } from '../domain/runtime/reproduction-source';
 
 export const CONVERSATIONS_KEY = 'verification-workbench.conversations.v1';
+export const MAX_RUNS_PER_SESSION = 50;
 const string = { type: 'string' };
 const optionalStrings = { errorCode: string, nativeSessionId: string };
 const step = {
@@ -235,7 +237,7 @@ const sessionSchema = {
         },
       },
     },
-    runs: { type: 'array', maxItems: 50, items: run },
+    runs: { type: 'array', maxItems: MAX_RUNS_PER_SESSION, items: run },
   },
 };
 const validate = new Ajv2020({ strict: false }).compile<ConversationSession[]>({
@@ -255,6 +257,7 @@ function validateOwnership(sessions: ConversationSession[]) {
         throw new Error('session_storage_invalid');
       runIds.add(run.id);
       candidateReviewEvents(run);
+      reproductionSource(run);
     }
   }
 }

@@ -2,14 +2,17 @@ import { isReport } from '../../domain/execution/schema';
 import { useI18n } from '../../shared/i18n/context';
 import type { WorkflowRun } from '../../domain/runtime/types';
 import { Status } from '../../shared/components/Status';
+import { reproductionSource } from '../../domain/runtime/reproduction-source';
 
 export function RunState({ run }: { run: WorkflowRun }) {
   const { t } = useI18n();
   const key =
     run.status === 'completed'
-      ? run.scope === 'verification'
-        ? 'workflowComplete'
-        : 'designComplete'
+      ? reproductionSource(run)
+        ? 'reproductionComplete'
+        : run.scope === 'verification'
+          ? 'workflowComplete'
+          : 'designComplete'
       : run.status === 'failed'
         ? 'failedStep'
         : run.status === 'cancelled'

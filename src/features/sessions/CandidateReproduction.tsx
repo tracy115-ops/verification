@@ -4,15 +4,19 @@ import { candidateReviewReady } from '../../domain/runtime/candidate-review';
 import { candidateReproduction } from '../../domain/runtime/candidate-reproduction';
 import { downloadText } from '../team/download';
 import { useI18n } from '../../shared/i18n/context';
+import type { StartReproduction } from '../../domain/runtime/reproduction-run';
+import { hasDesktopBridge } from '../../services/agent-api';
 
 export function CandidateReproduction({
   run,
   reportDigest,
   candidateId,
+  startReproduction,
 }: {
   run: WorkflowRun;
   reportDigest: string;
   candidateId: string;
+  startReproduction?: StartReproduction;
 }) {
   const { t } = useI18n();
   const [busy, setBusy] = useState(false);
@@ -36,6 +40,15 @@ export function CandidateReproduction({
         {t('candidateReproductionExport')}
       </button>
       <span className="wb-muted">{t('candidateReproductionScope')}</span>
+      {startReproduction && (
+        <button
+          className="workbench-btn"
+          disabled={!ready || busy || !hasDesktopBridge()}
+          onClick={() => void startReproduction(run, reportDigest, candidateId)}
+        >
+          {t('reproductionStart')}
+        </button>
+      )}
       {(failed || !ready) && (
         <p className="wb-error" role="status">
           {t('candidate_reproduction_unavailable')}

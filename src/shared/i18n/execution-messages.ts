@@ -136,7 +136,8 @@ export const executionZh = {
   downloadReport: '下载本次报告',
   openReport: '查看本次报告',
   verificationReport: '验证报告',
-  noExecutionRetry: '测试执行不会自动重试。请先停止旧任务、检查目标状态，再新建调用。',
+  executionRetryPlanHint: '重试会先请求停止旧执行，重新预检并生成新的确认计划。',
+  executionRetryPreflight: '重新预检并确认执行',
   stopOldExecution: '停止旧执行并结束本次调用',
   execution_invalid: '执行配置或数据结构无效。',
   python_invalid: '请使用 python、python3，或对应解释器的完整路径。',
@@ -306,8 +307,9 @@ export const executionEn: Record<keyof typeof executionZh, string> = {
   downloadReport: 'Download report',
   openReport: 'Open report',
   verificationReport: 'Verification report',
-  noExecutionRetry:
-    'Test execution is not retried automatically. Stop the old task and inspect target state before creating another invocation.',
+  executionRetryPlanHint:
+    'Retry requests cancellation of the old execution and prepares a fresh preflight and approval plan.',
+  executionRetryPreflight: 'Preflight and approve execution again',
   stopOldExecution: 'Stop old execution and close this invocation',
   execution_invalid: 'Invalid execution configuration or payload.',
   python_invalid: 'Use python, python3, or the full path to that interpreter.',

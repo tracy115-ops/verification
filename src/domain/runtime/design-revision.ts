@@ -14,6 +14,7 @@ export async function reviseDesign(
   reason: string,
   attribution?: { proposalId: string; turnId: string },
 ) {
+  if (initial.artifacts['reproduction.source']) throw new Error('reproduction_readonly');
   if (['ready', 'running'].includes(initial.status) || !reason.trim()) throw new Error('approval_invalid');
   const requirements = decodeRequirements(latestArtifact(initial, 'RequirementBaseline'), initial.spec);
   decodeDesign(value, requirements);

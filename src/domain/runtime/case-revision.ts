@@ -21,6 +21,7 @@ export async function reviseCases(
   reason: string,
   attribution?: { proposalId: string; turnId: string },
 ) {
+  if (initial.artifacts['reproduction.source']) throw new Error('reproduction_readonly');
   if (['ready', 'running'].includes(initial.status) || !reason.trim() || reason.trim().length > 12000)
     throw new Error('approval_invalid');
   const { requirements, design, cases } = caseContext(initial);
