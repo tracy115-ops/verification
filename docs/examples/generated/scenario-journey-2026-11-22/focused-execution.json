@@ -1,0 +1,37 @@
+{
+  "source": "fresh real Claude generation through production engine and native Python execution",
+  "driver": "claude",
+  "model": "glm-5.3-flash",
+  "status": "completed",
+  "fixtureReviewsApprovedByAudit": true,
+  "sourceSha256": "13fde903add920ccec2888ef470cd7a128cbb14deb1b10945859b4c24be57b49",
+  "scriptSha256": "6d20defe9efa888a12cecfbb94f6a9ed2d0ec87c21f315cc1130160a6161f025",
+  "results": [
+    {
+      "details": [],
+      "status": "passed",
+      "testName": "test_declined_payment_then_recover_same_order_journey"
+    }
+  ],
+  "requestCount": 6,
+  "evidenceDigest": "be28911951f5aeada361ed497511d01544470724115bba88f7144915a4a67934",
+  "report": {
+    "status": "passed",
+    "counts": {
+      "passed": 1,
+      "failed": 0,
+      "error": 0,
+      "skipped": 0
+    },
+    "candidates": [],
+    "notes": [
+      "执行 66615f44-3616-4839-b0e9-9f5b63344735 中唯一测试 test_generated.TestDeclineThenRecoverJourney.test_declined_payment_then_recover_same_order_journey 的执行状态为 passed，属于权威结论；无失败断言，因此不存在可成为候选缺陷的依据。",
+      "该测试完整覆盖用例 case-decline-then-recover-journey 的全部五步旅程：创建订单（201，state=reserved，保存 order-1）、拒绝支付（402）、拒绝后读回（200，state=reserved）、同一订单恢复支付（200，state=paid）、终态读回（200，相同 id，state=paid），请求/响应证据与各条需求的预期一致。",
+      "本轮无失败测试，故不产生候选缺陷；未执行根因分析，也不声称覆盖已完整（错误或跳过的测试会保持不确定，但本轮没有此类测试）。"
+    ],
+    "action": "archive_results",
+    "policy": "report_only",
+    "evidenceDigest": "be28911951f5aeada361ed497511d01544470724115bba88f7144915a4a67934"
+  },
+  "originalScriptPreservedAfterValidatorFix": true
+}

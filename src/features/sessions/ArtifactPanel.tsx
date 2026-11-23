@@ -2,6 +2,7 @@ import type { Artifact, WorkflowRun } from '../../domain/runtime/types';
 import { isCases, isDesign, isRequirements } from '../../domain/runtime/artifacts';
 import { useI18n } from '../../shared/i18n/context';
 import { ExecutionArtifact } from './ExecutionArtifact';
+import { JourneyView } from '../reviews/JourneyView';
 
 export function ArtifactPanel({
   artifact,
@@ -74,6 +75,7 @@ export function ArtifactPanel({
                 </p>
               )}
               <p>{item.expected}</p>
+              <JourneyView journey={item.journey} />
             </article>
           ))}
         </>

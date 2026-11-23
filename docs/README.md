@@ -1,5 +1,7 @@
 # 验证 Agent 设计档案
 
+0.22.0 增加[可评审的场景旅程](design/scenario-journeys.md)，保留状态、操作、逐步观察及原文依据。已检查人工修订和桌面恢复；[验收记录](research/scenario-journey-validation-2026-11-22.md)同时记录真实模型失败与能力边界。
+
 0.21.0 增加[应用内候选复跑](design/reproduction-runs.md)：独立预检、人工确认执行及方法级结果观察，保留原报告。已验证真实桌面停止重试与刷新恢复，见[验收记录](research/reproduction-run-validation-2026-11-22.md)。
 
 租户配额题目完成真实桌面 13 节点验收。报告、生成脚本和正确参考及四个预设缺陷变体的结果已归档。[本轮流程验收](research/quota-workflow-validation-2026-11-18.md)

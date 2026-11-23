@@ -7,6 +7,8 @@ import { useI18n } from '../../shared/i18n/context';
 import { ReviewDialog } from '../sessions/ReviewDialog';
 import type { UpdateRun } from './PersonalCaseCoverage';
 import type { MessageKey } from '../../shared/i18n/messages';
+import { JourneyEditor } from './JourneyEditor';
+import { reproductionSource } from '../../domain/runtime/reproduction-source';
 
 type Kind = 'factors' | 'scenarios';
 export function DesignEditActions({
@@ -24,7 +26,7 @@ export function DesignEditActions({
 }) {
   const { t } = useI18n();
   const [editing, setEditing] = useState<string | null>(null);
-  if (!updateRun || ['ready', 'running'].includes(run.status)) return null;
+  if (!updateRun || ['ready', 'running'].includes(run.status) || reproductionSource(run)) return null;
   return (
     <>
       <button className="workbench-btn" onClick={() => setEditing('')}>
@@ -85,14 +87,15 @@ function DesignForm({
   const [dimension, setDimension] = useState(scenario?.dimension ?? '');
   const [expected, setExpected] = useState(scenario?.expected ?? '');
   const [links, setLinks] = useState(scenario?.factorLevels ?? []);
+  const [journey, setJourney] = useState(scenario?.journey);
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState('');
   const baseline = latestArtifact(run, 'RequirementBaseline');
   const requirements = isRequirements(baseline) ? baseline.requirements : [];
   async function save(event: React.FormEvent) {
     event.preventDefault();
-    setError(false);
+    setError('');
     setBusy(true);
     try {
       const next = structuredClone(value);
@@ -120,6 +123,7 @@ function DesignForm({
           dimension: dimension.trim(),
           expected: expected.trim(),
           factorLevels: links,
+          ...(journey ? { journey } : {}),
         };
         next.scenarios = currentId
           ? next.scenarios.map((old) => (old.id === currentId ? item : old))
@@ -127,8 +131,8 @@ function DesignForm({
       }
       updateRun(run.sessionId, await reviseDesign(run, next, reason));
       close();
-    } catch {
-      setError(true);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'artifact_invalid');
     } finally {
       setBusy(false);
     }
@@ -136,7 +140,11 @@ function DesignForm({
   return (
     <form className="collab-form design-edit-form" onSubmit={(event) => void save(event)}>
       <p className="wb-muted">{t('designRevisionHint')}</p>
-      {error && <p role="alert">{t('designInvalid')}</p>}
+      {error && (
+        <p role="alert" className="wb-error">
+          {t(error === 'journey_invalid' || error === 'journey_quote_invalid' ? error : 'designInvalid')}
+        </p>
+      )}
       <label className="wb-field">
         ID
         <input
@@ -207,6 +215,13 @@ function DesignForm({
             </label>
           ))}
         </>
+      )}
+      {kind === 'scenarios' && (
+        <JourneyEditor
+          value={journey}
+          change={setJourney}
+          requirements={requirements.filter((item) => ids.includes(item.id))}
+        />
       )}
       <TextField label="designReason" value={reason} change={setReason} />
       <button className="workbench-btn wb-primary" disabled={busy || !ids.length || !updateRun}>

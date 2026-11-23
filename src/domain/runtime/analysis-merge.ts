@@ -63,6 +63,7 @@ export function mergeDesigns(values: DesignArtifact[]): DesignArtifact {
         scenario.dimension,
         scenario.expected,
         scenario.factorLevels,
+        scenario.journey,
       ]);
       if (!scenarios.has(key)) scenarios.set(key, scenario);
     }

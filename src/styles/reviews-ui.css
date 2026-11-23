@@ -348,9 +348,37 @@
 .design-edit-form > fieldset {
   grid-column: 1 / -1;
 }
-.design-edit-form > fieldset {
+.design-edit-form > fieldset:not(.journey-editor) {
   max-height: 180px;
   overflow: auto;
+}
+.journey-editor,
+.journey-step-fields {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.journey-step-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.journey-step-fields > code,
+.journey-step-fields > label:nth-last-child(-n + 2) {
+  grid-column: 1 / -1;
+}
+.journey-step-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.journey-step-tabs [aria-current='step'] {
+  border-color: var(--wb-accent);
+  background: var(--wb-accent-soft);
+}
+@media (max-width: 700px) {
+  .journey-step-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 .design-edit-form .workbench-textarea {
   min-height: 64px;

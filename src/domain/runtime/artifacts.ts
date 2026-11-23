@@ -1,6 +1,7 @@
 import Ajv2020 from 'ajv/dist/2020.js';
 import type { CaseArtifact, DesignArtifact, RequirementArtifact } from './types';
 import { quoteMatcher } from './source-quotes';
+import { journeySchema, validateJourney } from './scenario-journey';
 
 const text = { type: 'string', minLength: 1, maxLength: 12000 };
 const id = { type: 'string', pattern: '^[A-Za-z][A-Za-z0-9_-]{0,79}$' };
@@ -22,7 +23,11 @@ export const requirementIncrementSchema = {
 const scenarioBase = record({ id, title: text, requirementIds: list(id), dimension: text, expected: text });
 export const scenarioSchema = {
   ...scenarioBase,
-  properties: { ...scenarioBase.properties, factorLevels: list(record({ factorId: id, level: text }), 0) },
+  properties: {
+    ...scenarioBase.properties,
+    factorLevels: list(record({ factorId: id, level: text }), 0),
+    journey: journeySchema,
+  },
 };
 const designBaseSchema = record({
   strategy: text,
@@ -130,6 +135,7 @@ export function decodeDesign(
     }
   }
   for (const scenario of design.scenarios) {
+    if (scenario.journey) validateJourney(scenario.journey, scenario.requirementIds, requirements);
     const combinations = scenario.factorLevels ?? [];
     fail(unique(combinations.map((item) => JSON.stringify([item.factorId, item.level]))));
     for (const item of combinations) {

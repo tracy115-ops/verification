@@ -1,0 +1,300 @@
+{
+  "formatVersion": 1,
+  "sourceSha256": "13fde903add920ccec2888ef470cd7a128cbb14deb1b10945859b4c24be57b49",
+  "scriptSha256": "6d20defe9efa888a12cecfbb94f6a9ed2d0ec87c21f315cc1130160a6161f025",
+  "frameworkSha256": "01258ab754a83e72c32f706881bce0eeedc27d5e0dcba77d91018c788c9757c9",
+  "requirements": {
+    "requirements": [
+      {
+        "id": "fixture-reset-user-a-precondition",
+        "text": "状态前置条件：每个独立测试开始时 fixture 恢复初始状态（系统中没有订单），测试身份固定为框架 user 参数 user-a；拒绝后恢复旅程的全部调用均在该初始状态与固定身份下执行。",
+        "quote": "每个独立测试开始时 fixture 恢复初始状态，没有订单；测试身份固定为框架 user 参数 user-a。",
+        "acceptanceCriteria": [
+          "独立测试开始时 fixture 已恢复初始状态，系统中没有订单。",
+          "旅程中所有调用的测试身份固定为框架 user 参数 user-a。"
+        ]
+      },
+      {
+        "id": "create-order-201-reserved",
+        "text": "创建订单：向 POST /orders 提交固定输入 {quantity:1,requestId:\"journey\"} 时，系统应返回 201，响应体为包含 id、owner、quantity、state 字段的 JSON，其中 state 为 \"reserved\"；id 为运行时生成值，必须保存并在后续调用中使用。",
+        "quote": "`POST /orders` 提交 `{quantity:1,requestId:\"journey\"}`，返回 201 和 JSON `{id,owner,quantity,state:\"reserved\"}`；id 为运行时生成值，必须保存并用于后续调用。",
+        "acceptanceCriteria": [
+          "以 user-a 身份向 POST /orders 提交 {quantity:1,requestId:\"journey\"}，响应状态码为 201。",
+          "响应体为 JSON 对象，包含 id、owner、quantity、state 字段，其中 state 的值为 \"reserved\"。",
+          "响应中的 id 为运行时生成值；保存该 id 并用于旅程中后续的 POST /orders/{id}/pay 与 GET /orders/{id} 调用。"
+        ]
+      },
+      {
+        "id": "pay-declined-402-stays-reserved",
+        "text": "支付被拒绝：对已创建的 reserved 订单提交 POST /orders/{id}/pay 且 paymentToken 为 \"declined\" 时，系统应返回 402，且订单保持 reserved 状态。",
+        "quote": "`POST /orders/{id}/pay` 提交 `{paymentToken:\"declined\"}`，返回 402，订单保持 reserved。",
+        "acceptanceCriteria": [
+          "对第 1 步保存的订单 id 提交 POST /orders/{id}/pay，请求体为 {paymentToken:\"declined\"}，响应状态码为 402。",
+          "支付被拒绝后订单保持 reserved 状态，该状态可通过随后的 GET /orders/{id} 观察确认。"
+        ]
+      },
+      {
+        "id": "get-after-decline-200-reserved",
+        "text": "拒绝后中间观察：支付被拒绝后，通过 GET /orders/{id} 读取同一订单，系统应返回 200 和该订单的 JSON，且可从中检查 state。",
+        "quote": "通过 `GET /orders/{id}` 读取，返回 200 和该订单 JSON，可检查 state。",
+        "acceptanceCriteria": [
+          "对同一订单 id 执行 GET /orders/{id}，响应状态码为 200。",
+          "响应体为该订单的 JSON，可从中检查 state 字段，其值为 \"reserved\"。"
+        ]
+      },
+      {
+        "id": "pay-ok-same-order-200-paid",
+        "text": "拒绝后恢复支付：对同一个订单再次提交 POST /orders/{id}/pay 且 paymentToken 为 \"ok\" 时，系统应返回 200 和 state=paid 的订单。",
+        "quote": "对同一个订单 `POST /orders/{id}/pay` 提交 `{paymentToken:\"ok\"}`，返回 200 和 state=paid 的订单。",
+        "acceptanceCriteria": [
+          "对同一个订单 id（即被拒绝支付后未更换的订单）再次提交 POST /orders/{id}/pay，请求体为 {paymentToken:\"ok\"}，响应状态码为 200。",
+          "响应体为订单 JSON，其 state 的值为 \"paid\"。"
+        ]
+      },
+      {
+        "id": "get-after-paid-200-paid-same-order",
+        "text": "支付后终态观察：支付成功后，GET /orders/{id} 应返回 200 和 state=paid 的同一订单。",
+        "quote": "随后 `GET /orders/{id}` 返回 200 和 state=paid 的同一订单。",
+        "acceptanceCriteria": [
+          "支付成功后执行 GET /orders/{id}，响应状态码为 200。",
+          "响应体为同一订单（相同 id），其 state 的值为 \"paid\"。"
+        ]
+      }
+    ],
+    "questions": []
+  },
+  "design": {
+    "strategy": "黑盒状态旅程分析（transition-sequence）。sourceSpec 将范围显式限定为单一『支付拒绝后恢复』旅程：所有输入固定（quantity=1、requestId=\"journey\"、paymentToken 依次 declined→ok），测试身份固定为 user-a，因此不做输入等价类划分、边界值组合或并发设计；非法输入、其他身份、余额/库存断言、并发、取消、重放均被显式排除且行为未定义，不补充预期、不列入缺口。设计为单个独立测试场景，在一次 fixture 重置后的无订单初始状态下按序执行：创建订单（201，保存运行时生成的 id）→ 拒绝支付（402，自环保持 reserved）→ 读回确认 reserved → 对同一订单恢复支付（200，paid）→ 读回确认同一订单 paid。被拒调用后与终态后均安排 GET 读回观察，以验证订单状态本身而非仅凭响应状态码；同一订单 id 贯穿全程以验证恢复发生在被拒的订单上。全部预期均直接来自 sourceSpec 与需求引文，未发明额外行为。范围内预期均已指定并由唯一场景完整覆盖，故 questions/gaps 为空。",
+    "scenarios": [
+      {
+        "id": "journey-decline-then-recover-single-order",
+        "title": "支付被拒后同一订单恢复支付：reserved→402→reserved→paid 完整旅程",
+        "requirementIds": [
+          "fixture-reset-user-a-precondition",
+          "create-order-201-reserved",
+          "pay-declined-402-stays-reserved",
+          "get-after-decline-200-reserved",
+          "pay-ok-same-order-200-paid",
+          "get-after-paid-200-paid-same-order"
+        ],
+        "dimension": "状态旅程（transition-sequence）：拒绝后恢复的合法多调用序列，含被拒调用后的自环与读回观察",
+        "expected": "单次独立测试内：以 user-a 在无订单初始状态下向 POST /orders 提交 {quantity:1,requestId:\"journey\"}，得到 201 和 JSON {id,owner,quantity,state:\"reserved\"}，保存运行时生成的 id；对同一 id 提交 POST /orders/{id}/pay 且 {paymentToken:\"declined\"}，得到 402，订单保持 reserved；GET /orders/{id} 返回 200 和该订单 JSON，state=\"reserved\"；对同一个订单 id 再次提交 POST /orders/{id}/pay 且 {paymentToken:\"ok\"}，得到 200 和 state=\"paid\" 的订单；随后 GET /orders/{id} 返回 200 和同一订单（相同 id），state=\"paid\"。",
+        "factorLevels": [
+          {
+            "factorId": "fixture-initial-state",
+            "level": "fixture 恢复初始状态，系统中没有订单"
+          },
+          {
+            "factorId": "fixed-test-identity",
+            "level": "user-a"
+          },
+          {
+            "factorId": "create-order-fixed-input",
+            "level": "{quantity:1,requestId:\"journey\"} → 201 且 state=\"reserved\""
+          },
+          {
+            "factorId": "declined-payment-outcome",
+            "level": "paymentToken=\"declined\" → 402，订单保持 reserved"
+          },
+          {
+            "factorId": "post-decline-readback",
+            "level": "GET /orders/{id} → 200，可检查 state"
+          },
+          {
+            "factorId": "recovery-payment-outcome",
+            "level": "同一订单 paymentToken=\"ok\" → 200 且 state=paid"
+          },
+          {
+            "factorId": "post-paid-readback",
+            "level": "GET /orders/{id} → 200，同一订单 state=paid"
+          }
+        ],
+        "journey": {
+          "version": 1,
+          "initialState": "无订单",
+          "preconditions": [
+            "每个独立测试开始时 fixture 恢复初始状态，系统中没有订单",
+            "所有调用使用框架 user 参数 user-a 的固定测试身份"
+          ],
+          "steps": [
+            {
+              "id": "create-order",
+              "fromState": "无订单",
+              "action": "以 user-a 向 POST /orders 提交 {quantity:1,requestId:\"journey\"}",
+              "toState": "存在 reserved 订单",
+              "observation": "响应 201，JSON 含 id、owner、quantity、state，state=\"reserved\"；id 为运行时生成值，保存并在后续调用中使用",
+              "requirementId": "create-order-201-reserved",
+              "sourceQuote": "`POST /orders` 提交 `{quantity:1,requestId:\"journey\"}`，返回 201 和 JSON `{id,owner,quantity,state:\"reserved\"}`"
+            },
+            {
+              "id": "pay-declined",
+              "fromState": "存在 reserved 订单",
+              "action": "对保存的订单 id 提交 POST /orders/{id}/pay，请求体 {paymentToken:\"declined\"}",
+              "toState": "存在 reserved 订单",
+              "observation": "响应 402，订单保持 reserved（自环）",
+              "requirementId": "pay-declined-402-stays-reserved",
+              "sourceQuote": "`POST /orders/{id}/pay` 提交 `{paymentToken:\"declined\"}`，返回 402，订单保持 reserved。"
+            },
+            {
+              "id": "readback-after-decline",
+              "fromState": "存在 reserved 订单",
+              "action": "对同一订单 id 执行 GET /orders/{id}",
+              "toState": "存在 reserved 订单",
+              "observation": "响应 200 和该订单 JSON，可检查 state 字段，其值为 \"reserved\"",
+              "requirementId": "get-after-decline-200-reserved",
+              "sourceQuote": "通过 `GET /orders/{id}` 读取，返回 200 和该订单 JSON，可检查 state。"
+            },
+            {
+              "id": "pay-ok-same-order",
+              "fromState": "存在 reserved 订单",
+              "action": "对同一个订单 id（被拒支付后未更换）再次提交 POST /orders/{id}/pay，请求体 {paymentToken:\"ok\"}",
+              "toState": "存在 paid 订单",
+              "observation": "响应 200，响应体为订单 JSON，state=\"paid\"",
+              "requirementId": "pay-ok-same-order-200-paid",
+              "sourceQuote": "对同一个订单 `POST /orders/{id}/pay` 提交 `{paymentToken:\"ok\"}`，返回 200 和 state=paid 的订单。"
+            },
+            {
+              "id": "readback-after-paid",
+              "fromState": "存在 paid 订单",
+              "action": "对同一订单 id 执行 GET /orders/{id}",
+              "toState": "存在 paid 订单",
+              "observation": "响应 200，响应体为同一订单（相同 id），state=\"paid\"",
+              "requirementId": "get-after-paid-200-paid-same-order",
+              "sourceQuote": "随后 `GET /orders/{id}` 返回 200 和 state=paid 的同一订单。"
+            }
+          ]
+        }
+      }
+    ],
+    "gaps": [],
+    "factors": [
+      {
+        "id": "fixture-initial-state",
+        "name": "独立测试初始状态",
+        "requirementIds": [
+          "fixture-reset-user-a-precondition"
+        ],
+        "levels": [
+          "fixture 恢复初始状态，系统中没有订单"
+        ],
+        "sourceQuote": "每个独立测试开始时 fixture 恢复初始状态，没有订单"
+      },
+      {
+        "id": "fixed-test-identity",
+        "name": "固定测试身份",
+        "requirementIds": [
+          "fixture-reset-user-a-precondition"
+        ],
+        "levels": [
+          "user-a"
+        ],
+        "sourceQuote": "测试身份固定为框架 user 参数 user-a"
+      },
+      {
+        "id": "create-order-fixed-input",
+        "name": "创建订单固定输入与 201 响应",
+        "requirementIds": [
+          "create-order-201-reserved"
+        ],
+        "levels": [
+          "{quantity:1,requestId:\"journey\"} → 201 且 state=\"reserved\""
+        ],
+        "sourceQuote": "`POST /orders` 提交 `{quantity:1,requestId:\"journey\"}`，返回 201 和 JSON `{id,owner,quantity,state:\"reserved\"}`"
+      },
+      {
+        "id": "declined-payment-outcome",
+        "name": "拒绝支付结果",
+        "requirementIds": [
+          "pay-declined-402-stays-reserved"
+        ],
+        "levels": [
+          "paymentToken=\"declined\" → 402，订单保持 reserved"
+        ],
+        "sourceQuote": "`POST /orders/{id}/pay` 提交 `{paymentToken:\"declined\"}`，返回 402，订单保持 reserved。"
+      },
+      {
+        "id": "post-decline-readback",
+        "name": "拒绝后状态读回",
+        "requirementIds": [
+          "get-after-decline-200-reserved"
+        ],
+        "levels": [
+          "GET /orders/{id} → 200，可检查 state"
+        ],
+        "sourceQuote": "通过 `GET /orders/{id}` 读取，返回 200 和该订单 JSON，可检查 state。"
+      },
+      {
+        "id": "recovery-payment-outcome",
+        "name": "同一订单恢复支付结果",
+        "requirementIds": [
+          "pay-ok-same-order-200-paid"
+        ],
+        "levels": [
+          "同一订单 paymentToken=\"ok\" → 200 且 state=paid"
+        ],
+        "sourceQuote": "对同一个订单 `POST /orders/{id}/pay` 提交 `{paymentToken:\"ok\"}`，返回 200 和 state=paid 的订单。"
+      },
+      {
+        "id": "post-paid-readback",
+        "name": "支付后终态读回",
+        "requirementIds": [
+          "get-after-paid-200-paid-same-order"
+        ],
+        "levels": [
+          "GET /orders/{id} → 200，同一订单 state=paid"
+        ],
+        "sourceQuote": "随后 `GET /orders/{id}` 返回 200 和 state=paid 的同一订单。"
+      }
+    ]
+  },
+  "cases": {
+    "cases": [
+      {
+        "id": "case-decline-then-recover-journey",
+        "title": "支付被拒后同一订单恢复支付：reserved→402→reserved→paid 完整旅程",
+        "scenarioIds": [
+          "journey-decline-then-recover-single-order"
+        ],
+        "requirementIds": [
+          "fixture-reset-user-a-precondition",
+          "create-order-201-reserved",
+          "pay-declined-402-stays-reserved",
+          "get-after-decline-200-reserved",
+          "pay-ok-same-order-200-paid",
+          "get-after-paid-200-paid-same-order"
+        ],
+        "preconditions": [
+          "每个独立测试开始时 fixture 恢复初始状态，系统中没有订单",
+          "所有调用使用框架 user 参数 user-a 的固定测试身份"
+        ],
+        "steps": [
+          "以 user-a 向 POST /orders 提交 {\"quantity\":1,\"requestId\":\"journey\"}，从 201 响应中保存运行时生成的订单 id",
+          "对保存的同一订单 id 提交 POST /orders/{id}/pay，请求体 {\"paymentToken\":\"declined\"}",
+          "对同一订单 id 执行 GET /orders/{id}，读回被拒支付后的订单状态",
+          "对同一个订单 id（被拒支付后未更换）再次提交 POST /orders/{id}/pay，请求体 {\"paymentToken\":\"ok\"}",
+          "对同一订单 id 执行 GET /orders/{id}，读回终态订单"
+        ],
+        "expected": "单次独立测试内完成全部调用与中间观察：以 user-a 创建订单（POST /orders 提交 {quantity:1,requestId:\"journey\"}）得到 201 和 JSON {id,owner,quantity,state:\"reserved\"}，保存运行时生成的 id；对同一 id 提交 POST /orders/{id}/pay 且 {paymentToken:\"declined\"} 得到 402，订单保持 reserved；GET /orders/{id} 返回 200 和该订单 JSON，state=\"reserved\"；对同一个订单 id 再次提交 POST /orders/{id}/pay 且 {paymentToken:\"ok\"} 得到 200 和 state=\"paid\" 的订单；随后 GET /orders/{id} 返回 200 和同一订单（相同 id），state=\"paid\"。恢复支付发生在被拒支付后的同一订单上。",
+        "assertions": [
+          "创建订单响应为 201，响应 JSON 含 id、owner、quantity、state 字段且 state=\"reserved\"；id 为运行时生成值，已保存并在后续全部调用中使用",
+          "提交 paymentToken=\"declined\" 的支付响应为 402",
+          "被拒后的 GET /orders/{id} 返回 200，响应 JSON 的 state=\"reserved\"，确认订单保持 reserved",
+          "对同一订单提交 paymentToken=\"ok\" 的支付响应为 200，响应体为订单 JSON 且 state=\"paid\"",
+          "终态 GET /orders/{id} 返回 200，响应体为同一订单（id 与创建时保存的相同）且 state=\"paid\""
+        ]
+      }
+    ]
+  },
+  "implementation": {
+    "script": "'''Black-box journey test for case-decline-then-recover-journey.\n\nApproved journey (journey-decline-then-recover-single-order): create order\n(201, reserved) -> pay declined (402, stays reserved) -> read back after\ndecline (200, reserved) -> pay the SAME order with ok (200, paid) -> final\nread back (200, same id, paid).\n\nAudit scope notes (not questions): only this single journey is approved for\nthis round, with quantity=1 and the fixed framework identity user-a. Other\nbehaviors are undefined by the source spec and intentionally not asserted:\nno concurrency, replay, cancellation, balance or inventory checks, no other\nidentities, no invalid inputs.\n'''\n\nimport unittest\n\nfrom framework import BlackBoxCase\n\n\nclass TestDeclineThenRecoverJourney(BlackBoxCase):\n    def test_declined_payment_then_recover_same_order_journey(self):\n        # Step 1: create order, expect 201 and JSON with reserved state.\n        created = self.client.call(\n            'POST', '/orders', {'quantity': 1, 'requestId': 'journey'}\n        )\n        self.assertEqual(created.status, 201)\n        self.assertIn('id', created.body)\n        self.assertIn('owner', created.body)\n        self.assertIn('quantity', created.body)\n        self.assertIn('state', created.body)\n        self.assertEqual(created.body['state'], 'reserved')\n        order_id = created.body['id']\n\n        # Step 2: pay the saved order with declined token, expect 402.\n        declined = self.client.call(\n            'POST', '/orders/%s/pay' % order_id, {'paymentToken': 'declined'}\n        )\n        self.assertEqual(declined.status, 402)\n\n        # Step 3: read back after decline, expect 200 and state reserved.\n        after_decline = self.client.call('GET', '/orders/%s' % order_id)\n        self.assertEqual(after_decline.status, 200)\n        self.assertIn('state', after_decline.body)\n        self.assertEqual(after_decline.body['state'], 'reserved')\n\n        # Step 4: pay the SAME order id with ok token, expect 200 and paid.\n        recovered = self.client.call(\n            'POST', '/orders/%s/pay' % order_id, {'paymentToken': 'ok'}\n        )\n        self.assertEqual(recovered.status, 200)\n        self.assertIn('state', recovered.body)\n        self.assertEqual(recovered.body['state'], 'paid')\n\n        # Step 5: final read back, expect 200, same id, state paid.\n        final = self.client.call('GET', '/orders/%s' % order_id)\n        self.assertEqual(final.status, 200)\n        self.assertEqual(final.body['id'], order_id)\n        self.assertEqual(final.body['state'], 'paid')\n",
+    "tests": [
+      {
+        "testName": "test_declined_payment_then_recover_same_order_journey",
+        "caseIds": [
+          "case-decline-then-recover-journey"
+        ]
+      }
+    ],
+    "questions": []
+  }
+}

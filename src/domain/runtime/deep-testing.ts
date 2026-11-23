@@ -1,6 +1,9 @@
 /** Shared by single-call design, batched design and script implementation. */
+export const journeyInstruction =
+  'For source-supported multi-call stateful scenarios, optionally include journey version 1. Prioritize at most two compact high-risk journeys per analysis batch; prefer 2 to 6 steps, never duplicate a journey for every input level. Declare initialState, preconditions and an ordered path of 2 to 12 steps, each with a unique local id, fromState, action, toState, observation, requirementId and a concise exact sourceQuote from that linked requirement quote. First fromState must equal initialState; each later fromState must equal the preceding toState. Include observations after rejected calls and read-back calls where the contract supports them; unchanged state may use a self-loop. State labels are analysis labels, not invented API fields. Omit journey for single-call scenarios or unsupported state rules. Do not fabricate state transitions or expected behavior merely to populate the structure. Cases and scripts must preserve the approved action order, preconditions and per-step observations. Structural linkage is not proof of semantic completeness or execution.';
 export const deepTestingGuidance = {
-  version: 1,
+  version: 2,
+  journey: journeyInstruction,
   scope:
     'Use only approved in-scope requirements, source-supported state preconditions and observable interfaces. These are investigation methods, not extra requirements. Do not invent timing, errors, identities, invariants or dependencies. An unsupported method is not automatically a coverage gap.',
   methods: [

@@ -17,7 +17,7 @@ export async function reviseDesign(
   if (initial.artifacts['reproduction.source']) throw new Error('reproduction_readonly');
   if (['ready', 'running'].includes(initial.status) || !reason.trim()) throw new Error('approval_invalid');
   const requirements = decodeRequirements(latestArtifact(initial, 'RequirementBaseline'), initial.spec);
-  decodeDesign(value, requirements);
+  const validated = decodeDesign(value, requirements);
   const review = initial.plan.find((node) => node.operation === 'review.coverage');
   const producer = initial.plan.find((node) => node.operation === 'scenarios.design');
   if (!review || !producer || initial.steps[producer.id]?.status !== 'succeeded')
@@ -58,8 +58,8 @@ export async function reviseDesign(
   const slot = Object.keys(producer.outputs)[0];
   run.artifacts[`${producer.id}.${slot}`] = {
     type: 'TestDesignDraft',
-    value: structuredClone(value),
-    digest: await digest(value),
+    value: validated,
+    digest: await digest(validated),
   };
   run.approvals = run.approvals.filter((item) => !affected.has(item.nodeId));
   run.reviewExclusions = run.reviewExclusions?.filter((item) => !affected.has(item.nodeId));

@@ -15,6 +15,15 @@ def parse_source(source):
     return tree
 
 
+def executable_body(body):
+    """Only the first literal string is a Python module/class docstring."""
+    if body and isinstance(body[0], ast.Expr):
+        value = body[0].value
+        if isinstance(value, ast.Constant) and isinstance(value.value, str):
+            return body[1:]
+    return body
+
+
 def validate():
     if sys.version_info < (3, 11):
         raise ValueError("python_version_unsupported")
@@ -23,7 +32,7 @@ def validate():
     with open("test_generated.py", encoding="utf-8") as stream:
         tree = parse_source(stream.read())
     forbidden = {"exec", "eval", "compile", "open", "__import__", "getattr", "setattr", "delattr", "globals", "locals", "vars", "input", "breakpoint"}
-    for node in tree.body:
+    for node in executable_body(tree.body):
         if not isinstance(node, (ast.Import, ast.ImportFrom, ast.ClassDef)):
             raise ValueError("unapproved_top_level")
     names = []
@@ -42,7 +51,7 @@ def validate():
             base = node.bases[0]
             if not (isinstance(base, ast.Name) and base.id == "BlackBoxCase" or isinstance(base, ast.Attribute) and isinstance(base.value, ast.Name) and base.value.id == "framework" and base.attr == "BlackBoxCase"):
                 raise ValueError("unapproved_test_class")
-            if any(not isinstance(child, ast.FunctionDef) for child in node.body):
+            if any(not isinstance(child, ast.FunctionDef) for child in executable_body(node.body)):
                 raise ValueError("unapproved_class_body")
         if isinstance(node, ast.FunctionDef):
             if not node.name.startswith("test_") or node.decorator_list:

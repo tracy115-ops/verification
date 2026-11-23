@@ -1,0 +1,26 @@
+[
+  {
+    "target": "reference",
+    "scriptSha256": "6d20defe9efa888a12cecfbb94f6a9ed2d0ec87c21f315cc1130160a6161f025",
+    "frameworkSha256": "01258ab754a83e72c32f706881bce0eeedc27d5e0dcba77d91018c788c9757c9",
+    "evidenceDigest": "be28911951f5aeada361ed497511d01544470724115bba88f7144915a4a67934",
+    "results": [
+      {
+        "testName": "test_declined_payment_then_recover_same_order_journey",
+        "status": "passed"
+      }
+    ]
+  },
+  {
+    "target": "declined_payment_commit",
+    "scriptSha256": "6d20defe9efa888a12cecfbb94f6a9ed2d0ec87c21f315cc1130160a6161f025",
+    "frameworkSha256": "01258ab754a83e72c32f706881bce0eeedc27d5e0dcba77d91018c788c9757c9",
+    "evidenceDigest": "8fd87e6b51dd65426bbd7d0532e7e076d88e79d7bd6959abe8e5770a36004a37",
+    "results": [
+      {
+        "testName": "test_declined_payment_then_recover_same_order_journey",
+        "status": "failed"
+      }
+    ]
+  }
+]

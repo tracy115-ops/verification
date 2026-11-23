@@ -5,6 +5,7 @@ import { scopedCases } from '../../domain/runtime/case-scope';
 import { isCases, isDesign } from '../../domain/runtime/artifacts';
 import { useI18n } from '../../shared/i18n/context';
 import { ArtifactPanel } from './ArtifactPanel';
+import { JourneyView } from '../reviews/JourneyView';
 
 export function ReviewArtifactPreview({
   run,
@@ -93,6 +94,7 @@ function CaseScenarioReview({
         </small>
       </div>
       <p className="wb-muted">{t('caseScenarioReviewHint')}</p>
+      <JourneyView journey={scenario.journey} />
       {visible.length ? (
         <div className="session-artifact">
           {visible.map((item) => (

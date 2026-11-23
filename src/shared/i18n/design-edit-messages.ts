@@ -1,4 +1,23 @@
 export const designEditZh = {
+  journeyTitle: '场景旅程',
+  journeyCollaborationHint: '补充包保留完整旅程；共享项目目前仅转换因子、场景和用例，暂不提供团队旅程编辑。',
+  journeyEnable: '为此场景定义多步状态路径',
+  journeyHint: '仅用于原文支持的多次调用；2–12 步。每一步声明状态、操作、可观测结果及原文依据。',
+  journeyReviewHint: '检查操作顺序及每一步的观察是否符合题目；结构有效不代表测试已执行或覆盖完整。',
+  journeyInitialState: '初始状态',
+  journeyPreconditions: '旅程前置条件（每行一项，可选）',
+  journeySteps: '旅程步骤',
+  journeyFrom: '执行前状态',
+  journeyTo: '执行后状态',
+  journeyAction: '操作',
+  journeyObservation: '可观测结果',
+  journeyRule: '依据需求',
+  journeySelectRule: '选择当前场景关联的需求',
+  journeyAddStep: '追加步骤',
+  journeyRemoveStep: '删除当前步骤',
+  journey_invalid:
+    '旅程状态不连续、步骤 ID 重复或需求关联无效。首步状态必须等于初始状态，后续步骤承接上一步结果。',
+  journey_quote_invalid: '旅程步骤的原文依据未在该步骤所关联需求的引用中找到，请核对后重新提交。',
   designClose: '关闭',
   designAdd: '人工新增',
   designEdit: '编辑',
@@ -20,6 +39,29 @@ export const designEditZh = {
     '为 Agent 创建独立成员令牌，通过环境变量传入。先读取最新项目，再提交增量建议；审核合入后团队同步。这里不展示登录令牌。',
 };
 export const designEditEn = {
+  journeyTitle: 'Scenario journey',
+  journeyCollaborationHint:
+    'The bundle retains full journeys. Shared projects currently convert factors, scenarios and cases; team journey editing is not yet available.',
+  journeyEnable: 'Define a multi-step state path for this scenario',
+  journeyHint:
+    'Use only for source-supported multi-call behavior; 2–12 steps. Declare states, action, observable result and source for each step.',
+  journeyReviewHint:
+    'Review action order and observations against the specification. Valid structure does not establish execution or complete coverage.',
+  journeyInitialState: 'Initial state',
+  journeyPreconditions: 'Journey preconditions (one per line, optional)',
+  journeySteps: 'Journey steps',
+  journeyFrom: 'State before',
+  journeyTo: 'State after',
+  journeyAction: 'Action',
+  journeyObservation: 'Observable result',
+  journeyRule: 'Source requirement',
+  journeySelectRule: 'Select a requirement linked to this scenario',
+  journeyAddStep: 'Append step',
+  journeyRemoveStep: 'Delete current step',
+  journey_invalid:
+    'The state path is disconnected, step IDs repeat or requirement links are invalid. Start at the initial state and continue from each preceding result.',
+  journey_quote_invalid:
+    'A step source quote was not found in its linked requirement quote. Check the source and resubmit.',
   designClose: 'Close',
   designAdd: 'Add manually',
   designEdit: 'Edit',

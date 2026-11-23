@@ -1,0 +1,11 @@
+{
+  "version": "0.22.0",
+  "nativeWindow": true,
+  "fixture": "hand-authored contract, no model inference or test execution in this UI audit",
+  "disconnectedStateRejected": true,
+  "modificationSaved": true,
+  "sourceQuotePreserved": true,
+  "reloadRestored": true,
+  "reviewReopened": true,
+  "historyPreserved": true
+}

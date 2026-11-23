@@ -253,3 +253,20 @@
     max-height: 220px;
   }
 }
+.journey-view header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.journey-view {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.journey-view ol {
+  padding-inline-start: 24px;
+}
+.journey-view li {
+  padding: 12px 0;
+  border-block-end: 1px solid var(--wb-border);
+}

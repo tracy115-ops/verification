@@ -24,6 +24,9 @@ export function RunContributionExport({ run }: { run: WorkflowRun }) {
           {t('collab_export_script')}
         </button>
       )}
+      {bundle.design.scenarios.some((item) => item.journey) && (
+        <small className="wb-muted">{t('journeyCollaborationHint')}</small>
+      )}
     </div>
   );
 }

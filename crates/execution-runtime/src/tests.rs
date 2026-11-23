@@ -162,6 +162,47 @@ async fn invalid_python_shape_fails_preflight_and_never_runs_framework() {
 }
 
 #[tokio::test]
+async fn literal_module_and_class_docstrings_do_not_prevent_valid_test_execution() {
+    let mut fixture = Fixture::new();
+    let source = fixture.payload.implementation.script.clone();
+    let class_line = source
+        .lines()
+        .find(|line| line.starts_with("class "))
+        .unwrap();
+    fixture.payload.implementation.script = format!(
+        "\"\"\"Approved journey documentation.\"\"\"\n{}",
+        source.replacen(
+            class_line,
+            &format!("{class_line}\n    \"\"\"Class documentation.\"\"\""),
+            1
+        )
+    );
+    let plan = fixture.plan().await;
+    let evidence = fixture.run(&plan).await.expect("documented test executes");
+    assert_eq!(evidence.results[0].status, "passed");
+}
+
+#[tokio::test]
+async fn docstring_support_does_not_allow_other_top_level_expressions() {
+    for prefix in [
+        "f'{1 + 1}'\n",
+        "str('not documentation')\n",
+        "import unittest\n'late string'\n",
+    ] {
+        let mut fixture = Fixture::new();
+        fixture.payload.implementation.script =
+            format!("{prefix}{}", fixture.payload.implementation.script);
+        let (_sender, receiver) = oneshot::channel();
+        assert_eq!(
+            preflight(&fixture.root, fixture.payload.clone(), receiver, |_| true)
+                .await
+                .expect_err("non-docstring expression rejected"),
+            "python_validation_failed"
+        );
+    }
+}
+
+#[tokio::test]
 async fn assertion_failures_remain_evidence_while_setup_failures_are_errors() {
     let mut fixture = Fixture::new();
     fixture.payload.implementation.script = fixture

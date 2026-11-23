@@ -108,6 +108,20 @@ export interface RequirementArtifact {
   requirements: { id: string; text: string; quote: string; acceptanceCriteria: string[] }[];
   questions: string[];
 }
+export interface ScenarioJourney {
+  version: 1;
+  initialState: string;
+  preconditions: string[];
+  steps: {
+    id: string;
+    fromState: string;
+    action: string;
+    toState: string;
+    observation: string;
+    requirementId: string;
+    sourceQuote: string;
+  }[];
+}
 export interface DesignArtifact {
   strategy: string;
   factors?: { id: string; name: string; requirementIds: string[]; levels: string[]; sourceQuote: string }[];
@@ -118,6 +132,7 @@ export interface DesignArtifact {
     dimension: string;
     expected: string;
     factorLevels?: { factorId: string; level: string }[];
+    journey?: ScenarioJourney;
   }[];
   gaps: string[];
 }
