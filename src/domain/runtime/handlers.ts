@@ -16,7 +16,7 @@ import { decodePlan } from '../execution/validation';
 import { canonicalJson } from '../execution/canonical';
 import { scopedCases } from './case-scope';
 import { quoteIssues } from './source-quotes';
-import { deepTestingGuidance } from './deep-testing';
+import { deepTestingGuidance, designTestingGuidance } from './deep-testing';
 import { designMappingInstruction } from './design-mapping';
 import { designQuoteInstruction } from './design-source-quotes';
 
@@ -91,7 +91,8 @@ export function taskFor(run: WorkflowRun, node: WorkflowNode, inputs: Record<str
             : {}),
         }
       : {}),
-    ...(['scenarios.design', 'cases.generate'].includes(node.operation) ? { deepTestingGuidance } : {}),
+    ...(node.operation === 'scenarios.design' ? { deepTestingGuidance: designTestingGuidance } : {}),
+    ...(node.operation === 'cases.generate' ? { deepTestingGuidance } : {}),
     ...(issues.length && isRequirements(previous)
       ? {
           validationFeedback: {

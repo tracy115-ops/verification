@@ -102,7 +102,7 @@ export function WorkflowCallCard({
             </details>
           </>
         ))}
-      {turn.status === 'running' && <AgentReplyStatus />}
+      {turn.status === 'running' && !turn.progress && <AgentReplyStatus />}
       <CliProgressSummary
         progress={turn.progress}
         timeoutSeconds={turn.request.timeoutSeconds}

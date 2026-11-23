@@ -45,3 +45,11 @@ export const deepTestingGuidance = {
   implementation:
     'Put each stateful journey in one independent test method, using the provided framework reset between methods. Save runtime IDs and before/after observations in local variables. Assert setup outcomes, exercise the approved sequence, and assert both declared responses and observable effects. Use only supported framework calls and bounded parallelism. Map methods to approved cases; do not silently add a discovery campaign outside those cases.',
 } as const;
+
+export const designTestingGuidance = {
+  version: deepTestingGuidance.version,
+  scope: deepTestingGuidance.scope,
+  methods: deepTestingGuidance.methods,
+  journey: journeyInstruction,
+  design: deepTestingGuidance.design,
+};

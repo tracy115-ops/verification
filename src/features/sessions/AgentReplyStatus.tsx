@@ -22,7 +22,7 @@ export function PendingAgentReply({ text, progress }: { text: string; progress?:
     <article className="session-message role-assistant session-pending-reply" aria-busy="true">
       <div className="session-message-author">{t('assistantMessage')}</div>
       {text && <div className="session-message-text">{text}</div>}
-      <AgentReplyStatus />
+      {!progress && <AgentReplyStatus />}
       <CliProgressSummary progress={progress} hasReply={!!text} />
     </article>
   );

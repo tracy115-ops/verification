@@ -93,18 +93,17 @@ test('shows pending and streamed Agent replies beside an existing task', async (
   const pending = page.locator('.session-pending-reply');
   await expect(pending.getByRole('status')).toHaveText('Agent 正在回复');
   await expect(pending).toHaveAttribute('aria-busy', 'true');
+  const dot = pending.locator('.session-reply-dots > span').first();
+  expect(await dot.evaluate((element) => getComputedStyle(element).animationName)).toBe(
+    'session-reply-pulse',
+  );
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  expect(await dot.evaluate((element) => getComputedStyle(element).animationName)).toBe('none');
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.evaluate(() =>
     (globalThis as unknown as { replyFixture: { progress: () => void } }).replyFixture.progress(),
   );
-  await expect(pending.locator('.session-cli-progress summary')).toContainText(
-    '已收到 CLI 状态，尚无回复正文',
-  );
-  expect(
-    await pending
-      .locator('.session-reply-dots > span')
-      .first()
-      .evaluate((dot) => getComputedStyle(dot).animationName),
-  ).toBe('session-reply-pulse');
+  await expect(pending.getByRole('status')).toHaveText('CLI 最近仍有输出，正在等待回复正文');
   await page.screenshot({ path: '.runtime/agent-reply-waiting.png' });
   await page.evaluate(() =>
     (globalThis as unknown as { replyFixture: { emit: (text: string) => void } }).replyFixture.emit(
@@ -113,13 +112,6 @@ test('shows pending and streamed Agent replies beside an existing task', async (
   );
   await expect(pending).toContainText('你好，已收到你的消息。');
   await expect(pending.locator('.session-cli-progress summary')).toContainText('已收到回复正文');
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  expect(
-    await pending
-      .locator('.session-reply-dots > span')
-      .first()
-      .evaluate((dot) => getComputedStyle(dot).animationName),
-  ).toBe('none');
   await page.evaluate(() =>
     (globalThis as unknown as { replyFixture: { finish: () => void } }).replyFixture.finish(),
   );

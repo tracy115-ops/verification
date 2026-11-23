@@ -69,6 +69,13 @@ it('passes approved paths and bounded guidance to design, cases, proposals and i
     const task = JSON.parse(taskFor(run, node, { design }));
     expect(task.deepTestingGuidance.journey).toContain('fromState');
     expect(task.inputs.design.scenarios[0].journey).toEqual(design.scenarios[0].journey);
+    if (operation === 'scenarios.design') {
+      expect(task.deepTestingGuidance.methods.map((method: { id: string }) => method.id)).toContain(
+        'transition-sequence',
+      );
+      expect(task.deepTestingGuidance).not.toHaveProperty('implementation');
+      expect(task.deepTestingGuidance).not.toHaveProperty('cases');
+    }
   }
   expect(JSON.parse(designProposalTask(run, 'Keep the recovery path')).journeyInstruction).toContain(
     'sourceQuote',

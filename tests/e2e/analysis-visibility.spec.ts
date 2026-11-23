@@ -90,19 +90,19 @@ for (const large of [false, true]) {
       fixture.emit({
         type: 'progress',
         progress: {
-          elapsedMs: 30000,
+          elapsedMs: 45000,
           inputWritten: true,
-          lastOutputAgeMs: 25000,
+          lastOutputAgeMs: 40000,
           protocolRecords: 5,
           publicTextBytes: 0,
         },
       });
     });
     const progress = card.locator('.session-cli-progress');
-    await expect(progress.locator('summary')).toContainText('已运行 30 秒');
-    await expect(progress.locator('summary')).toContainText('已收到 CLI 状态，尚无回复正文');
+    await expect(progress.locator('summary')).toContainText('已运行 45 秒');
+    await expect(progress.getByRole('status')).toHaveText('CLI 暂无新输出，尚未收到回复正文');
     await progress.locator('summary').click();
-    await expect(progress).toContainText('已有 25 秒没有新 CLI 输出');
+    await expect(progress).toContainText('已有 40 秒没有新 CLI 输出');
     await page.evaluate(() =>
       (
         globalThis as unknown as { analysisVisibility: { emit: (event: unknown) => void } }
@@ -117,7 +117,7 @@ for (const large of [false, true]) {
     await expect(progress.locator('summary')).toContainText('CLI 最后状态');
     if (large) {
       await page.reload();
-      await expect(page.locator('.session-cli-progress summary')).toContainText('已运行 30 秒');
+      await expect(page.locator('.session-cli-progress summary')).toContainText('已运行 45 秒');
       await expect(page.locator('.session-cli-progress summary')).toContainText('CLI 最后状态');
     }
     if (!large) {

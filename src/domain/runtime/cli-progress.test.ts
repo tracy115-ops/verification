@@ -11,10 +11,18 @@ const snapshot = {
 
 it('keeps initialization without text distinct from a public reply', () => {
   expect(isCliProgress(snapshot)).toBe(true);
-  expect(progressPhase(snapshot)).toBe('cliProgressStatus');
-  expect(progressPhase({ ...snapshot, protocolRecords: 0 })).toBe('cliProgressWritten');
-  expect(progressPhase({ ...snapshot, protocolRecords: 0, inputWritten: false })).toBe('cliProgressStarting');
-  expect(progressPhase({ ...snapshot, publicTextBytes: 10 })).toBe('cliProgressReply');
+  expect(progressPhase(snapshot)).toBe('cliProgressQuiet');
+  expect(progressPhase(snapshot, false, true)).toBe('cliProgressStatus');
+  expect(progressPhase({ ...snapshot, lastOutputAgeMs: 0 })).toBe('cliProgressActiveWithoutReply');
+  expect(progressPhase({ ...snapshot, lastOutputAgeMs: null, protocolRecords: 0 })).toBe(
+    'cliProgressWritten',
+  );
+  expect(progressPhase({ ...snapshot, lastOutputAgeMs: null, protocolRecords: 0, inputWritten: false })).toBe(
+    'cliProgressStarting',
+  );
+  expect(progressPhase({ ...snapshot, lastOutputAgeMs: 0, publicTextBytes: 10 })).toBe('cliProgressReply');
+  expect(progressPhase(snapshot, true)).toBe('cliProgressReply');
+  expect(progressPhase({ ...snapshot, publicTextBytes: 10 })).toBe('cliProgressReplyQuiet');
 });
 
 it('rejects corrupt counters and unexpected diagnostic payloads at the boundary', () => {

@@ -21,7 +21,7 @@ export function CliProgressSummary({
       <summary>
         {t(finished ? 'cliProgressLast' : 'cliProgressCurrent')} ·{' '}
         {t('cliProgressElapsed').replace('{seconds}', seconds(progress.elapsedMs))} ·{' '}
-        {t(hasReply ? 'cliProgressReply' : progressPhase(progress))}
+        <span role={finished ? undefined : 'status'}>{t(progressPhase(progress, hasReply, finished))}</span>
       </summary>
       <p>
         {progress.lastOutputAgeMs === null
