@@ -9,3 +9,5 @@
 复验入口为 `tests/e2e/scenario-journey.spec.ts` 的真实长内容测试。输入来源是 [0.22.0 新模型产物](../examples/generated/scenario-journey-2026-11-22/README.md)，布局测试不会重新调用模型或执行 Python。
 
 最终验证：工程检查 330 项单元测试通过，相关生产 UI 11 项通过；原生 0.22.1 Release 已恢复同一真实完整运行，确认旅程标题处于首屏，报告和原执行结果可查看。[生产与原生截图](../examples/generated/scenario-journey-layout-2026-11-23/README.md)分别标注来源。
+
+随后另做[新会话完整原生验收](../examples/generated/native-journey-full-2026-11-23/README.md)：从设置、短对话、粘贴 Spec 开始，真实 Claude 生成设计、用例、脚本及判定，经界面四处确认和原生 Python 执行完成全部 13 节点。缺陷目标得到 1 断言失败、0 执行错误及 1 候选缺陷；对话显示实际节点回复及评审记录。这次没有恢复已有产物或注入存储。全程约 9 分 18 秒，设计约 277 秒，不能据此声称性能已达标或大题目问题已解决。

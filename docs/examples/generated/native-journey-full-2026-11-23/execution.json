@@ -1,0 +1,234 @@
+{
+  "version": "0.22.1",
+  "originalIpc": true,
+  "source": "fresh Spec entered through native UI; real Claude and Python, no artifact or localStorage injection",
+  "approvals": 4,
+  "counts": {
+    "passed": 0,
+    "failed": 1,
+    "error": 0,
+    "skipped": 0
+  },
+  "candidates": 1,
+  "journeyCount": 1,
+  "requestCount": 4,
+  "events": [
+    {
+      "stage": "settings_opened",
+      "at": "2026-11-23T01:33:44.455Z"
+    },
+    {
+      "stage": "model_saved",
+      "at": "2026-11-23T01:33:44.626Z"
+    },
+    {
+      "stage": "cli_instance_saved",
+      "at": "2026-11-23T01:33:44.782Z"
+    },
+    {
+      "stage": "source_selected_short_test_started",
+      "at": "2026-11-23T01:33:44.942Z"
+    },
+    {
+      "stage": "selected_source_and_short_test_passed",
+      "at": "2026-11-23T01:33:51.470Z"
+    },
+    {
+      "stage": "spec_submitted_through_native_conversation",
+      "at": "2026-11-23T01:33:52.232Z"
+    },
+    {
+      "stage": "review.requirements",
+      "at": "2026-11-23T01:34:53.078Z"
+    },
+    {
+      "stage": "review.coverage",
+      "at": "2026-11-23T01:39:31.877Z"
+    },
+    {
+      "stage": "review.cases",
+      "at": "2026-11-23T01:40:30.626Z"
+    },
+    {
+      "stage": "review.execution",
+      "at": "2026-11-23T01:41:08.825Z"
+    }
+  ],
+  "status": "completed",
+  "allPlanStepsCompleted": true,
+  "steps": [
+    {
+      "operation": "documents.import",
+      "status": "succeeded"
+    },
+    {
+      "operation": "requirements.extract",
+      "status": "succeeded"
+    },
+    {
+      "operation": "review.requirements",
+      "status": "succeeded"
+    },
+    {
+      "operation": "scenarios.design",
+      "status": "succeeded"
+    },
+    {
+      "operation": "review.coverage",
+      "status": "succeeded"
+    },
+    {
+      "operation": "cases.generate",
+      "status": "succeeded"
+    },
+    {
+      "operation": "review.cases",
+      "status": "succeeded"
+    },
+    {
+      "operation": "tests.implement",
+      "status": "succeeded"
+    },
+    {
+      "operation": "targets.preflight",
+      "status": "succeeded"
+    },
+    {
+      "operation": "review.execution",
+      "status": "succeeded"
+    },
+    {
+      "operation": "targets.execute",
+      "status": "succeeded"
+    },
+    {
+      "operation": "verdicts.evaluate",
+      "status": "succeeded"
+    },
+    {
+      "operation": "actions.dispatch",
+      "status": "succeeded"
+    }
+  ],
+  "scriptSha256": "ede0f132cfd773215f88dd06be36b26f3521bed55a0c8937a0e3cd4c0522b127",
+  "results": [
+    {
+      "testName": "test_decline_then_retry_pay_full_journey",
+      "status": "failed",
+      "details": [
+        "Traceback (most recent call last):\n  File \"case.py\", line 57, in testPartExecutor\n    yield\n  File \"case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"test_generated.py\", line 54, in test_decline_then_retry_pay_full_journey\n    self.assertEqual(\nAssertionError: 'reserved' != 'paid'\n- reserved\n+ paid\n : 拒绝支付后订单 state 应保持 reserved，实际：{'id': 'order-1', 'owner': 'user-a', 'quantity': 1, 'state': 'paid'}\n"
+      ]
+    }
+  ],
+  "tracebackPathsReducedToBasenames": true,
+  "requests": [
+    {
+      "request": {
+        "body": {},
+        "headers": null,
+        "method": "POST",
+        "path": "/__fixture/reset",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "reset": true
+        },
+        "status": 200
+      },
+      "test": "test_generated.TestDeclineRecoverJourney.test_decline_then_retry_pay_full_journey"
+    },
+    {
+      "request": {
+        "body": {
+          "quantity": 1,
+          "requestId": "journey"
+        },
+        "headers": null,
+        "method": "POST",
+        "path": "/orders",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "id": "order-1",
+          "owner": "user-a",
+          "quantity": 1,
+          "state": "reserved"
+        },
+        "status": 201
+      },
+      "test": "test_generated.TestDeclineRecoverJourney.test_decline_then_retry_pay_full_journey"
+    },
+    {
+      "request": {
+        "body": {
+          "paymentToken": "[redacted]"
+        },
+        "headers": null,
+        "method": "POST",
+        "path": "/orders/order-1/pay",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "error": "declined"
+        },
+        "status": 402
+      },
+      "test": "test_generated.TestDeclineRecoverJourney.test_decline_then_retry_pay_full_journey"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/orders/order-1",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "id": "order-1",
+          "owner": "user-a",
+          "quantity": 1,
+          "state": "paid"
+        },
+        "status": 200
+      },
+      "test": "test_generated.TestDeclineRecoverJourney.test_decline_then_retry_pay_full_journey"
+    }
+  ],
+  "evidenceDigest": "418f6596c7e0e75332bc440c7284a64d419e81faf592a94365c8cda478e46666",
+  "report": {
+    "status": "candidates_found",
+    "counts": {
+      "passed": 0,
+      "failed": 1,
+      "error": 0,
+      "skipped": 0
+    },
+    "candidates": [
+      {
+        "id": "CD-declined-pay-state-not-reserved",
+        "title": "支付被拒（402）后 GET /orders/{id} 读回 state 为 \"paid\"，订单未保持 \"reserved\"",
+        "explanation": "失败测试 test_decline_then_retry_pay_full_journey（映射用例 TC-decline-recover-journey）在 test_generated.py 第 54 行断言失败：AssertionError: 'reserved' != 'paid'，断言消息：「拒绝支付后订单 state 应保持 reserved，实际：{'id': 'order-1', 'owner': 'user-a', 'quantity': 1, 'state': 'paid'}」。请求/响应日志与该失败一致：POST /orders 返回 201，body 为 {\"id\":\"order-1\",\"owner\":\"user-a\",\"quantity\":1,\"state\":\"reserved\"}；POST /orders/order-1/pay 返回 402，body 为 {\"error\":\"declined\"}（日志中该请求体为 {\"paymentToken\":\"[redacted]\"}，实现脚本对应调用为 {\"paymentToken\": \"declined\"}）；随后 GET /orders/order-1 返回 200，body 为 {\"id\":\"order-1\",\"owner\":\"user-a\",\"quantity\":1,\"state\":\"paid\"}。即被拒支付返回 402 之后读回的订单 state 为 \"paid\" 而非 \"reserved\"，违反 REQ-pay-declined 验收标准「支付被拒绝后订单状态仍为 reserved」与 REQ-get-after-declined 验收标准「响应 JSON 为该订单的 JSON，其中 state 为 \"reserved\"」（对应用例断言「拒绝支付后 GET /orders/{id} 返回 200，响应 JSON 中 state 仍为 \"reserved\"（状态保持不变）」失败）。本轮日志中「响应状态码为 402」（REQ-pay-declined）与被拒后 GET 返回 200（REQ-get-after-declined）这两点本身符合。该断言失败后测试终止，用例后续步骤（对同一订单以 paymentToken=\"ok\" 重试支付、最终读回）未执行，REQ-pay-retry-success 与 REQ-get-after-paid 对应行为在本轮证据中未被观察，无法判定。本候选仅陈述黑盒观察到的现象，不确认根因：无法区分是被拒支付错误地执行了状态迁移、GET 返回了错误数据，还是其他内部原因。",
+        "testNames": [
+          "test_decline_then_retry_pay_full_journey"
+        ],
+        "caseIds": [
+          "TC-decline-recover-journey"
+        ]
+      }
+    ],
+    "notes": [
+      "本轮唯一状态为 failed 的测试 test_decline_then_retry_pay_full_journey 已由候选 CD-declined-pay-state-not-reserved 覆盖；执行结果中无 error 或 skipped 状态的测试，无其他失败断言需要归组。",
+      "证据执行信息：executionId=0e14ddb1-ba1b-4d65-b08e-16b6c1cd8de0，planDigest=509a5913d79c1e05bfce9e8c1cd41840040c74f6995c34bd10f2b876239f8426，rawEvidenceSha256=1d56d9bb68b9ffe40026bcada256db8b0651374e143848cea1a83105bbb389a8，resultSha256=418f6596c7e0e75332bc440c7284a64d419e81faf592a94365c8cda478e46666。",
+      "请求日志中 POST /orders/order-1/pay 的请求体 paymentToken 值显示为 \"[redacted]\"（证据已脱敏）；实现脚本对应调用为 {\"paymentToken\": \"declined\"}，响应体为 {\"error\":\"declined\"}，与用例固定输入 declined 一致。",
+      "测试在「拒绝后读回 state 应保持 reserved」断言失败处终止，用例剩余两条断言（paymentToken=\"ok\" 重试支付返回 200 且 state=\"paid\"、最终读回同一 id 且 state=\"paid\"）未执行，对应需求 REQ-pay-retry-success、REQ-get-after-paid 在本轮证据中状态未知，不作通过或失败结论。",
+      "本候选为基于失败断言与请求/响应日志的现象级结论，不声称根因已确认，也不声称对用例或需求的覆盖完整。"
+    ],
+    "action": "review_candidates",
+    "policy": "report_only",
+    "evidenceDigest": "418f6596c7e0e75332bc440c7284a64d419e81faf592a94365c8cda478e46666"
+  }
+}
