@@ -582,3 +582,10 @@
     padding-inline: 16px;
   }
 }
+.asset-trace .workbench-btn {
+  max-width: 100%;
+  height: auto;
+  white-space: normal;
+  text-align: start;
+  overflow-wrap: anywhere;
+}

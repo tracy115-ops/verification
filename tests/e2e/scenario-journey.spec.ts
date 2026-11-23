@@ -3,6 +3,7 @@ import { reportRunFixture } from '../fixtures/report-run';
 import { createHash } from 'node:crypto';
 import { journeyFixture } from '../fixtures/scenario-journey';
 import { zh, en } from '../../src/shared/i18n/messages';
+import { readFileSync } from 'node:fs';
 
 test('edits a state path, rejects disconnected state, preserves source links and reopens approval', async ({
   page,
@@ -118,5 +119,89 @@ test('edits a state path, rejects disconnected state, preserves source links and
           path: `.runtime/journey-editor-${locale}-${dark ? 'dark' : 'light'}-${width}.png`,
         });
         await page.keyboard.press('Escape');
+      }
+});
+
+test('keeps the recorded model journey visible before lengthy supporting prose', async ({ page }) => {
+  test.setTimeout(90000);
+  const root = 'docs/examples/generated/scenario-journey-2026-11-22';
+  const model = JSON.parse(readFileSync(`${root}/model-output.json`, 'utf8'));
+  const run = reportRunFixture();
+  run.spec = readFileSync(`${root}/focused-topic.md`, 'utf8');
+  run.artifacts = Object.fromEntries(
+    [
+      ['RequirementBaseline', model.requirements],
+      ['TestDesign', model.design],
+      ['TestCaseSet', model.cases],
+      ['ImplementationBundle', model.implementation],
+    ].map(([type, value]) => [type, { type, value, digest: 'recorded-layout-fixture' }]),
+  );
+  for (const locale of ['zh-CN', 'en-US'] as const)
+    for (const dark of [false, true])
+      for (const width of [900, 1500]) {
+        const t = locale === 'zh-CN' ? zh : en;
+        await page.goto('/');
+        await page.evaluate(
+          ({ run, locale, dark }) => {
+            localStorage.setItem('verification-workbench.appearance.v1', JSON.stringify({ locale, dark }));
+            localStorage.setItem(
+              'verification-workbench.conversations.v1',
+              JSON.stringify([
+                {
+                  id: run.sessionId,
+                  title: '真实模型长内容布局',
+                  profileId: run.defaultProfileId,
+                  messages: [],
+                  runs: [run],
+                },
+              ]),
+            );
+            localStorage.setItem('verification-workbench.active-conversation', run.sessionId);
+          },
+          { run, locale, dark },
+        );
+        await page.setViewportSize({ width, height: 960 });
+        await page.reload();
+        await page.getByRole('button', { name: t.assetsTitle, exact: true }).click();
+        await page.getByRole('button', { name: t.scenarioItems, exact: true }).click();
+        const detail = page.locator('.assets-detail');
+        const journey = detail.getByRole('region', { name: t.journeyTitle });
+        await expect(journey.getByRole('heading', { name: t.journeyTitle, exact: true })).toBeInViewport();
+        const strategy = detail
+          .locator('details')
+          .filter({ has: page.locator('summary', { hasText: t.journeyStrategy }) })
+          .first();
+        await expect(strategy).toHaveJSProperty('open', false);
+        await page.screenshot({
+          path: `.runtime/journey-priority-${locale}-${dark ? 'dark' : 'light'}-${width}.png`,
+        });
+        const overflow = await detail.evaluate((node) => ({
+          width: node.clientWidth,
+          scrollWidth: node.scrollWidth,
+          items: [...node.querySelectorAll('*')]
+            .filter((child) => child.getBoundingClientRect().right > node.getBoundingClientRect().right + 1)
+            .map((child) => ({
+              tag: child.tagName,
+              className: child.className,
+              text: child.textContent?.slice(0, 65),
+            }))
+            .slice(0, 12),
+        }));
+        expect(overflow.scrollWidth, JSON.stringify(overflow)).toBeLessThanOrEqual(overflow.width + 1);
+        await strategy.locator('summary').click();
+        await expect(strategy).toContainText(model.design.strategy);
+        const supporting = detail
+          .locator('details')
+          .filter({ has: page.locator('summary', { hasText: t.journeySupportingDetails }) })
+          .first();
+        await supporting.locator('summary').click();
+        await expect(supporting).toContainText(model.design.scenarios[0].expected);
+        const linked = model.cases.cases[0];
+        await detail.getByRole('button', { name: `${linked.id} · ${linked.title}`, exact: true }).click();
+        await expect(detail).toContainText(linked.title);
+        await expect(page.getByRole('button', { name: t.caseItems, exact: true })).toHaveAttribute(
+          'aria-pressed',
+          'true',
+        );
       }
 });

@@ -1,0 +1,15 @@
+{
+  "version": "0.22.1",
+  "nativeWindow": true,
+  "source": "restored fresh production-engine real Claude/Python run; no new inference in this viewer",
+  "runStatus": "completed",
+  "journeySteps": 5,
+  "requestCount": 6,
+  "results": [
+    {
+      "details": [],
+      "status": "passed",
+      "testName": "test_declined_payment_then_recover_same_order_journey"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import type { Artifact, WorkflowRun } from '../../domain/runtime/types';
+import type { Artifact, DesignArtifact, WorkflowRun } from '../../domain/runtime/types';
 import { isCases, isDesign, isRequirements } from '../../domain/runtime/artifacts';
 import { useI18n } from '../../shared/i18n/context';
 import { ExecutionArtifact } from './ExecutionArtifact';
@@ -45,7 +45,14 @@ export function ArtifactPanel({
       {isDesign(value) && (
         <>
           <h3>{t('scenarioItems')}</h3>
-          <p>{value.strategy}</p>
+          {value.scenarios.some((item) => item.journey) ? (
+            <details>
+              <summary>{t('journeyStrategy')}</summary>
+              <p>{value.strategy}</p>
+            </details>
+          ) : (
+            <p>{value.strategy}</p>
+          )}
           {value.scenarios.map((item) => (
             <article key={item.id}>
               <code>{item.id}</code>
@@ -64,18 +71,15 @@ export function ArtifactPanel({
                     ))
                   : item.requirementIds.join(', ')}
               </p>
-              <p>
-                <small>{t('coverageDimension')}: </small>
-                {item.dimension}
-              </p>
-              {!!item.factorLevels?.length && (
-                <p>
-                  <small>{t('factorItems')}: </small>
-                  {item.factorLevels.map((factor) => `${factor.factorId}: ${factor.level}`).join(' · ')}
-                </p>
-              )}
-              <p>{item.expected}</p>
               <JourneyView journey={item.journey} />
+              {item.journey ? (
+                <details>
+                  <summary>{t('journeySupportingDetails')}</summary>
+                  <ScenarioSummary item={item} />
+                </details>
+              ) : (
+                <ScenarioSummary item={item} />
+              )}
             </article>
           ))}
         </>
@@ -148,5 +152,24 @@ export function ArtifactPanel({
         <pre>{JSON.stringify(value, null, 2)}</pre>
       </details>
     </section>
+  );
+}
+
+function ScenarioSummary({ item }: { item: DesignArtifact['scenarios'][number] }) {
+  const { t } = useI18n();
+  return (
+    <>
+      <p>
+        <small>{t('coverageDimension')}: </small>
+        {item.dimension}
+      </p>
+      {!!item.factorLevels?.length && (
+        <p>
+          <small>{t('factorItems')}: </small>
+          {item.factorLevels.map((factor) => `${factor.factorId}: ${factor.level}`).join(' · ')}
+        </p>
+      )}
+      <p>{item.expected}</p>
+    </>
   );
 }

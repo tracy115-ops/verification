@@ -34,7 +34,7 @@ export function TraceLinks({
     : [];
   if (!scenarios.length && !linkedCases.length) return null;
   return (
-    <section className="session-artifact">
+    <section className="session-artifact asset-trace">
       <h3>{t('assetTrace')}</h3>
       {scenarios.map((item) => (
         <button

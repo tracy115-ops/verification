@@ -266,7 +266,7 @@
 .journey-view ol {
   padding-inline-start: 24px;
 }
-.journey-view li {
+.journey-view > ol > li {
   padding: 12px 0;
   border-block-end: 1px solid var(--wb-border);
 }

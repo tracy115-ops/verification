@@ -1,5 +1,7 @@
 export const designEditZh = {
   journeyTitle: '场景旅程',
+  journeyStrategy: '设计策略',
+  journeySupportingDetails: '场景说明与因子组合',
   journeyCollaborationHint: '补充包保留完整旅程；共享项目目前仅转换因子、场景和用例，暂不提供团队旅程编辑。',
   journeyEnable: '为此场景定义多步状态路径',
   journeyHint: '仅用于原文支持的多次调用；2–12 步。每一步声明状态、操作、可观测结果及原文依据。',
@@ -40,6 +42,8 @@ export const designEditZh = {
 };
 export const designEditEn = {
   journeyTitle: 'Scenario journey',
+  journeyStrategy: 'Design strategy',
+  journeySupportingDetails: 'Scenario details and factor levels',
   journeyCollaborationHint:
     'The bundle retains full journeys. Shared projects currently convert factors, scenarios and cases; team journey editing is not yet available.',
   journeyEnable: 'Define a multi-step state path for this scenario',
