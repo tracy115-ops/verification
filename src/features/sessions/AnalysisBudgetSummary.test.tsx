@@ -6,8 +6,39 @@ import { AnalysisBudgetSummary } from './AnalysisBudgetSummary';
 import { RunState } from './RunSummary';
 import { AnalysisRetryControls } from './AnalysisRetryControls';
 import type { Conversations } from '../../app/useConversations';
+import { designGroups } from '../../domain/runtime/analysis-plan';
+import type { RequirementArtifact } from '../../domain/runtime/types';
 vi.mock('../../services/agent-api', () => ({ hasDesktopBridge: () => true }));
 afterEach(cleanup);
+
+it('shows the refined plan and every remaining relationship after restoring a checkpoint', () => {
+  const run = fixtureRun();
+  const node = run.plan.find((item) => item.operation === 'scenarios.design')!;
+  const baseline: RequirementArtifact = {
+    requirements: Array.from({ length: 18 }, (_, i) => ({
+      id: `R${i}`,
+      text: 'a'.repeat(700),
+      quote: 'rule',
+      acceptanceCriteria: ['check'],
+    })),
+    questions: [],
+  };
+  const plan = designGroups(baseline);
+  run.artifacts.baseline = { type: 'RequirementBaseline', digest: 'a'.repeat(64), value: baseline };
+  run.steps[node.id].analysis = {
+    version: 1,
+    planVersion: 2,
+    signature: 'b'.repeat(64),
+    kind: 'design',
+    total: plan.length,
+    localTotal: plan.filter((item) => !item.cross).length,
+    completed: [],
+  };
+  render(<AnalysisBudgetSummary run={run} />);
+  expect(screen.getByText(/交叉检查已细分/)).toBeTruthy();
+  expect(screen.getByText(`已完成 0 / ${plan.length} 个计划批次`)).toBeTruthy();
+  expect(screen.getByText(`待调查关系 · ${plan.filter((item) => item.cross).length}`)).toBeTruthy();
+});
 
 it('does not display hypothetical pending batches while a single-call analysis runs or has failed', () => {
   const run = fixtureRun();

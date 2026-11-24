@@ -11,8 +11,9 @@ export async function analysisCheckpoint(
   total: number,
   localTotal: number,
   inputs: Record<string, unknown>,
+  planVersion?: 2,
 ) {
-  const signature = await digest({
+  const signatureInput = {
     version: 1,
     kind,
     spec: run.spec,
@@ -22,18 +23,37 @@ export async function analysisCheckpoint(
     clarifications: run.clarifications,
     exclusions: run.reviewExclusions,
     inputs,
-  });
-  const previous = run.steps[node.id].analysis;
-  if (previous && (previous.signature !== signature || previous.version !== 1 || previous.kind !== kind))
-    throw new Error('approval_stale');
-  const checkpoint: AnalysisCheckpoint = previous ?? {
-    version: 1,
-    signature,
-    kind,
-    total,
-    localTotal,
-    completed: [],
   };
+  const signature = await digest({ ...signatureInput, ...(planVersion ? { planVersion } : {}) });
+  const previous = run.steps[node.id].analysis;
+  const refining =
+    !!previous &&
+    planVersion === 2 &&
+    !previous.planVersion &&
+    kind === 'design' &&
+    previous.localTotal === localTotal &&
+    previous.total === (localTotal * (localTotal + 1)) / 2 &&
+    previous.completed.length === localTotal &&
+    previous.completed.every((item) => item.index < localTotal);
+  if (
+    previous &&
+    (previous.signature !== (refining ? await digest(signatureInput) : signature) ||
+      previous.version !== 1 ||
+      previous.kind !== kind ||
+      (!refining && previous.planVersion !== planVersion))
+  )
+    throw new Error('approval_stale');
+  const checkpoint: AnalysisCheckpoint = refining
+    ? { ...previous!, signature, planVersion, total }
+    : (previous ?? {
+        version: 1,
+        signature,
+        kind,
+        total,
+        localTotal,
+        completed: [],
+        ...(planVersion ? { planVersion } : {}),
+      });
   if (
     checkpoint.total !== total ||
     checkpoint.localTotal !== localTotal ||

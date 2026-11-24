@@ -15,16 +15,18 @@ export function AnalysisBudgetSummary({ run }: { run: WorkflowRun }) {
   if (!checkpoint && run.steps[node.id].turnId) return null;
   const completed = new Set(checkpoint?.completed.map((item) => item.index) ?? []);
   const number = (n: number) => new Intl.NumberFormat(locale).format(n);
-  let pending: { left: string[]; right: string[] }[] = [];
+  let pending: { left: string[]; right: string[]; batch: number }[] = [];
   let plannedTotal = checkpoint?.total ?? 0;
   // Display only a valid plan; imported/corrupt data must not crash the conversation.
   try {
     const baseline =
       latestArtifact(run, 'RequirementBaseline') ?? latestArtifact(run, 'RequirementBaselineDraft');
     if (isRequirements(baseline)) {
-      const groups = designGroups(baseline);
+      const groups = designGroups(baseline, checkpoint ? (checkpoint.planVersion ?? 1) : 2);
       if (!checkpoint) plannedTotal = groups.length;
-      pending = groups.filter((item, index) => item.cross && !completed.has(index));
+      pending = groups
+        .map((item, index) => ({ ...item, batch: index + 1 }))
+        .filter((item, index) => item.cross && !completed.has(index));
     }
   } catch {
     /* Existing runtime validation reports invalid plans. */
@@ -34,6 +36,7 @@ export function AnalysisBudgetSummary({ run }: { run: WorkflowRun }) {
     <section className="session-run-meta" aria-label={t('analysisBudgetTitle')}>
       <strong>{t('analysisBudgetTitle')}</strong>
       {!checkpoint && <p>{t('analysisBudgetEstimate')}</p>}
+      {checkpoint?.planVersion === 2 && <p>{t('analysisRefinedPlan')}</p>}
       <p>
         {t('analysisBudgetCounts')
           .replace('{completed}', number(completed.size))
@@ -51,7 +54,17 @@ export function AnalysisBudgetSummary({ run }: { run: WorkflowRun }) {
           <ul>
             {pending.map((item) => (
               <li key={item.left.join(',') + ':' + item.right.join(',')}>
-                {item.left.join(', ')} ↔ {item.right.join(', ')}
+                <details>
+                  <summary>
+                    {t('analysisRelationScope')
+                      .replace('{batch}', number(item.batch))
+                      .replace('{left}', number(item.left.length))
+                      .replace('{right}', number(item.right.length))}
+                  </summary>
+                  <p>
+                    {item.left.join(', ')} ↔ {item.right.join(', ')}
+                  </p>
+                </details>
               </li>
             ))}
           </ul>

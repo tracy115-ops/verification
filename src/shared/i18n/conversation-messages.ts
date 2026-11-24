@@ -111,6 +111,8 @@ export const conversationZh = {
   connectionFailed: '连通测试未通过',
   cli_test_reply_invalid: 'CLI 已结束，但未返回测试要求的有效回复。请核对当前实例、模型或协议兼容性。',
   analysisBudgetTitle: '设计分析预算',
+  analysisRelationScope: '批次 {batch} · {left} 条需求 ↔ {right} 条需求',
+  analysisRefinedPlan: '交叉检查已细分，每侧最多 4 条需求；按剩余批次继续。',
   analysisInitialBudget: '首次设计分析的批次预算',
   analysisInitialBudgetHint:
     '确认需求后使用此额度。仅限制每轮批次数，不是费用上限；剩余调查保留，可继续追加。',
@@ -455,6 +457,9 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
   cli_test_reply_invalid:
     'The CLI finished without the expected test reply. Check the selected instance, model, or protocol compatibility.',
   analysisBudgetTitle: 'Design analysis budget',
+  analysisRelationScope: 'Batch {batch} · {left} requirements ↔ {right} requirements',
+  analysisRefinedPlan:
+    'Cross checks use at most 4 requirements per side. Continue with the remaining batches.',
   analysisInitialBudget: 'Initial design analysis batch budget',
   analysisInitialBudgetHint:
     'Applied after confirming requirements. Limits batch calls per continuation, not fees. Remaining investigation is retained and can be continued.',

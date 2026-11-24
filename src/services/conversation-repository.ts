@@ -5,7 +5,14 @@ import { checkWorkflow } from '../domain/workflow';
 import type { ConversationSession } from '../domain/runtime/types';
 import { frameworkSchema } from '../domain/execution/schema';
 import { decodeFramework } from '../domain/execution/validation';
-import { caseSchema, requirementIncrementSchema, designIncrementSchema } from '../domain/runtime/artifacts';
+import {
+  caseSchema,
+  requirementIncrementSchema,
+  designIncrementSchema,
+  decodeRequirements,
+} from '../domain/runtime/artifacts';
+import { designGroups } from '../domain/runtime/analysis-plan';
+import type { WorkflowRun, AnalysisCheckpoint } from '../domain/runtime/types';
 import { composerDraftSchema } from '../domain/runtime/composer-draft';
 import { isDesignProposal } from '../domain/runtime/design-proposal-schema';
 import { candidateReviewEvents } from '../domain/runtime/candidate-review';
@@ -13,6 +20,23 @@ import { reproductionSource } from '../domain/runtime/reproduction-source';
 
 export const CONVERSATIONS_KEY = 'verification-workbench.conversations.v1';
 export const MAX_RUNS_PER_SESSION = 50;
+function validAnalysisPlanSize(run: WorkflowRun, checkpoint: AnalysisCheckpoint) {
+  if (checkpoint.kind === 'requirements')
+    return checkpoint.planVersion === undefined && checkpoint.localTotal === checkpoint.total;
+  if (checkpoint.localTotal > 32) return false;
+  if (!checkpoint.planVersion)
+    return checkpoint.total === (checkpoint.localTotal * (checkpoint.localTotal + 1)) / 2;
+  try {
+    const value = Object.values(run.artifacts).find((item) => item.type === 'RequirementBaseline')?.value;
+    const groups = designGroups(decodeRequirements(value, run.spec), 2);
+    return (
+      groups.length === checkpoint.total &&
+      groups.filter((group) => !group.cross).length === checkpoint.localTotal
+    );
+  } catch {
+    return false;
+  }
+}
 const string = { type: 'string' };
 const optionalStrings = { errorCode: string, nativeSessionId: string };
 const step = {
@@ -32,6 +56,7 @@ const step = {
       required: ['version', 'signature', 'kind', 'total', 'localTotal', 'completed'],
       properties: {
         version: { const: 1 },
+        planVersion: { const: 2 },
         signature: { type: 'string', pattern: '^[a-f0-9]{64}$' },
         kind: { enum: ['requirements', 'design'] },
         total: { type: 'integer', minimum: 1, maximum: 600 },
@@ -323,10 +348,7 @@ export function decodeConversations(value: unknown): ConversationSession[] {
           checkpoint.localTotal > checkpoint.total ||
           new Set(indexes).size !== indexes.length ||
           indexes.some((index) => index >= checkpoint.total) ||
-          (checkpoint.kind === 'requirements'
-            ? checkpoint.localTotal !== checkpoint.total
-            : checkpoint.localTotal > 32 ||
-              checkpoint.total !== (checkpoint.localTotal * (checkpoint.localTotal + 1)) / 2) ||
+          !validAnalysisPlanSize(run, checkpoint) ||
           (checkpoint.rejected &&
             (checkpoint.kind !== 'requirements' ||
               checkpoint.rejected.index >= checkpoint.total ||

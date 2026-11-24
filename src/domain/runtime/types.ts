@@ -55,6 +55,7 @@ export interface StepState {
 
 export interface AnalysisCheckpoint {
   version: 1;
+  planVersion?: 2;
   signature: string;
   kind: 'requirements' | 'design';
   total: number;

@@ -96,6 +96,41 @@ function runForSpec() {
   const doc = savedDocument();
   return createRun(doc, crypto.randomUUID(), largeSpec, doc.profiles, 'codeagent-native');
 }
+
+it('restores a refined cross plan and resumes only its pending checks after a budget pause', async () => {
+  let run = await advance(runForSpec(), testPort().port);
+  const review = run.plan.find((node) => run.steps[node.id].status === 'awaiting_review')!;
+  run = await approveRun(run, review.id, run.steps[review.id].reviewDigest!, 2);
+  const baseline = latestArtifact(run, 'RequirementBaseline') as RequirementArtifact;
+  for (const item of baseline.requirements) item.text += 'a'.repeat(1100);
+  const plan = designGroups(baseline);
+  expect(plan.filter((group) => !group.cross)).toHaveLength(2);
+  expect(plan.length).toBeGreaterThan(3);
+  run = await advance(run, testPort().port);
+  expect(run.errorCode).toBe('analysis_budget_paused');
+  const node = run.plan.find((node) => node.operation === 'scenarios.design')!;
+  expect(run.steps[node.id].analysis!.planVersion).toBe(2);
+  const saved = structuredClone(run.steps[node.id].analysis!.completed);
+  const session = {
+    id: run.sessionId,
+    title: 'Refined plan',
+    profileId: 'codeagent-native',
+    messages: [],
+    runs: [run],
+  };
+  const corrupt = structuredClone(session);
+  corrupt.runs[0].steps[node.id].analysis!.total++;
+  expect(() => decodeConversations([corrupt])).toThrow('session_storage_invalid');
+  const restored = decodeConversations(JSON.parse(JSON.stringify([session])))[0].runs[0];
+  const fixture = testPort();
+  const done = await advance(retryRun(restored, false, undefined, 64), fixture.port);
+  expect(done.status).toBe('awaiting_review');
+  expect(fixture.requests.map((request) => JSON.parse(request.prompt).analysisBatch.index)).toEqual(
+    Array.from({ length: plan.length - 2 }, (_, index) => index + 3),
+  );
+  expect(done.steps[node.id].analysis!.completed.slice(0, 2)).toEqual(saved);
+});
+
 function testPort(failAt = -1, invalidQuoteAt = -1) {
   const requests: TurnRequest[] = [];
   const port: AgentPort = {

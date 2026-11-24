@@ -48,9 +48,15 @@ export function requirementGroups(baseline: RequirementArtifact) {
   return groups;
 }
 
-export function designGroups(baseline: RequirementArtifact) {
+export function designGroups(baseline: RequirementArtifact, planVersion: 1 | 2 = 2) {
   const groups = requirementGroups(baseline);
-  return [
+  const chunks = (items: RequirementArtifact['requirements']) =>
+    planVersion === 1
+      ? [items]
+      : Array.from({ length: Math.ceil(items.length / 4) }, (_, index) =>
+          items.slice(index * 4, index * 4 + 4),
+        );
+  const plan = [
     ...groups.map((requirements) => ({
       requirements,
       cross: false,
@@ -58,12 +64,18 @@ export function designGroups(baseline: RequirementArtifact) {
       right: [] as string[],
     })),
     ...groups.flatMap((left, index) =>
-      groups.slice(index + 1).map((right) => ({
-        requirements: [...left, ...right],
-        cross: true,
-        left: left.map((item) => item.id),
-        right: right.map((item) => item.id),
-      })),
+      groups.slice(index + 1).flatMap((right) =>
+        chunks(left).flatMap((leftPart) =>
+          chunks(right).map((rightPart) => ({
+            requirements: [...leftPart, ...rightPart],
+            cross: true,
+            left: leftPart.map((item) => item.id),
+            right: rightPart.map((item) => item.id),
+          })),
+        ),
+      ),
     ),
   ];
+  if (plan.length > 600) throw new Error('analysis_plan_limit');
+  return plan;
 }

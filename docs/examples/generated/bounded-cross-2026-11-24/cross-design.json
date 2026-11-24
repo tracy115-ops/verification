@@ -1,0 +1,369 @@
+{
+  "index": 2,
+  "value": {
+    "strategy": "跨组交叉评审（第3/6批）：左侧（fixture、创建成功、创建拒绝、幂等重放）×右侧（paid 重放、cancelled 拒绝、跨身份403、并发双支付）。仅输出跨组因子与场景：拒绝后状态保持×支付可用性、幂等键 (身份,requestId) 作用域×支付权限、库存边界消耗×并发支付守恒、paid 后同键改量重放×重复支付、混合身份并发支付的许可边界；最多附两条高风险 journey。每个场景均引用两侧需求并给出可观察守恒关系；不生成用例或脚本，不声称执行或完整覆盖。pay-cancelled-rejected 因取消成功路径未定义无法构造跨组场景，同键同量重放在订单已 paid 后的返回 state 存在规格歧义，均记入 gaps，不虚构预期。",
+    "scenarios": [
+      {
+        "id": "D3-X1-Seq-Reject-Replay-Pay",
+        "title": "跨身份403、非法与冲突创建拒绝之后的幂等重放与所属身份支付序列",
+        "requirementIds": [
+          "fixture-initial-state",
+          "order-create-success",
+          "order-reject-no-state-change",
+          "idempotent-replay-same-identity",
+          "cross-identity-pay-cancel-forbidden",
+          "concurrent-double-pay"
+        ],
+        "dimension": "transition-sequence：跨组操作序列中每次拒绝后的状态保持与后续支付可用性",
+        "expected": "A 创建 quantity=2（requestId=r1）返回 201 且 available 由 4 变 2；B 对该订单 pay(ok) 返回 403、A 以新键 r2 请求 quantity=5 返回 400、A 以 r1 改 quantity=3 重放返回 409，三步后 available 仍为 2、双钱包仍 balance=100/charges=0、原订单仍 reserved；A 以 r1+quantity=2 重放返回 200 与原 reserved 订单且 available 不再减少；随后 A pay(ok) 返回 200，订单变 paid，A balance 只减少一次 2*10（100→80）、charges 只增加一次（=1），available 保持 2。",
+        "factorLevels": [
+          {
+            "factorId": "D3-F-Baseline",
+            "level": "available=4；双身份各 balance=100、charges=0；无订单或幂等记录"
+          },
+          {
+            "factorId": "D3-F-IdemScope",
+            "level": "同一身份相同键相同 quantity 重放"
+          },
+          {
+            "factorId": "D3-F-IdemScope",
+            "level": "同一身份相同键不同 quantity 重放"
+          },
+          {
+            "factorId": "D3-F-PermTiming",
+            "level": "403 作用于 reserved 订单（支付成功前）"
+          },
+          {
+            "factorId": "D3-F-InvBoundary",
+            "level": "quantity=2 部分消耗库存后支付（支付不改库存）"
+          },
+          {
+            "factorId": "D3-F-PrePayReject",
+            "level": "支付前发生 400 非法参数拒绝"
+          }
+        ],
+        "journey": {
+          "version": 1,
+          "initialState": "独立初始状态：库存 available=4；身份A、B 各 balance=100、charges=0；无订单或幂等记录",
+          "preconditions": [
+            "框架在每个测试方法开始时恢复该独立初始状态",
+            "身份 A 为后续创建订单的所属身份，身份 B 为另一身份"
+          ],
+          "steps": [
+            {
+              "id": "j1s1",
+              "fromState": "独立初始状态：库存 available=4；身份A、B 各 balance=100、charges=0；无订单或幂等记录",
+              "action": "A 调用 POST /orders，body {quantity:2, requestId:r1}",
+              "toState": "订单O1 reserved；available=2",
+              "observation": "返回 201 与 {id,owner:A,quantity:2,state:\"reserved\"}；GET /inventory 的 available 由 4 变为 2",
+              "requirementId": "order-create-success",
+              "sourceQuote": "首次成功返回 201，JSON 为 `{id,owner,quantity,state:\"reserved\"}`；id 是运行时生成的不透明值。库存减少 quantity。"
+            },
+            {
+              "id": "j1s2",
+              "fromState": "订单O1 reserved；available=2",
+              "action": "B 对订单O1 调用 pay（paymentToken=ok）",
+              "toState": "订单O1 reserved；available=2",
+              "observation": "返回 403；GET /inventory 仍为 2，A 与 B 的 balance、charges 均不变",
+              "requirementId": "cross-identity-pay-cancel-forbidden",
+              "sourceQuote": "已存在订单的非所属身份进行 pay/cancel 返回 403 且不改变状态"
+            },
+            {
+              "id": "j1s3",
+              "fromState": "订单O1 reserved；available=2",
+              "action": "A 调用 POST /orders，body {quantity:5, requestId:r2}",
+              "toState": "订单O1 reserved；available=2",
+              "observation": "返回 400；available 仍为 2，订单O1 状态不变",
+              "requirementId": "order-reject-no-state-change",
+              "sourceQuote": "非法参数返回 400，不改变任何状态"
+            },
+            {
+              "id": "j1s4",
+              "fromState": "订单O1 reserved；available=2",
+              "action": "A 调用 POST /orders，body {quantity:3, requestId:r1}",
+              "toState": "订单O1 reserved；available=2",
+              "observation": "返回 409；订单O1 字段不变（quantity=2、state=reserved），available 仍为 2",
+              "requirementId": "idempotent-replay-same-identity",
+              "sourceQuote": "改变 quantity 返回 409，订单和库存不变"
+            },
+            {
+              "id": "j1s5",
+              "fromState": "订单O1 reserved；available=2",
+              "action": "A 调用 POST /orders，body {quantity:2, requestId:r1}",
+              "toState": "订单O1 reserved；available=2",
+              "observation": "返回 200 与原订单O1（id、owner、quantity、state 与首次创建一致）；available 仍为 2，未再次占用库存",
+              "requirementId": "idempotent-replay-same-identity",
+              "sourceQuote": "同一身份以相同键和相同 quantity 重放返回 200 和原订单，不再次占用库存"
+            },
+            {
+              "id": "j1s6",
+              "fromState": "订单O1 reserved；available=2",
+              "action": "A 对订单O1 调用 pay（paymentToken=ok）",
+              "toState": "订单O1 paid；A balance=80、charges=1；available=2",
+              "observation": "返回 200；GET /wallet(A) 的 balance 由 100 变为 80（只减少一次 2*10）、charges 由 0 变为 1；available 仍为 2",
+              "requirementId": "concurrent-double-pay",
+              "sourceQuote": "余额只减少一次 quantity*10、charges 只增加一次、库存不额外减少"
+            }
+          ]
+        }
+      },
+      {
+        "id": "D3-X2-KeyScope-CrossIdentity-Pay",
+        "title": "相同 requestId 跨身份的幂等键独立作用域与各自支付权限边界",
+        "requirementIds": [
+          "fixture-initial-state",
+          "order-create-success",
+          "idempotent-replay-same-identity",
+          "cross-identity-pay-cancel-forbidden",
+          "concurrent-double-pay"
+        ],
+        "dimension": "relational-oracle：幂等键 (身份,requestId) 作用域 × 支付权限的跨组对照",
+        "expected": "A 以 requestId=R 创建 quantity=2 返回 201（available 4→2）；B 以相同 R 创建 quantity=2 返回 201 且 owner=B、available 2→0（键 (A,R) 与 (B,R) 相互独立，各自按首次创建处理）；B 对自己订单 pay(ok) 返回 200 变 paid，B balance 100→80、charges=1；B 对 A 的订单 pay(ok) 返回 403，A 订单仍 reserved、A wallet balance=100/charges=0、available=0 均不变。",
+        "factorLevels": [
+          {
+            "factorId": "D3-F-Baseline",
+            "level": "available=4；双身份各 balance=100、charges=0；无订单或幂等记录"
+          },
+          {
+            "factorId": "D3-F-IdemScope",
+            "level": "不同身份使用相同 requestId（键相互独立）"
+          },
+          {
+            "factorId": "D3-F-PermTiming",
+            "level": "403 作用于 reserved 订单（支付成功前）"
+          },
+          {
+            "factorId": "D3-F-InvBoundary",
+            "level": "quantity=2 部分消耗库存后支付（支付不改库存）"
+          },
+          {
+            "factorId": "D3-F-PrePayReject",
+            "level": "支付前无创建拒绝"
+          }
+        ]
+      },
+      {
+        "id": "D3-X3-Boundary-FullDraw-ConcurrentPay",
+        "title": "quantity=4 耗尽库存边界下的创建拒绝、跨身份403与并发双支付守恒",
+        "requirementIds": [
+          "fixture-initial-state",
+          "order-create-success",
+          "order-reject-no-state-change",
+          "cross-identity-pay-cancel-forbidden",
+          "concurrent-double-pay"
+        ],
+        "dimension": "conservation + concurrent-history：库存全部消耗后的并发支付资源守恒",
+        "expected": "A 创建 quantity=4 返回 201 且 available 由 4 变 0；随后 A 创建 quantity=1 返回 409（库存不足）且订单与库存不变；B 对该订单 pay(ok) 返回 403 且状态不变；A 通过 parallel 对同一 reserved 订单同时发出两个 ok 支付，两个响应均 200，订单最终 paid，A balance 只减少一次 4*10（100→60）、charges 只增加一次（=1），available 保持 0，不额外减少也不为负。",
+        "factorLevels": [
+          {
+            "factorId": "D3-F-Baseline",
+            "level": "available=4；双身份各 balance=100、charges=0；无订单或幂等记录"
+          },
+          {
+            "factorId": "D3-F-PermTiming",
+            "level": "403 作用于 reserved 订单（支付成功前）"
+          },
+          {
+            "factorId": "D3-F-InvBoundary",
+            "level": "quantity=4 一次耗尽 available=4→0 后支付"
+          },
+          {
+            "factorId": "D3-F-PrePayReject",
+            "level": "支付前发生 409 库存不足拒绝"
+          }
+        ],
+        "journey": {
+          "version": 1,
+          "initialState": "独立初始状态：库存 available=4；身份A、B 各 balance=100、charges=0；无订单或幂等记录",
+          "preconditions": [
+            "框架在每个测试方法开始时恢复该独立初始状态",
+            "身份 A 为后续创建订单的所属身份，身份 B 为另一身份"
+          ],
+          "steps": [
+            {
+              "id": "j2s1",
+              "fromState": "独立初始状态：库存 available=4；身份A、B 各 balance=100、charges=0；无订单或幂等记录",
+              "action": "A 调用 POST /orders，body {quantity:4, requestId:r9}",
+              "toState": "订单O2 reserved；available=0",
+              "observation": "返回 201 与 {id,owner:A,quantity:4,state:\"reserved\"}；available 由 4 变为 0",
+              "requirementId": "order-create-success",
+              "sourceQuote": "quantity 为 1–4 的整数，requestId 为非空字符串。首次成功返回 201"
+            },
+            {
+              "id": "j2s2",
+              "fromState": "订单O2 reserved；available=0",
+              "action": "A 调用 POST /orders，body {quantity:1, requestId:r10}",
+              "toState": "订单O2 reserved；available=0",
+              "observation": "返回 409（库存不足）；available 仍为 0，订单O2 不变",
+              "requirementId": "order-reject-no-state-change",
+              "sourceQuote": "库存不足返回 409，不改变任何状态"
+            },
+            {
+              "id": "j2s3",
+              "fromState": "订单O2 reserved；available=0",
+              "action": "B 对订单O2 调用 pay（paymentToken=ok）",
+              "toState": "订单O2 reserved；available=0",
+              "observation": "返回 403；available 仍为 0，A、B 钱包均不变",
+              "requirementId": "cross-identity-pay-cancel-forbidden",
+              "sourceQuote": "已存在订单的非所属身份进行 pay/cancel 返回 403 且不改变状态"
+            },
+            {
+              "id": "j2s4",
+              "fromState": "订单O2 reserved；available=0",
+              "action": "通过框架 parallel 由 A 对订单O2 同时发出两个 pay（paymentToken=ok）",
+              "toState": "订单O2 paid；A balance=60、charges=1；available=0",
+              "observation": "两个响应均返回 200；最终订单 state 为 paid；A balance 由 100 变为 60（只减少一次 4*10）、charges 只增加一次",
+              "requirementId": "concurrent-double-pay",
+              "sourceQuote": "对同一个 reserved 订单同时发出两个 ok 支付，两次都应返回 200"
+            },
+            {
+              "id": "j2s5",
+              "fromState": "订单O2 paid；A balance=60、charges=1；available=0",
+              "action": "GET /inventory 与 GET /wallet(A) 复核守恒",
+              "toState": "订单O2 paid；A balance=60、charges=1；available=0",
+              "observation": "available=0；balance=60、charges=1，相对初始 100/0 仅一次 quantity*10 扣减与一次 charges 增加",
+              "requirementId": "fixture-initial-state",
+              "sourceQuote": "库存 available=4；两个身份各有 balance=100、charges=0；没有订单或幂等记录"
+            }
+          ]
+        }
+      },
+      {
+        "id": "D3-X4-Paid-ConflictReplay-RepeatPay",
+        "title": "订单演进为 paid 后的同键改量重放 409、跨身份403与重复支付守恒",
+        "requirementIds": [
+          "fixture-initial-state",
+          "order-create-success",
+          "idempotent-replay-same-identity",
+          "pay-paid-replay",
+          "cross-identity-pay-cancel-forbidden",
+          "concurrent-double-pay"
+        ],
+        "dimension": "replay-and-scope：支付终态后的幂等键冲突重放与重复支付守恒",
+        "expected": "A 创建 quantity=2 并以 ok 支付至 paid（balance 100→80、charges=1、available 4→2）；A 以相同 requestId 改 quantity=3 重放返回 409，订单（仍 paid）与库存均不变；B 对该已 paid 订单 pay(ok) 返回 403，A、B 钱包与库存均不变；A 再次以 ok 支付返回 200 与同一订单，balance 仍为 80、charges 仍为 1，无重复扣款或 charges 增加。",
+        "factorLevels": [
+          {
+            "factorId": "D3-F-Baseline",
+            "level": "available=4；双身份各 balance=100、charges=0；无订单或幂等记录"
+          },
+          {
+            "factorId": "D3-F-IdemScope",
+            "level": "同一身份相同键不同 quantity 重放"
+          },
+          {
+            "factorId": "D3-F-PermTiming",
+            "level": "403 作用于已 paid 订单"
+          },
+          {
+            "factorId": "D3-F-PrePayReject",
+            "level": "支付前无创建拒绝"
+          }
+        ]
+      },
+      {
+        "id": "D3-X5-MixedIdentity-ConcurrentPay",
+        "title": "所属身份与另一身份同时对同一 reserved 订单支付：200 与 403 混合并发历史",
+        "requirementIds": [
+          "fixture-initial-state",
+          "order-create-success",
+          "cross-identity-pay-cancel-forbidden",
+          "concurrent-double-pay"
+        ],
+        "dimension": "concurrent-history：并发到达的许可边界与最终状态守恒",
+        "expected": "A 创建 quantity=2（available 4→2）；通过框架 parallel 由 A 与 B 同时对该 reserved 订单各发出一个 ok 支付：A 的响应返回 200，B 的响应返回 403；订单最终为 paid，A balance 只减少一次 2*10（100→80）、charges 只增加一次（=1），B balance=100、charges=0 不变，available 保持 2。保留每个体的响应结果与最终状态作为并发历史断言。",
+        "factorLevels": [
+          {
+            "factorId": "D3-F-Baseline",
+            "level": "available=4；双身份各 balance=100、charges=0；无订单或幂等记录"
+          },
+          {
+            "factorId": "D3-F-PermTiming",
+            "level": "非所属 403 与所属 ok 支付并发到达"
+          },
+          {
+            "factorId": "D3-F-InvBoundary",
+            "level": "quantity=2 部分消耗库存后支付（支付不改库存）"
+          },
+          {
+            "factorId": "D3-F-PrePayReject",
+            "level": "支付前无创建拒绝"
+          }
+        ]
+      }
+    ],
+    "gaps": [
+      "取消成功路径未定义：已确认需求未说明如何使订单进入 cancelled 状态（所属身份 cancel 的请求、响应与状态变更均缺失），因此 pay-cancelled-rejected 与左侧组（创建拒绝后状态保持、幂等重放、库存/钱包守恒）的跨组场景无法构造，本轮未生成相关场景，仅记录该范围缺口。",
+      "幂等重放在订单状态演进后的返回 state 存在歧义：idempotent-replay-same-identity 要求同键同 quantity 重放返回 200 与原订单且“state 与首次创建结果一致”，但若该订单已通过支付演进为 paid（pay-paid-replay 与 concurrent-double-pay 支持的路径），同键同 quantity 重放应返回当前 state（paid）还是首次创建时的 reserved 未定义；该跨组组合缺少可断言预期，不纳入场景，仅记录为范围疑问。"
+    ],
+    "factors": [
+      {
+        "id": "D3-F-Baseline",
+        "name": "支付类跨组场景的独立初始状态基线（固定前置）",
+        "requirementIds": [
+          "fixture-initial-state",
+          "concurrent-double-pay"
+        ],
+        "levels": [
+          "available=4；双身份各 balance=100、charges=0；无订单或幂等记录"
+        ],
+        "sourceQuote": "库存 available=4；两个身份各有 balance=100、charges=0；没有订单或幂等记录"
+      },
+      {
+        "id": "D3-F-IdemScope",
+        "name": "幂等键 (身份,requestId) 作用域与跨身份请求键的组合",
+        "requirementIds": [
+          "idempotent-replay-same-identity",
+          "cross-identity-pay-cancel-forbidden"
+        ],
+        "levels": [
+          "同一身份相同键相同 quantity 重放",
+          "同一身份相同键不同 quantity 重放",
+          "不同身份使用相同 requestId（键相互独立）"
+        ],
+        "sourceQuote": "幂等键是 `(身份,requestId)`：同一身份以相同键和相同 quantity 重放返回 200 和原订单，不再次占用库存"
+      },
+      {
+        "id": "D3-F-PermTiming",
+        "name": "跨身份 403 拒绝相对支付生命周期与并发时序的位置",
+        "requirementIds": [
+          "cross-identity-pay-cancel-forbidden",
+          "concurrent-double-pay"
+        ],
+        "levels": [
+          "403 作用于 reserved 订单（支付成功前）",
+          "403 作用于已 paid 订单",
+          "非所属 403 与所属 ok 支付并发到达"
+        ],
+        "sourceQuote": "已存在订单的非所属身份进行 pay/cancel 返回 403 且不改变状态"
+      },
+      {
+        "id": "D3-F-InvBoundary",
+        "name": "创建消耗库存的边界与支付过程的库存守恒",
+        "requirementIds": [
+          "order-create-success",
+          "concurrent-double-pay"
+        ],
+        "levels": [
+          "quantity=4 一次耗尽 available=4→0 后支付",
+          "quantity=2 部分消耗库存后支付（支付不改库存）"
+        ],
+        "sourceQuote": "库存减少 quantity"
+      },
+      {
+        "id": "D3-F-PrePayReject",
+        "name": "支付前的创建拒绝（不改变状态）对支付基线的影响",
+        "requirementIds": [
+          "order-reject-no-state-change",
+          "concurrent-double-pay"
+        ],
+        "levels": [
+          "支付前发生 400 非法参数拒绝",
+          "支付前发生 409 库存不足拒绝",
+          "支付前无创建拒绝"
+        ],
+        "sourceQuote": "库存不足返回 409，不改变任何状态；非法参数返回 400，不改变任何状态"
+      }
+    ]
+  },
+  "digest": "7f7f5e8bf037e8e6c651fadb7a52c5f7f4ad8237b0238e6294ee5eb30ce5ee3c"
+}

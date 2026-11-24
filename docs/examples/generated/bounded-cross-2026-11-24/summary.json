@@ -1,0 +1,26 @@
+{
+  "driver": "claude",
+  "cliVersion": "2.1.330",
+  "model": "glm-5.3-flash",
+  "source": "production engine continuation from two real saved batches; native CLI; no model output substitution",
+  "sourceSha256": "c2b5db62572db2726e52d8224c7afe97158e81c962163dd55963de861ed77d26",
+  "status": "interrupted",
+  "errorCode": "analysis_budget_paused",
+  "planVersion": 2,
+  "priorDigestsUnchanged": true,
+  "priorBatchDigests": [
+    "57f140915fe7986827a49ba7f90cb3f578f139dac533ecc9d02c77765234d6dc",
+    "1293508c789da4ab8b814778ab7b621c4a3528ebbd7fc87d89dcd2e3dff9bfc6"
+  ],
+  "saved": 3,
+  "total": 6,
+  "promptBytes": 15347,
+  "elapsedMs": 519563,
+  "stdoutBytes": 16685657,
+  "publicTextBytes": 17060,
+  "terminal": true,
+  "eventTrace": "stream.message_delta:stream.message_stop:result",
+  "newScenarios": 5,
+  "newFactors": 5,
+  "newJourneys": 2
+}

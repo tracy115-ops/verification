@@ -35,7 +35,15 @@ export async function generateDesignBatches(
 ): Promise<DesignArtifact> {
   const { run, node, profile, onUpdate } = context;
   const baseline = decodeRequirements(latestArtifact(run, 'RequirementBaseline'), run.spec);
-  const groups = designGroups(baseline);
+  const previous = run.steps[node.id].analysis;
+  const planVersion =
+    !previous ||
+    previous.planVersion === 2 ||
+    (previous.completed.length === previous.localTotal &&
+      previous.completed.every((item) => item.index < previous.localTotal))
+      ? 2
+      : 1;
+  const groups = designGroups(baseline, planVersion);
   const checkpoint = await analysisCheckpoint(
     run,
     node,
@@ -44,6 +52,7 @@ export async function generateDesignBatches(
     groups.length,
     requirementGroups(baseline).length,
     inputs,
+    planVersion === 2 ? 2 : undefined,
   );
   for (const saved of checkpoint.completed) validateBatch(saved.value, baseline, groups[saved.index]);
   const inputKey = Object.keys(node.inputs).find((key) => node.inputs[key].type === 'RequirementBaseline');
