@@ -22,6 +22,29 @@ impl Fixture {
 }
 
 #[tokio::test]
+async fn incompatible_executable_reports_installation_failure_before_inference() {
+    let fixture = Fixture::new();
+    let executable = fixture.0.join("claude.exe");
+    fs::write(&executable, b"invalid executable fixture").unwrap();
+    let request = serde_json::from_value(serde_json::json!({
+        "turnId":"12345678-1234-1234-1234-123456789abc",
+        "sessionId":"12345678-1234-1234-1234-123456789abc",
+        "driver":"claude", "model":"fixture-model", "prompt":"hello", "timeoutSeconds":5,
+        "launch":{"executablePath":executable}
+    }))
+    .unwrap();
+    let (_sender, receiver) = tokio::sync::oneshot::channel();
+    let outcome =
+        crate::conversation::run_turn_in_paths(request, &fixture.0, receiver, |_| true, &[]).await;
+    assert_eq!(outcome.status, "failed");
+    assert_eq!(
+        outcome.error_code.as_deref(),
+        Some("cli_executable_incompatible")
+    );
+    assert!(outcome.text.is_empty());
+}
+
+#[tokio::test]
 async fn headless_codeagent_skips_the_project_trust_prompt_and_finishes_a_real_batch_turn() {
     let fixture = Fixture::new();
     let node = crate::search_paths::driver_search_paths()

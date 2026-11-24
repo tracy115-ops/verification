@@ -377,7 +377,7 @@ pub(crate) async fn run_turn_in_paths(
     command.process_group(0);
     match command.spawn() {
         Ok(child) => supervise(child, &request, cancel, sink).await,
-        Err(_) => TurnOutcome::failed("cli_failed"),
+        Err(error) => TurnOutcome::failed(crate::failure::spawn_error(&error)),
     }
 }
 #[cfg(test)]

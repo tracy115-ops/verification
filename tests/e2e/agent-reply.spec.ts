@@ -59,6 +59,8 @@ test('shows pending and streamed Agent replies beside an existing task', async (
             return new Promise((resolve) =>
               Object.assign(globalThis, {
                 replyFixture: {
+                  fail: (errorCode: string) =>
+                    resolve({ status: 'failed', text: '', errorCode, nativeSessionId: null }),
                   emit: (text: string) => args.onEvent.onmessage({ type: 'text', text }),
                   progress: () =>
                     args.onEvent.onmessage({
@@ -119,4 +121,20 @@ test('shows pending and streamed Agent replies beside an existing task', async (
   await expect(
     page.locator('.session-message-text').filter({ hasText: '你好，已收到你的消息。' }),
   ).toHaveCount(1);
+  for (const [code, message] of [
+    ['cli_executable_incompatible', 'CLI 可执行文件与当前系统不兼容或已损坏'],
+    ['cli_launch_not_found', 'CLI 启动文件或依赖已不存在'],
+    ['cli_launch_denied', '系统拒绝启动 CLI'],
+  ]) {
+    await page.locator('.session-composer textarea').fill('检查启动');
+    await page.getByRole('button', { name: '发送消息', exact: true }).click();
+    await expect(pending).toHaveCount(1);
+    await page.evaluate(
+      (code) =>
+        (globalThis as unknown as { replyFixture: { fail: (code: string) => void } }).replyFixture.fail(code),
+      code,
+    );
+    await expect(pending).toHaveCount(0);
+    await expect(page.locator('.session-chat-failure').last()).toContainText(message);
+  }
 });

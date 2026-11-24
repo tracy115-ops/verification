@@ -1,3 +1,20 @@
+/// Classify spawn failures without exposing native paths or OS messages.
+pub fn spawn_error(error: &std::io::Error) -> &'static str {
+    #[cfg(windows)]
+    if matches!(error.raw_os_error(), Some(193 | 216)) {
+        return "cli_executable_incompatible";
+    }
+    #[cfg(unix)]
+    if error.raw_os_error() == Some(8) {
+        return "cli_executable_incompatible";
+    }
+    match error.kind() {
+        std::io::ErrorKind::NotFound => "cli_launch_not_found",
+        std::io::ErrorKind::PermissionDenied => "cli_launch_denied",
+        _ => "cli_failed",
+    }
+}
+
 /// Only return stable classifications. Native messages may contain credentials or URLs.
 pub fn classify(message: &str) -> Option<&'static str> {
     let text = message.to_ascii_lowercase();
@@ -64,6 +81,35 @@ pub fn classify(message: &str) -> Option<&'static str> {
 #[cfg(test)]
 mod tests {
     use super::classify;
+
+    #[test]
+    fn spawn_failures_expose_stable_codes_without_native_details() {
+        use std::io::{Error, ErrorKind};
+        assert_eq!(
+            super::spawn_error(&Error::new(ErrorKind::NotFound, "private path")),
+            "cli_launch_not_found"
+        );
+        assert_eq!(
+            super::spawn_error(&Error::new(ErrorKind::PermissionDenied, "private policy")),
+            "cli_launch_denied"
+        );
+        assert_eq!(
+            super::spawn_error(&Error::other("private details")),
+            "cli_failed"
+        );
+        #[cfg(windows)]
+        for code in [193, 216] {
+            assert_eq!(
+                super::spawn_error(&Error::from_raw_os_error(code)),
+                "cli_executable_incompatible"
+            );
+        }
+        #[cfg(unix)]
+        assert_eq!(
+            super::spawn_error(&Error::from_raw_os_error(8)),
+            "cli_executable_incompatible"
+        );
+    }
 
     #[test]
     fn native_errors_are_classified_without_exposing_the_message() {

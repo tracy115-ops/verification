@@ -149,6 +149,10 @@ export const conversationZh = {
   saveCliInstance: '保存实例绑定',
   cliInstanceUnchecked: '指定实例，尚未验证调用',
   cli_path_invalid: '指定的 CLI 启动路径无效，请在 Agent 设置中核对文件。',
+  cli_executable_incompatible:
+    'CLI 可执行文件与当前系统不兼容或已损坏。请在终端检查该实例，安装匹配系统架构的版本后重新扫描。',
+  cli_launch_not_found: 'CLI 启动文件或依赖已不存在，请在设置中重新扫描并选择可用实例。',
+  cli_launch_denied: '系统拒绝启动 CLI，请检查文件执行权限和系统安全策略。',
   cli_config_invalid: '指定的 CLI 配置目录无效，请在 Agent 设置中核对目录。',
   nativeModelsHint: 'CodeAgent 使用内部模型配置；其他 CLI 在此指定模型 ID。保存配置不代表已验证推理。',
   codeagentManagedModel: '模型由 CodeAgent 内部管理，无需单独配置。',
@@ -493,6 +497,12 @@ export const conversationEn: Record<keyof typeof conversationZh, string> = {
   saveCliInstance: 'Save instance binding',
   cliInstanceUnchecked: 'Explicit instance; inference unchecked',
   cli_path_invalid: 'The configured CLI launcher path is invalid. Check the file in Agent settings.',
+  cli_executable_incompatible:
+    'The CLI executable is incompatible with this system or damaged. Check this instance in a terminal, install a build matching your system architecture, then rescan.',
+  cli_launch_not_found:
+    'The CLI launcher or a required dependency is missing. Rescan and select an available instance in settings.',
+  cli_launch_denied:
+    'The system denied launching the CLI. Check file execution permissions and system security policies.',
   cli_config_invalid: 'The configured CLI configuration directory is invalid. Check Agent settings.',
   nativeModelsHint:
     'CodeAgent uses its internal model configuration. Set model IDs for the other CLIs here. Saving does not certify inference.',
