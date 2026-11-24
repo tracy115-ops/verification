@@ -323,6 +323,8 @@ describe('bounded design analysis', () => {
     expect(JSON.parse(second.requests[0].prompt).analysisBatch.phase).toBe('cross-review');
     expect(JSON.parse(second.requests[0].prompt).sourceSpec).toBeUndefined();
     expect(JSON.parse(second.requests[0].prompt).sourceTextField).toContain('requirements[].quote');
+    expect(JSON.parse(second.requests[0].prompt).deepTestingGuidance).toBeUndefined();
+    expect(JSON.parse(second.requests[0].prompt).instruction).toContain('Each scenario must cite both sides');
     expect(decodeDesign(latestArtifact(done, 'TestDesignDraft'), baseline).scenarios).toHaveLength(8);
     expect((await advance(retryRun(failed), crossPort(false).port)).errorCode).toBe('artifact_invalid');
     const linked = await advance(retryRun(failed), crossPort(true).port);
