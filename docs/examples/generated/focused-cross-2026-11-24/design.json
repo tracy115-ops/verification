@@ -1,0 +1,388 @@
+{
+  "newBatches": [
+    {
+      "index": 3,
+      "value": {
+        "strategy": "以左组（cross-identity-requestid-independent、inventory-wallet-query、order-query-ownership、missing-identity-401）与右组（pay-paid-replay、pay-cancelled-rejected、cross-identity-pay-cancel-forbidden、concurrent-double-pay）共 16 组配对为范围，仅检查两侧均有规格依据的 distinct interactions（共享状态、身份范围、重放、资源不变量与指定并发结果），每个场景引用双侧需求并给出可观测检查；多调用检查使用短 journey，initialState 取自 reset fixture，并将 toState 逐链复制为下一步 fromState，拒绝/403 后按要求读回状态。覆盖结果：4 个场景覆盖 replay×钱包不变量与归属读取边界、cancelled 409 拒绝×订单/库存/钱包读回、相同 requestId 独立创建×跨身份 pay/cancel 403×状态读回、并发双重支付×资源不变量与读取边界。missing-identity-401 与支付类需求的交互仅能断言 401（状态不变性未定义）、相同 requestId 独立订单在另一身份支付操作下的隔离不变量未显式定义，均记入 gaps。保留既有澄清：其他 paymentToken 取值与不存在订单 ID 的行为未定义，不添加预期、不纳入执行范围。",
+        "scenarios": [
+          {
+            "id": "D4-replay-wallet-ownership-readback",
+            "title": "paid 订单重放支付：钱包不重复扣款且归属读取边界不变",
+            "requirementIds": [
+              "pay-paid-replay",
+              "inventory-wallet-query",
+              "order-query-ownership"
+            ],
+            "dimension": "replay × 共享钱包状态与归属读取边界（identity scope）",
+            "expected": "user-a 以 paymentToken=ok 重放已 paid 订单返回 200 与同一订单；GET /wallet 读回 balance 不再次减少、charges 不再次增加；所属身份 GET /orders/o1 返回 200 且字段与重放返回一致，user-b 查询同一订单返回 403 且订单状态不变。",
+            "factorLevels": [
+              {
+                "factorId": "D4-replay-wallet-invariant",
+                "level": "重复支付后 GET /wallet 的 balance 不再次减少、charges 不再次增加"
+              },
+              {
+                "factorId": "D4-replay-ownership-read",
+                "level": "重放返回同一订单后，所属身份 GET 为 200 且另一身份 GET 为 403、状态不变"
+              }
+            ],
+            "journey": {
+              "version": 1,
+              "initialState": "reset fixture：user-a 存在已 paid 订单 o1（quantity=1）",
+              "preconditions": [
+                "reset fixture 独立提供 user-a 的已 paid 订单 o1（quantity=1）",
+                "记录重放前 GET /wallet 的 balance 与 charges 基线"
+              ],
+              "steps": [
+                {
+                  "id": "s1-replay-pay",
+                  "fromState": "reset fixture：user-a 存在已 paid 订单 o1（quantity=1）",
+                  "action": "user-a 以 paymentToken=ok 重放调用 POST /orders/o1/pay",
+                  "toState": "重放返回 200，仍为同一订单 o1（id、owner、quantity、state=paid 不变）",
+                  "observation": "重放响应 200 且订单字段与重放前一致",
+                  "requirementId": "pay-paid-replay",
+                  "sourceQuote": "已 paid 的订单以 ok 重复支付返回 200 和同一订单，不重复扣款或增加 charges。"
+                },
+                {
+                  "id": "s1-wallet-readback",
+                  "fromState": "重放返回 200，仍为同一订单 o1（id、owner、quantity、state=paid 不变）",
+                  "action": "user-a 调用 GET /wallet",
+                  "toState": "GET /wallet 200：balance、charges 与重放前数值一致",
+                  "observation": "重放后读回钱包，balance 未再次减少、charges 未再次增加",
+                  "requirementId": "pay-paid-replay",
+                  "sourceQuote": "不重复扣款或增加 charges"
+                },
+                {
+                  "id": "s1-owner-read",
+                  "fromState": "GET /wallet 200：balance、charges 与重放前数值一致",
+                  "action": "user-a 调用 GET /orders/o1",
+                  "toState": "GET /orders/o1 200：{id,owner,quantity,state=paid} 与重放返回一致",
+                  "observation": "所属身份读回订单字段与重放返回一致",
+                  "requirementId": "order-query-ownership",
+                  "sourceQuote": "`GET /orders/{id}` 返回所属身份的订单 `{id,owner,quantity,state}`"
+                },
+                {
+                  "id": "s1-cross-read",
+                  "fromState": "GET /orders/o1 200：{id,owner,quantity,state=paid} 与重放返回一致",
+                  "action": "user-b 调用 GET /orders/o1",
+                  "toState": "user-b 查询 o1 返回 403，订单状态保持不变",
+                  "observation": "重放后非所属身份查询已知订单仍被 403 拒绝且不改变状态",
+                  "requirementId": "order-query-ownership",
+                  "sourceQuote": "另一身份查询该已知订单返回 403，不改变状态"
+                }
+              ]
+            }
+          },
+          {
+            "id": "D4-cancelled-reject-state-readback",
+            "title": "cancelled 订单支付被拒 409：订单、库存与钱包读回不变",
+            "requirementIds": [
+              "pay-cancelled-rejected",
+              "order-query-ownership",
+              "inventory-wallet-query"
+            ],
+            "dimension": "rejection 后共享状态读回（shared state / resource invariants）",
+            "expected": "对 cancelled 订单以 paymentToken=ok 支付返回 409；所属身份读回订单仍为 cancelled；GET /inventory 与 GET /wallet 读回与调用前数值一致。",
+            "factorLevels": [
+              {
+                "factorId": "D4-rejected-pay-state-readback",
+                "level": "cancelled 订单支付返回 409 后，订单仍为 cancelled 且库存、钱包保持调用前数值"
+              }
+            ],
+            "journey": {
+              "version": 1,
+              "initialState": "reset fixture：user-a 存在已 cancelled 订单 o2（quantity=1）",
+              "preconditions": [
+                "reset fixture 独立提供 user-a 的已 cancelled 订单 o2（quantity=1）",
+                "记录调用前 GET /inventory 的 available 与 GET /wallet 的 balance、charges 基线"
+              ],
+              "steps": [
+                {
+                  "id": "s2-pay-reject",
+                  "fromState": "reset fixture：user-a 存在已 cancelled 订单 o2（quantity=1）",
+                  "action": "user-a 以 paymentToken=ok 调用 POST /orders/o2/pay",
+                  "toState": "对 cancelled 订单 o2 支付被拒，返回 409",
+                  "observation": "cancelled 订单支付被拒并返回 409",
+                  "requirementId": "pay-cancelled-rejected",
+                  "sourceQuote": "cancelled 订单支付返回 409，订单、库存和钱包不变。"
+                },
+                {
+                  "id": "s2-owner-read",
+                  "fromState": "对 cancelled 订单 o2 支付被拒，返回 409",
+                  "action": "user-a 调用 GET /orders/o2",
+                  "toState": "GET /orders/o2 200：state 仍为 cancelled",
+                  "observation": "拒绝后读回订单，state 仍为 cancelled",
+                  "requirementId": "order-query-ownership",
+                  "sourceQuote": "`GET /orders/{id}` 返回所属身份的订单 `{id,owner,quantity,state}`"
+                },
+                {
+                  "id": "s2-inv-wallet-read",
+                  "fromState": "GET /orders/o2 200：state 仍为 cancelled",
+                  "action": "user-a 依次调用 GET /inventory 与 GET /wallet",
+                  "toState": "GET /inventory 与 GET /wallet 保持调用前数值",
+                  "observation": "库存与钱包读回与调用前一致，未因被拒支付变化",
+                  "requirementId": "pay-cancelled-rejected",
+                  "sourceQuote": "订单、库存和钱包不变"
+                }
+              ]
+            }
+          },
+          {
+            "id": "D4-same-requestid-cross-identity-forbidden",
+            "title": "相同 requestId 独立创建后跨身份 pay/cancel 被 403 拒绝且状态不变",
+            "requirementIds": [
+              "cross-identity-requestid-independent",
+              "cross-identity-pay-cancel-forbidden",
+              "order-query-ownership",
+              "inventory-wallet-query"
+            ],
+            "dimension": "identity scope：相同 requestId 独立创建与跨身份操作禁止",
+            "expected": "user-a 与 user-b 以相同 requestId 各自返回 201 与各自订单；user-b 对 user-a 订单 o-a 的 pay 与 cancel 均返回 403；user-a 读回 o-a 状态不变，user-b 的钱包与库存读回保持调用前数值。",
+            "factorLevels": [
+              {
+                "factorId": "D4-same-requestid-independence",
+                "level": "不同身份以相同 requestId 各自返回 201 与各自订单，非所属身份无法操作对方订单"
+              },
+              {
+                "factorId": "D4-cross-identity-forbidden-invariant",
+                "level": "非所属身份 pay 与 cancel 均 403 后，订单状态与调用方钱包、库存保持调用前数值"
+              }
+            ],
+            "journey": {
+              "version": 1,
+              "initialState": "reset fixture：available=4，user-a 与 user-b 钱包为初始数值，均无订单",
+              "preconditions": [
+                "reset fixture 独立提供 available=4 与 user-a、user-b 的初始钱包数值",
+                "记录两身份 GET /wallet 与 GET /inventory 的调用前数值"
+              ],
+              "steps": [
+                {
+                  "id": "s3-create-user-a",
+                  "fromState": "reset fixture：available=4，user-a 与 user-b 钱包为初始数值，均无订单",
+                  "action": "user-a 调用 POST /orders（requestId=r-same，quantity=1）",
+                  "toState": "user-a 创建成功，返回 201 与订单 o-a（owner=user-a）",
+                  "observation": "相同 requestId 下 user-a 首个创建返回 201 与各自订单",
+                  "requirementId": "cross-identity-requestid-independent",
+                  "sourceQuote": "不同身份使用相同 requestId 是两个独立创建请求"
+                },
+                {
+                  "id": "s3-create-user-b",
+                  "fromState": "user-a 创建成功，返回 201 与订单 o-a（owner=user-a）",
+                  "action": "user-b 调用 POST /orders（同一 requestId=r-same，quantity=1）",
+                  "toState": "user-b 创建成功，返回 201 与订单 o-b（owner=user-b），与 o-a 独立",
+                  "observation": "相同 requestId 的另一身份创建仍返回 201 与自己的订单",
+                  "requirementId": "cross-identity-requestid-independent",
+                  "sourceQuote": "各返回 201 和各自订单"
+                },
+                {
+                  "id": "s3-cross-pay-403",
+                  "fromState": "user-b 创建成功，返回 201 与订单 o-b（owner=user-b），与 o-a 独立",
+                  "action": "user-b 对 o-a 以 paymentToken=ok 调用 POST /orders/o-a/pay",
+                  "toState": "user-b 对 o-a 支付被拒，返回 403",
+                  "observation": "非所属身份对已存在订单 pay 被拒 403",
+                  "requirementId": "cross-identity-pay-cancel-forbidden",
+                  "sourceQuote": "已存在订单的非所属身份进行 pay/cancel 返回 403"
+                },
+                {
+                  "id": "s3-cross-cancel-403",
+                  "fromState": "user-b 对 o-a 支付被拒，返回 403",
+                  "action": "user-b 对 o-a 调用 POST /orders/o-a/cancel",
+                  "toState": "user-b 对 o-a 取消被拒，返回 403",
+                  "observation": "非所属身份对已存在订单 cancel 被拒 403",
+                  "requirementId": "cross-identity-pay-cancel-forbidden",
+                  "sourceQuote": "已存在订单的非所属身份进行 pay/cancel 返回 403 且不改变状态"
+                },
+                {
+                  "id": "s3-owner-read",
+                  "fromState": "user-b 对 o-a 取消被拒，返回 403",
+                  "action": "user-a 调用 GET /orders/o-a",
+                  "toState": "GET /orders/o-a 200：state 与创建后一致，未被改变",
+                  "observation": "两次 403 后所属身份读回订单状态保持不变",
+                  "requirementId": "order-query-ownership",
+                  "sourceQuote": "`GET /orders/{id}` 返回所属身份的订单 `{id,owner,quantity,state}`"
+                },
+                {
+                  "id": "s3-caller-wallet-read",
+                  "fromState": "GET /orders/o-a 200：state 与创建后一致，未被改变",
+                  "action": "user-b 调用 GET /wallet 与 GET /inventory",
+                  "toState": "balance、charges 与 available 读回与调用前数值一致",
+                  "observation": "两次 403 后调用方钱包与库存读回不变",
+                  "requirementId": "cross-identity-pay-cancel-forbidden",
+                  "sourceQuote": "不改变状态"
+                }
+              ]
+            }
+          },
+          {
+            "id": "D4-concurrent-double-pay-invariants",
+            "title": "同一 reserved 订单并发双重支付：两响应 200 且钱包、库存不变量成立",
+            "requirementIds": [
+              "concurrent-double-pay",
+              "inventory-wallet-query",
+              "order-query-ownership"
+            ],
+            "dimension": "concurrent outcomes × resource invariants 与读取边界",
+            "expected": "client.parallel 并发两个 paymentToken=ok 支付均返回 200；所属身份读回 state=paid；GET /wallet 显示 balance 较初始值只减少一次 quantity*10、charges 只增加一次；GET /inventory 的 available 与预留后一致；user-b 查询 o3 返回 403 且状态不变。",
+            "factorLevels": [
+              {
+                "factorId": "D4-concurrent-pay-resource-invariants",
+                "level": "两个并发 ok 支付均 200，balance 只减少一次 quantity*10、charges 只增加一次，库存不额外减少"
+              },
+              {
+                "factorId": "D4-concurrent-pay-read-scope",
+                "level": "并发完成后所属身份读到 state=paid，另一身份查询返回 403 且状态不变"
+              }
+            ],
+            "journey": {
+              "version": 1,
+              "initialState": "reset fixture：user-a 存在 reserved 订单 o3（quantity=1）",
+              "preconditions": [
+                "reset fixture 独立提供 user-a 的 reserved 订单 o3（quantity=1）",
+                "记录预留后 GET /inventory 的 available 与支付前 GET /wallet 的 balance、charges 基线"
+              ],
+              "steps": [
+                {
+                  "id": "s4-parallel-pay",
+                  "fromState": "reset fixture：user-a 存在 reserved 订单 o3（quantity=1）",
+                  "action": "通过 client.parallel 对 o3 同时发出两个 paymentToken=ok 的支付请求",
+                  "toState": "两个并发支付响应均返回 200",
+                  "observation": "并发双重支付的两个响应均返回 200",
+                  "requirementId": "concurrent-double-pay",
+                  "sourceQuote": "对同一个 reserved 订单同时发出两个 ok 支付，两次都应返回 200"
+                },
+                {
+                  "id": "s4-owner-read",
+                  "fromState": "两个并发支付响应均返回 200",
+                  "action": "user-a 调用 GET /orders/o3",
+                  "toState": "GET /orders/o3 200：state=paid",
+                  "observation": "并发完成后所属身份读回订单最终 state 为 paid",
+                  "requirementId": "concurrent-double-pay",
+                  "sourceQuote": "两次都应返回 200，最终为 paid"
+                },
+                {
+                  "id": "s4-wallet-read",
+                  "fromState": "GET /orders/o3 200：state=paid",
+                  "action": "user-a 调用 GET /wallet",
+                  "toState": "balance 较初始值只减少一次 quantity*10，charges 只增加一次",
+                  "observation": "钱包读回确认并发支付只扣款一次、charges 只增加一次",
+                  "requirementId": "concurrent-double-pay",
+                  "sourceQuote": "余额只减少一次 quantity*10、charges 只增加一次"
+                },
+                {
+                  "id": "s4-inventory-read",
+                  "fromState": "balance 较初始值只减少一次 quantity*10，charges 只增加一次",
+                  "action": "user-a 与 user-b 分别调用 GET /inventory",
+                  "toState": "GET /inventory 200：available 与预留后数值一致",
+                  "observation": "两个身份均可读取库存，available 未因并发支付额外减少",
+                  "requirementId": "inventory-wallet-query",
+                  "sourceQuote": "`GET /inventory` 返回 200 / `{available}`，两个身份均可读取"
+                },
+                {
+                  "id": "s4-cross-read",
+                  "fromState": "GET /inventory 200：available 与预留后数值一致",
+                  "action": "user-b 调用 GET /orders/o3",
+                  "toState": "user-b 查询 o3 返回 403，state 仍为 paid 不变",
+                  "observation": "并发完成后非所属身份查询仍 403 且不改变状态",
+                  "requirementId": "order-query-ownership",
+                  "sourceQuote": "另一身份查询该已知订单返回 403，不改变状态"
+                }
+              ]
+            }
+          }
+        ],
+        "gaps": [
+          "missing-identity-401 与右组支付/取消需求（pay-paid-replay、pay-cancelled-rejected、cross-identity-pay-cancel-forbidden、concurrent-double-pay）的交互：缺少有效身份调用 pay/cancel 仅能断言返回 401，401 拒绝后订单、库存、钱包的状态不变性未在规格中定义，无法形成两侧均有断言的交互场景，本轮仅保留 401 响应断言，不构造场景。",
+          "cross-identity-requestid-independent 与 pay-paid-replay、pay-cancelled-rejected、concurrent-double-pay 的交互：相同 requestId 创建的独立订单在另一身份发生重放、被拒支付或并发支付时是否不受影响，规格未显式定义跨订单隔离不变量，暂不构造场景。"
+        ],
+        "factors": [
+          {
+            "id": "D4-replay-wallet-invariant",
+            "name": "重放支付的钱包不变量",
+            "requirementIds": [
+              "pay-paid-replay",
+              "inventory-wallet-query"
+            ],
+            "levels": [
+              "重复支付后 GET /wallet 的 balance 不再次减少、charges 不再次增加"
+            ],
+            "sourceQuote": "不重复扣款或增加 charges"
+          },
+          {
+            "id": "D4-replay-ownership-read",
+            "name": "重放后的订单归属读取",
+            "requirementIds": [
+              "pay-paid-replay",
+              "order-query-ownership"
+            ],
+            "levels": [
+              "重放返回同一订单后，所属身份 GET 为 200 且另一身份 GET 为 403、状态不变"
+            ],
+            "sourceQuote": "已 paid 的订单以 ok 重复支付返回 200 和同一订单"
+          },
+          {
+            "id": "D4-rejected-pay-state-readback",
+            "name": "被拒支付后的共享状态读回",
+            "requirementIds": [
+              "pay-cancelled-rejected",
+              "order-query-ownership",
+              "inventory-wallet-query"
+            ],
+            "levels": [
+              "cancelled 订单支付返回 409 后，订单仍为 cancelled 且库存、钱包保持调用前数值"
+            ],
+            "sourceQuote": "cancelled 订单支付返回 409，订单、库存和钱包不变"
+          },
+          {
+            "id": "D4-cross-identity-forbidden-invariant",
+            "name": "跨身份 pay/cancel 禁止后的状态不变",
+            "requirementIds": [
+              "cross-identity-pay-cancel-forbidden",
+              "order-query-ownership",
+              "inventory-wallet-query"
+            ],
+            "levels": [
+              "非所属身份 pay 与 cancel 均 403 后，订单状态与调用方钱包、库存保持调用前数值"
+            ],
+            "sourceQuote": "已存在订单的非所属身份进行 pay/cancel 返回 403 且不改变状态"
+          },
+          {
+            "id": "D4-same-requestid-independence",
+            "name": "相同 requestId 的独立创建与归属边界",
+            "requirementIds": [
+              "cross-identity-requestid-independent",
+              "cross-identity-pay-cancel-forbidden"
+            ],
+            "levels": [
+              "不同身份以相同 requestId 各自返回 201 与各自订单，非所属身份无法操作对方订单"
+            ],
+            "sourceQuote": "不同身份使用相同 requestId 是两个独立创建请求，各返回 201 和各自订单"
+          },
+          {
+            "id": "D4-concurrent-pay-resource-invariants",
+            "name": "并发双重支付的资源不变量",
+            "requirementIds": [
+              "concurrent-double-pay",
+              "inventory-wallet-query"
+            ],
+            "levels": [
+              "两个并发 ok 支付均 200，balance 只减少一次 quantity*10、charges 只增加一次，库存不额外减少"
+            ],
+            "sourceQuote": "余额只减少一次 quantity*10、charges 只增加一次、库存不额外减少"
+          },
+          {
+            "id": "D4-concurrent-pay-read-scope",
+            "name": "并发支付后的订单读取边界",
+            "requirementIds": [
+              "concurrent-double-pay",
+              "order-query-ownership"
+            ],
+            "levels": [
+              "并发完成后所属身份读到 state=paid，另一身份查询返回 403 且状态不变"
+            ],
+            "sourceQuote": "两次都应返回 200，最终为 paid"
+          }
+        ]
+      },
+      "digest": "5ab3aabe4240859db66864e48145c7c497e4eafb92e3fb99b217a71d6b9e37eb"
+    }
+  ]
+}
