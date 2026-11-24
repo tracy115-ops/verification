@@ -42,6 +42,13 @@ async fn incompatible_executable_reports_installation_failure_before_inference()
         Some("cli_executable_incompatible")
     );
     assert!(outcome.text.is_empty());
+    let probe = crate::probe::probe(
+        DRIVERS.iter().find(|spec| spec.id == "claude").unwrap(),
+        std::slice::from_ref(&fixture.0),
+    )
+    .await;
+    assert_eq!(probe.status, "error");
+    assert_eq!(probe.reason.as_deref(), Some("cli_executable_incompatible"));
 }
 
 #[tokio::test]

@@ -58,10 +58,18 @@ pub(crate) async fn probe(spec: &DriverSpec, paths: &[PathBuf]) -> AgentProbe {
     command.creation_flags(0x08000000);
     #[cfg(unix)]
     command.process_group(0);
-    let Ok(mut child) = command.spawn() else {
-        result.status = "error".into();
-        result.reason = Some("cliProbeSpawnFailed".into());
-        return result;
+    let mut child = match command.spawn() {
+        Ok(child) => child,
+        Err(error) => {
+            result.status = "error".into();
+            let code = crate::failure::spawn_error(&error);
+            result.reason = Some(if code == "cli_failed" {
+                "cliProbeSpawnFailed".into()
+            } else {
+                code.into()
+            });
+            return result;
+        }
     };
     let Ok(_guard) = process_runtime::ProcessGuard::attach(&child) else {
         let _ = child.kill().await;
