@@ -53,4 +53,4 @@
 
 先在安装环境验证 CodeAgent，并用真实题目与提供的 SDK 验证当前适配契约。随后建设产物编辑 / 退回 / 重新审批、多文件框架和工作流草稿生成；再扩展用例库 / 测试计划 / 缺陷闭环、Provider 凭据注入、执行隔离及 SSH / WSL。企业发布前生成静态 JSON 校验器，收紧 CSP，并加入项目权限与令牌生命周期管理。
 
-个人会话 / 编排仍使用浏览器存储，保存修订计数不等同于发布历史；共享设计已使用服务端 SQLite 事务和完整修订快照。两者明确分开。最新结果见[完整工作流验证](../research/python-workflow-validation.md)，生成脚本来源见[黑盒与协作验证](../research/blackbox-and-team-validation.md)，早期范围见[会话阶段记录](../research/conversation-development-validation.md)。
+桌面会话可按来源显式启用 [SQLite 主存储](../adr/0005-transactional-conversation-primary.md)，包括输入草稿、运行快照及内嵌产物。流程库和全局配置仍在 localStorage，CLI 公开记录在 IndexedDB；跨存储恢复和大任务容量仍需持续验证。共享设计使用服务端 SQLite 事务和修订快照。最新结果见[完整工作流验证](../research/python-workflow-validation.md)，生成脚本来源见[黑盒与协作验证](../research/blackbox-and-team-validation.md)，早期范围见[会话阶段记录](../research/conversation-development-validation.md)。
