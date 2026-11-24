@@ -254,3 +254,21 @@ fn requests_reject_path_traversal_ids_and_unbounded_deadlines() {
     request.timeout_seconds = 86401;
     assert!(request.validate().is_err());
 }
+#[test]
+fn stream_trace_classifies_payload_shapes_without_recording_content_or_unknown_type_names() {
+    let mut state = crate::protocol::ProtocolState::default();
+    for (kind, expected) in [
+        ("thinking_delta", "stream.thinking_delta"),
+        ("input_json_delta", "stream.input_json_delta"),
+        ("signature_delta", "stream.signature_delta"),
+        ("private-type", "stream.other_delta"),
+    ] {
+        state.consume(crate::DriverId::Claude, serde_json::json!({
+            "type": "stream_event",
+            "event": {"type": "content_block_delta", "delta": {"type": kind, "thinking": "private-content", "partial_json": "private-arguments"}}
+        }).to_string().as_bytes());
+        assert_eq!(state.last_event, expected);
+        assert!(!state.event_trace().contains("private"));
+        assert!(state.text.is_empty());
+    }
+}

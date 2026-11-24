@@ -74,7 +74,7 @@ impl ProtocolState {
                 "hook_response" => "system.hook_response",
                 _ => "system",
             },
-            "stream_event" => "stream_event",
+            "stream_event" => stream_event_kind(&value),
             "assistant" => "assistant",
             "result" => "result",
             "error" => "error",
@@ -264,5 +264,24 @@ impl ProtocolState {
             }
             _ => {}
         }
+    }
+}
+
+fn stream_event_kind(value: &Value) -> &'static str {
+    let event = &value["event"];
+    match event["type"].as_str() {
+        Some("message_start") => "stream.message_start",
+        Some("message_stop") => "stream.message_stop",
+        Some("message_delta") => "stream.message_delta",
+        Some("content_block_start") => "stream.block_start",
+        Some("content_block_stop") => "stream.block_stop",
+        Some("content_block_delta") => match event["delta"]["type"].as_str() {
+            Some("text_delta") => "stream.text_delta",
+            Some("thinking_delta") => "stream.thinking_delta",
+            Some("signature_delta") => "stream.signature_delta",
+            Some("input_json_delta") => "stream.input_json_delta",
+            _ => "stream.other_delta",
+        },
+        _ => "stream.other",
     }
 }

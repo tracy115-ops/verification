@@ -1,0 +1,50 @@
+{
+  "driver": "claude",
+  "version": "2.1.330",
+  "model": "glm-5.3-flash",
+  "status": "failed",
+  "errorCode": "cli_timeout_no_text",
+  "sourceSha256": "c2b5db62572db2726e52d8224c7afe97158e81c962163dd55963de861ed77d26",
+  "firstBatchUnchanged": true,
+  "savedBatches": 2,
+  "totalBatches": 3,
+  "calls": [
+    {
+      "index": 3,
+      "status": "completed",
+      "errorCode": null,
+      "elapsedMs": 307941,
+      "publicTextBytes": 15792,
+      "protocolRecords": 22760,
+      "stdoutBytes": 6204962,
+      "terminal": true
+    },
+    {
+      "index": 4,
+      "status": "timed_out",
+      "errorCode": "cli_timeout_no_text",
+      "elapsedMs": 600063,
+      "publicTextBytes": 0,
+      "protocolRecords": 50268,
+      "stdoutBytes": 13120971,
+      "terminal": false
+    }
+  ],
+  "batches": [
+    {
+      "index": 0,
+      "digest": "57f140915fe7986827a49ba7f90cb3f578f139dac533ecc9d02c77765234d6dc",
+      "scenarios": 18,
+      "factors": 11,
+      "journeys": 2
+    },
+    {
+      "index": 1,
+      "digest": "1293508c789da4ab8b814778ab7b621c4a3528ebbd7fc87d89dcd2e3dff9bfc6",
+      "scenarios": 5,
+      "factors": 7,
+      "journeys": 5
+    }
+  ],
+  "requirements": 17
+}
