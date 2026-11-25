@@ -125,10 +125,12 @@ for (const locale of ['zh-CN', 'en-US'] as const)
           await page.locator('.settings-navigation > button').nth(index).click();
           await expect(page.locator('.settings-content')).not.toBeEmpty();
           if (tab === 'frameworks') {
-            const fileBackground = await page
-              .locator('.workbench-file')
-              .evaluate((input) => getComputedStyle(input, '::file-selector-button').backgroundColor);
-            expect(fileBackground).toBe(surface);
+            const inputs = page.locator('.settings-framework-form:visible .workbench-file');
+            await expect(inputs).toHaveCount(2);
+            const backgrounds = await inputs.evaluateAll((files) =>
+              files.map((file) => getComputedStyle(file, '::file-selector-button').backgroundColor),
+            );
+            expect(backgrounds).toEqual([surface, surface]);
           }
           await inspect(page, `${tag}-${tab}`);
         }

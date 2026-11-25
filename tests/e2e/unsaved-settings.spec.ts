@@ -174,7 +174,7 @@ for (const action of ['discard', 'edit'] as const)
     const source = page.getByRole('textbox', { name: zh.frameworkSource, exact: true });
     const original = await source.inputValue();
     await page
-      .locator('.settings-framework-form input[type=file]')
+      .getByLabel(zh.loadFrameworkFile, { exact: true })
       .setInputFiles({ name: 'delayed.py', mimeType: 'text/x-python', buffer: Buffer.from('# delayed') });
     expect(await protectedUnload(page)).toBe(true);
     if (action === 'edit') {

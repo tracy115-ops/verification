@@ -64,7 +64,7 @@ test('inspects imported source, locates its entry and invalidates applicability 
   const source = page.getByRole('textbox', { name: 'framework.py 源码', exact: true });
   const text = 'import unittest\nclass BlackBoxCase(unittest.TestCase):\n    pass\n';
   await page
-    .locator('input[type=file]')
+    .getByLabel('读取提供的 Python 框架', { exact: true })
     .setInputFiles({ name: 'framework.py', mimeType: 'text/x-python', buffer: Buffer.from(text) });
   await expect(source).toHaveValue(text);
   await report.getByRole('button', { name: '检查当前框架', exact: true }).click();
