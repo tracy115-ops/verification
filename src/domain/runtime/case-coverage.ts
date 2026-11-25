@@ -2,6 +2,8 @@ import { linkedExecution } from './execution-link';
 import { canonical } from '../team/collaboration';
 import type { EvidenceBundle, ImplementationBundle } from '../execution/types';
 import type { CaseArtifact, WorkflowRun } from './types';
+import { latestArtifact } from './bindings';
+import { isCases } from './artifacts';
 
 export interface CoverageEvent {
   caseId: string;
@@ -36,6 +38,8 @@ type TestMapping = ImplementationBundle['tests'][number];
 
 export function caseCoverageForRun(run: WorkflowRun) {
   const { implementation, plan, evidence } = linkedExecution(run);
+  const approved = latestArtifact(run, 'TestCaseSet');
+  const approvedCases = new Map(isCases(approved) ? approved.cases.map((item) => [item.id, item]) : []);
   const testsByCase = new Map<string, TestMapping[]>();
   for (const test of implementation?.tests ?? []) {
     for (const caseId of new Set(test.caseIds)) {
@@ -48,19 +52,26 @@ export function caseCoverageForRun(run: WorkflowRun) {
   const plannedTests = new Set(plan?.testNames);
   const results = new Map(evidence?.results.map((result) => [result.testName, result.status]));
 
-  return (item: CaseArtifact['cases'][number]) =>
-    evaluateCoverage(item, testsByCase.get(item.id) ?? [], claims.get(item.id), plannedTests, results);
+  return (item: CaseArtifact['cases'][number]) => {
+    const baseline = canonical(item);
+    const approvedCase = approvedCases.get(item.id);
+    const tests =
+      approvedCase && (approvedCase === item || canonical(approvedCase) === baseline)
+        ? (testsByCase.get(item.id) ?? [])
+        : [];
+    return evaluateCoverage(baseline, tests, claims.get(item.id), plannedTests, results);
+  };
 }
 
 function evaluateCoverage(
-  item: CaseArtifact['cases'][number],
+  baseline: string,
   tests: TestMapping[],
   claim: CoverageEvent | undefined,
   plannedTests: ReadonlySet<string>,
   results: ReadonlyMap<string, EvidenceBundle['results'][number]['status']>,
 ) {
   const mapped = !!tests.length && tests.every((test) => plannedTests.has(test.testName));
-  const current = claim?.baseline === canonical(item);
+  const current = claim?.baseline === baseline;
   const status = mapped
     ? 'mapped'
     : tests.length || (current && claim?.covered)

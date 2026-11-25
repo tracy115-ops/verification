@@ -64,6 +64,37 @@ test('edits and duplicates cases without replacing confirmed requirements or sce
   );
 });
 
+test('preserves coverage on the historical case and clears it on the edited case', async ({ page }) => {
+  const coverage = page.locator('.personal-case-coverage');
+  const note = 'manual_checks.py::test_room_capacity';
+  await coverage.getByRole('checkbox', { name: '声明此用例已有脚本覆盖' }).check();
+  await coverage.getByRole('textbox', { name: '脚本位置／方法及核对说明' }).fill(note);
+  await coverage.getByRole('button', { name: '保存覆盖声明' }).click();
+  await expect(coverage).toContainText('已声明覆盖');
+
+  await page.getByRole('button', { name: '编辑用例', exact: true }).click();
+  const editor = page.getByRole('dialog', { name: '补充测试用例' });
+  await editor.getByLabel('用例名称', { exact: true }).fill('修订后的房间容量用例');
+  await editor.getByRole('button', { name: '3 · 变更说明' }).click();
+  await editor.getByLabel('本次修改原因', { exact: true }).fill('细化容量边界的验证目标');
+  await editor.getByRole('button', { name: '保存并评审用例', exact: true }).click();
+  await expect(coverage).toContainText('未关联脚本');
+  await expect(coverage.getByRole('checkbox')).not.toBeChecked();
+  await expect(coverage.getByRole('textbox')).toHaveValue('');
+
+  await page.getByRole('button', { name: '返回对话', exact: true }).click();
+  await page.locator('.session-messages').getByRole('button', { name: '查看修订前用例与结果' }).click();
+  const history = page.locator('.design-revision-viewer');
+  const historyTabs = history.getByRole('navigation', { name: '历史产物（只读）' });
+  await historyTabs.getByRole('button', { name: /条用例$/ }).click();
+  const historicCoverage = history.locator('.personal-case-coverage');
+  await expect(historicCoverage).toContainText('已声明覆盖');
+  await expect(historicCoverage).toContainText(note);
+  await expect(historicCoverage.getByRole('button', { name: '保存覆盖声明' })).toHaveCount(0);
+  await historyTabs.getByRole('button', { name: /条需求$/ }).click();
+  await expect(historicCoverage).toHaveCount(0);
+});
+
 test('retains case drafts across closing, session changes and the global unsaved-edit review', async ({
   page,
 }) => {

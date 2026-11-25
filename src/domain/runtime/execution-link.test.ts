@@ -6,6 +6,7 @@ import { personalCoverage } from './case-coverage';
 import { runScriptContribution } from '../team/run-contribution';
 import { latestArtifact } from './bindings';
 import type { EvidenceBundle, ExecutionPlan, ImplementationBundle } from '../execution/types';
+import type { CaseArtifact } from './types';
 
 async function executedRun() {
   const ports = verificationPorts('passed');
@@ -37,12 +38,29 @@ it('retains verified coverage and exports execution for matching current artifac
 it('does not transfer a prior pass to a remapped case with identical script text', async () => {
   const run = await executedRun();
   const bundle = latestArtifact(run, 'ImplementationBundle') as ImplementationBundle;
+  const approved = latestArtifact(run, 'TestCaseSet') as CaseArtifact;
+  const newCase = { ...approved.cases[0], id: 'NEW_CASE' };
+  approved.cases[0] = newCase;
   bundle.tests[0].caseIds = ['NEW_CASE'];
-  expect(personalCoverage(run, { ...cases.cases[0], id: 'NEW_CASE' })).toMatchObject({
+  expect(personalCoverage(run, newCase)).toMatchObject({
     status: 'declared',
     execution: 'not_run',
   });
   expect(runScriptContribution(run)).not.toHaveProperty('execution');
+});
+
+it('binds the script and pass to the approved case content as well as its ID', async () => {
+  const run = await executedRun();
+  const item = cases.cases[0];
+  expect(personalCoverage(run, structuredClone(item))).toMatchObject({
+    status: 'mapped',
+    execution: 'passed',
+  });
+  expect(personalCoverage(run, { ...item, assertions: ['Different oracle'] })).toMatchObject({
+    status: 'uncovered',
+    execution: 'not_run',
+    tests: [],
+  });
 });
 
 it.each(['execution', 'missing-result', 'duplicate-result'])(

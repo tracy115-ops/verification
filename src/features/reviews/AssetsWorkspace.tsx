@@ -312,7 +312,7 @@ export function TaskAssets({
             <TraceLinks run={run} view={view} id={current!.id} navigate={navigate} />
             {isCases(value) && (
               <PersonalCaseCoverage
-                key={current!.id}
+                key={`${run.id}:${artifact?.digest}:${current!.id}`}
                 run={run}
                 item={value.cases.find((item) => item.id === current!.id)!}
                 updateRun={updateRun}

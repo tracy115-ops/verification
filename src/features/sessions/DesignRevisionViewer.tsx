@@ -8,7 +8,7 @@ import { EvidenceViewer } from './EvidenceViewer';
 import { ExecutionArtifact } from './ExecutionArtifact';
 import { artifactLabel } from './artifact-labels';
 
-function snapshotArtifacts(value: unknown): Artifact[] {
+function snapshotArtifacts(value: unknown): Record<string, Artifact> {
   if (
     !value ||
     typeof value !== 'object' ||
@@ -17,22 +17,27 @@ function snapshotArtifacts(value: unknown): Artifact[] {
     typeof value.artifacts !== 'object' ||
     Array.isArray(value.artifacts)
   )
-    return [];
-  return Object.values(value.artifacts).filter(
-    (item): item is Artifact =>
-      !!item &&
-      typeof item === 'object' &&
-      'type' in item &&
-      typeof item.type === 'string' &&
-      'digest' in item &&
-      typeof item.digest === 'string' &&
-      'value' in item,
+    return {};
+  return Object.fromEntries(
+    Object.entries(value.artifacts).filter((entry): entry is [string, Artifact] => {
+      const item: unknown = entry[1];
+      return (
+        !!item &&
+        typeof item === 'object' &&
+        'type' in item &&
+        typeof item.type === 'string' &&
+        'digest' in item &&
+        typeof item.digest === 'string' &&
+        'value' in item
+      );
+    }),
   );
 }
 export function DesignRevisionViewer({ run, artifact }: { run: WorkflowRun; artifact: Artifact }) {
   const { t, locale } = useI18n();
   const [selected, setSelected] = useState(0);
-  const all = snapshotArtifacts(artifact.value);
+  const artifacts = snapshotArtifacts(artifact.value);
+  const all = Object.values(artifacts);
   const groups = [
     ['RequirementBaseline', 'RequirementBaselineDraft'],
     ['TestDesign', 'TestDesignDraft'],
@@ -45,7 +50,7 @@ export function DesignRevisionViewer({ run, artifact }: { run: WorkflowRun; arti
     const item = types.map((type) => all.find((value) => value.type === type)).find(Boolean);
     return item ? [item] : [];
   });
-  const snapshot = { ...run, artifacts: Object.fromEntries(all.map((item, i) => [`history.${i}`, item])) };
+  const snapshot = { ...run, artifacts };
   const current = items[selected];
   return (
     <section className="design-revision-viewer">
@@ -66,7 +71,7 @@ export function DesignRevisionViewer({ run, artifact }: { run: WorkflowRun; arti
       </nav>
       {current &&
         (isRequirements(current.value) || isDesign(current.value) || isCases(current.value) ? (
-          <ArtifactCollection run={snapshot} artifact={current} />
+          <ArtifactCollection key={current.type} run={snapshot} artifact={current} />
         ) : isEvidence(current.value) ? (
           <EvidenceViewer run={snapshot} evidence={current.value} />
         ) : (
