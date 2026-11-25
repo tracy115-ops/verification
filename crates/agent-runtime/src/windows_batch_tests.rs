@@ -93,6 +93,7 @@ else { for(let i=0;i<5;i++) console.log(JSON.stringify({type:'system',subtype:'i
     assert!(large_prompt.len() > 32_800 && large_prompt.len() < 131_072);
     for prompt in ["你好，测试非交互调用".to_string(), large_prompt] {
         let request = crate::TurnRequest {
+            final_only: false,
             launch: None,
             turn_id: "12345678-1234-1234-1234-123456789abc".into(),
             session_id: "12345678-1234-1234-1234-123456789abc".into(),
@@ -150,7 +151,7 @@ async fn explicit_claude_instances_preserve_wrappers_and_isolate_config_director
         r#"
 process.stdin.resume();
 process.stdin.on('end', () => console.log(JSON.stringify({type:'result', is_error:false,
-result:process.env.INSTANCE_MARKER+'|'+process.env.CLAUDE_CONFIG_DIR+'|'+process.argv[process.argv.indexOf('--settings')+1]})));
+result:process.env.INSTANCE_MARKER+'|'+process.env.CLAUDE_CONFIG_DIR+'|'+process.argv[process.argv.indexOf('--settings')+1]+'|'+process.argv.includes('--include-partial-messages')})));
 "#,
     )
     .unwrap();
@@ -161,13 +162,14 @@ result:process.env.INSTANCE_MARKER+'|'+process.env.CLAUDE_CONFIG_DIR+'|'+process
         fs::write(&settings, "{}").unwrap();
         let wrapper = fixture.0.join(format!("claude {instance}.cmd"));
         fs::write(&wrapper, format!("@echo off\r\nset INSTANCE_MARKER={instance}\r\n\"{}\" \"%~dp0instance.cjs\" %*\r\n", node.display())).unwrap();
-        let request = serde_json::from_value(serde_json::json!({
+        let mut request = serde_json::from_value::<crate::TurnRequest>(serde_json::json!({
             "turnId":"12345678-1234-1234-1234-123456789abc",
             "sessionId":"12345678-1234-1234-1234-123456789abc",
             "driver":"claude", "model":"fixture-model", "prompt":"hello", "timeoutSeconds":5,
             "launch":{"executablePath":wrapper, "configDirectory":config, "settingsFile":settings}
         }))
         .unwrap();
+        request.final_only = instance == "second";
         let (_sender, receiver) = tokio::sync::oneshot::channel();
         let outcome =
             crate::conversation::run_turn_in_paths(request, &fixture.0, receiver, |_| true, &[])
@@ -175,7 +177,12 @@ result:process.env.INSTANCE_MARKER+'|'+process.env.CLAUDE_CONFIG_DIR+'|'+process
         assert_eq!(outcome.status, "completed", "{:?}", outcome.error_code);
         assert_eq!(
             outcome.text,
-            format!("{instance}|{}|{}", config.display(), settings.display())
+            format!(
+                "{instance}|{}|{}|{}",
+                config.display(),
+                settings.display(),
+                instance == "first"
+            )
         );
     }
     let request = serde_json::from_value(serde_json::json!({

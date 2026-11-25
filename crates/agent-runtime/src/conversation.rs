@@ -326,6 +326,9 @@ pub(crate) async fn run_turn_in_paths(
             .map(str::to_string)
             .collect()
     };
+    if matches!(request.driver, DriverId::Claude) && request.final_only {
+        args.retain(|arg| arg != "--include-partial-messages");
+    }
     if let Some(file) = request
         .launch
         .as_ref()

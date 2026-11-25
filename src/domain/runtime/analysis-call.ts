@@ -45,6 +45,7 @@ export async function callAnalysis(context: AnalysisContext, task: object, cross
       turnId: step.turnId,
       sessionId: run.sessionId,
       ...nativeAgentFields(profile),
+      ...(cross && profile.driver === 'claude' ? { finalOnly: true } : {}),
       prompt,
       timeoutSeconds: remainingNodeSeconds(run, node),
     },

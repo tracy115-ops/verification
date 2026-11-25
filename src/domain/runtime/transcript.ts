@@ -55,6 +55,7 @@ export function isCliTurnRecord(value: unknown): value is CliTurnRecord {
     typeof request.model === 'string' &&
     validCliLaunch(request.launch, request.driver) &&
     request.model.length <= 200 &&
+    (request.finalOnly === undefined || (request.driver === 'claude' && request.finalOnly === true)) &&
     typeof request.prompt === 'string' &&
     new TextEncoder().encode(request.prompt).length <= 131072 &&
     Number.isInteger(request.timeoutSeconds) &&

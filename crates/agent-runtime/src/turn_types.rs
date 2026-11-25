@@ -58,6 +58,8 @@ impl CliLaunch {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TurnRequest {
     pub launch: Option<CliLaunch>,
+    #[serde(default)]
+    pub final_only: bool,
     pub turn_id: String,
     pub session_id: String,
     pub driver: DriverId,
@@ -72,6 +74,9 @@ impl TurnRequest {
             launch.validate(self.driver)?;
         }
         if matches!(self.driver, DriverId::Codeagent) && !self.model.is_empty() {
+            return Err("invalid_request");
+        }
+        if self.final_only && !matches!(self.driver, DriverId::Claude) {
             return Err("invalid_request");
         }
         fn valid_id(value: &str) -> bool {
