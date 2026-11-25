@@ -30,6 +30,19 @@ export const journeySchema = {
   },
 };
 
+function matchJourneyQuote(source: string, quote: string) {
+  const match = quoteMatcher(source);
+  try {
+    return match(quote);
+  } catch (error) {
+    if (!(error instanceof Error) || error.message !== 'source_quote_invalid') throw error;
+    // Models occasionally add Markdown code formatting around an identifier in a literal quote.
+    const plain = quote.replace(/(?<!\x60)\x60([A-Za-z0-9_-]+)\x60(?!\x60)/g, '$1');
+    if (plain === quote) throw error;
+    return match(plain);
+  }
+}
+
 /** Called after schema validation; this proves linkage and continuity, not semantic correctness. */
 export function validateJourney(
   journey: ScenarioJourney,
@@ -51,7 +64,7 @@ export function validateJourney(
     const requirement = requirements.requirements.find((item) => item.id === step.requirementId);
     if (!requirement) throw new Error('journey_invalid');
     try {
-      step.sourceQuote = quoteMatcher(requirement.quote)(step.sourceQuote);
+      step.sourceQuote = matchJourneyQuote(requirement.quote, step.sourceQuote);
     } catch {
       throw new Error('journey_quote_invalid');
     }

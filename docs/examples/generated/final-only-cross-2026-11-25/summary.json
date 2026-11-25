@@ -1,0 +1,114 @@
+{
+  "driver": "claude",
+  "cliVersion": "2.1.330",
+  "model": "glm-5.3-flash",
+  "sourceSha256": "c2b5db62572db2726e52d8224c7afe97158e81c962163dd55963de861ed77d26",
+  "status": "awaiting_review",
+  "priorDigestsUnchanged": true,
+  "saved": 6,
+  "total": 6,
+  "calls": [
+    {
+      "call": "call-1.jsonl",
+      "status": "completed",
+      "errorCode": null,
+      "elapsedMs": 334450,
+      "stdoutBytes": 11968684,
+      "publicTextBytes": 19146,
+      "terminal": true,
+      "firstTextObservedMs": 300012,
+      "lastEvent": "result"
+    },
+    {
+      "call": "call-2.jsonl",
+      "status": "completed",
+      "errorCode": null,
+      "elapsedMs": 438032,
+      "stdoutBytes": 15519504,
+      "publicTextBytes": 20228,
+      "terminal": true,
+      "firstTextObservedMs": 390002,
+      "lastEvent": "result"
+    },
+    {
+      "call": "call-3.jsonl",
+      "status": "failed",
+      "errorCode": "output_limit",
+      "elapsedMs": 447003,
+      "stdoutBytes": 16777348,
+      "publicTextBytes": 0,
+      "terminal": false,
+      "lastEvent": "stream.thinking_delta"
+    },
+    {
+      "call": "call-4.jsonl",
+      "status": "completed",
+      "errorCode": null,
+      "elapsedMs": 357365,
+      "stdoutBytes": 2868912,
+      "publicTextBytes": 16542,
+      "terminal": true,
+      "lastEvent": "result"
+    },
+    {
+      "call": "call-5.jsonl",
+      "status": "completed",
+      "errorCode": null,
+      "elapsedMs": 480125,
+      "stdoutBytes": 4013234,
+      "publicTextBytes": 18306,
+      "terminal": true,
+      "firstTextObservedMs": 480010,
+      "lastEvent": "result"
+    }
+  ],
+  "batches": [
+    {
+      "index": 0,
+      "digest": "57f140915fe7986827a49ba7f90cb3f578f139dac533ecc9d02c77765234d6dc",
+      "scenarios": 18,
+      "factors": 11,
+      "journeys": 2
+    },
+    {
+      "index": 1,
+      "digest": "1293508c789da4ab8b814778ab7b621c4a3528ebbd7fc87d89dcd2e3dff9bfc6",
+      "scenarios": 5,
+      "factors": 7,
+      "journeys": 5
+    },
+    {
+      "index": 2,
+      "digest": "7f7f5e8bf037e8e6c651fadb7a52c5f7f4ad8237b0238e6294ee5eb30ce5ee3c",
+      "scenarios": 5,
+      "factors": 5,
+      "journeys": 2
+    },
+    {
+      "index": 3,
+      "digest": "5ab3aabe4240859db66864e48145c7c497e4eafb92e3fb99b217a71d6b9e37eb",
+      "scenarios": 4,
+      "factors": 7,
+      "journeys": 4
+    },
+    {
+      "index": 4,
+      "digest": "8a3ba3645d001bfd60eac76cb5f2edeb759ae982e9afdb6692edffe4a6a232e1",
+      "scenarios": 5,
+      "factors": 7,
+      "journeys": 4
+    },
+    {
+      "index": 5,
+      "digest": "6e8af9ad48407f892a5ab89a1c72c394ac5a40ec3a34448aed9102142994ae46",
+      "scenarios": 4,
+      "factors": 5,
+      "journeys": 3
+    }
+  ],
+  "mergedDesign": 41,
+  "previousOutputLimitBatch": 5,
+  "replayedOriginalResponseBatch": 5,
+  "replayedResponseFile": "call-4.jsonl",
+  "reviewStatus": "awaiting_review"
+}

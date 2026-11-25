@@ -48,6 +48,18 @@ it('requires quotes from the exact step requirement and bounds schema version an
     expect(isDesign({ ...design, scenarios: [{ ...design.scenarios[0], journey: value }] })).toBe(false);
 });
 
+it('anchors identifier formatting to the unique original quote and rejects substitutions or ambiguity', () => {
+  const { requirements, design } = journeyFixture();
+  const step = design.scenarios[0].journey!.steps[2];
+  step.sourceQuote = 'to `paid`.';
+  expect(decodeDesign(design, requirements).scenarios[0].journey!.steps[2].sourceQuote).toBe('to paid.');
+  step.sourceQuote = 'to `settled`.';
+  expect(() => decodeDesign(design, requirements)).toThrow('journey_quote_invalid');
+  step.sourceQuote = 'to `paid`.';
+  requirements.requirements[2].quote += ' State changes to paid.';
+  expect(() => decodeDesign(design, requirements)).toThrow('journey_quote_invalid');
+});
+
 it('retains distinct paths when merging analysis batches and prefixes only scenario scope', () => {
   const { requirements, design } = journeyFixture();
   const other = structuredClone(design);
