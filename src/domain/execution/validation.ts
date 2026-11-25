@@ -49,8 +49,15 @@ export function decodeImplementation(value: unknown, cases: CaseArtifact): Imple
 export function decodePlan(value: unknown): ExecutionPlan {
   if (!isExecutionPlan(value)) throw new Error('execution_invalid');
   decodeFramework(value.payload.profile);
-  const names = value.payload.implementation.tests.map((item) => item.testName);
-  if (value.testNames.length !== names.length || value.testNames.some((name) => !names.includes(name)))
+  const tests = value.payload.implementation.tests;
+  const names = new Set(tests.map((item) => item.testName));
+  const planned = new Set(value.testNames);
+  if (
+    names.size !== tests.length ||
+    planned.size !== value.testNames.length ||
+    planned.size !== names.size ||
+    value.testNames.some((name) => !names.has(name))
+  )
     throw new Error('implementation_mapping_invalid');
   return value;
 }

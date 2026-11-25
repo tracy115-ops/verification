@@ -1,8 +1,9 @@
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { coverageMatrix } from './coverage-matrix';
 import { fixtureRun, requirements, design, cases } from './fixtures.test-support';
 import { canonical } from '../team/collaboration';
 import { fixturePlan, implementation, verificationPorts } from '../execution/fixtures.test-support';
+import * as validation from '../execution/validation';
 
 it('keeps declarations separate from mapped scripts and passing evidence', () => {
   const run = fixtureRun();
@@ -112,4 +113,50 @@ it('does not count excluded draft cases or imply measured execution before cases
     mapped: 0,
     gap: true,
   });
+});
+
+it('validates the shared execution once across a large matrix and rechecks changed evidence', async () => {
+  const plan = await fixturePlan();
+  const run = { ...fixtureRun(), id: plan.payload.runId, sessionId: plan.payload.sessionId };
+  const items = Array.from({ length: 80 }, (_, index) => ({
+    ...requirements.requirements[0],
+    id: `REQ-${index + 1}`,
+  }));
+  const requirementIds = items.map(({ id }) => id);
+  const evidence = await verificationPorts('passed').execution.execute(
+    plan,
+    plan.digest,
+    new AbortController().signal,
+  );
+  run.artifacts = {
+    requirements: {
+      type: 'RequirementBaseline',
+      value: { ...requirements, requirements: items },
+      digest: 'r',
+    },
+    design: {
+      type: 'TestDesign',
+      value: { ...design, scenarios: [{ ...design.scenarios[0], requirementIds }] },
+      digest: 'd',
+    },
+    cases: { type: 'TestCaseSet', value: { cases: [{ ...cases.cases[0], requirementIds }] }, digest: 'c' },
+    implementation: { type: 'ImplementationBundle', value: implementation, digest: 'i' },
+    plan: { type: 'ExecutionPlan', value: plan, digest: 'p' },
+    evidence: { type: 'EvidenceBundle', value: evidence, digest: 'e' },
+  };
+  const decodePlan = vi.spyOn(validation, 'decodePlan');
+  const decodeEvidence = vi.spyOn(validation, 'decodeEvidence');
+  try {
+    const rows = coverageMatrix(run);
+    expect(rows).toHaveLength(items.length);
+    expect(rows.every(({ mapped, passed }) => mapped === 1 && passed === 1)).toBe(true);
+    expect(decodePlan).toHaveBeenCalledTimes(1);
+    expect(decodeEvidence).toHaveBeenCalledTimes(1);
+    evidence.planDigest = 'b'.repeat(64);
+    expect(coverageMatrix(run).every(({ mapped, notRun }) => mapped === 1 && notRun === 1)).toBe(true);
+    expect(decodeEvidence).toHaveBeenCalledTimes(2);
+  } finally {
+    decodePlan.mockRestore();
+    decodeEvidence.mockRestore();
+  }
 });

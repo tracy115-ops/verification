@@ -67,3 +67,13 @@ it.each(['run', 'session', 'methods'])('does not use a plan with mismatched %s i
   expect(personalCoverage(run, cases.cases[0])).toMatchObject({ status: 'declared', execution: 'not_run' });
   expect(runScriptContribution(run)).not.toHaveProperty('execution');
 });
+
+it('rejects a plan that repeats one method in place of another', async () => {
+  const run = await executedRun();
+  const bundle = latestArtifact(run, 'ImplementationBundle') as ImplementationBundle;
+  const plan = latestArtifact(run, 'ExecutionPlan') as ExecutionPlan;
+  bundle.tests.push({ testName: 'test_other', caseIds: ['OTHER_CASE'] });
+  plan.payload.implementation = structuredClone(bundle);
+  plan.testNames = ['test_probe', 'test_probe'];
+  expect(personalCoverage(run, cases.cases[0])).toMatchObject({ status: 'declared', execution: 'not_run' });
+});

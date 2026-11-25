@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Artifact, ConversationSession, WorkflowRun } from '../../domain/runtime/types';
 import { isCases, isDesign, isRequirements } from '../../domain/runtime/artifacts';
 import { useI18n } from '../../shared/i18n/context';
@@ -7,7 +7,7 @@ import { FactorList } from './FactorList';
 import { TraceLinks } from './TraceLinks';
 import { PersonalCaseCoverage, type UpdateRun } from './PersonalCaseCoverage';
 import { RunContributionExport } from './RunContributionExport';
-import { personalCoverage } from '../../domain/runtime/case-coverage';
+import { caseCoverageForRun } from '../../domain/runtime/case-coverage';
 import { DesignEditActions } from './DesignEditor';
 import { CoverageMatrix } from './CoverageMatrix';
 import type { Conversations } from '../../app/useConversations';
@@ -195,6 +195,11 @@ export function TaskAssets({
     all.find((item) => item.type === types[0]) ??
     all.find((item) => item.type === types[1]);
   const value = artifact?.value;
+  const caseStates = useMemo(() => {
+    const cases = isCases(value) ? value.cases : [];
+    const readCoverage = cases.length ? caseCoverageForRun(run) : undefined;
+    return new Map(readCoverage ? cases.map((item) => [item.id, readCoverage(item)]) : []);
+  }, [run, value]);
   if (view === 'factors')
     return (
       <FactorList
@@ -215,9 +220,6 @@ export function TaskAssets({
       : isCases(value)
         ? value.cases.map((item) => ({ id: item.id, title: item.title, raw: item }))
         : [];
-  const caseStates = new Map(
-    isCases(value) ? value.cases.map((item) => [item.id, personalCoverage(run, item)]) : [],
-  );
   const filtered = items.filter(
     (item) =>
       (view !== 'cases' || coverageFilter === 'all' || caseStates.get(item.id)?.status === coverageFilter) &&

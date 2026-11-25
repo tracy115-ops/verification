@@ -1,5 +1,5 @@
 import { isCases, isDesign, isRequirements } from './artifacts';
-import { personalCoverage } from './case-coverage';
+import { caseCoverageForRun } from './case-coverage';
 import type { WorkflowRun } from './types';
 import { scopedCases } from './case-scope';
 
@@ -12,26 +12,22 @@ export function coverageMatrix(run: WorkflowRun) {
   const design = pick('TestDesign', 'TestDesignDraft');
   const rawCases = pick('TestCaseSet', 'TestCaseSetDraft');
   const casesGenerated = isCases(rawCases);
-  const cases = isCases(rawCases) ? scopedCases(run, rawCases) : rawCases;
+  const cases = casesGenerated ? scopedCases(run, rawCases).cases : [];
+  const readCoverage = cases.length ? caseCoverageForRun(run) : undefined;
+  const caseEntries = readCoverage ? cases.map((item) => ({ item, coverage: readCoverage(item) })) : [];
+  const testDesign = isDesign(design) ? design : undefined;
   return (isRequirements(baseline) ? baseline.requirements : []).map((requirement) => {
-    const factors = isDesign(design)
-      ? (design.factors ?? []).filter((item) => item.requirementIds.includes(requirement.id))
-      : [];
-    const scenarios = isDesign(design)
-      ? design.scenarios.filter((item) => item.requirementIds.includes(requirement.id))
-      : [];
+    const factors = testDesign?.factors?.filter((item) => item.requirementIds.includes(requirement.id)) ?? [];
+    const scenarios =
+      testDesign?.scenarios.filter((item) => item.requirementIds.includes(requirement.id)) ?? [];
     const scenarioIds = new Set(scenarios.map((item) => item.id));
-    const linked = isCases(cases)
-      ? cases.cases.filter((item) => item.requirementIds.includes(requirement.id))
-      : [];
-    const indirectCases = isCases(cases)
-      ? cases.cases.filter(
-          (item) =>
-            !item.requirementIds.includes(requirement.id) &&
-            item.scenarioIds.some((id) => scenarioIds.has(id)),
-        )
-      : [];
-    const states = linked.map((item) => personalCoverage(run, item));
+    const entries = caseEntries.filter(({ item }) => item.requirementIds.includes(requirement.id));
+    const linked = entries.map(({ item }) => item);
+    const indirectCases = cases.filter(
+      (item) =>
+        !item.requirementIds.includes(requirement.id) && item.scenarioIds.some((id) => scenarioIds.has(id)),
+    );
+    const states = entries.map(({ coverage }) => coverage);
     const declared = states.filter((item) => item.status === 'declared').length;
     const mapped = states.filter((item) => item.status === 'mapped').length;
     const passed = states.filter((item) => item.execution === 'passed').length;

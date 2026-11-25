@@ -1,5 +1,6 @@
 import { linkedExecution } from './execution-link';
 import { canonical } from '../team/collaboration';
+import type { EvidenceBundle, ImplementationBundle } from '../execution/types';
 import type { CaseArtifact, WorkflowRun } from './types';
 
 export interface CoverageEvent {
@@ -31,13 +32,34 @@ export function coverageEvents(run: WorkflowRun): CoverageEvent[] {
       Number.isFinite(Date.parse(item.at)),
   );
 }
-export function personalCoverage(run: WorkflowRun, item: CaseArtifact['cases'][number]) {
+type TestMapping = ImplementationBundle['tests'][number];
+
+export function caseCoverageForRun(run: WorkflowRun) {
   const { implementation, plan, evidence } = linkedExecution(run);
-  const tests = implementation?.tests.filter((test) => test.caseIds.includes(item.id)) ?? [];
-  const mapped = !!tests.length && !!plan && tests.every((test) => plan.testNames.includes(test.testName));
-  const claim = coverageEvents(run)
-    .filter((event) => event.caseId === item.id)
-    .at(-1);
+  const testsByCase = new Map<string, TestMapping[]>();
+  for (const test of implementation?.tests ?? []) {
+    for (const caseId of new Set(test.caseIds)) {
+      const tests = testsByCase.get(caseId);
+      if (tests) tests.push(test);
+      else testsByCase.set(caseId, [test]);
+    }
+  }
+  const claims = new Map(coverageEvents(run).map((event) => [event.caseId, event]));
+  const plannedTests = new Set(plan?.testNames);
+  const results = new Map(evidence?.results.map((result) => [result.testName, result.status]));
+
+  return (item: CaseArtifact['cases'][number]) =>
+    evaluateCoverage(item, testsByCase.get(item.id) ?? [], claims.get(item.id), plannedTests, results);
+}
+
+function evaluateCoverage(
+  item: CaseArtifact['cases'][number],
+  tests: TestMapping[],
+  claim: CoverageEvent | undefined,
+  plannedTests: ReadonlySet<string>,
+  results: ReadonlyMap<string, EvidenceBundle['results'][number]['status']>,
+) {
+  const mapped = !!tests.length && tests.every((test) => plannedTests.has(test.testName));
   const current = claim?.baseline === canonical(item);
   const status = mapped
     ? 'mapped'
@@ -46,18 +68,17 @@ export function personalCoverage(run: WorkflowRun, item: CaseArtifact['cases'][n
       : claim?.covered
         ? 'stale'
         : 'uncovered';
-  const results =
-    mapped && evidence
-      ? tests.map(
-          (test) => evidence.results.find((result) => result.testName === test.testName)?.status ?? 'not_run',
-        )
-      : [];
-  const execution = results.some((status) => status === 'failed' || status === 'error')
+  const statuses = mapped ? tests.map((test) => results.get(test.testName) ?? 'not_run') : [];
+  const execution = statuses.some((status) => status === 'failed' || status === 'error')
     ? 'failed'
-    : !results.length || results.includes('not_run')
+    : !statuses.length || statuses.includes('not_run')
       ? 'not_run'
-      : results.includes('skipped')
+      : statuses.includes('skipped')
         ? 'skipped'
         : 'passed';
   return { status, execution, tests, claim, current } as const;
+}
+
+export function personalCoverage(run: WorkflowRun, item: CaseArtifact['cases'][number]) {
+  return caseCoverageForRun(run)(item);
 }

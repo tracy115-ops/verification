@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { coverageMatrix } from '../../domain/runtime/coverage-matrix';
 import type { WorkflowRun } from '../../domain/runtime/types';
@@ -20,7 +20,8 @@ export function CoverageMatrix({
   const ratio = (value: number, total: number) => `${number.format(value)} / ${number.format(total)}`;
   const [query, setQuery] = useState('');
   const [gapsOnly, setGapsOnly] = useState(false);
-  const rows = coverageMatrix(run).filter(
+  const matrix = useMemo(() => coverageMatrix(run), [run]);
+  const rows = matrix.filter(
     (row) =>
       (!gapsOnly || row.gap) &&
       `${row.requirement.id} ${row.requirement.text}`.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
