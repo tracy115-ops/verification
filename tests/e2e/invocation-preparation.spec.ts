@@ -100,6 +100,10 @@ test('shows actual workflow Agent and blocks invalid configuration without losin
       expect(sendBounds!.y).toBeGreaterThanOrEqual(0);
       expect(sendBounds!.y + sendBounds!.height).toBeLessThanOrEqual(650);
       await page.screenshot({ path: `.runtime/preparation-${locale}-${dark ? 'dark' : 'light'}-900.png` });
+      await check.locator('summary').click();
+      await expect(composer.locator('.session-composer-controls .wb-field > span').first()).toBeVisible();
+      expect(await composer.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+      await composer.screenshot({ path: `.runtime/composer-${locale}-${dark ? 'dark' : 'light'}-900.png` });
     }
   }
   await input.press('Enter');

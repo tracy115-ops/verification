@@ -27,7 +27,7 @@ export function ComposerSelectors({
   return (
     <div className="session-composer-controls">
       <label className="wb-field">
-        <span className="wb-sr-only">{t('sessionAgent')}</span>
+        <span>{t('sessionAgent')}</span>
         <select
           className="workbench-select"
           value={draft.profileId}
@@ -47,7 +47,7 @@ export function ComposerSelectors({
         </select>
       </label>
       <label className="wb-field">
-        <span className="wb-sr-only">{t('savedWorkflow')}</span>
+        <span>{t('savedWorkflow')}</span>
         <select
           className="workbench-select"
           value={draft.editCases ? 'cases' : draft.editDesign ? 'design' : draft.invoke ? 'workflow' : 'chat'}
@@ -89,7 +89,7 @@ export function ComposerSelectors({
       </label>
       {draft.invoke && !draft.editDesign && (
         <label className="wb-field">
-          <span className="wb-sr-only">{t('executionScope')}</span>
+          <span>{t('executionScope')}</span>
           <select
             className="workbench-select"
             value={draft.frameworkId}

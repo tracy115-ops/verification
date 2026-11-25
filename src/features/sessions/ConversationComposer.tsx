@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Paperclip, Send, Square } from 'lucide-react';
+import { ArrowUp, Paperclip, Square } from 'lucide-react';
 import type { Conversations } from '../../app/useConversations';
 import type { AgentProfile, WorkbenchDocument } from '../../domain/workflow';
 import { hasDesktopBridge } from '../../services/agent-api';
@@ -13,6 +13,7 @@ import { prepareInvocation } from '../../domain/runtime/preparation';
 import { InvocationPreparation } from './InvocationPreparation';
 import { invokedWorkflow } from '../../domain/runtime/workflow-selection';
 import { getFrameworkInspection } from '../../services/framework-inspection-api';
+import type { MessageKey } from '../../shared/i18n/messages';
 
 export function ConversationComposer({
   actions,
@@ -43,7 +44,6 @@ export function ConversationComposer({
   const preparation = prepareInvocation(draft, invoked, profiles, frameworks, inspection);
   const changeDraft = (patch: Partial<ComposerDraft>) => actions.updateComposerDraft(patch, fallbackProfile);
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
-  const file = useRef<HTMLInputElement>(null);
   const run =
     actions.session?.runs.find((item) => item.id === actions.selectedRunId) ?? actions.session?.runs.at(-1);
   const canPropose =
@@ -105,6 +105,19 @@ export function ConversationComposer({
   }
   return (
     <div className="session-composer">
+      <ComposerInput
+        value={text}
+        disabled={false}
+        change={(text) => changeDraft({ text })}
+        send={send}
+        placeholderKey={
+          draft.editCases
+            ? 'caseProposalPlaceholder'
+            : draft.editDesign
+              ? 'designProposalPlaceholder'
+              : 'composerPlaceholder'
+        }
+      />
       <ComposerSelectors
         draft={draft}
         profiles={profiles}
@@ -124,41 +137,32 @@ export function ConversationComposer({
           disabled={false}
         />
       )}
-      {invoke && (
-        <label className="session-binding-choice wb-muted">
-          <input
-            type="checkbox"
-            checked={useNodeBindings}
-            onChange={(event) => changeDraft({ useNodeBindings: event.target.checked })}
-          />{' '}
-          {t('useNodeBindings')}
-        </label>
-      )}
       {invoke && dirty && <p className="session-scope">{t('unsavedWorkflowHint')}</p>}
       {!saved && invoke && (
         <button className="workbench-btn wb-text" onClick={openWorkflow}>
           {t('chooseFlowFirst')}
         </button>
       )}
-      <ComposerInput
-        value={text}
-        disabled={false}
-        change={(text) => changeDraft({ text })}
-        send={send}
-        placeholderKey={
-          draft.editCases
-            ? 'caseProposalPlaceholder'
-            : draft.editDesign
-              ? 'designProposalPlaceholder'
-              : 'composerPlaceholder'
-        }
-      />
-      <InvocationPreparation
-        preparation={actions.busy && !text.trim() ? undefined : preparation}
-        saved={invoked}
-        openSettings={openSettings}
-        openWorkflow={openWorkflow}
-      />
+      {(invoke || preparation) && (
+        <div className="session-composer-meta">
+          {invoke && (
+            <label className="session-binding-choice wb-muted">
+              <input
+                type="checkbox"
+                checked={useNodeBindings}
+                onChange={(event) => changeDraft({ useNodeBindings: event.target.checked })}
+              />
+              {t('useNodeBindings')}
+            </label>
+          )}
+          <InvocationPreparation
+            preparation={actions.busy && !text.trim() ? undefined : preparation}
+            saved={invoked}
+            openSettings={openSettings}
+            openWorkflow={openWorkflow}
+          />
+        </div>
+      )}
       {draft.editDesign && <small className="wb-muted">{t('designProposalModeHint')}</small>}
       {draft.editCases && <small className="wb-muted">{t('caseProposalModeHint')}</small>}
       {actions.busy && <small className="wb-muted">{t('composerDraftWhileRunning')}</small>}
@@ -167,46 +171,79 @@ export function ConversationComposer({
           {t('prompt_too_large')}
         </p>
       )}
-      <div className="session-composer-actions">
-        <button className="workbench-btn wb-text" onClick={() => file.current?.click()}>
-          <Paperclip size={16} />
-          {t('attachSpec')}
+      <ComposerActions
+        busy={actions.busy}
+        disabled={!hasDesktopBridge() || !text.trim() || !!preparation?.issues.length}
+        sendLabel={
+          draft.editCases
+            ? 'caseProposalGenerate'
+            : draft.editDesign
+              ? 'designProposalGenerate'
+              : invoke
+                ? 'invokeWorkflow'
+                : 'sendMessage'
+        }
+        attach={attach}
+        cancel={() => actions.cancel()}
+        send={send}
+      />
+    </div>
+  );
+}
+
+function ComposerActions({
+  busy,
+  disabled,
+  sendLabel,
+  attach,
+  cancel,
+  send,
+}: {
+  busy: boolean;
+  disabled: boolean;
+  sendLabel: MessageKey;
+  attach: (file?: File) => Promise<void>;
+  cancel: () => void;
+  send: () => Promise<void>;
+}) {
+  const { t } = useI18n();
+  const file = useRef<HTMLInputElement>(null);
+  return (
+    <div className="session-composer-actions">
+      <button
+        className="workbench-btn session-composer-attach"
+        aria-label={t('attachSpec')}
+        title={t('attachSpec')}
+        onClick={() => file.current?.click()}
+      >
+        <Paperclip size={16} />
+      </button>
+      <input
+        ref={file}
+        type="file"
+        accept=".md,.txt,text/plain,text/markdown"
+        hidden
+        onChange={(event) => {
+          void attach(event.target.files?.[0]);
+          event.target.value = '';
+        }}
+      />
+      {busy ? (
+        <button className="workbench-btn" onClick={cancel}>
+          <Square size={14} />
+          {t('stopGeneration')}
         </button>
-        <input
-          ref={file}
-          type="file"
-          accept=".md,.txt,text/plain,text/markdown"
-          hidden
-          onChange={(event) => {
-            void attach(event.target.files?.[0]);
-            event.target.value = '';
-          }}
-        />
-        {actions.busy ? (
-          <button className="workbench-btn" onClick={() => actions.cancel()}>
-            <Square size={14} />
-            {t('stopGeneration')}
-          </button>
-        ) : (
-          <button
-            className="workbench-btn wb-primary"
-            disabled={!hasDesktopBridge() || !text.trim() || !!preparation?.issues.length}
-            title={t('composerKeyboardHint')}
-            onClick={() => void send()}
-          >
-            <Send size={15} />
-            {t(
-              draft.editCases
-                ? 'caseProposalGenerate'
-                : draft.editDesign
-                  ? 'designProposalGenerate'
-                  : invoke
-                    ? 'invokeWorkflow'
-                    : 'sendMessage',
-            )}
-          </button>
-        )}
-      </div>
+      ) : (
+        <button
+          className="workbench-btn wb-primary"
+          disabled={disabled}
+          title={t('composerKeyboardHint')}
+          onClick={() => void send()}
+        >
+          <ArrowUp size={16} />
+          {t(sendLabel)}
+        </button>
+      )}
     </div>
   );
 }

@@ -1,0 +1,235 @@
+{
+  "version": "0.24.1",
+  "originalIpc": true,
+  "source": "fresh Spec entered through native UI; real Claude and Python, no artifact or localStorage injection",
+  "approvals": 4,
+  "counts": {
+    "passed": 0,
+    "failed": 1,
+    "error": 0,
+    "skipped": 0
+  },
+  "candidates": 1,
+  "journeyCount": 1,
+  "requestCount": 4,
+  "events": [
+    {
+      "stage": "settings_opened",
+      "at": "2026-11-25T05:39:13.433Z"
+    },
+    {
+      "stage": "model_saved",
+      "at": "2026-11-25T05:39:13.895Z"
+    },
+    {
+      "stage": "cli_instance_saved",
+      "at": "2026-11-25T05:39:14.079Z"
+    },
+    {
+      "stage": "source_selected_short_test_started",
+      "at": "2026-11-25T05:39:14.246Z"
+    },
+    {
+      "stage": "selected_source_and_short_test_passed",
+      "at": "2026-11-25T05:39:40.700Z"
+    },
+    {
+      "stage": "sdk_imported_via_directory_input",
+      "at": "2026-11-25T05:39:40.994Z"
+    },
+    {
+      "stage": "spec_submitted_through_native_conversation",
+      "at": "2026-11-25T05:39:41.432Z"
+    },
+    {
+      "stage": "review.requirements",
+      "at": "2026-11-25T05:41:38.464Z"
+    },
+    {
+      "stage": "retried_same_native_run"
+    },
+    {
+      "stage": "review.execution",
+      "at": "2026-11-25T06:01:01.838Z"
+    }
+  ],
+  "sdkPaths": [
+    "framework.py",
+    "sdk/__init__.py",
+    "sdk/client.py"
+  ],
+  "sdkSha256": "b4cdd5c7fd95a1271c0e24daa2036fd3351c0709a8cfb8e1c26a707f81457cb4",
+  "scriptSha256": "41ba7a92fc4c3bccaa3a1f1f1f7aa8e4185944536a6b7e38861fdf092c53387a",
+  "sourceSha256": "13fde903add920ccec2888ef470cd7a128cbb14deb1b10945859b4c24be57b49",
+  "allNodes": [
+    {
+      "operation": "documents.import",
+      "status": "succeeded"
+    },
+    {
+      "operation": "requirements.extract",
+      "status": "succeeded"
+    },
+    {
+      "operation": "review.requirements",
+      "status": "succeeded"
+    },
+    {
+      "operation": "scenarios.design",
+      "status": "succeeded"
+    },
+    {
+      "operation": "review.coverage",
+      "status": "succeeded"
+    },
+    {
+      "operation": "cases.generate",
+      "status": "succeeded"
+    },
+    {
+      "operation": "review.cases",
+      "status": "succeeded"
+    },
+    {
+      "operation": "tests.implement",
+      "status": "succeeded"
+    },
+    {
+      "operation": "targets.preflight",
+      "status": "succeeded"
+    },
+    {
+      "operation": "review.execution",
+      "status": "succeeded"
+    },
+    {
+      "operation": "targets.execute",
+      "status": "succeeded"
+    },
+    {
+      "operation": "verdicts.evaluate",
+      "status": "succeeded"
+    },
+    {
+      "operation": "actions.dispatch",
+      "status": "succeeded"
+    }
+  ],
+  "requests": [
+    {
+      "request": {
+        "body": {},
+        "headers": null,
+        "method": "POST",
+        "path": "/__fixture/reset",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "reset": true
+        },
+        "status": 200
+      },
+      "test": "test_generated.TestC1DeclineThenRecoverJourney.test_c1_decline_then_recover_full_journey"
+    },
+    {
+      "request": {
+        "body": {
+          "quantity": 1,
+          "requestId": "journey"
+        },
+        "headers": null,
+        "method": "POST",
+        "path": "/orders",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "id": "order-1",
+          "owner": "user-a",
+          "quantity": 1,
+          "state": "reserved"
+        },
+        "status": 201
+      },
+      "test": "test_generated.TestC1DeclineThenRecoverJourney.test_c1_decline_then_recover_full_journey"
+    },
+    {
+      "request": {
+        "body": {
+          "paymentToken": "[redacted]"
+        },
+        "headers": null,
+        "method": "POST",
+        "path": "/orders/order-1/pay",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "error": "declined"
+        },
+        "status": 402
+      },
+      "test": "test_generated.TestC1DeclineThenRecoverJourney.test_c1_decline_then_recover_full_journey"
+    },
+    {
+      "request": {
+        "body": null,
+        "headers": null,
+        "method": "GET",
+        "path": "/orders/order-1",
+        "user": "user-a"
+      },
+      "response": {
+        "body": {
+          "id": "order-1",
+          "owner": "user-a",
+          "quantity": 1,
+          "state": "paid"
+        },
+        "status": 200
+      },
+      "test": "test_generated.TestC1DeclineThenRecoverJourney.test_c1_decline_then_recover_full_journey"
+    }
+  ],
+  "tests": [
+    {
+      "testName": "test_c1_decline_then_recover_full_journey",
+      "status": "failed",
+      "details": [
+        "Traceback (most recent call last):\n  File \"case.py\", line 57, in testPartExecutor\n    yield\n  File \"case.py\", line 623, in run\n    self._callTestMethod(testMethod)\n  File \"case.py\", line 579, in _callTestMethod\n    if method() is not None:\n       ^^^^^^^^\n  File \"test_generated.py\", line 55, in test_c1_decline_then_recover_full_journey\n    self.assertEqual(after_declined.body.get(\"state\"), \"reserved\", \"拒绝支付后订单应保持 reserved\")\nAssertionError: 'paid' != 'reserved'\n- paid\n+ reserved\n : 拒绝支付后订单应保持 reserved\n"
+      ]
+    }
+  ],
+  "report": {
+    "status": "candidates_found",
+    "counts": {
+      "passed": 0,
+      "failed": 1,
+      "error": 0,
+      "skipped": 0
+    },
+    "candidates": [
+      {
+        "id": "CD-001-declined-402-state-paid-not-reserved",
+        "title": "declined 支付返回 402 后 GET /orders/{id} 观测到 state=\"paid\"，未保持 \"reserved\"（与 PAY-DECLINED、ORDER-READ-AFTER-DECLINED 矛盾）",
+        "explanation": "测试 test_c1_decline_then_recover_full_journey 在旅程步骤 3（ORDER-READ-AFTER-DECLINED）断言失败：`self.assertEqual(after_declined.body.get(\"state\"), \"reserved\", \"拒绝支付后订单应保持 reserved\")`，报 `AssertionError: 'paid' != 'reserved'`。同一测试的请求日志显示：`POST /orders`（请求体 {\"quantity\":1,\"requestId\":\"journey\"}，user user-a）返回 201 和 {\"id\":\"order-1\",\"owner\":\"user-a\",\"quantity\":1,\"state\":\"reserved\"}；随后 `POST /orders/order-1/pay`（日志中请求体记录为 {\"paymentToken\":\"[redacted]\"}）返回 402 和 {\"error\":\"declined\"}；紧接的 `GET /orders/order-1` 返回 200 和 {\"id\":\"order-1\",\"owner\":\"user-a\",\"quantity\":1,\"state\":\"paid\"}。需求源声明：PAY-DECLINED『`POST /orders/{id}/pay` 提交 `{paymentToken:\"declined\"}`，返回 402，订单保持 reserved』，其验收标准『支付被拒后订单状态保持 reserved』；ORDER-READ-AFTER-DECLINED 验收标准『响应中的 state 可检查，此时订单保持 reserved』。实际观测 state 为 \"paid\"，与上述源声明不一致。此候选仅陈述观测与需求之间的矛盾，不确认根因（例如状态转换逻辑或 402 分支处理等问题仅为可能方向，未经证实）。另因断言在步骤 3 失败终止，同一测试内步骤 4（PAY-RECOVER，paymentToken \"ok\" 应返回 200 且 state=\"paid\"）与步骤 5（ORDER-READ-PAID）未执行，本执行未观察这两项需求的行为。",
+        "testNames": [
+          "test_c1_decline_then_recover_full_journey"
+        ],
+        "caseIds": [
+          "C1_decline_then_recover_journey"
+        ]
+      }
+    ],
+    "notes": [
+      "执行 statuses 为准：本次执行仅含 1 个结果 test_c1_decline_then_recover_full_journey，status=\"failed\"（断言失败，非 error 或 skipped），已由候选 CD-001 覆盖，无其他失败测试。",
+      "失败发生在旅程步骤 3（ORDER-READ-AFTER-DECLINED），导致同一测试内步骤 4（PAY-RECOVER）与步骤 5（ORDER-READ-PAID）未执行；这两项需求在本执行中未获观察，覆盖不完整，不做断言。",
+      "请求日志中 declined 支付的请求体记录为 {\"paymentToken\":\"[redacted]\"}（token 值被脱敏）；实现脚本该步骤提交 {\"paymentToken\": \"declined\"}，且响应 402 和 {\"error\":\"declined\"} 与 declined 分支一致，据此将该步骤对应 PAY-DECLINED。",
+      "本结论仅基于 executionId 8442d55c-1122-4dd3-b287-ecfe63c2748b 所附证据，不包含根因确认，也不声明覆盖完整。"
+    ],
+    "action": "review_candidates",
+    "policy": "report_only",
+    "evidenceDigest": "ec48b0ca230cd54aebabb4c632fc6ac3cb90690cfa337c1bd4e9995aa198b61b"
+  }
+}
