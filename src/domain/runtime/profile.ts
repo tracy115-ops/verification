@@ -9,6 +9,12 @@ export function nativeAgentFields(profile: AgentProfile) {
     ...(profile.launch ? { launch: structuredClone(profile.launch) } : {}),
   };
 }
+export function workflowAgentFields(profile: AgentProfile, operation: string) {
+  return {
+    ...nativeAgentFields(profile),
+    ...(profile.driver === 'claude' && operation === 'scenarios.design' ? { finalOnly: true as const } : {}),
+  };
+}
 export function inferenceModel(profile: AgentProfile): string {
   if (!supportsInference(profile)) throw new Error('unsupported_profile');
   if (profile.driver === 'codeagent') return '';

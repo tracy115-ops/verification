@@ -45,6 +45,21 @@ describe('saved workflow execution', () => {
     ).toISOString();
     expect(() => remainingNodeSeconds(run, run.plan[1])).toThrow('run_deadline');
   });
+  it('requests complete results selectively for single-call Claude scenario design', async () => {
+    const doc = savedDocument();
+    doc.bindings = {};
+    let run = createRun(doc, crypto.randomUUID(), spec, doc.profiles, 'claude-native');
+    const { port, requests } = fixturePort();
+    for (let gate = 0; gate < 3; gate++) {
+      run = await advance(run, port);
+      run = await approve(run);
+    }
+    expect(requests.map((request) => [JSON.parse(request.prompt).operation, request.finalOnly])).toEqual([
+      ['requirements.extract', undefined],
+      ['scenarios.design', true],
+      ['cases.generate', undefined],
+    ]);
+  });
   it('freezes the saved revision, profiles and inputs independently of the editor', () => {
     const doc = savedDocument();
     const run = createRun(doc, crypto.randomUUID(), spec, doc.profiles, 'codex-native');

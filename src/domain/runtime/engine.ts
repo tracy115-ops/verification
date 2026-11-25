@@ -4,7 +4,7 @@ import { parseArtifact, decodeRequirements } from './artifacts';
 import { resolveInputs } from './bindings';
 import { reviewIssues, taskFor, validateTaskArtifact } from './handlers';
 import { digest } from './plan';
-import { nativeAgentFields } from './profile';
+import { workflowAgentFields } from './profile';
 import type { AgentEvent, AgentPort, WorkflowRun } from './types';
 import type { ExecutionPort } from '../execution/types';
 import { executeSystemStep } from './execution';
@@ -125,7 +125,7 @@ export async function advanceRun(
           {
             turnId: step.turnId,
             sessionId: run.sessionId,
-            ...nativeAgentFields(profile),
+            ...workflowAgentFields(profile, node.operation),
             prompt: taskFor(run, node, inputs),
             timeoutSeconds: remainingNodeSeconds(run, node),
           },
