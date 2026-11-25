@@ -11,7 +11,7 @@ import { digest } from '../domain/runtime/plan';
 import type { Artifact } from '../domain/runtime/types';
 import { sha256Text as sourceDigest } from '../shared/sha256';
 
-type Input = Pick<FrameworkProfile, 'pythonCommand' | 'frameworkSource'>;
+type Input = Pick<FrameworkProfile, 'pythonCommand' | 'frameworkSource' | 'frameworkModules'>;
 export interface InspectionRecord {
   report: FrameworkInspection;
   checkedAt: string;
@@ -32,7 +32,8 @@ export function subscribeFrameworkInspections(listener: () => void) {
     listeners.delete(listener);
   };
 }
-export const getFrameworkInspection = (input: Input) => records.get(keyFor(input))?.record;
+export const getFrameworkInspection = (input: Input) =>
+  input.frameworkModules ? undefined : records.get(keyFor(input))?.record;
 export function assertFrameworkInspectionAllows(input: Input) {
   if (frameworkInspectionState(getFrameworkInspection(input)?.report) === 'blocked')
     throw new Error('framework_inspection_blocked');
@@ -47,7 +48,11 @@ export async function frameworkInspectionArtifact(input: Input): Promise<Artifac
 export async function inspectFramework(input: Input, signal: AbortSignal): Promise<InspectionRecord> {
   if (!hasDesktopBridge()) throw new Error('desktopRequired');
   if (signal.aborted) throw new Error('execution_cancelled');
-  if (!input.frameworkSource.trim() || new TextEncoder().encode(input.frameworkSource).length > 60000)
+  if (
+    input.frameworkModules ||
+    !input.frameworkSource.trim() ||
+    new TextEncoder().encode(input.frameworkSource).length > 60000
+  )
     throw new Error('framework_inspection_invalid');
   const id = newId();
   const key = keyFor(input);

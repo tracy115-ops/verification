@@ -111,6 +111,75 @@ async fn preflight_parses_without_importing_framework_then_execution_collects_re
 }
 
 #[tokio::test]
+async fn multi_file_framework_executes_from_snapshot_and_rejects_changed_module() {
+    let mut fixture = Fixture::new();
+    let mut source = std::mem::take(&mut fixture.payload.profile.framework_source);
+    source.push_str("\nopen('sdk-imported.marker', 'w').write('imported')\n");
+    fixture.payload.profile.framework_source = "from sdk.client import BlackBoxCase\n".into();
+    fixture.payload.profile.framework_modules = Some(vec![
+        FrameworkModule {
+            path: "sdk/__init__.py".into(),
+            source: "".into(),
+        },
+        FrameworkModule {
+            path: "sdk/client.py".into(),
+            source,
+        },
+    ]);
+    let plan = fixture.plan().await;
+    let before = fixture
+        .root
+        .join(format!("{}-preflight", plan.payload.execution_id));
+    assert!(!before.join("sdk-imported.marker").exists());
+    let mut modified = plan.payload.clone();
+    modified.profile.framework_modules.as_mut().unwrap()[1]
+        .source
+        .push_str("\n# new snapshot\n");
+    assert_ne!(
+        crate::framework_modules::framework_digest(&modified.profile).unwrap(),
+        plan.framework_sha256
+    );
+    let (_sender, receiver) = oneshot::channel();
+    assert_eq!(
+        execute(&fixture.root, modified, &plan.digest, receiver, |_| true)
+            .await
+            .unwrap_err(),
+        "execution_approval_stale"
+    );
+    let evidence = fixture.run(&plan).await.expect("SDK execution");
+    assert_eq!(
+        evidence.results[0].status, "passed",
+        "{:?}",
+        evidence.results[0].details
+    );
+    assert_eq!(evidence.requests.len(), 2);
+}
+
+#[tokio::test]
+async fn multi_file_preflight_rejects_bad_module_source_and_unsafe_paths() {
+    let mut fixture = Fixture::new();
+    fixture.payload.profile.framework_modules = Some(vec![FrameworkModule {
+        path: "sdk/../runner.py".into(),
+        source: "invalid ?".into(),
+    }]);
+    let (_sender, receiver) = oneshot::channel();
+    assert_eq!(
+        preflight(&fixture.root, fixture.payload.clone(), receiver, |_| true)
+            .await
+            .unwrap_err(),
+        "execution_invalid"
+    );
+    fixture.payload.profile.framework_modules.as_mut().unwrap()[0].path = "sdk/client.py".into();
+    let (_sender, receiver) = oneshot::channel();
+    assert_eq!(
+        preflight(&fixture.root, fixture.payload.clone(), receiver, |_| true)
+            .await
+            .unwrap_err(),
+        "python_validation_failed"
+    );
+}
+
+#[tokio::test]
 async fn slow_framework_startup_still_collects_evidence_within_fixture_budget() {
     let mut fixture = Fixture::new();
     fixture

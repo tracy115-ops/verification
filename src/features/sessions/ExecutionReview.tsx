@@ -40,6 +40,14 @@ export function ExecutionReview({
       <details>
         <summary>{t('frameworkSource')}</summary>
         <pre>{plan.payload.profile.frameworkSource}</pre>
+        {plan.payload.profile.frameworkModules?.map((file) => (
+          <details key={file.path}>
+            <summary>
+              <code>{file.path}</code>
+            </summary>
+            <pre>{file.source}</pre>
+          </details>
+        ))}
       </details>
       <details>
         <summary>{t('approvedTests')}</summary>

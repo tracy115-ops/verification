@@ -22,7 +22,7 @@ const record = (properties: Record<string, object>) => ({
   required: Object.keys(properties),
   properties,
 });
-export const frameworkSchema = record({
+const framework = record({
   id,
   name: { type: 'string', minLength: 1, maxLength: 200 },
   adapter: { const: 'python-unittest-v1' },
@@ -32,6 +32,20 @@ export const frameworkSchema = record({
   targetUrl: { type: 'string', minLength: 1, maxLength: 2000 },
   timeoutSeconds: { type: 'integer', minimum: 1, maximum: 300 },
 });
+export const frameworkSchema = {
+  ...framework,
+  properties: {
+    ...framework.properties,
+    frameworkModules: list(
+      record({
+        path: { type: 'string', maxLength: 160 },
+        source: { type: 'string', maxLength: 60000 },
+      }),
+      1,
+      24,
+    ),
+  },
+};
 export const implementationSchema = record({
   script: { type: 'string', minLength: 1, maxLength: 100000 },
   tests: list(record({ testName: name, caseIds: { ...list(id, 1), uniqueItems: true } }), 1),

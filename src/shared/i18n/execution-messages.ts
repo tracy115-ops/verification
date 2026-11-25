@@ -40,10 +40,14 @@ export const executionZh = {
   frameworkInstructions: '框架调用约定与限制',
   frameworkSource: 'framework.py 源码',
   loadFrameworkFile: '读取提供的 Python 框架',
+  loadFrameworkFolder: '导入 SDK 目录（framework.py 和 sdk/）',
+  frameworkModuleFiles: 'SDK 模块 · {count}',
+  frameworkModuleInspection: '执行前会静态检查 SDK 模块。依赖和模块初始化在获批执行时验证。',
   saveFramework: '保存框架与目标',
   trustedFrameworkHint:
     '框架是本机执行的受信任代码；AST 检查不构成操作系统沙箱。请审查初始化、清理和网络操作，不在源码中保存实际密钥。执行前还需确认本次脚本及目标。',
-  framework_read_failed: '读取失败或文件超过 60 KB。',
+  framework_read_failed:
+    '读取失败。单个文件最多 60,000 字节，SDK 目录最多 24 个模块、共 128,000 字节，且须符合目录格式。',
   framework_storage_invalid: '框架配置无法读取，原存储保留；显式保存新配置会替换它。',
   executionScope: '本次调用范围',
   verificationScope: '需求 → Python → 本地执行与分析',
@@ -202,10 +206,15 @@ export const executionEn: Record<keyof typeof executionZh, string> = {
   frameworkInstructions: 'Framework contract and constraints',
   frameworkSource: 'framework.py source',
   loadFrameworkFile: 'Read provided Python framework',
+  loadFrameworkFolder: 'Import SDK folder (framework.py and sdk/)',
+  frameworkModuleFiles: 'SDK modules · {count}',
+  frameworkModuleInspection:
+    'Preflight checks SDK source. Dependencies and module initialization are checked during approved execution.',
   saveFramework: 'Save framework and target',
   trustedFrameworkHint:
     'Frameworks are trusted code executed locally. AST checks are not an OS sandbox. Review setup, cleanup and network actions. Do not embed real secrets. Each execution also requires script and target approval.',
-  framework_read_failed: 'Could not read the file, or it exceeds 60 KB.',
+  framework_read_failed:
+    'Could not read the source. Each file allows 60,000 bytes. An SDK folder requires the specified layout and allows 24 modules and 128,000 bytes total.',
   framework_storage_invalid:
     'Could not read framework settings. Original storage is preserved; explicitly saving a new profile will replace it.',
   executionScope: 'Invocation scope',

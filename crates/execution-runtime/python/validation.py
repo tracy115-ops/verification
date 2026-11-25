@@ -2,6 +2,7 @@
 import ast
 import json
 import sys
+from pathlib import Path
 
 
 def parse_source(source):
@@ -29,6 +30,12 @@ def validate():
         raise ValueError("python_version_unsupported")
     with open("framework.py", encoding="utf-8") as stream:
         parse_source(stream.read())
+    for module in sorted(Path("sdk").rglob("*.py")):
+        try:
+            parse_source(module.read_text(encoding="utf-8"))
+        except (SyntaxError, ValueError) as error:
+            line = getattr(error, "lineno", None)
+            raise ValueError(f"{module.as_posix()}:{line or 0}: {type(error).__name__}") from error
     with open("test_generated.py", encoding="utf-8") as stream:
         tree = parse_source(stream.read())
     forbidden = {"exec", "eval", "compile", "open", "__import__", "getattr", "setattr", "delattr", "globals", "locals", "vars", "input", "breakpoint"}

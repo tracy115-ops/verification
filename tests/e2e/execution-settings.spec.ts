@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { mkdir, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 
 test('saves framework settings and selects the full workflow without exposing browser execution', async ({
   page,
-}) => {
+}, testInfo) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
@@ -12,6 +14,12 @@ test('saves framework settings and selects the full workflow without exposing br
   await form.getByRole('textbox', { name: '框架名称', exact: true }).fill('题目 SDK（本地验证）');
   await form.getByRole('textbox', { name: '被测接口基础地址', exact: true }).fill('http://127.0.0.1:4321');
   await form.getByRole('spinbutton', { name: '测试执行超时（秒）', exact: true }).fill('90');
+  const folder = testInfo.outputPath('python-sdk');
+  await mkdir(path.join(folder, 'sdk'), { recursive: true });
+  await writeFile(path.join(folder, 'framework.py'), 'from sdk.client import BlackBoxCase\n');
+  await writeFile(path.join(folder, 'sdk/client.py'), 'from unittest import TestCase as BlackBoxCase\n');
+  await form.getByLabel('导入 SDK 目录（framework.py 和 sdk/）').setInputFiles(folder);
+  await expect(form.getByLabel('framework.py 源码')).toHaveValue('from sdk.client import BlackBoxCase\n');
   await form.getByRole('button', { name: '保存框架与目标', exact: true }).click();
   await expect(form.getByRole('status')).toContainText('配置已保存到设置');
   await page.reload();
@@ -21,6 +29,8 @@ test('saves framework settings and selects the full workflow without exposing br
     '题目 SDK（本地验证）',
   );
   await expect(form.getByRole('spinbutton', { name: '测试执行超时（秒）', exact: true })).toHaveValue('90');
+  await form.getByText('SDK 模块 · 1').click();
+  await expect(form.getByText('sdk/client.py')).toBeVisible();
   await page.screenshot({ path: '.runtime/framework-settings.png', fullPage: true });
   await page.getByRole('button', { name: '流程编排', exact: true }).click();
   await page.getByRole('button', { name: '保存草稿', exact: true }).click();

@@ -53,6 +53,7 @@ pub fn validate(payload: &ExecutionPayload) -> Result<(), String> {
         return Err("execution_invalid".into());
     }
     validate_python_command(&profile.python_command)?;
+    crate::framework_modules::validate_modules(profile)?;
     let url = url::Url::parse(&profile.target_url).map_err(|_| "target_invalid")?;
     if !["http", "https"].contains(&url.scheme())
         || url.host_str().is_none()

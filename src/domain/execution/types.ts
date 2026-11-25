@@ -4,6 +4,7 @@ export interface FrameworkProfile {
   adapter: 'python-unittest-v1';
   pythonCommand: string;
   frameworkSource: string;
+  frameworkModules?: { path: string; source: string }[];
   instructions: string;
   targetUrl: string;
   timeoutSeconds: number;

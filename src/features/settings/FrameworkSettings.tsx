@@ -8,6 +8,7 @@ import { exampleFramework } from '../../domain/execution/presets';
 import { newId } from '../../shared/id';
 import { useI18n, isMessageKey } from '../../shared/i18n/context';
 import { FrameworkInspection } from './FrameworkInspection';
+import { readFrameworkFolder } from './read-framework-folder';
 
 export function FrameworkSettings({ settings }: { settings: Frameworks }) {
   const { t } = useI18n();
@@ -124,21 +125,27 @@ function FrameworkForm({
     draft.change((current) => ({ ...current, value: { ...current.value, ...patch } }));
     setSaved(false);
   }
-  async function read(file?: File) {
-    if (!file) return;
+  async function read(files: File[], folder = false) {
+    if (!files.length) return;
     const token = ++generation.current;
     const originalSource = value.frameworkSource;
+    const originalModules = value.frameworkModules;
     draft.change((current) => ({ ...current, reading: true }));
     try {
-      if (file.size > 60000) throw new Error('too_large');
-      const source = await file.text();
+      if (!folder && files[0].size > 60000) throw new Error('too_large');
+      const patch = folder
+        ? await readFrameworkFolder(files)
+        : { frameworkSource: await files[0].text(), frameworkModules: undefined };
       if (token !== generation.current || draft.current()?.reading === false) return;
       if (!draft.current()) return;
-      if (draft.current()?.value.frameworkSource !== originalSource) {
+      if (
+        draft.current()?.value.frameworkSource !== originalSource ||
+        draft.current()?.value.frameworkModules !== originalModules
+      ) {
         draft.change((current) => ({ ...current, reading: false }));
         return;
       }
-      draft.change((current) => ({ reading: false, value: { ...current.value, frameworkSource: source } }));
+      draft.change((current) => ({ reading: false, value: { ...current.value, ...patch } }));
       setSaved(false);
       setError(false);
     } catch {
@@ -234,26 +241,31 @@ function FrameworkForm({
           className="workbench-file"
           accept=".py,text/x-python"
           onChange={(event) => {
-            void read(event.target.files?.[0]);
+            void read(Array.from(event.target.files ?? []));
             event.target.value = '';
           }}
         />
       </label>
-      <FrameworkInspection
-        value={value}
-        disabled={reading}
-        openLine={(line) => {
-          const field = sourceInput.current;
-          if (!field) return;
-          const lines = field.value.split('\n');
-          const start = lines.slice(0, line - 1).reduce((sum, text) => sum + text.length + 1, 0);
-          field.focus();
-          field.setSelectionRange(start, start + (lines[line - 1]?.length ?? 0));
-          const lineHeight = Number.parseFloat(getComputedStyle(field).lineHeight);
-          field.scrollTop = Math.max(0, (line - 1) * lineHeight - field.clientHeight / 2);
-          field.scrollLeft = 0;
-        }}
-      />
+      <FrameworkFolderInput modules={value.frameworkModules} read={(files) => void read(files, true)} />
+      {value.frameworkModules ? (
+        <p className="wb-muted">{t('frameworkModuleInspection')}</p>
+      ) : (
+        <FrameworkInspection
+          value={value}
+          disabled={reading}
+          openLine={(line) => {
+            const field = sourceInput.current;
+            if (!field) return;
+            const lines = field.value.split('\n');
+            const start = lines.slice(0, line - 1).reduce((sum, text) => sum + text.length + 1, 0);
+            field.focus();
+            field.setSelectionRange(start, start + (lines[line - 1]?.length ?? 0));
+            const lineHeight = Number.parseFloat(getComputedStyle(field).lineHeight);
+            field.scrollTop = Math.max(0, (line - 1) * lineHeight - field.clientHeight / 2);
+            field.scrollLeft = 0;
+          }}
+        />
+      )}
       <p className="wb-banner">{t('trustedFrameworkHint')}</p>
       {error && <p className="wb-error">{t('framework_read_failed')}</p>}
       <button className="workbench-btn wb-primary" type="submit" disabled={reading || draft.conflicted}>
@@ -262,5 +274,48 @@ function FrameworkForm({
       <DraftActions dirty={draft.dirty} reset={draft.reset} conflicted={draft.conflicted} />
       {saved && <p role="status">{t('settingsSaved')}</p>}
     </form>
+  );
+}
+
+function FrameworkFolderInput({
+  modules,
+  read,
+}: {
+  modules: FrameworkProfile['frameworkModules'];
+  read: (files: File[]) => void;
+}) {
+  const { t, locale } = useI18n();
+  return (
+    <>
+      <label className="wb-field">
+        {t('loadFrameworkFolder')}
+        <input
+          type="file"
+          className="workbench-file"
+          ref={(element) => element?.setAttribute('webkitdirectory', '')}
+          onChange={(event) => {
+            read(Array.from(event.target.files ?? []));
+            event.target.value = '';
+          }}
+        />
+      </label>
+      {modules && (
+        <details>
+          <summary>
+            {t('frameworkModuleFiles').replace(
+              '{count}',
+              new Intl.NumberFormat(locale).format(modules.length),
+            )}
+          </summary>
+          <ul>
+            {modules.map((item) => (
+              <li key={item.path}>
+                <code>{item.path}</code>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </>
   );
 }

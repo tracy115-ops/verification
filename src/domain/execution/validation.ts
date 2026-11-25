@@ -7,6 +7,7 @@ import type {
   VerdictAnalysis,
 } from './types';
 import type { CaseArtifact } from '../runtime/types';
+import { validateFrameworkModules } from './framework-modules';
 
 export function decodeFramework(value: unknown): FrameworkProfile {
   if (!isFramework(value)) throw new Error('execution_invalid');
@@ -26,7 +27,10 @@ export function decodeFramework(value: unknown): FrameworkProfile {
   if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.search || url.hash)
     throw new Error('target_invalid');
   if (new TextEncoder().encode(value.frameworkSource).length > 60000) throw new Error('execution_invalid');
-  return structuredClone(value);
+  validateFrameworkModules(value);
+  const profile = structuredClone(value);
+  if (profile.frameworkModules === undefined) delete profile.frameworkModules;
+  return profile;
 }
 export function decodeImplementation(value: unknown, cases: CaseArtifact): ImplementationBundle {
   if (!isImplementation(value)) throw new Error('implementation_invalid');

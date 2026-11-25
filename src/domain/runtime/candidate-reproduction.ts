@@ -6,6 +6,7 @@ import { linkedExecution } from './execution-link';
 import { candidateReviewReady, candidateReviews } from './candidate-review';
 import { caseContext } from './case-revision';
 import { sha256Text } from '../../shared/sha256';
+import { frameworkSha256 } from '../execution/framework-modules';
 import type { WorkflowRun } from './types';
 
 /** Export a coherent executed suite. A selected candidate does not narrow the approved script. */
@@ -28,7 +29,7 @@ export async function candidateReproduction(initial: WorkflowRun, reportDigest: 
   const actual = buildReport(evidence, { candidates: report.candidates, notes: report.notes });
   const [scriptHash, frameworkHash] = await Promise.all([
     sha256Text(implementation.script),
-    sha256Text(plan.payload.profile.frameworkSource),
+    frameworkSha256(plan.payload.profile),
   ]);
   if (
     canonicalJson(actual.counts) !== canonicalJson(report.counts) ||

@@ -8,9 +8,18 @@ pub struct FrameworkProfile {
     pub adapter: String,
     pub python_command: String,
     pub framework_source: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub framework_modules: Option<Vec<FrameworkModule>>,
     pub instructions: String,
     pub target_url: String,
     pub timeout_seconds: u64,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct FrameworkModule {
+    pub path: String,
+    pub source: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

@@ -1,4 +1,5 @@
 mod evidence;
+mod framework_modules;
 mod inspection;
 mod process;
 #[cfg(test)]
@@ -58,6 +59,7 @@ async fn workspace(
     tokio::fs::write(folder.join("mapping.json"), mapping)
         .await
         .map_err(|_| "workspace_failed")?;
+    framework_modules::write_modules(&folder, &payload.profile).await?;
     Ok(folder)
 }
 
@@ -106,7 +108,7 @@ pub async fn preflight(
     let plan = ExecutionPlan {
         digest: payload_digest(&payload)?,
         script_sha256: sha256(payload.implementation.script.as_bytes()),
-        framework_sha256: sha256(payload.profile.framework_source.as_bytes()),
+        framework_sha256: framework_modules::framework_digest(&payload.profile)?,
         python_version: info["pythonVersion"]
             .as_str()
             .ok_or("python_validation_failed")?

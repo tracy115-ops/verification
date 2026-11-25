@@ -1,6 +1,7 @@
 import { expect, it } from 'vitest';
 import { reportRunFixture } from '../../../tests/fixtures/report-run';
 import { candidateReproduction } from './candidate-reproduction';
+import { frameworkSha256 } from '../execution/framework-modules';
 import type {
   EvidenceBundle,
   ExecutionPlan,
@@ -57,6 +58,20 @@ it.each(['missing-evidence', 'execution-id', 'framework-hash', 'script-hash', 'c
     );
   },
 );
+it('exports the approved SDK snapshot and rejects changed module content', async () => {
+  const { run, digest, candidateId } = setup();
+  const plan = Object.values(run.artifacts).find((item) => item.type === 'ExecutionPlan')!
+    .value as ExecutionPlan;
+  const profile = plan.payload.profile;
+  profile.frameworkModules = [{ path: 'sdk/client.py', source: '# original SDK\n' }];
+  plan.frameworkSha256 = await frameworkSha256(profile);
+  const bundle = await candidateReproduction(run, digest, candidateId);
+  expect(bundle.framework.frameworkModules).toEqual(profile.frameworkModules);
+  profile.frameworkModules[0].source = '# changed SDK\n';
+  await expect(candidateReproduction(run, digest, candidateId)).rejects.toThrow(
+    'candidate_reproduction_unavailable',
+  );
+});
 it('snapshots export inputs before asynchronous hashing and rejects stale report selections', async () => {
   const { run, digest, candidateId } = setup();
   await expect(candidateReproduction(run, 'different-report', candidateId)).rejects.toThrow(
